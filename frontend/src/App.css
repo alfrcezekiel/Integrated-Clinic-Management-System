@@ -1,42 +1,64 @@
+:root {
+    --color-black: #000000;
+    --color-white: #ffffff;
+    --color-primary: #007bff;
+    --color-secondary: #6c757d;
+    --color-success: #28a745;
+    --color-info: #17a2b8;
+    --color-warning: #ffc107;
+    --color-danger: #dc3545;
+    --color-light: #f8f9fa;
+    --color-dark: #343a40;
+    --color-muted: #6c757d;
+    --background-color-primary: #1e88e5;
+    --background-color-secondary: #ccc0f2;
+}
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+}
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+    height: 100vh;
+    background-color: var(--background-color-secondary);
 }
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+.header-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    height: 12vh;
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+.logo-box {
+    position: absolute;
+    left: 1rem;
+    padding: 1rem;
 }
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.logo-box .logo-text {
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 1.5rem;
+    color: var(--color-black);
+    text-decoration: none;
 }
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.navigation-box  {
+    display: block;
+    position: absolute;
+    border: 1px solid red;
 }
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.navigation-links ul {
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    gap: 1rem;
+    padding: 0.30rem;
+    list-style: none;
 }
-
-.card {
-  padding: 2em;
+.navigation-links ul li {
+    padding: 1rem;
 }
-
-.read-the-docs {
-  color: #888;
+.navigation-links .link-text {
+    padding: 0.5rem;
+    color: var(--color-black);
+    text-decoration: none;    
+    font-size: 1.2rem;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
 }
