@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import '../App.css';
-import { Link } from 'react-router-dom';
+import { Link, Outlet} from 'react-router-dom';
+import Button from '../components/Button';
 
 function Home(){
     useEffect(() => {
@@ -12,6 +13,7 @@ function Home(){
             <header className="header-container">
                 <div className="logo-box">
                     <Link className="logo-text" to="/ICMS">ICMS</Link>
+                    <Outlet/>
                 </div>
                 <div className="navigation-box">
                     <nav className="navigation-links">
@@ -30,14 +32,22 @@ function Home(){
                             </li>
                         </ul>
                     </nav>
+                    <Outlet/>
                 </div>
             </header>   
             <section className="main-content-container" id="home">
-                <div className="icms-title">
-                    <h1>Integrated Clinic Management System <span>(ICMS)</span></h1>
-                </div>
-                <div>
-                    <h3>Start your day with ruining your day</h3>
+                <div className="home-content">
+                    <div className="side-content">
+                        <div className="icms-title">
+                            <h1>Integrated Clinic Management System</h1>
+                        </div>
+                        <div className="icms-description">
+                            <p>ICMS streamlines medical health records, appointment scheduling, billing, invoicement, and inventory of clinical products.</p>
+                        </div>
+                        <div className="button-container">
+                            <Button />
+                        </div>
+                    </div>
                 </div>
             </section>
         </>

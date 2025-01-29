@@ -1,22 +1,35 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import Home from './pages/Home'
 import { Navigate } from 'react-router-dom';
-import PageNotAvailable from './pages/PageNotAvailable'
-import Login from './pages/Login'
-import About from './pages/About';
+import React, {lazy, Suspense} from "react";
+import './App.css';
+
+const Home = lazy(() => import('./pages/Home'));
+const About = lazy(() => import('./pages/About'));
+const Login = lazy(() => import('./pages/Login'));
+const PageNotAvailable = lazy(() => import('./pages/PageNotAvailable'));
 
 function App(){
   return(
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Navigate to="/ICMS" replace />} />
-        <Route path="ICMS" element={<Home />} />
-        <Route path="login" element={<Login />} />
-        <Route path="about" element={<About />} />
-        <Route path="*" element={<PageNotAvailable />} />
-      </Routes>
+      <Suspense fallback={<Loading/>}>
+        <Routes>
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="ICMS" index element={<Home/>} />
+          <Route path="login" element={<Login/>} />
+          <Route path="about" element={<About/>} />
+          <Route path="*" element={<PageNotAvailable/>} />
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
+}
+
+function Loading() {
+  return (
+    <center>
+      <h1>🌀 Loading...</h1>;
+    </center>
+  )
 }
 
 export default App
