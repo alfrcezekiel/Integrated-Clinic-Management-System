@@ -1,15 +1,18 @@
 import styled, {keyframes} from "styled-components";
+import { useNavigate } from "react-router-dom";
 
-export default function Button(){
-    return(
+export default function Button(name) {
+    const navigate = useNavigate();
+
+    return (
         <ButtonBox 
             onClick={() => {
-                alert("Appointment Requested!");
+                navigate("/login");
             }} 
             className="btn">
-            Request Appointment
+            {name.name}
         </ButtonBox>
-    );
+    )
 }
 
 const ButtonAnimation = keyframes`

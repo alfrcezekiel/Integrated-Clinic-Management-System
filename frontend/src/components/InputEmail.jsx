@@ -1,12 +1,11 @@
 import TextField from '@mui/material/TextField';
-import Box from "@mui/material/Box";
 import "../App.css";
 
 export default function InputEmail() {
     return (
         <TextField
             required
-            id="outlined"
+            id="outlined-required"
             label="Enter Email"
             variant="outlined"
             className="input-email"

@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Lexend+Giga:wght@100..900&display=swap');
+@import "tailwindcss";
 
 :root {
     --color-black: #000000;
@@ -14,6 +15,8 @@
     --color-muted: #6c757d;
     --background-color-primary: #1e88e5;
     --background-color-secondary: #ccc0f2;
+    --border-radius-2-rem: 2rem;
+    --border-radius-1-rem: 1rem;
 }
 html{
     scroll-behavior: smooth;
@@ -122,10 +125,11 @@ h6 {
     animation: headingICMS 1s ease-in-out;
 }
 .icms-title h1 {
-    font-size: 26px;
+    line-height: 1.5;
+    font-size: 27px;
     color: var(--color-white);
     font-family: "Lexend Giga", sans-serif, Arial, Verdana;
-    animation: headingICMS .10s ease-in-out;
+    animation: headingICMS 1s ease-in-out;
 }
 @keyframes headingICMS {
     0%{
@@ -147,7 +151,7 @@ h6 {
 .icms-description p {
     color: var(--color-white);
     font-family: "Lexend Giga", sans-serif, Arial, Verdana;
-    font-size: 20px;
+    font-size: 16px;
     line-height: 1.5;
     text-align: justify;
     animation: descriptionICMS 1s ease-in-out;
@@ -208,9 +212,10 @@ h6 {
     position: relative;
 }
 .login-group-email {
+    flex: 1;
     position: absolute;
     top: 0;
-    width: 90%;
+    width: 92.80%;
     margin: 6rem 1rem 0;
     padding: 0.50rem;
 }
@@ -228,4 +233,66 @@ h6 {
     position: absolute;
     left: 15%;
     box-sizing: border-box;
+}
+.button-login {
+    display: block;
+    position: absolute;
+    bottom: 25%;
+    width: 93%;
+    height: 20%;
+    margin: 1rem;
+}
+.create-account-wrapper {
+    display: block;
+    position: absolute;
+    right: 0;
+    margin-right: 1rem;
+    cursor: pointer;
+    bottom: 7rem;
+}
+.create-account-wrapper p {
+    font-family: "Lexend Giga", "san-serif", "Arial", "Verdana";
+    font-size: 9px;
+    color: black;
+    line-height: 1.5;
+}
+.register-container {
+    position: relative;
+    height: 100vh;
+    background: url("./assets/images/login-bg-img2.png") no-repeat center center/cover;
+    display: flex;
+    justify-content: center;
+    align-items: center; 
+}
+.register-wrapper-box {
+    padding: 1rem;
+    border: 1px solid black;
+    background-color: var(--color-white);
+    width: 50%;
+    height: 80%;
+    position: absolute;
+    display: block;
+    border-radius: var(--border-radius-2-rem);
+}
+.register-title{
+    display: block;
+    padding: 0.50rem;
+}
+.register-title h1{
+    font-family: "Lexend Giga", "san-serif", "Arial", "Verdana";
+    font-size: 20px;
+    color: black;
+    text-align: center;
+}
+.register-form-box {
+    border: 1px solid red;
+    height: 90%;
+}
+.register-form {
+    height: 100%;
+    padding: 0.50rem;
+}
+.register-form-groups {
+    width: 100%;
+    padding: 0.50rem;
 }
