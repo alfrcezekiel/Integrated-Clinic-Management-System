@@ -1,19 +1,27 @@
-import {DatePicker} from "@mui/x-date-pickers/DatePicker";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
-import {DemoItem, DemoContainer} from "@mui/x-date-pickers/internals/demo";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+// Removed invalid import
 import "../App.css";
+import PropTypes from 'prop-types';
+import dayjs from "dayjs";
+function RegisterDateOfBirth({ value, onChange }) {
+    const dateValue = value ? dayjs(value) : null;
 
-function RegisterDateOfBirth(){
+    const handleDateChange = (newDateValue) => {
+        onChange(newDateValue ? newDateValue.format("MM/DD/YYYY") : "");
+    }
+
     return (
         <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DemoContainer components={['DatePicker']}>
-                <DemoItem>
-                    <DatePicker label="Enter Date of Birth" id="date-of-birth"/>
-                </DemoItem>
-            </DemoContainer>
+            <DatePicker label="Enter Date of Birth" id="date-of-birth" value={dateValue} onChange={handleDateChange} />
         </LocalizationProvider>
     )
+}
+
+RegisterDateOfBirth.propTypes = {
+    value: PropTypes.string.isRequired,
+    onChange: PropTypes.func.isRequired,
 }
 
 export default RegisterDateOfBirth;

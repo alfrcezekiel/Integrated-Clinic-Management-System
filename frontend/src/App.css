@@ -269,7 +269,7 @@ h6 {
     border: 1px solid black;
     background-color: var(--color-white);
     width: 50%;
-    height: 80%;
+    height: 90%;
     position: absolute;
     display: block;
     border-radius: var(--border-radius-2-rem);
@@ -285,7 +285,6 @@ h6 {
     text-align: center;
 }
 .register-form-box {
-    border: 1px solid red;
     height: 90%;
 }
 .register-form {
@@ -293,6 +292,11 @@ h6 {
     padding: 0.50rem;
 }
 .register-form-groups {
-    width: 100%;
     padding: 0.50rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    height: 100%;
+    gap: 1.50rem;
 }

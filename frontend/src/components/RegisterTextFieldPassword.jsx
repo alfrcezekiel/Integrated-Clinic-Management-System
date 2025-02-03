@@ -8,7 +8,7 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useState } from 'react';
 import PropTypes from "prop-types";
 
-export default function RegisterTextFieldPassword({ label }) {
+export default function RegisterTextFieldPassword({ label, value, onChange }) {
     const [showPassword, setShowPassword] = useState(false);
 
     const handleClickShowPassword = () => {
@@ -27,6 +27,8 @@ export default function RegisterTextFieldPassword({ label }) {
         <FormControl variant="outlined" className="register-input-password">
             <InputLabel htmlFor="outlined-adornment-password">{label}</InputLabel>
             <OutlinedInput
+                sx={{ width: '50vh' }}
+                id="password"
                 type={showPassword ? "text" : "password"}
                 endAdornment={
                     <InputAdornment position="end">
@@ -44,11 +46,15 @@ export default function RegisterTextFieldPassword({ label }) {
                     </InputAdornment>
                 }
                 label={label}
+                value={value}
+                onChange={onChange}
             />
         </FormControl>
     )
 }
 
 RegisterTextFieldPassword.propTypes = {
-    label: PropTypes.string.isRequired
+    label: PropTypes.string.isRequired,
+    value: PropTypes.string.isRequired,
+    onChange: PropTypes.func.isRequired,
 };
