@@ -1,9 +1,13 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const path = require('path');
-const conn = require('./mysql/conn')
+import express from 'express';
+import bodyParser from 'body-parser';
+import cors from 'cors';
+import path from 'path';
+import conn from './mysql/conn.js';
+import { fileURLToPath } from 'url';
+
 const app = express();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 app.set("port", process.env.PORT || 2140);
 app.set("host", process.env.HOST || "localhost");
@@ -36,16 +40,23 @@ app.get('/icms/register', (req, res) => {
 });
 
 app.post('/icms/registerAccount', async (req, res) => {
-    const { firstName, lastName, email, phoneNumber, password, confirmPassword } = req.body;
-
-    const insertRegisterAccount_a = "INSERT INTO db_registeraccount_a (firstName, lastName, email) VALUES (?, ?, ?)";
-    const insertRegisterAccount_b = "INSERT INTO db_registeraccount_b (phoneNumber, password, confirmPassword) VALUES (?, ?, ?)";
-
     try {
+        const { firstName, lastName, email, phoneNumber, password, confirmPassword } = req.body;
+
+        if(!firstName, !lastName, !email, !phoneNumber, !password, !confirmPassword){
+            return res.status(200).json({
+                fieldsMessage: "Please fill up all fields",
+                statusMessage: "Failed"
+            })
+        }
+
+        const insertRegisterAccount_a = "INSERT INTO db_registeraccount_a (firstName, lastName, email) VALUES (?, ?, ?)";
+        const insertRegisterAccount_b = "INSERT INTO db_registeraccount_b (phoneNumber, password, confirmPassword) VALUES (?, ?, ?)";
+
         const [first_result] = await conn.query(insertRegisterAccount_a, [firstName, lastName, email])
         const [second_result] = await conn.query(insertRegisterAccount_b, [phoneNumber, password, confirmPassword]);
 
-        if(first_result.affectedRows === 0 || second_result.affectedRows ===0){
+        if (first_result.affectedRows === 0 || second_result.affectedRows === 0) {
             throw new Error("Failed to register account");
         }
 
@@ -60,10 +71,10 @@ app.post('/icms/registerAccount', async (req, res) => {
 
         return res.status(400).json({
             registrationFailed: "Failed to register account",
-            first_result: false,  
+            first_result: false,
             second_result: false
         })
-    } 
+    }
 })
 
 app.get('/ICMS/api', (req, res) => {
