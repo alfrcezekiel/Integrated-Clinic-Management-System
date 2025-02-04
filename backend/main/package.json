@@ -1,7 +1,8 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "main": "app.js",
+  "type": "module",
+  "main": "main/app.js",
   "scripts": {
     "start": "nodemon app"
   },

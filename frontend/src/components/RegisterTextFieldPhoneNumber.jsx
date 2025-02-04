@@ -7,7 +7,6 @@ export default function RegisterTextFieldPhoneNumber({value, onChange}){
             variant="outlined"
             id="contact-number"
             label="Enter Phone Number"
-            required
             type="number"
             value={value}
             onChange={onChange}

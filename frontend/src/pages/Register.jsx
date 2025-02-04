@@ -9,10 +9,14 @@ import RegisterTextFieldPhoneNumber from '../components/RegisterTextFieldPhoneNu
 import RegisterTextFieldPassword from '../components/RegisterTextFieldPassword';
 import RegisterTextFieldConfirmPassword from '../components/RegisterTextFieldConfirmPassword';
 import { Link, Outlet } from "react-router-dom";
+import RegisterSubmitButton from '../components/RegisterSubmitButton';
+import RegistrationSuccessfulModal from '../components/RegistrationSuccessfullModal';
 
 function RegisterAccount() {
     const [registerTitle, setRegisterTile] = useState("");
     const [registrationMessage, setRegistrationMessage] = useState("");
+    const [fieldsMessage, setFieldsMessage] = useState("");
+    const [statusMessage, setStatusMessage] = useState("");
     const [formData, setFormData] = useState({
         firstName: "",
         lastName: "",
@@ -21,6 +25,7 @@ function RegisterAccount() {
         password: "",
         confirmPassword: ""
     });
+    const [modalOpen, setModalOpen] = useState(false);
 
     useEffect(() => {
         const registerTitleHeader = async () => {
@@ -34,8 +39,8 @@ function RegisterAccount() {
                 if (!res.data || !res.data.registerTitle) {
                     throw new Error("Failed to retrieve register title in server");
                 } else {
-                    if (!res.data.registerTitle === "" || res.data.registerTitle === null) {
-                        throw new Error("Empty register title");
+                    if (res.data.registerTitle === "" || res.data.registerTitle === null) {
+                        throw new Error("Empty values in server response");
                     } else {
                         setRegisterTile(res.data.registerTitle);
                     }
@@ -62,6 +67,9 @@ function RegisterAccount() {
 
             if(res.status === 200){
                 setRegistrationMessage(res.data.successfullRegistration);
+                setFieldsMessage(res.data.fieldsMessage);
+                setStatusMessage(res.data.statusMessage);
+                setModalOpen(true);
                 setFormData({
                     firstName: "",
                     lastName: "",
@@ -73,6 +81,7 @@ function RegisterAccount() {
             }
         } catch (error) {
             console.error(`Error in functionality code for registering account: ${error}`);
+            setModalOpen(false);
         }
     }
 
@@ -135,17 +144,18 @@ function RegisterAccount() {
                                 <RegisterTextFieldConfirmPassword label="Confirm Password" value={formData.confirmPassword} onChange={handleConfirmPasswordData} />
                             </div>
                             <div className='register-group-button'>
-                                <button className='register-button'>Register</button>
+                                <RegisterSubmitButton label="Register" />
                             </div>
                         </div>
                     </form>
                 </div>
+                <RegistrationSuccessfulModal isOpen={modalOpen} onClose={() => setModalOpen(false)} fieldsMessage={fieldsMessage} statusMessage={statusMessage}/>
                 <div>
                     <Link to="/login">Login</Link>
                     <Outlet />
                 </div>
                 <div>
-                    <p>{registrationMessage}</p>
+                    <h1>{registrationMessage}</h1>
                 </div>
             </div>
         </div>

@@ -5,7 +5,6 @@ export default function RegisterTextFieldEmail({value, onChange}){
     return (
         <TextField
             variant="outlined"
-            required
             label="Enter Email"
             type="text"
             id="email"

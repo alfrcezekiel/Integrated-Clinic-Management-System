@@ -1,4 +1,4 @@
-const mysql = require('mysql2/promise');
+import mysql from "mysql2/promise";
 
 function createConnection() {
     try {
@@ -24,4 +24,5 @@ function createConnection() {
     }
 }
 const db = createConnection();
-module.exports = db;
+
+export default db;

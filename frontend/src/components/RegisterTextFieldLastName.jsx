@@ -6,7 +6,6 @@ export default function RegisterTextFieldLastName({value, onChange}){
         <TextField
             variant="outlined"
             label="Enter Last Name"
-            required
             type="text"
             id="last-name"
             value={value}

@@ -7,7 +7,6 @@ function RegisterTextFieldFirstName({value, onChange}){
         <TextField
             variant="outlined"
             label="Enter First Name"
-            required
             type="text"
             id="first-name"
             value={value}
