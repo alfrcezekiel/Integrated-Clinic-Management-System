@@ -43,18 +43,83 @@ app.post('/icms/registerAccount', async (req, res) => {
     try {
         const { firstName, lastName, email, phoneNumber, password, confirmPassword } = req.body;
 
-        if(!firstName, !lastName, !email, !phoneNumber, !password, !confirmPassword){
+        const first_name = String(firstName).trim();
+        const last_name = String(lastName).trim();
+        const emailAddress = String(email).trim();
+        const phone_number = Number(phoneNumber).toString().trim();
+        const pass_word = String(password).trim();
+        const confirm_password = String(confirmPassword).trim();
+
+        if(!first_name && !last_name && !emailAddress && !phone_number && !pass_word && !confirm_password){
             return res.status(200).json({
                 fieldsMessage: "Please fill up all fields",
                 statusMessage: "Failed"
             })
         }
 
+        if(first_name.trim() === ""){
+            return res.status(200).json({
+                fieldsMessage: "First name is required",
+                statusMessage: "Failed"
+            })
+        }
+
+        if(last_name.trim() === ""){
+            return res.status(200).json({
+                fieldsMessage: "Last name is required",
+                statusMessage: "Failed"
+            })
+        }
+
+        const regexEmail = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+        if(!regexEmail.test(emailAddress.trim())){
+            return res.status(200).json({
+                fieldsMessage: "Invalid email address",
+                statusMessage: "Failed"
+            })
+        }
+
+        const phoneNumberPattern = phone_number.trim();
+        if(phoneNumberPattern.length !== 11 || isNaN(phone_number)){
+            return res.status(200).json({
+                fieldsMessage: "Phone Number must be 11 digits",
+                statusMessage: "Failed"
+            })
+        }
+
+        if(pass_word === ""){
+            return res.status(200).json({
+                fieldsMessage: "Password is required",
+                statusMessage: "Failed"
+            })
+        }
+
+        if(pass_word.length < 8){
+            return res.status(200).json({
+                fieldsMessage: "Password must be at least 8 characters",
+                statusMessage: "Failed"
+            })
+        }
+
+        if(confirm_password === ""){
+            return res.status(200).json({
+                fieldsMessage: "Confirm Password is required",
+                statusMessage: "Failed"
+            })
+        }
+
+        if(confirm_password !== pass_word){
+            return res.status(200).json({
+                fieldsMessage: "Password does not match",
+                statusMessage: "Failed"
+            })
+        }
+        
         const insertRegisterAccount_a = "INSERT INTO db_registeraccount_a (firstName, lastName, email) VALUES (?, ?, ?)";
         const insertRegisterAccount_b = "INSERT INTO db_registeraccount_b (phoneNumber, password, confirmPassword) VALUES (?, ?, ?)";
 
-        const [first_result] = await conn.query(insertRegisterAccount_a, [firstName, lastName, email])
-        const [second_result] = await conn.query(insertRegisterAccount_b, [phoneNumber, password, confirmPassword]);
+        const [first_result] = await conn.query(insertRegisterAccount_a, [first_name, last_name, emailAddress])
+        const [second_result] = await conn.query(insertRegisterAccount_b, [phone_number, pass_word, confirm_password]);
 
         if (first_result.affectedRows === 0 || second_result.affectedRows === 0) {
             throw new Error("Failed to register account");

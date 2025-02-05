@@ -72,12 +72,12 @@ function RegisterAccount() {
                 setModalOpen(true);
                 setFormData({
                     firstName: "",
-                    lastName: "",
+                    lastName: "",   
                     email: "",
                     phoneNumber: "",
                     password: "",
                     confirmPassword: ""
-                })
+                });
             }
         } catch (error) {
             console.error(`Error in functionality code for registering account: ${error}`);
