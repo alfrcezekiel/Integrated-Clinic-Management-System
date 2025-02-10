@@ -70,14 +70,6 @@ function RegisterAccount() {
                 setFieldsMessage(res.data.fieldsMessage);
                 setStatusMessage(res.data.statusMessage);
                 setModalOpen(true);
-                setFormData({
-                    firstName: "",
-                    lastName: "",   
-                    email: "",
-                    phoneNumber: "",
-                    password: "",
-                    confirmPassword: ""
-                });
             }
         } catch (error) {
             console.error(`Error in functionality code for registering account: ${error}`);

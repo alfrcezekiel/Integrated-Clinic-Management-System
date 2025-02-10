@@ -13,7 +13,7 @@ app.set("port", process.env.PORT || 2140);
 app.set("host", process.env.HOST || "localhost");
 app.use(cors({
     origin: "http://localhost:5173",
-    methods: "*",
+    methods: ["GET", "POST", "PUT", "DELETE"]
 }));
 app.use(express.static(path.join(__dirname, "public")));
 app.use(bodyParser.json());
@@ -46,7 +46,7 @@ app.post('/icms/registerAccount', async (req, res) => {
         const first_name = String(firstName).trim();
         const last_name = String(lastName).trim();
         const emailAddress = String(email).trim();
-        const phone_number = Number(phoneNumber).toString().trim();
+        const phone_number = String(phoneNumber);
         const pass_word = String(password).trim();
         const confirm_password = String(confirmPassword).trim();
 
@@ -79,8 +79,11 @@ app.post('/icms/registerAccount', async (req, res) => {
             })
         }
 
-        const phoneNumberPattern = phone_number.trim();
-        if(phoneNumberPattern.length !== 11 || isNaN(phone_number)){
+        const validatePhoneNumber = (phone_number) => {
+            return /^\d{10,15}$/.test(phone_number);
+        }
+
+        if(!validatePhoneNumber(phone_number)){
             return res.status(200).json({
                 fieldsMessage: "Phone Number must be 11 digits",
                 statusMessage: "Failed"
@@ -110,7 +113,7 @@ app.post('/icms/registerAccount', async (req, res) => {
 
         if(confirm_password !== pass_word){
             return res.status(200).json({
-                fieldsMessage: "Password does not match",
+                fieldsMessage: "Confirm Password does not match",
                 statusMessage: "Failed"
             })
         }
