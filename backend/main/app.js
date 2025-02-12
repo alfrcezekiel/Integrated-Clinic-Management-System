@@ -71,6 +71,13 @@ app.post('/icms/registerAccount', async (req, res) => {
             })
         }
 
+        if(emailAddress.trim() === ""){
+            return res.status(200).json({
+                fieldsMessage: "Email address is required",
+                statusMessage: "Failed"
+            })
+        }
+
         const regexEmail = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
         if(!regexEmail.test(emailAddress.trim())){
             return res.status(200).json({
@@ -80,7 +87,7 @@ app.post('/icms/registerAccount', async (req, res) => {
         }
 
         const validatePhoneNumber = (phone_number) => {
-            return /^\d{10,15}$/.test(phone_number);
+            return /^\d{11}$/.test(phone_number);
         }
 
         if(!validatePhoneNumber(phone_number)){
