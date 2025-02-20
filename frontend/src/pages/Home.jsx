@@ -2,13 +2,38 @@ import { useEffect } from "react";
 import '../App.css';
 import { Link, Outlet } from 'react-router-dom';
 import Button from '../components/Button';
-import { useState } from "react";
+import { useState, useRef} from "react";
 import EndpointURI from "../API/Endpoint";
+import {HashLink} from "react-router-hash-link";
 
 function Home() {
+    const [isSticky, setIsSticky] = useState(false);
+    let lastScrollY = window.scrollY;
+
+    const ref = useRef(0);
+
     useEffect(() => {
-        document.title = "Integrated Clinic Management System(ICMS)";
-    }, [])
+        const title = () => {
+            document.title = "Integrated Clinic Management System(ICMS)";
+        }
+        title();
+
+        const handleScroll = () => {
+            if(window.scrollY > lastScrollY){
+                setIsSticky(true);
+            } else {
+                setIsSticky(false);
+            }
+
+            ref.current = lastScrollY;
+        }
+        
+        window.addEventListener("scroll", handleScroll);
+        
+        return () => {
+            window.removeEventListener("scroll", handleScroll);
+        }
+    }, [lastScrollY]);
 
     const [logo, setLogo] = useState("");
     const [title, setTitle] = useState("");
@@ -18,8 +43,8 @@ function Home() {
         const fetchLogoData = async () => {
             try {
                 const response = await EndpointURI.get("/icms");
-                if (!response.data || !response.data.logo || !response.data.title) {
-                    throw new Error("Incomplete data received");
+                if (!response.data || !response.data.logo || !response.data.title || !response.data.description) {
+                    throw new Error("Cannot retrieve data in the server");
                 }
                 setLogo(response.data.logo);
                 setTitle(response.data.title);
@@ -33,7 +58,7 @@ function Home() {
 
     return (
         <>
-            <header className="header-container">
+            <header className={`header-container ${isSticky ? "sticky" : ""}`}>
                 <div className="logo-box">
                     <Link className="logo-text" to="/ICMS">{logo}</Link>
                     <Outlet />
@@ -42,16 +67,16 @@ function Home() {
                     <nav className="navigation-links">
                         <ul>
                             <li>
-                                <Link className="link-text" to="/ICMS">Home</Link>
+                                <HashLink className="link-text" smooth="true" to="#">Home</HashLink>
                             </li>
                             <li>
-                                <Link className="link-text" to="/about">About</Link>
+                                <HashLink className="link-text" smoooth="true" to="#about">About</HashLink>
                             </li>
                             <li>
-                                <Link className="link-text" to="#services">Services</Link>
+                                <HashLink className="link-text" smooth="true" to="#services">Services</HashLink>
                             </li>
                             <li id="login">
-                                <Link className="link-text" to="/login">Login</Link>
+                                <Link className="link-text" to="/login">Patients Login</Link>
                             </li>
                         </ul>
                     </nav>
@@ -72,6 +97,12 @@ function Home() {
                         </div>
                     </div>
                 </div>
+            </section>
+            <section id="about" className="about-container">
+                <h1>About</h1>
+            </section>
+            <section id="services" className="services-container">
+                <h1>Services</h1>
             </section>
         </>
     );

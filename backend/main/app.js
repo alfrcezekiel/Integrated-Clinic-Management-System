@@ -4,6 +4,7 @@ import cors from 'cors';
 import path from 'path';
 import conn from './mysql/conn.js';
 import { fileURLToPath } from 'url';
+import morgan from "morgan";
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
@@ -13,11 +14,12 @@ app.set("port", process.env.PORT || 2140);
 app.set("host", process.env.HOST || "localhost");
 app.use(cors({
     origin: "http://localhost:5173",
-    methods: ["GET", "POST", "PUT", "DELETE"]
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
 }));
 app.use(express.static(path.join(__dirname, "public")));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(morgan("dev"));
 
 app.get('/icms', (req, res) => {
     res.status(200).json({
@@ -42,11 +44,11 @@ app.get('/icms/register', (req, res) => {
 app.post('/icms/registerAccount', async (req, res) => {
     try {
         const { firstName, lastName, email, phoneNumber, password, confirmPassword } = req.body;
-
+        
         const first_name = String(firstName).trim();
         const last_name = String(lastName).trim();
         const emailAddress = String(email).trim();
-        const phone_number = String(phoneNumber);
+        const phone_number = String(phoneNumber).trim();
         const pass_word = String(password).trim();
         const confirm_password = String(confirmPassword).trim();
 
@@ -104,7 +106,7 @@ app.post('/icms/registerAccount', async (req, res) => {
             })
         }
 
-        if(pass_word.length < 8){
+        if(pass_word.length <= 8){
             return res.status(200).json({
                 fieldsMessage: "Password must be at least 8 characters",
                 statusMessage: "Failed"
@@ -136,7 +138,8 @@ app.post('/icms/registerAccount', async (req, res) => {
         }
 
         return res.status(200).json({
-            successfullRegistration: "Registered Account Successfully!",
+            fieldsMessage: "Registered Account Successfully!",
+            statusMessage: "Success",
             first_result: true,
             second_result: true
         })
