@@ -46,9 +46,7 @@ function Login(){
                             <div className="login-group-password">
                                 <InputPassword/>
                             </div>
-                            <div className="button-login">
-                                <LoginButton name="Login"/>
-                            </div>
+                            <LoginButton name="Login"/>
                         </div>
                     </form>
                 </div>

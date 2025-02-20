@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types';
-import styled, { keyframes } from 'styled-components';
-
+import styled  from 'styled-components';
 
 export default function RegisterSubmitButton({ label }) {
     return (
@@ -11,20 +10,6 @@ export default function RegisterSubmitButton({ label }) {
     )
 }
 
-const ButtonAnimation = keyframes`
-    0%{
-        transform: translateX(-5%);
-        opacity: -5;
-    }
-    50%{
-        transform: translateX(-1%);
-        opacity: -1;
-    }
-    100%{
-        transform: translateX(0);
-        opacity: 1;
-    }
-`
 const ButtonBox = styled.button`
     display: block;
     padding: 1rem;
@@ -34,7 +19,6 @@ const ButtonBox = styled.button`
     border: none;
     color: white;
     background-color: #7350f0;
-    animation: ${ButtonAnimation} 1s ease-in;
     margin-left: 20%;
 `;
 

@@ -8,7 +8,6 @@ import RegisterTextFieldPhoneNumber from '../components/RegisterTextFieldPhoneNu
 // import RegisterDateOfBirth from '../components/RegisterDateOfBirth';
 import RegisterTextFieldPassword from '../components/RegisterTextFieldPassword';
 import RegisterTextFieldConfirmPassword from '../components/RegisterTextFieldConfirmPassword';
-import { Link, Outlet } from "react-router-dom";
 import RegisterSubmitButton from '../components/RegisterSubmitButton';
 import RegistrationSuccessfulModal from '../components/RegistrationSuccessfullModal';
 
@@ -66,6 +65,14 @@ function RegisterAccount() {
             }
 
             if(res.status === 200){
+                // setFormData({
+                //     firstName: "",
+                //     lastName: "",
+                //     email: "",
+                //     phoneNumber: "",
+                //     password: "",
+                //     confirmPassword: ""
+                // })
                 setRegistrationMessage(res.data.successfullRegistration);
                 setFieldsMessage(res.data.fieldsMessage);
                 setStatusMessage(res.data.statusMessage);
@@ -142,10 +149,6 @@ function RegisterAccount() {
                     </form>
                 </div>
                 <RegistrationSuccessfulModal isOpen={modalOpen} onClose={() => setModalOpen(false)} fieldsMessage={fieldsMessage} statusMessage={statusMessage}/>
-                <div>
-                    <Link to="/login">Login</Link>
-                    <Outlet />
-                </div>
                 <div>
                     <h1>{registrationMessage}</h1>
                 </div>

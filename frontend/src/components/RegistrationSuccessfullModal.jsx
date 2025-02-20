@@ -4,7 +4,7 @@ function RegistrationSuccessfulModal({ isOpen, onClose, fieldsMessage, statusMes
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 flex items-center justify-center bg-opacity-50">
+        <div className="fixed inset-0 flex items-center justify-center">
             <div className="w-xs p-6 bg-red-600 rounded-lg shadow-lg h-24">
                 <h2 className="text-lg font-bold text-center text-white-200">{statusMessage}</h2>
                 <p className="mt-2 text-center text-white">{fieldsMessage}</p>
