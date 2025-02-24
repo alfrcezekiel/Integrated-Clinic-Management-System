@@ -2,8 +2,29 @@ import "../assets/css/main.css"
 import "../assets/vendor/bootstrap/css/bootstrap.min.css"
 import "../assets/vendor/bootstrap-icons/bootstrap-icons.css"
 import "../assets/vendor/aos/aos.css"
+import "../assets/js/main.js";
+import "../assets/vendor/glightbox/css/glightbox.min.css"
+import "../assets/vendor/swiper/swiper-bundle.min.css"
+import "../assets/vendor/bootstrap/js/bootstrap.bundle.min.js";
+// import "../assets/vendor/purecounter/purecounter_vanilla.js"
+import "../assets/vendor/imagesloaded/imagesloaded.pkgd.min.js"
+import "../assets/vendor/isotope-layout/isotope.pkgd.min.js"
+import AOS from "aos";
+import { useEffect } from "react";
+const LandingPageHeader = () => {
+    useEffect(() => {
+        const aos = () => {
+            AOS.init({
+                duration: 600,
+                once: true
+            })
+        }
+        aos();
+        return () => {
+            AOS.refresh(); 
+        }
+    }, [])
 
-const LandingPage = () => {
     return (
         <header id="header" className="header d-flex align-items-center fixed-top">
             <div className="container-fluid container-xl position-relative d-flex align-items-center">
@@ -16,7 +37,7 @@ const LandingPage = () => {
 
                 <nav id="navmenu" className="navmenu">
                     <ul>
-                        <li><a href="#hero" className="active">Home</a></li>
+                        <li><a href="/" className="active">Home</a></li>
                         <li><a href="#about">About</a></li>
                         <li><a href="#services">Services</a></li>
                         <li><a href="#portfolio">Portfolio</a></li>
@@ -42,12 +63,10 @@ const LandingPage = () => {
                     </ul>
                     <i className="mobile-nav-toggle d-xl-none bi bi-list"></i>
                 </nav>
-
                 <a className="btn-getstarted" href="#about">Get Started</a>
-
             </div>
         </header>
     );
 }
 
-export default LandingPage;
+export default LandingPageHeader;

@@ -27,13 +27,13 @@
    */
   const mobileNavToggleBtn = document.querySelector('.mobile-nav-toggle');
 
-  function mobileNavToogle() {
+  function mobileNavToggle() {
     document.querySelector('body').classList.toggle('mobile-nav-active');
     mobileNavToggleBtn.classList.toggle('bi-list');
     mobileNavToggleBtn.classList.toggle('bi-x');
   }
   if (mobileNavToggleBtn) {
-    mobileNavToggleBtn.addEventListener('click', mobileNavToogle);
+    mobileNavToggleBtn.addEventListener('click', mobileNavToggle);
   }
 
   /**
@@ -42,10 +42,9 @@
   document.querySelectorAll('#navmenu a').forEach(navmenu => {
     navmenu.addEventListener('click', () => {
       if (document.querySelector('.mobile-nav-active')) {
-        mobileNavToogle();
+        mobileNavToggle();
       }
     });
-
   });
 
   /**
@@ -125,9 +124,16 @@
   const glightboxScript = document.createElement('script');
   glightboxScript.src = 'https://cdn.jsdelivr.net/npm/glightbox@3.1.0/dist/js/glightbox.min.js';
   glightboxScript.onload = function() {
-    GLightbox({
-      selector: '.glightbox'
-    });
+    if (typeof GLightbox !== 'undefined') {
+      GLightbox({
+        selector: '.glightbox'
+      });
+    } else {
+      console.error('GLightbox is not defined');
+    }
+  };
+  glightboxScript.onerror = function() {
+    console.error('Failed to load GLightbox script');
   };
   document.head.appendChild(glightboxScript);
 
@@ -136,9 +142,17 @@
    */
   // Include PureCounter library
   const pureCounterScript = document.createElement('script');
-  pureCounterScript.src = 'https://cdn.jsdelivr.net/npm/@srexi/purecounterjs@1.1.0/dist/purecounter_vanilla.js';
+  pureCounterScript.src = 'https://unpkg.com/@srexi/purecounterjs/dist/purecounter_vanilla.js';
+  pureCounterScript.type = 'module';
   pureCounterScript.onload = function() {
-    new PureCounter();
+    if (typeof PureCounter !== 'undefined') {
+      new PureCounter();
+    } else {
+      console.error('PureCounter is not defined');
+    }
+  };
+  pureCounterScript.onerror = function() {
+    console.error('Failed to load PureCounter script');
   };
   document.head.appendChild(pureCounterScript);
 

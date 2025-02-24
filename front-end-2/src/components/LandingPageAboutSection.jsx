@@ -8,6 +8,11 @@ import AboutImage from "../assets/img/about.jpg"
 import AOS from "aos"
 import { useEffect } from "react"
 import "../assets/js/main.js";
+import "../assets/vendor/bootstrap/js/bootstrap.bundle.min.js";
+import "../assets/vendor/glightbox/js/glightbox.min.js"
+// import "../assets/vendor/purecounter/purecounter_vanilla.js"
+import "../assets/vendor/imagesloaded/imagesloaded.pkgd.min.js"
+import "../assets/vendor/isotope-layout/isotope.pkgd.min.js"
 
 const LandingPageAboutSection = () => {
     useEffect(() => {
@@ -18,22 +23,20 @@ const LandingPageAboutSection = () => {
             })
         }
         aos();
-        return () => AOS.refreshHard();
+        return () => {
+            AOS.refresh();
+        };
     }, [])
 
     return (
         <>
             {/* <!-- About Section --> */}
             <section id="about" className="about section">
-
                 <div className="container">
-
                     <div className="row gy-4">
-
                         <div className="col-lg-6 order-1 order-lg-2" data-aos="fade-up" data-aos-delay="100">
                             <img src={AboutImage} className="img-fluid" alt="about-image"/>
                         </div>
-
                         <div className="col-lg-6 order-2 order-lg-1 content" data-aos="fade-up" data-aos-delay="200">
                             <h3>Voluptatem dignissimos provident quasi corporis</h3>
                             <p className="fst-italic">
@@ -47,11 +50,8 @@ const LandingPageAboutSection = () => {
                             </ul>
                             <a href="#" className="read-more"><span>Read More</span><i className="bi bi-arrow-right"></i></a>
                         </div>
-
                     </div>
-
                 </div>
-
             </section>
             {/* <!-- /About Section --> */}
         </>

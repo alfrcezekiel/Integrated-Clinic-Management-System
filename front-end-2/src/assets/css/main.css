@@ -264,6 +264,7 @@ h6 {
     white-space: nowrap;
     transition: 0.3s;
     position: relative;
+    text-decoration: none;
   }
 
   .navmenu a i,
@@ -325,6 +326,7 @@ h6 {
     font-size: 15px;
     text-transform: none;
     color: var(--nav-dropdown-color);
+    text-decoration: none;
   }
 
   .navmenu .dropdown ul a i {
