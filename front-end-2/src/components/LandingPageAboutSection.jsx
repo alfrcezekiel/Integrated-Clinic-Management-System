@@ -7,6 +7,7 @@ import "../assets/vendor/swiper/swiper-bundle.min.css"
 import AboutImage from "../assets/img/about.jpg"
 import AOS from "aos"
 import { useEffect } from "react"
+import "../assets/js/main.js";
 
 const LandingPageAboutSection = () => {
     useEffect(() => {
@@ -17,7 +18,6 @@ const LandingPageAboutSection = () => {
             })
         }
         aos();
-        console.log(AOS);
         return () => AOS.refreshHard();
     }, [])
 
