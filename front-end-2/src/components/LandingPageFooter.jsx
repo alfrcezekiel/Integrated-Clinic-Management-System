@@ -32,7 +32,7 @@ const LandingPageFooter = () => {
                         <div className="col-lg-2 col-6 footer-links">
                             <h4>Useful Links</h4>
                             <ul>
-                                <li><a href="#">Home</a></li>
+                                <li><a href="/">Home</a></li>
                                 <li><a href="#">About us</a></li>
                                 <li><a href="#">Services</a></li>
                                 <li><a href="#">Terms of service</a></li>
@@ -42,11 +42,11 @@ const LandingPageFooter = () => {
                         <div className="col-lg-2 col-6 footer-links">
                             <h4>Our Services</h4>
                             <ul>
-                                <li><a href="#">Web Design</a></li>
-                                <li><a href="#">Web Development</a></li>
-                                <li><a href="#">Product Management</a></li>
-                                <li><a href="#">Marketing</a></li>
-                                <li><a href="#">Graphic Design</a></li>
+                                <li><a href="#">Electronic Health Records</a></li>
+                                <li><a href="#">Billing and Invoicing</a></li>
+                                <li><a href="#">Appointment Scheduling</a></li>
+                                <li><a href="#">Payment Integration</a></li>
+                                <li><a href="#">Storing of Medical Products</a></li>
                             </ul>
                         </div>
                         <div className="col-lg-3 col-md-12 footer-contact text-center text-md-start">

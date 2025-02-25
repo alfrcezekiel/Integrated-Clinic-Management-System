@@ -36,7 +36,7 @@ const LandingPageHeroSection = () => {
                 <div className="container">
                     <div className="row gy-4">
                         <div className="col-lg-6 order-2 order-lg-1 d-flex flex-column justify-content-center">
-                            <h1>Bettter Digital Experience With Techie</h1>
+                            <h1>Clinic Management System</h1>
                             <p>We are team of talented designers making websites with Bootstrap</p>
                             <div className="d-flex">
                                 <a href="#about" className="btn-get-started">Get Started</a>
