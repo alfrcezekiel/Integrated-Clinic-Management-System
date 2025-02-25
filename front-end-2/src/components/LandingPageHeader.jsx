@@ -60,6 +60,9 @@ const LandingPageHeader = () => {
                             </ul>
                         </li>
                         <li><a href="#contact">Contact</a></li>
+                        <li><a href="#contact">Patients Portal</a></li>
+                        <li><a href="#contact">CMS Portal</a></li>
+
                     </ul>
                     <i className="mobile-nav-toggle d-xl-none bi bi-list"></i>
                 </nav>
