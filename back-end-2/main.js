@@ -24,6 +24,12 @@ app.use(cors({
 
 app.use("/CMS", CMS);
 
+app.use((req, res) => {
+    return res.status(404).json({
+        routeMessage: "Server route not found"
+    })
+})
+
 const startServer = () => {
     app.listen(app.get("port"), app.get("host"), () => {
         console.log(`Server is running on http://${app.get("host")}:${app.get("port")}`);
