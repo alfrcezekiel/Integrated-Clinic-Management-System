@@ -6,15 +6,19 @@ import "../assets/vendor/glightbox/css/glightbox.min.css"
 import "../assets/vendor/swiper/swiper-bundle.min.css"
 import AboutImage from "../assets/img/about.jpg"
 import AOS from "aos"
-import { useEffect } from "react"
+import { useEffect, useState} from "react"
 import "../assets/js/main.js";
 import "../assets/vendor/bootstrap/js/bootstrap.bundle.min.js";
 import "../assets/vendor/glightbox/js/glightbox.min.js"
 // import "../assets/vendor/purecounter/purecounter_vanilla.js"
 import "../assets/vendor/imagesloaded/imagesloaded.pkgd.min.js"
 import "../assets/vendor/isotope-layout/isotope.pkgd.min.js"
+import CMS from "../API/CMS.jsx"
 
 const LandingPageAboutSection = () => {
+    const [aboutTitle, setAboutTitle] = useState("");
+    const [aboutDescription, setAboutDescription] = useState("");  
+
     useEffect(() => {
         const aos = () => {
             AOS.init({
@@ -23,6 +27,22 @@ const LandingPageAboutSection = () => {
             })
         }
         aos();
+
+        const retrieveDataAboutTitle = async () => {
+            try {
+                const response = await CMS.get("/CMS");
+
+                if(!response.data || !response.data.title, !response.data.description) {
+                    throw new Error("No retrieved data about title");
+                } else {
+                    setAboutTitle(response.data.title);
+                    setAboutDescription(response.data.description);
+                }
+            } catch(error) {
+                console.error(`Code functionality error for fetching data about title: ${error}`);
+            }
+        }
+        retrieveDataAboutTitle();
         return () => {
             AOS.refresh();
         };
@@ -38,10 +58,9 @@ const LandingPageAboutSection = () => {
                             <img src={AboutImage} className="img-fluid" alt="about-image"/>
                         </div>
                         <div className="col-lg-6 order-2 order-lg-1 content" data-aos="fade-up" data-aos-delay="200">
-                            <h3>Voluptatem dignissimos provident quasi corporis</h3>
+                            <h3>{aboutTitle}</h3>
                             <p className="fst-italic">
-                                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-                                magna aliqua.
+                                {aboutDescription}
                             </p>
                             <ul>
                                 <li><i className="bi bi-check-circle"></i> <span>Ullamco laboris nisi ut aliquip ex ea commodo consequat.</span></li>

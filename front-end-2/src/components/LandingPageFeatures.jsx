@@ -12,9 +12,16 @@ import "../assets/vendor/glightbox/js/glightbox.min.js"
 import "../assets/vendor/imagesloaded/imagesloaded.pkgd.min.js"
 import "../assets/vendor/isotope-layout/isotope.pkgd.min.js"
 import AOS from "aos"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
+import CMS from "../API/CMS.jsx"
 
 const LandingPageFeatures = () => {
+    const [featuresTitle, setFeaturesTitle] = useState("");
+    const [ehrText, setEhrText] = useState("");
+    const [appointmentText, setAppointmentText] = useState("")
+    const [paymentText, setPaymentText] = useState("")
+    const [inventoryText, setInventoryText] = useState("")
+
     useEffect(() => {
         const aos = () => {
             AOS.init({
@@ -23,6 +30,22 @@ const LandingPageFeatures = () => {
             })
         }
         aos();
+
+        const retrieveDataFeatures = async () => {
+            const response = await CMS.get("/CMS");
+
+            if(!response.data || !response.data.featuresTitle || !response.data.ehrText || !response.data.appointmentSchedulingText || !response.data.paymentIntegrationText || !response.data.inventoryText) {
+                throw new Error("No retrieved data features in server");
+            } else {
+                setFeaturesTitle(response.data.featuresTitle);
+                setEhrText(response.data.ehrText);
+                setAppointmentText(response.data.appointmentSchedulingText);
+                setPaymentText(response.data.paymentIntegrationText);
+                setInventoryText(response.data.inventoryText);
+            }
+        }
+        retrieveDataFeatures();
+
         return () => {
             AOS.refresh();
         }
@@ -34,7 +57,7 @@ const LandingPageFeatures = () => {
             <section id="features" className="features section">
                 {/* <!-- Section Title --> */}
                 <div className="container section-title" data-aos="fade-up">
-                    <h2>Features</h2>
+                    <h2>{featuresTitle}</h2>
                     <p>Necessitatibus eius consequatur ex aliquid fuga eum quidem sint consectetur velit</p>
                 </div>
                 {/* <!-- End Section Title --> */}
@@ -47,7 +70,7 @@ const LandingPageFeatures = () => {
                             <div className="features-item d-flex ps-0 ps-lg-3 pt-4 pt-lg-0" data-aos="fade-up" data-aos-delay="200">
                                 <i className="bi bi-archive flex-shrink-0"></i>
                                 <div>
-                                    <h4>Est labore ad</h4>
+                                    <h4>{ehrText}</h4>
                                     <p>Consequuntur sunt aut quasi enim aliquam quae harum pariatur laboris nisi ut aliquip</p>
                                 </div>
                             </div>
@@ -55,7 +78,7 @@ const LandingPageFeatures = () => {
                             <div className="features-item d-flex mt-5 ps-0 ps-lg-3" data-aos="fade-up" data-aos-delay="300">
                                 <i className="bi bi-basket flex-shrink-0"></i>
                                 <div>
-                                    <h4>Harum esse qui</h4>
+                                    <h4>{appointmentText}</h4>
                                     <p>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt</p>
                                 </div>
                             </div>
@@ -63,7 +86,7 @@ const LandingPageFeatures = () => {
                             <div className="features-item d-flex mt-5 ps-0 ps-lg-3" data-aos="fade-up" data-aos-delay="400">
                                 <i className="bi bi-broadcast flex-shrink-0"></i>
                                 <div>
-                                    <h4>Aut occaecati</h4>
+                                    <h4>{paymentText}</h4>
                                     <p>Aut suscipit aut cum nemo deleniti aut omnis. Doloribus ut maiores omnis facere</p>
                                 </div>
                             </div>
@@ -71,7 +94,7 @@ const LandingPageFeatures = () => {
                             <div className="features-item d-flex mt-5 ps-0 ps-lg-3" data-aos="fade-up" data-aos-delay="500">
                                 <i className="bi bi-camera-reels flex-shrink-0"></i>
                                 <div>
-                                    <h4>Beatae veritatis</h4>
+                                    <h4>{inventoryText}</h4>
                                     <p>Expedita veritatis consequuntur nihil tempore laudantium vitae denat pacta</p>
                                 </div>
                             </div>

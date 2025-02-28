@@ -17,6 +17,7 @@ import CMS from "../API/CMS.jsx"
 
 const LandingPageHeroSection = () => {
     const [title, setTitle] = useState("");
+    const [teethTagline, setTeethTagline] = useState("");   
 
     useEffect(() => {
         const aos = () => {
@@ -30,10 +31,11 @@ const LandingPageHeroSection = () => {
         const retriveDataTitle = async () => {
             try {
                 const response = await CMS.get("/CMS");
-                if(!response.data || !response.data.title) {
+                if(!response.data || !response.data.title || !response.data.teethQuotes) {
                     throw new Error("No retrieved data title");
                 } else {
                     setTitle(response.data.title);
+                    setTeethTagline(response.data.teethQuotes);
                 }
             } catch (error) {
                 console.error(`Code functionality error for fetching data title: ${error}`);
@@ -55,7 +57,7 @@ const LandingPageHeroSection = () => {
                     <div className="row gy-4">
                         <div className="col-lg-6 order-2 order-lg-1 d-flex flex-column justify-content-center">
                             <h1>{title}</h1>
-                            <p>CMS streamlines the operational workflow of a dental clinic that automates the medical health records (EHR), appointment scheduling, payment integration and inventory of clinical products.</p>
+                            <p>{teethTagline}</p>
                             <div className="d-flex">
                                 <a href="#about" className="btn-get-started">Request Appointment</a>
                             </div>

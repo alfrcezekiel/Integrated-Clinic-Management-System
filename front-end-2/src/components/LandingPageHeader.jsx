@@ -10,8 +10,12 @@ import "../assets/vendor/bootstrap/js/bootstrap.bundle.min.js";
 import "../assets/vendor/imagesloaded/imagesloaded.pkgd.min.js"
 import "../assets/vendor/isotope-layout/isotope.pkgd.min.js"
 import AOS from "aos";
-import { useEffect } from "react";
+import { useEffect, useState} from "react";
+import CMS from "../API/CMS.jsx";
+
 const LandingPageHeader = () => {
+    const [whatWeServeTitle, setWhatWeServeTitle] = useState("");
+
     useEffect(() => {
         const aos = () => {
             AOS.init({
@@ -20,6 +24,21 @@ const LandingPageHeader = () => {
             })
         }
         aos();
+
+        const retrieveWhatWeServeTitle = async () => {
+            try {
+                const response = await CMS.get("/CMS");
+                if(!response.data || !response.data.whatWeServeTitle) {
+                    throw new Error("No retrieved data what we serve title");
+                } else {
+                    setWhatWeServeTitle(response.data.whatWeServeTitle);
+                }
+            } catch(error) {
+                console.error(`Code functionality error for fetching what we serve title: ${error}`);
+            }
+        }
+        retrieveWhatWeServeTitle();
+
         return () => {
             AOS.refresh(); 
         }
@@ -32,7 +51,7 @@ const LandingPageHeader = () => {
                 <a href="/" className="logo d-flex align-items-center me-auto">
                     {/* <!-- Uncomment the line below if you also wish to use an image logo --> */}
                     {/* <!-- <img src="assets/img/logo.png" alt=""> --> */}
-                    <h1 className="sitename">CMS</h1>
+                    <h1 className="sitename">DCMS</h1>
                 </a>
 
                 <nav id="navmenu" className="navmenu">
@@ -40,7 +59,7 @@ const LandingPageHeader = () => {
                         <li><a href="/" className="active">Home</a></li>
                         <li><a href="#about">About</a></li>
                         <li><a href="#services">Services</a></li>
-                        <li className="dropdown"><a href="#"><span>Dropdown</span> <i className="bi bi-chevron-down toggle-dropdown"></i></a>
+                        <li className="dropdown"><a href="#"><span>{whatWeServeTitle}</span> <i className="bi bi-chevron-down toggle-dropdown"></i></a>
                             <ul>
                                 <li><a href="#">Dropdown 1</a></li>
                                 <li className="dropdown"><a href="#"><span>Deep Dropdown</span> <i className="bi bi-chevron-down toggle-dropdown"></i></a>
