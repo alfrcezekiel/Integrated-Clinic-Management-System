@@ -7,4 +7,16 @@ export default defineConfig({
     react(),
     tailwindcss()
   ],
+  server: {
+    historyApiFallback: true,
+    proxy: {
+      "/CMS":{
+        target: "http://localhost:5003",
+        changeOrigin: true,
+        secure: false,
+        ws: true,
+        rewrite: (path) => path.replace(/^\/cms/, "")
+      }
+    }
+  }
 })

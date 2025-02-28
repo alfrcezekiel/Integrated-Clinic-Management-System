@@ -40,8 +40,6 @@ const LandingPageHeader = () => {
                         <li><a href="/" className="active">Home</a></li>
                         <li><a href="#about">About</a></li>
                         <li><a href="#services">Services</a></li>
-                        <li><a href="#portfolio">Portfolio</a></li>
-                        <li><a href="#team">Team</a></li>
                         <li className="dropdown"><a href="#"><span>Dropdown</span> <i className="bi bi-chevron-down toggle-dropdown"></i></a>
                             <ul>
                                 <li><a href="#">Dropdown 1</a></li>
@@ -60,8 +58,8 @@ const LandingPageHeader = () => {
                             </ul>
                         </li>
                         <li><a href="#contact">Contact</a></li>
-                        <li><a href="#contact">Patients Portal</a></li>
-                        <li><a href="#contact">CMS Portal</a></li>
+                        <li><a href="#login">Patients Portal</a></li>
+                        <li><a href="#admin">CMS Portal</a></li>
 
                     </ul>
                     <i className="mobile-nav-toggle d-xl-none bi bi-list"></i>

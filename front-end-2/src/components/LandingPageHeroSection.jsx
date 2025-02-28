@@ -4,7 +4,7 @@ import "../assets/vendor/bootstrap-icons/bootstrap-icons.css"
 import "../assets/vendor/aos/aos.css"
 import "../assets/vendor/glightbox/css/glightbox.min.css"
 import "../assets/vendor/swiper/swiper-bundle.min.css"
-import HeroImage from "../assets/img/hero-img.png"
+import HeroImage from "../assets/img/dental clinic assets/bg3.jpg"
 import "../assets/js/main.js";
 import "../assets/vendor/bootstrap/js/bootstrap.bundle.min.js";
 import "../assets/vendor/glightbox/js/glightbox.min.js"
@@ -12,9 +12,12 @@ import "../assets/vendor/glightbox/js/glightbox.min.js"
 import "../assets/vendor/imagesloaded/imagesloaded.pkgd.min.js"
 import "../assets/vendor/isotope-layout/isotope.pkgd.min.js"
 import AOS from "aos"
-import { useEffect } from "react"
+import { useState, useEffect } from "react"
+import CMS from "../API/CMS.jsx"
 
 const LandingPageHeroSection = () => {
+    const [title, setTitle] = useState("");
+
     useEffect(() => {
         const aos = () => {
             AOS.init({
@@ -23,6 +26,21 @@ const LandingPageHeroSection = () => {
             })
         }
         aos();
+
+        const retriveDataTitle = async () => {
+            try {
+                const response = await CMS.get("/CMS");
+                if(!response.data || !response.data.title) {
+                    throw new Error("No retrieved data title");
+                } else {
+                    setTitle(response.data.title);
+                }
+            } catch (error) {
+                console.error(`Code functionality error for fetching data title: ${error}`);
+            }
+        }
+        retriveDataTitle();
+
         return () => {
             AOS.refresh();
         }
@@ -36,10 +54,10 @@ const LandingPageHeroSection = () => {
                 <div className="container">
                     <div className="row gy-4">
                         <div className="col-lg-6 order-2 order-lg-1 d-flex flex-column justify-content-center">
-                            <h1>Clinic Management System</h1>
-                            <p>We are team of talented designers making websites with Bootstrap</p>
+                            <h1>{title}</h1>
+                            <p>CMS streamlines the operational workflow of a dental clinic that automates the medical health records (EHR), appointment scheduling, payment integration and inventory of clinical products.</p>
                             <div className="d-flex">
-                                <a href="#about" className="btn-get-started">Get Started</a>
+                                <a href="#about" className="btn-get-started">Request Appointment</a>
                             </div>
                         </div>
                         <div className="col-lg-6 order-1 order-lg-2 hero-img">
@@ -47,7 +65,6 @@ const LandingPageHeroSection = () => {
                         </div>
                     </div>
                 </div>
-
             </section> {/*<!-- /Hero Section -->*/}
         </>
     )

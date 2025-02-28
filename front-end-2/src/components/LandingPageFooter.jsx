@@ -10,8 +10,28 @@ import "../assets/vendor/glightbox/js/glightbox.min.js"
 // import "../assets/vendor/purecounter/purecounter_vanilla.js"
 import "../assets/vendor/imagesloaded/imagesloaded.pkgd.min.js"
 import "../assets/vendor/isotope-layout/isotope.pkgd.min.js"
+import {useState, useEffect} from "react"
+import CMS from "../API/CMS.jsx"
 
 const LandingPageFooter = () => {
+    const [title, setTitle] = useState("");
+
+    useEffect(() => {
+        const retrieveDataTitle = async () => {
+            try {
+                const response = await CMS.get("/CMS");
+                if(!response.data || !response.data.title) {
+                    throw new Error("No retrieved data title");
+                } else {
+                    setTitle(response.data.title);
+                }
+            } catch(error) {
+                console.error(`Code functionality error for fetching data title: ${error}`);
+            }
+        }
+        retrieveDataTitle();
+    }, [])
+
     return (
         <>
             <footer id="footer" className="footer accent-background">
@@ -19,7 +39,7 @@ const LandingPageFooter = () => {
                     <div className="row gy-4">
                         <div className="col-lg-5 col-md-12 footer-about">
                             <a href="/" className="logo d-flex align-items-center">
-                                <span className="sitename">Clinic Management System</span>
+                                <span className="sitename">{title}</span>
                             </a>
                             <p>Cras fermentum odio eu feugiat lide par naso tierra. Justo eget nada terra videa magna derita valies darta donna mare fermentum iaculis eu non diam phasellus.</p>
                             <div className="social-links d-flex mt-4">
