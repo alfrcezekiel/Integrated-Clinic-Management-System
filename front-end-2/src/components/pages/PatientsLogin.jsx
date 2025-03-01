@@ -2,7 +2,9 @@ import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import "../../assets/css/main.css";
-import {Link} from "react-router-dom";
+import {Form, Link} from "react-router-dom";
+import Checkbox from "@mui/material/Checkbox";
+import FormControlLabel from "@mui/material/FormControlLabel";
 
 const PatientsPortals = () => {
     return (
@@ -72,6 +74,10 @@ const PatientsPortals = () => {
                             type="password"
                         />
                     </div>
+                    <FormControlLabel
+                        control={<Checkbox />}
+                        label="Remember me"
+                    />
                     <div className="mt-8 flex flex-col gap-6 bg-black rounded-2xl p-[0.50rem] text-red-200">
                         <Button className="mt-9" fullWidth size="lg">
                             Register
@@ -96,7 +102,7 @@ const PatientsPortals = () => {
                         </Button>
                     </div>
                     <div className="space-y-4 mt-8">
-                        <Button size="lg" color="white" className="flex items-center gap-2 justify-center shadow-md" fullWidth variant="outlined">
+                        <Button size="md" color="white" className="flex items-center gap-2 justify-center shadow-md" fullWidth variant="outlined">
                             <img src="/img/twitter-logo.svg" height={24} width={24} alt="" />
                             <span>Sign in With Twitter</span>
                         </Button>
