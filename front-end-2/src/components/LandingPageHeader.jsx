@@ -6,12 +6,12 @@ import "../assets/js/main.js";
 import "../assets/vendor/glightbox/css/glightbox.min.css"
 import "../assets/vendor/swiper/swiper-bundle.min.css"
 import "../assets/vendor/bootstrap/js/bootstrap.bundle.min.js";
-// import "../assets/vendor/purecounter/purecounter_vanilla.js"
 import "../assets/vendor/imagesloaded/imagesloaded.pkgd.min.js"
 import "../assets/vendor/isotope-layout/isotope.pkgd.min.js"
 import AOS from "aos";
-import { useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import CMS from "../API/CMS.jsx";
+import { Link } from "react-router-dom";
 
 const LandingPageHeader = () => {
     const [whatWeServeTitle, setWhatWeServeTitle] = useState("");
@@ -28,19 +28,19 @@ const LandingPageHeader = () => {
         const retrieveWhatWeServeTitle = async () => {
             try {
                 const response = await CMS.get("/CMS");
-                if(!response.data || !response.data.whatWeServeTitle) {
+                if (!response.data || !response.data.whatWeServeTitle) {
                     throw new Error("No retrieved data what we serve title");
                 } else {
                     setWhatWeServeTitle(response.data.whatWeServeTitle);
                 }
-            } catch(error) {
+            } catch (error) {
                 console.error(`Code functionality error for fetching what we serve title: ${error}`);
             }
         }
         retrieveWhatWeServeTitle();
 
         return () => {
-            AOS.refresh(); 
+            AOS.refresh();
         }
     }, [])
 
@@ -77,9 +77,10 @@ const LandingPageHeader = () => {
                             </ul>
                         </li>
                         <li><a href="#contact">Contact</a></li>
-                        <li><a href="#login">Patients Portal</a></li>
+                        <li>
+                            <Link to={"/patients-portal"}>Patients Portal</Link>
+                        </li>
                         <li><a href="#admin">CMS Portal</a></li>
-
                     </ul>
                     <i className="mobile-nav-toggle d-xl-none bi bi-list"></i>
                 </nav>

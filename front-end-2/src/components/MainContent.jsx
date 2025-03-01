@@ -7,8 +7,8 @@ import LandingPageFooter from "./LandingPageFooter"
 import LandingPageFAQ from "./LandingPageFAQ"
 import LandingPageContact from "./LandingPageContact"
 import LandingPageHeader from "./LandingPageHeader"
-// import purecounter from "@srexi/purecounterjs"
 import {useEffect} from "react"
+
 const MainContent = () => {
     useEffect(() => {
         const TitleHeader = () => {

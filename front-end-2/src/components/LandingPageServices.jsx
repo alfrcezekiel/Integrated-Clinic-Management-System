@@ -30,18 +30,14 @@ const LandingPageServices = () => {
         <>
             {/* <!-- Services Section --> */}
             <section id="services" className="services section">
-
                 {/* <!-- Section Title --> */}
                 <div className="container section-title" data-aos="fade-up">
                     <h2>Services</h2>
                     <p>Necessitatibus eius consequatur ex aliquid fuga eum quidem sint consectetur velit</p>
                 </div>
                 {/* <!-- End Section Title --> */}
-
                 <div className="container">
-
                     <div className="row gy-4">
-
                         <div className="col-xl-4 col-lg-6" data-aos="fade-up" data-aos-delay="100">
                             <div className="service-item d-flex">
                                 <div className="icon flex-shrink-0"><i className="bi bi-briefcase"></i></div>
@@ -52,7 +48,6 @@ const LandingPageServices = () => {
                             </div>
                         </div>
                         {/* <!-- End Service Item --> */}
-
                         <div className="col-xl-4 col-lg-6" data-aos="fade-up" data-aos-delay="200">
                             <div className="service-item d-flex">
                                 <div className="icon flex-shrink-0"><i className="bi bi-card-checklist"></i></div>
@@ -63,7 +58,6 @@ const LandingPageServices = () => {
                             </div>
                         </div>
                         {/* <!-- End Service Item --> */}
-
                         <div className="col-xl-4 col-lg-6" data-aos="fade-up" data-aos-delay="300">
                             <div className="service-item d-flex">
                                 <div className="icon flex-shrink-0"><i className="bi bi-bar-chart"></i></div>
@@ -74,7 +68,6 @@ const LandingPageServices = () => {
                             </div>
                         </div>
                         {/* <!-- End Service Item --> */}
-
                         <div className="col-xl-4 col-lg-6" data-aos="fade-up" data-aos-delay="400">
                             <div className="service-item d-flex">
                                 <div className="icon flex-shrink-0"><i className="bi bi-binoculars"></i></div>
@@ -85,7 +78,6 @@ const LandingPageServices = () => {
                             </div>
                         </div>
                         {/* <!-- End Service Item --> */}
-
                         <div className="col-xl-4 col-lg-6" data-aos="fade-up" data-aos-delay="500">
                             <div className="service-item d-flex">
                                 <div className="icon flex-shrink-0"><i className="bi bi-brightness-high"></i></div>
@@ -96,7 +88,6 @@ const LandingPageServices = () => {
                             </div>
                         </div>
                         {/* <!-- End Service Item --> */}
-
                         <div className="col-xl-4 col-lg-6" data-aos="fade-up" data-aos-delay="600">
                             <div className="service-item d-flex">
                                 <div className="icon flex-shrink-0"><i className="bi bi-calendar4-week"></i></div>
@@ -107,11 +98,8 @@ const LandingPageServices = () => {
                             </div>
                         </div>
                         {/* <!-- End Service Item --> */}
-
                     </div>
-
                 </div>
-
             </section>
             {/* <!-- /Services Section --> */}
         </>
