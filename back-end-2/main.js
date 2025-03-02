@@ -32,7 +32,7 @@ app.use((req, res) => {
 
 const startServer = () => {
     app.listen(app.get("port"), app.get("host"), () => {
-        console.log(`Server is running on http://${app.get("host")}:${app.get("port")}`);
+        console.log(`Server is running on http://${app.get("host")}:${app.get("port")}/CMS`);
     })
 }
 startServer();

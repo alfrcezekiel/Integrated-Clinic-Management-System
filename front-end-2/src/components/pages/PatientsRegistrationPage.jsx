@@ -2,22 +2,24 @@ import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import "../../assets/css/main.css";
-import {Form, Link} from "react-router-dom";
+import {Link} from "react-router-dom";
 import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
+import DentistryPicture from "../../assets/img/dental clinic assets/bg4.jpg";
 
-const PatientsPortals = () => {
+const PatientsRegistrationPortal = () => {
     return (
         <section className="m-8 flex">
-            <div className="w-2/5 h-full hidden lg:block">
+            <div className="w-2/5 h-screen hidden lg:block">
                 <img
                     className="h-full w-full object-cover rounded-3xl"
-                    src="/img/pattern.png"
+                    src={DentistryPicture}
+                    alt="Dentistry Picture"
                 />
             </div>
             <div className="w-full lg:w-3/5 flex flex-col items-center justify-center">
                 <div className="text-center">
-                    <Typography variant="h2" className="font-bold mb-4">Patients Register Portal</Typography>
+                    <Typography variant="h4" className="font-bold mb-4" color="black">Patients Register Portal</Typography>
                 </div>
                 <form className="mt-8 mb-2 mx-auto w-80 max-w-screen-lg lg:w-1/2">
                     <div className="mb-1 flex flex-col gap-6">
@@ -78,14 +80,14 @@ const PatientsPortals = () => {
                         control={<Checkbox />}
                         label="Remember me"
                     />
-                    <div className="mt-8 flex flex-col gap-6 bg-black rounded-2xl p-[0.50rem] text-red-200">
-                        <Button className="mt-9" fullWidth size="lg">
+                    <div className="mt-6 flex flex-col gap-6 bg-black p-[0.30rem] rounded-[3rem] text-white">
+                        <Button className="mt-9" fullWidth color="white">
                             Register
                         </Button>
                     </div>
-                    <div className="space-y-4 mt-8">
-                        <Button className="flex items-center gap-2 justify-center shadow-md" fullWidth variant="outlined" size="lg" color="white">
-                            <svg width="17" height="16" viewBox="0 0 17 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <div className="mt-9 shadow-white">
+                        <Button className="flex items-center gap-2 justify-center shadow-white" fullWidth variant="outlined" size="lg" color="white">
+                            <svg width="17" height="16" viewBox="0 0 17 16" fill="none">
                                 <g clipPath="url(#clip0_1156_824)">
                                     <path d="M16.3442 8.18429C16.3442 7.64047 16.3001 7.09371 16.206 6.55872H8.66016V9.63937H12.9813C12.802 10.6329 12.2258 11.5119 11.3822 12.0704V14.0693H13.9602C15.4741 12.6759 16.3442 10.6182 16.3442 8.18429Z" fill="#4285F4" />
                                     <path d="M8.65974 16.0006C10.8174 16.0006 12.637 15.2922 13.9627 14.0693L11.3847 12.0704C10.6675 12.5584 9.7415 12.8347 8.66268 12.8347C6.5756 12.8347 4.80598 11.4266 4.17104 9.53357H1.51074V11.5942C2.86882 14.2956 5.63494 16.0006 8.65974 16.0006Z" fill="#34A853" />
@@ -101,20 +103,20 @@ const PatientsPortals = () => {
                             <span>Sign in with Google</span>
                         </Button>
                     </div>
-                    <div className="space-y-4 mt-8">
-                        <Button size="md" color="white" className="flex items-center gap-2 justify-center shadow-md" fullWidth variant="outlined">
+                    <div className="mt-3 shadow-white">
+                        <Button size="lg" color="white" className="flex items-center gap-2 justify-center shadow-white" fullWidth variant="outlined">
                             <img src="/img/twitter-logo.svg" height={24} width={24} alt="" />
                             <span>Sign in With Twitter</span>
                         </Button>
                     </div>
-                    <Typography className="text-center text-blue-gray-500 font-medium mt-4" variant="paragraph">
+                    <div className="text-center text-blue-gray-500 font-medium mt-3">
                         Already have an account?
                         <Link to={"/cms"} className="text-gray-900 ml-1">Sign in</Link>
-                    </Typography>
+                    </div>
                 </form>
             </div>
         </section>
     );
 }
 
-export default PatientsPortals;
+export default PatientsRegistrationPortal;

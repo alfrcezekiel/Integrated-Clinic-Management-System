@@ -5,7 +5,7 @@ import {useEffect} from "react"
 import Loader from "./components/Loader/Loader.jsx"
 
 const Home = lazy(() => import("./components/MainContent.jsx"));
-const PatientsPortal = lazy(() => import("./components/pages/PatientsLogin.jsx"));
+const PatientRegistrationPortal = lazy(() => import("./components/pages/PatientsRegistrationPage.jsx"));
 
 function App() {
   useEffect(() => {
@@ -22,7 +22,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Navigate to={"/cms"} replace/>} />
             <Route path="/cms" element={<Home />} />
-            <Route path="/patients-portal" element={<PatientsPortal/>} />
+            <Route path="/patients-portal" element={<PatientRegistrationPortal />} />
             <Route path="*" element={<PageNotFound/>} />
           </Routes>
         </Suspense>
