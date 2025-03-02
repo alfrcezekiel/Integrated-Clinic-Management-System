@@ -6,8 +6,17 @@ import {Link} from "react-router-dom";
 import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import DentistryPicture from "../../assets/img/dental clinic assets/bg4.jpg";
+import {useForm} from "react-hook-form";
+import {useState} from "react";
 
 const PatientsRegistrationPortal = () => {
+    const [fieldsErrors, setFieldsErrors] = useState({});
+    const {register, handleSubmit, formState: { errors }} = useForm();
+
+    const handleRegistrationSubmit = async (data) => {
+
+    }
+
     return (
         <section className="m-8 flex">
             <div className="w-2/5 h-screen hidden lg:block">
@@ -21,7 +30,7 @@ const PatientsRegistrationPortal = () => {
                 <div className="text-center">
                     <Typography variant="h4" className="font-bold mb-4" color="black">Patients Register Portal</Typography>
                 </div>
-                <form className="mt-8 mb-2 mx-auto w-80 max-w-screen-lg lg:w-1/2">
+                <form className="mt-8 mb-2 mx-auto w-80 max-w-screen-lg lg:w-1/2" onSubmit={handleSubmit(handleRegistrationSubmit)}>
                     <div className="mb-1 flex flex-col gap-6">
                         <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">First Name</Typography>
                         <TextField
