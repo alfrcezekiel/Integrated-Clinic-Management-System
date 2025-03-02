@@ -13,12 +13,15 @@ const RouteLoader = ({ children }) => {
   const location = useLocation();
 
   useEffect(() => {
+    const scrollY = window.scrollY;
+
     document.body.style.overflow = "hidden";
 
     setLoading(true);
     const timer = setTimeout(() => {
       setLoading(false)
       document.body.style.overflow = "auto";
+      window.scrollTo(0, scrollY);
     }, 2000);
     return () => {
       clearTimeout(timer);
