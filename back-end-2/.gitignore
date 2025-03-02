@@ -1,7 +1,0 @@
-#env files
-.env
-process.env
-
-#log files
-*.log
-logs
