@@ -2,19 +2,60 @@ import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import "../../assets/css/main.css";
-import {Link} from "react-router-dom";
+import { Link } from "react-router-dom";
 import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import DentistryPicture from "../../assets/img/dental clinic assets/bg4.jpg";
-import {useForm} from "react-hook-form";
-import {useState} from "react";
+import { useState } from "react";
+import CMS from "../../API/CMS";
 
 const PatientsRegistrationPortal = () => {
-    const [fieldsErrors, setFieldsErrors] = useState({});
-    const {register, handleSubmit, formState: { errors }} = useForm();
+    const [fieldsErrors, setFieldsErrors] = useState({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phoneNumber: "",
+        password: "",
+        confirmPassword: ""
+    });
 
-    const handleRegistrationSubmit = async (data) => {
+    const [formRegistrationPatientsData, setFormRegistrationPatientsData] = useState({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phoneNumber: "",
+        password: "",
+        confirmPassword: ""
+    });
 
+    const handleRegistrationSubmit = async (e) => {
+        try {
+            e.preventDefault();
+            setFieldsErrors({
+                firstName: "",
+                lastName: "",
+                email: "",
+                phoneNumber: "",
+                password: "",
+                confirmPassword: ""
+            });
+
+            const response = await CMS.post("/CMS/registerPatientsAccount", formRegistrationPatientsData, {
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            });
+
+            if(response.status === 200){
+                console.log(response.data.message);
+            }
+
+        } catch (error) {
+            if (error.response && error.response.data.errors) {
+                console.log(error.response.data.errors);  
+                setFieldsErrors(error.response.data.errors);
+            }
+        }
     }
 
     return (
@@ -30,7 +71,7 @@ const PatientsRegistrationPortal = () => {
                 <div className="text-center">
                     <Typography variant="h4" className="font-bold mb-4" color="black">Patients Register Portal</Typography>
                 </div>
-                <form className="mt-8 mb-2 mx-auto w-80 max-w-screen-lg lg:w-1/2" onSubmit={handleSubmit(handleRegistrationSubmit)}>
+                <form className="mt-8 mb-2 mx-auto w-80 max-w-screen-lg lg:w-1/2" onSubmit={handleRegistrationSubmit}>
                     <div className="mb-1 flex flex-col gap-6">
                         <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">First Name</Typography>
                         <TextField
@@ -38,7 +79,12 @@ const PatientsRegistrationPortal = () => {
                             label="Enter your First Name"
                             variant="outlined"
                             type="text"
+                            value={formRegistrationPatientsData.firstName}
+                            onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, firstName: e.target.value })}
+                            sx={{ borderColor: fieldsErrors.firstName ? "red" : "" }}
+                            helperText={fieldsErrors.firstName && <p className="text-red-500">{fieldsErrors.firstName}</p>}
                         />
+                        {/* {fieldsErrors.firstName && <p className="text-red-500">{fieldsErrors.firstName}</p>} */}
                     </div>
                     <div className="mb-1 flex flex-col gap-6">
                         <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">Last Name</Typography>
@@ -47,7 +93,12 @@ const PatientsRegistrationPortal = () => {
                             label="Enter your Last Name"
                             variant="outlined"
                             type="text"
+                            onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, lastName: e.target.value })}
+                            value={formRegistrationPatientsData.lastName}
+                            sx={{ borderColor: fieldsErrors.lastName ? "red" : "" }}
+                            helperText={fieldsErrors.lastName && <p className="text-red-500">{fieldsErrors.lastName}</p>}
                         />
+                        {/* {fieldsErrors.lastName && <span className="text-red-500">{fieldsErrors.lastName}</span>} */}
                     </div>
                     <div className="mb-1 flex flex-col gap-6">
                         <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">Email</Typography>
@@ -56,7 +107,12 @@ const PatientsRegistrationPortal = () => {
                             label="Enter your Email"
                             variant="outlined"
                             type="text"
+                            onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, email: e.target.value })}
+                            value={formRegistrationPatientsData.email}
+                            sx={{ borderColor: fieldsErrors.email ? "red" : "" }}
+                            helperText={fieldsErrors.email}
                         />
+                        {fieldsErrors.email && <span className="text-red-500">{fieldsErrors.email}</span>}
                     </div>
                     <div className="mb-1 flex flex-col gap-6">
                         <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">Phone Number</Typography>
@@ -65,7 +121,12 @@ const PatientsRegistrationPortal = () => {
                             label="Enter your Phone Number"
                             variant="outlined"
                             type="number"
+                            value={formRegistrationPatientsData.phoneNumber}
+                            onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, phoneNumber: e.target.value })}
+                            sx={{ borderColor: fieldsErrors.phoneNumber ? "red" : "" }}
+                            helperText={fieldsErrors.phoneNumber}
                         />
+                        {fieldsErrors.phoneNumber && <span className="text-red-500">{fieldsErrors.phoneNumber}</span>}
                     </div>
                     <div className="mb-1 flex flex-col gap-6">
                         <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">Password</Typography>
@@ -74,7 +135,12 @@ const PatientsRegistrationPortal = () => {
                             label="Enter your Password"
                             variant="outlined"
                             type="password"
+                            onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, password: e.target.value })}
+                            value={formRegistrationPatientsData.password}
+                            sx={{ borderColor: fieldsErrors.password ? "red" : "" }}
+                            helperText={fieldsErrors.password}
                         />
+                        {fieldsErrors.password && <span className="text-red-500">{fieldsErrors.password}</span>}
                     </div>
                     <div className="mb-1 flex flex-col gap-6">
                         <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">Confirm Password</Typography>
@@ -83,14 +149,19 @@ const PatientsRegistrationPortal = () => {
                             label="Confirm your Password"
                             variant="outlined"
                             type="password"
+                            onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, confirmPassword: e.target.value })}
+                            value={formRegistrationPatientsData.confirmPassword}
+                            sx={{ borderColor: fieldsErrors.confirmPassword ? "red" : "" }}
+                            helperText={fieldsErrors.confirmPassword}
                         />
+                        {fieldsErrors.confirmPassword && <p className="text-red-500">{fieldsErrors.confirmPassword}</p>}
                     </div>
                     <FormControlLabel
                         control={<Checkbox />}
                         label="Remember me"
                     />
                     <div className="mt-6 flex flex-col gap-6 bg-black p-[0.30rem] rounded-[3rem] text-white">
-                        <Button className="mt-9" fullWidth color="white">
+                        <Button className="mt-9" fullWidth color="white" type="submit">
                             Register
                         </Button>
                     </div>

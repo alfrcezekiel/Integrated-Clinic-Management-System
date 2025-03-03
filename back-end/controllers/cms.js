@@ -2,7 +2,6 @@ import { StatusCodes } from 'http-status-codes';
 import conn from "../db/mysql/conn.js";
 import dotenv from "dotenv";
 dotenv.config();
-import validateRegister from '../middleware/validation.js';
 
 export const CMS = async (req, res) => {
     return res.status(StatusCodes.OK).json({
@@ -18,11 +17,20 @@ export const CMS = async (req, res) => {
     })
 }
 
-export const registerPatientAccount = [ validateRegister, async (req, res) => {  
-        const { firstName } = req.body;
-
-        res.status(StatusCodes.OK).json({
-            firstName
-        });
+export const registerPatientAccount = async (req, res) => {
+    try {
+        const {firstName, lastName, email, phoneNumber, password, confirmPassword} = req.body;
+    
+        const query1 = "INSERT INTO db_registeraccount_a (firstName, lastName, email) VALUES (?, ?, ?)";
+        const query2 = "INSERT INTO db_registeraccount_b (phoneNumber, password, confirmPassword) VALUES (?, ?, ?)";
+    
+        await conn.query(query1, [firstName, lastName, email]);
+        await conn.query(query2, [phoneNumber, password, confirmPassword]);
+        
+        return res.status(StatusCodes.OK).json({
+            message: "Patient account registered successfully"
+        })
+    } catch (error) {
+        console.error(`Failed to register patient account: ${error}`);
     }
-]
+}
