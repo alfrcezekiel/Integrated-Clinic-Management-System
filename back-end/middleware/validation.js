@@ -21,7 +21,11 @@ const validateRegister = [
         const errors = validationResult(req);
         if(!errors.isEmpty()){
             return res.status(StatusCodes.BAD_REQUEST).json({
-                errors: errors.array()
+                errors: errors.array().map((error) => {
+                    return {
+                        message: error.msg
+                    }
+                })
             })
         }
         next();

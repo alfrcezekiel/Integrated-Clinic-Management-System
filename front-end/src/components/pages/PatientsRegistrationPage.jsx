@@ -31,14 +31,7 @@ const PatientsRegistrationPortal = () => {
     const handleRegistrationSubmit = async (e) => {
         try {
             e.preventDefault();
-            setFieldsErrors({
-                firstName: "",
-                lastName: "",
-                email: "",
-                phoneNumber: "",
-                password: "",
-                confirmPassword: ""
-            });
+            setFieldsErrors({});
 
             const response = await CMS.post("/CMS/registerPatientsAccount", formRegistrationPatientsData, {
                 headers: {
@@ -47,13 +40,17 @@ const PatientsRegistrationPortal = () => {
             });
 
             if(response.status === 200){
-                console.log(response.data.message);
-            }
+                alert(response.data.message);
+                
+                if (response.data.message === "Patient account registered successfully") {
+                    window.location.href = "/patients-portal";
+                }
+            } 
 
         } catch (error) {
-            if (error.response && error.response.data.errors) {
-                console.log(error.response.data.errors);  
-                setFieldsErrors(error.response.data.errors);
+            if (error.response && error.response.data.errors.message) {
+                console.log(error.response.data.errors.message);  
+                setFieldsErrors(error.response.data.errors.message);
             }
         }
     }
@@ -81,10 +78,9 @@ const PatientsRegistrationPortal = () => {
                             type="text"
                             value={formRegistrationPatientsData.firstName}
                             onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, firstName: e.target.value })}
-                            sx={{ borderColor: fieldsErrors.firstName ? "red" : "" }}
-                            helperText={fieldsErrors.firstName && <p className="text-red-500">{fieldsErrors.firstName}</p>}
+                            helperText={fieldsErrors.firstName}
+                            error={Boolean(fieldsErrors.firstName)}
                         />
-                        {/* {fieldsErrors.firstName && <p className="text-red-500">{fieldsErrors.firstName}</p>} */}
                     </div>
                     <div className="mb-1 flex flex-col gap-6">
                         <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">Last Name</Typography>
@@ -95,10 +91,9 @@ const PatientsRegistrationPortal = () => {
                             type="text"
                             onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, lastName: e.target.value })}
                             value={formRegistrationPatientsData.lastName}
-                            sx={{ borderColor: fieldsErrors.lastName ? "red" : "" }}
-                            helperText={fieldsErrors.lastName && <p className="text-red-500">{fieldsErrors.lastName}</p>}
+                            helperText={fieldsErrors.lastName}
+                            error={Boolean(fieldsErrors.lastName)}
                         />
-                        {/* {fieldsErrors.lastName && <span className="text-red-500">{fieldsErrors.lastName}</span>} */}
                     </div>
                     <div className="mb-1 flex flex-col gap-6">
                         <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">Email</Typography>
@@ -109,10 +104,9 @@ const PatientsRegistrationPortal = () => {
                             type="text"
                             onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, email: e.target.value })}
                             value={formRegistrationPatientsData.email}
-                            sx={{ borderColor: fieldsErrors.email ? "red" : "" }}
                             helperText={fieldsErrors.email}
+                            error={Boolean(fieldsErrors.email)}
                         />
-                        {fieldsErrors.email && <span className="text-red-500">{fieldsErrors.email}</span>}
                     </div>
                     <div className="mb-1 flex flex-col gap-6">
                         <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">Phone Number</Typography>
@@ -123,10 +117,9 @@ const PatientsRegistrationPortal = () => {
                             type="number"
                             value={formRegistrationPatientsData.phoneNumber}
                             onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, phoneNumber: e.target.value })}
-                            sx={{ borderColor: fieldsErrors.phoneNumber ? "red" : "" }}
                             helperText={fieldsErrors.phoneNumber}
+                            error={Boolean(fieldsErrors.phoneNumber)}
                         />
-                        {fieldsErrors.phoneNumber && <span className="text-red-500">{fieldsErrors.phoneNumber}</span>}
                     </div>
                     <div className="mb-1 flex flex-col gap-6">
                         <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">Password</Typography>
@@ -137,10 +130,9 @@ const PatientsRegistrationPortal = () => {
                             type="password"
                             onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, password: e.target.value })}
                             value={formRegistrationPatientsData.password}
-                            sx={{ borderColor: fieldsErrors.password ? "red" : "" }}
                             helperText={fieldsErrors.password}
+                            error={Boolean(fieldsErrors.password)}
                         />
-                        {fieldsErrors.password && <span className="text-red-500">{fieldsErrors.password}</span>}
                     </div>
                     <div className="mb-1 flex flex-col gap-6">
                         <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">Confirm Password</Typography>
@@ -154,7 +146,6 @@ const PatientsRegistrationPortal = () => {
                             sx={{ borderColor: fieldsErrors.confirmPassword ? "red" : "" }}
                             helperText={fieldsErrors.confirmPassword}
                         />
-                        {fieldsErrors.confirmPassword && <p className="text-red-500">{fieldsErrors.confirmPassword}</p>}
                     </div>
                     <FormControlLabel
                         control={<Checkbox />}
