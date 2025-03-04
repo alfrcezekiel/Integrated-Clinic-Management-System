@@ -15,6 +15,7 @@ import InputAdornment from "@mui/material/InputAdornment";
 import IconButton from "@mui/material/IconButton";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import FormHelperText from "@mui/material/FormHelperText";
 
 const PatientsRegistrationPortal = () => {
 
@@ -75,14 +76,6 @@ const PatientsRegistrationPortal = () => {
     const handleRegistrationSubmit = async (e) => {
         try {
             e.preventDefault();
-            setFieldsErrors({
-                firstName: "",
-                lastName: "",
-                email: "",
-                phoneNumber: "",
-                password: "",
-                confirmPassword: ""
-            });
 
             const response = await CMS.post("/CMS/registerPatientsAccount", formRegistrationPatientsData, {
                 headers: {
@@ -92,18 +85,17 @@ const PatientsRegistrationPortal = () => {
 
             if (response.status === 200) {
                 alert(response.data.message);
-
+                
+                setFieldsErrors({})
                 if (response.data.message === "Patient account registered successfully") {
                     window.location.href = "/patients-portal";
                 }
-            } else {
-                setFieldsErrors(response.data.errors.firstName);
-            }
-
+            } 
         } catch (error) {
-            if (error.fieldsErrors && error.response.data.errors) {
-                console.log(error.response.data.errors);
+            if(error.response && error.response.data.status === 400){
                 setFieldsErrors(error.response.data.errors);
+            } else {
+                console.error(`Failed to register patient account: ${error}`);
             }
         }
     }
@@ -121,7 +113,7 @@ const PatientsRegistrationPortal = () => {
                 <div className="text-center">
                     <Typography variant="h4" className="font-bold mb-4" color="black">Patients Register Portal</Typography>
                 </div>
-                <form className="mt-8 mb-2 mx-auto w-80 max-w-screen-lg lg:w-1/2" onSubmit={handleRegistrationSubmit}>
+                <form className="mt-8 mb-2 mx-auto w-80 max-w-screen-lg lg:w-1/2" onSubmit={handleRegistrationSubmit} autoComplete="off" id="register-patients-form"> 
                     <div className="mb-1 flex flex-col gap-6">
                         <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">First Name</Typography>
                         <TextField
@@ -131,8 +123,8 @@ const PatientsRegistrationPortal = () => {
                             type="text"
                             value={formRegistrationPatientsData.firstName}
                             onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, firstName: e.target.value })}
-                            helperText={fieldsErrors.firstName ? fieldsErrors.firstName[0] : ""}
-                            error={fieldsErrors.firstName}
+                            helperText={fieldsErrors.firstName ? fieldsErrors.firstName : ""}
+                            error={Boolean(fieldsErrors.firstName)}  
                         />
                     </div>
                     <div className="mb-1 flex flex-col gap-6">
@@ -144,7 +136,7 @@ const PatientsRegistrationPortal = () => {
                             type="text"
                             onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, lastName: e.target.value })}
                             value={formRegistrationPatientsData.lastName}
-                            helperText={fieldsErrors.lastName ? fieldsErrors.lastName[0] : ""}
+                            helperText={fieldsErrors.lastName ? fieldsErrors.lastName : ""}
                             error={Boolean(fieldsErrors.lastName)}
                         />
                     </div>
@@ -157,7 +149,7 @@ const PatientsRegistrationPortal = () => {
                             type="text"
                             onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, email: e.target.value })}
                             value={formRegistrationPatientsData.email}
-                            helperText={fieldsErrors.email ? fieldsErrors.email[0] : ""}
+                            helperText={fieldsErrors.email ? fieldsErrors.email : ""}
                             error={Boolean(fieldsErrors.email)}
                         />
                     </div>
@@ -170,13 +162,13 @@ const PatientsRegistrationPortal = () => {
                             type="number"
                             value={formRegistrationPatientsData.phoneNumber}
                             onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, phoneNumber: e.target.value })}
-                            helperText={fieldsErrors.phoneNumber ? fieldsErrors.phoneNumber[0] : ""}
+                            helperText={fieldsErrors.phoneNumber ? fieldsErrors.phoneNumber : ""}
                             error={Boolean(fieldsErrors.phoneNumber)}
                         />
                     </div>
                     <div className="mb-1 flex flex-col gap-6">
                         <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">Password</Typography>
-                        <FormControl variant="outlined" className="register-input-password" sx={{ width: '100%' }}>
+                        <FormControl variant="outlined" className="register-input-password" sx={{ width: '100%' }} error={Boolean(fieldsErrors.password)}>
                             <InputLabel htmlFor="outlined-adornment-password">Enter Password</InputLabel>
                             <OutlinedInput
                                 id="password"
@@ -199,14 +191,13 @@ const PatientsRegistrationPortal = () => {
                                 label="Enter Password"
                                 value={formRegistrationPatientsData.password}
                                 onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, password: e.target.value })}
-                                helpertext={fieldsErrors.password ? fieldsErrors.password[0] : ""}
-                                error={Boolean(fieldsErrors.password)}
                             />
                         </FormControl>
+                        {fieldsErrors.password && <FormHelperText error>{fieldsErrors.password}</FormHelperText>}
                     </div>
                     <div className="mb-1 flex flex-col gap-6">
                         <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">Confirm Password</Typography>
-                        <FormControl variant="outlined" className="register-input-password" sx={{ width: '100%' }}>
+                        <FormControl variant="outlined" className="register-input-confirm-password" sx={{ width: '100%' }} error={Boolean(fieldsErrors.confirmPassword)}>
                             <InputLabel htmlFor="outlined-adornment-password">Enter Confirm Password</InputLabel>
                             <OutlinedInput
                                 id="confirm-password"
@@ -229,10 +220,9 @@ const PatientsRegistrationPortal = () => {
                                 label="Enter Confirm Password"
                                 value={formRegistrationPatientsData.confirmPassword}
                                 onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, confirmPassword: e.target.value })}
-                                helpertext={fieldsErrors.confirmPassword ? fieldsErrors.confirmPassword[0] : ""}
-                                error={Boolean(fieldsErrors.confirmPassword)}
                             />
                         </FormControl>
+                        {fieldsErrors.confirmPassword && <FormHelperText error>{fieldsErrors.confirmPassword}</FormHelperText>} 
                     </div>
                     <FormControlLabel
                         control={<Checkbox />}
