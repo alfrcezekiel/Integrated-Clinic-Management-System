@@ -41,13 +41,6 @@ RouteLoader.propTypes = {
 };
 
 function App() {
-  useEffect(() => {
-    const TitleHeader = () => {
-      document.title = "CMS | Home"
-    }
-    TitleHeader();
-  }, [])
-
   return (
     <>
       <BrowserRouter>

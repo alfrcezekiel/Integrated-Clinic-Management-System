@@ -2,14 +2,58 @@ import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import "../../assets/css/main.css";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import DentistryPicture from "../../assets/img/dental clinic assets/bg4.jpg";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import CMS from "../../API/CMS";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import OutlinedInput from "@mui/material/OutlinedInput";
+import InputAdornment from "@mui/material/InputAdornment";
+import IconButton from "@mui/material/IconButton";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
 const PatientsRegistrationPortal = () => {
+
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+    const handleClickShowPassword = () => {
+        setShowPassword((show) => !show);
+    }
+
+    const handleClickShowConfirmPassword = () => {
+        setShowConfirmPassword((show) => !show);
+    }
+
+    const handleMouseDownPassword = (e) => {
+        e.preventDefault();
+    }
+
+    const handleMouseDownConfirmPassword = (e) => {
+        e.preventDefault();
+    }
+
+    const handleMouseUpPassword = (e) => {
+        e.preventDefault()
+    }
+
+    const handleMouseUpConfirmPassword = (e) => {
+        e.preventDefault();
+    }
+    
+    const location = useLocation();
+
+    useEffect(() => {
+        const displayTitleHeader = () => {
+            document.title = "Patients Registration Portal | DCMS";
+        }
+        displayTitleHeader();
+    }, [location.pathname])
+
     const [fieldsErrors, setFieldsErrors] = useState({
         firstName: "",
         lastName: "",
@@ -31,7 +75,14 @@ const PatientsRegistrationPortal = () => {
     const handleRegistrationSubmit = async (e) => {
         try {
             e.preventDefault();
-            setFieldsErrors({});
+            setFieldsErrors({
+                firstName: "",
+                lastName: "",
+                email: "",
+                phoneNumber: "",
+                password: "",
+                confirmPassword: ""
+            });
 
             const response = await CMS.post("/CMS/registerPatientsAccount", formRegistrationPatientsData, {
                 headers: {
@@ -39,18 +90,20 @@ const PatientsRegistrationPortal = () => {
                 }
             });
 
-            if(response.status === 200){
+            if (response.status === 200) {
                 alert(response.data.message);
-                
+
                 if (response.data.message === "Patient account registered successfully") {
                     window.location.href = "/patients-portal";
                 }
-            } 
+            } else {
+                setFieldsErrors(response.data.errors.firstName);
+            }
 
         } catch (error) {
-            if (error.response && error.response.data.errors.message) {
-                console.log(error.response.data.errors.message);  
-                setFieldsErrors(error.response.data.errors.message);
+            if (error.fieldsErrors && error.response.data.errors) {
+                console.log(error.response.data.errors);
+                setFieldsErrors(error.response.data.errors);
             }
         }
     }
@@ -78,8 +131,8 @@ const PatientsRegistrationPortal = () => {
                             type="text"
                             value={formRegistrationPatientsData.firstName}
                             onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, firstName: e.target.value })}
-                            helperText={fieldsErrors.firstName}
-                            error={Boolean(fieldsErrors.firstName)}
+                            helperText={fieldsErrors.firstName ? fieldsErrors.firstName[0] : ""}
+                            error={fieldsErrors.firstName}
                         />
                     </div>
                     <div className="mb-1 flex flex-col gap-6">
@@ -91,7 +144,7 @@ const PatientsRegistrationPortal = () => {
                             type="text"
                             onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, lastName: e.target.value })}
                             value={formRegistrationPatientsData.lastName}
-                            helperText={fieldsErrors.lastName}
+                            helperText={fieldsErrors.lastName ? fieldsErrors.lastName[0] : ""}
                             error={Boolean(fieldsErrors.lastName)}
                         />
                     </div>
@@ -104,7 +157,7 @@ const PatientsRegistrationPortal = () => {
                             type="text"
                             onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, email: e.target.value })}
                             value={formRegistrationPatientsData.email}
-                            helperText={fieldsErrors.email}
+                            helperText={fieldsErrors.email ? fieldsErrors.email[0] : ""}
                             error={Boolean(fieldsErrors.email)}
                         />
                     </div>
@@ -117,35 +170,69 @@ const PatientsRegistrationPortal = () => {
                             type="number"
                             value={formRegistrationPatientsData.phoneNumber}
                             onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, phoneNumber: e.target.value })}
-                            helperText={fieldsErrors.phoneNumber}
+                            helperText={fieldsErrors.phoneNumber ? fieldsErrors.phoneNumber[0] : ""}
                             error={Boolean(fieldsErrors.phoneNumber)}
                         />
                     </div>
                     <div className="mb-1 flex flex-col gap-6">
                         <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">Password</Typography>
-                        <TextField
-                            size="lg"
-                            label="Enter your Password"
-                            variant="outlined"
-                            type="password"
-                            onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, password: e.target.value })}
-                            value={formRegistrationPatientsData.password}
-                            helperText={fieldsErrors.password}
-                            error={Boolean(fieldsErrors.password)}
-                        />
+                        <FormControl variant="outlined" className="register-input-password" sx={{ width: '100%' }}>
+                            <InputLabel htmlFor="outlined-adornment-password">Enter Password</InputLabel>
+                            <OutlinedInput
+                                id="password"
+                                type={showPassword ? "text" : "password"}
+                                endAdornment={
+                                    <InputAdornment position="end">
+                                        <IconButton
+                                            aria-label={
+                                                showPassword ? "hide password" : "show password"
+                                            }
+                                            onClick={handleClickShowPassword}
+                                            onMouseDown={handleMouseDownPassword}
+                                            onMouseUp={handleMouseUpPassword}
+                                            edge="end"
+                                        >
+                                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                                        </IconButton>
+                                    </InputAdornment>
+                                }
+                                label="Enter Password"
+                                value={formRegistrationPatientsData.password}
+                                onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, password: e.target.value })}
+                                helpertext={fieldsErrors.password ? fieldsErrors.password[0] : ""}
+                                error={Boolean(fieldsErrors.password)}
+                            />
+                        </FormControl>
                     </div>
                     <div className="mb-1 flex flex-col gap-6">
                         <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">Confirm Password</Typography>
-                        <TextField
-                            size="lg"
-                            label="Confirm your Password"
-                            variant="outlined"
-                            type="password"
-                            onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, confirmPassword: e.target.value })}
-                            value={formRegistrationPatientsData.confirmPassword}
-                            sx={{ borderColor: fieldsErrors.confirmPassword ? "red" : "" }}
-                            helperText={fieldsErrors.confirmPassword}
-                        />
+                        <FormControl variant="outlined" className="register-input-password" sx={{ width: '100%' }}>
+                            <InputLabel htmlFor="outlined-adornment-password">Enter Confirm Password</InputLabel>
+                            <OutlinedInput
+                                id="confirm-password"
+                                type={showConfirmPassword ? "text" : "password"}
+                                endAdornment={
+                                    <InputAdornment position="end">
+                                        <IconButton
+                                            aria-label={
+                                                showConfirmPassword ? "hide password" : "show password"
+                                            }
+                                            onClick={handleClickShowConfirmPassword}
+                                            onMouseDown={handleMouseDownConfirmPassword}
+                                            onMouseUp={handleMouseUpConfirmPassword}
+                                            edge="end"
+                                        >
+                                            {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                                        </IconButton>
+                                    </InputAdornment>
+                                }
+                                label="Enter Confirm Password"
+                                value={formRegistrationPatientsData.confirmPassword}
+                                onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, confirmPassword: e.target.value })}
+                                helpertext={fieldsErrors.confirmPassword ? fieldsErrors.confirmPassword[0] : ""}
+                                error={Boolean(fieldsErrors.confirmPassword)}
+                            />
+                        </FormControl>
                     </div>
                     <FormControlLabel
                         control={<Checkbox />}

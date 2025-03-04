@@ -7,7 +7,7 @@ const validateRegister = [
     body("email").notEmpty().withMessage("Email is required"),
     body("email").isEmail().withMessage("Invalid email"),
     body("phoneNumber").notEmpty().withMessage("Phone number is required"),
-    body("phoneNumber").isLength(11).withMessage("Phone number should be 11 digits"),
+    body("phoneNumber").isLength({min: 11, max: 11}).withMessage("Phone number should be 11 digits"),
     body("password").notEmpty().withMessage("Password is required"),
     body("password").isLength({min: 8}).withMessage("Password must be at least 8 characters"),
     body("confirmPassword").notEmpty().withMessage("Confirm password is required"),
@@ -21,11 +21,7 @@ const validateRegister = [
         const errors = validationResult(req);
         if(!errors.isEmpty()){
             return res.status(StatusCodes.BAD_REQUEST).json({
-                errors: errors.array().map((error) => {
-                    return {
-                        message: error.msg
-                    }
-                })
+                errors: errors.formatWith((error) => error.msg).mapped()
             })
         }
         next();

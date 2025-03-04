@@ -8,14 +8,17 @@ import LandingPageFAQ from "./LandingPageFAQ"
 import LandingPageContact from "./LandingPageContact"
 import LandingPageHeader from "./LandingPageHeader"
 import {useEffect} from "react"
+import {useLocation} from "react-router-dom"
 
 const MainContent = () => {
+    const location = useLocation();
+
     useEffect(() => {
         const TitleHeader = () => {
-            document.title = "CMS | Home"
+            document.title = "DCMS | Home"
         }
         TitleHeader();
-    }, [])
+    }, [location.pathname])
     
     return (
         <> 
