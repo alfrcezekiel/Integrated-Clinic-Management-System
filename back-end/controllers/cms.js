@@ -11,7 +11,7 @@ export const CMS = async (req, res) => {
         paymentIntegrationText: "Payment Integration",
         appointmentSchedulingText: "Appointment Scheduling",
         featuresTitle: "Features",
-        inventoryText: "Inventory of Clinical Products",
+        inventoryText: "Inventory Management of Clinical Products",
         whatWeServeTitle: "What We Serve",
         teethQuotes: "A smile is a curve that sets everything straight"
     })

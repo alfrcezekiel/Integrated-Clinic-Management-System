@@ -33,7 +33,7 @@ const LandingPageServices = () => {
                 {/* <!-- Section Title --> */}
                 <div className="container section-title" data-aos="fade-up">
                     <h2>Services</h2>
-                    <p>Necessitatibus eius consequatur ex aliquid fuga eum quidem sint consectetur velit</p>
+                    <p>Providing comprehensive and compassionate dental care to ensure your optimal oral health.</p>
                 </div>
                 {/* <!-- End Section Title --> */}
                 <div className="container">
@@ -42,8 +42,8 @@ const LandingPageServices = () => {
                             <div className="service-item d-flex">
                                 <div className="icon flex-shrink-0"><i className="bi bi-briefcase"></i></div>
                                 <div>
-                                    <h4 className="title"><a href="#" className="stretched-link">Lorem Ipsum</a></h4>
-                                    <p className="description">Voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi</p>
+                                    <h4 className="title"><a href="#" className="stretched-link">General Dentistry</a></h4>
+                                    <p className="description">Comprehensive dental exams, cleanings, and preventive care for all ages.</p>
                                 </div>
                             </div>
                         </div>
@@ -52,8 +52,8 @@ const LandingPageServices = () => {
                             <div className="service-item d-flex">
                                 <div className="icon flex-shrink-0"><i className="bi bi-card-checklist"></i></div>
                                 <div>
-                                    <h4 className="title"><a href="#" className="stretched-link">Dolor Sitema</a></h4>
-                                    <p className="description">Minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip exa</p>
+                                    <h4 className="title"><a href="#" className="stretched-link">Cosmetic Dentistry</a></h4>
+                                    <p className="description">Enhance your smile with teeth whitening, veneers, and more.</p>
                                 </div>
                             </div>
                         </div>
@@ -62,8 +62,8 @@ const LandingPageServices = () => {
                             <div className="service-item d-flex">
                                 <div className="icon flex-shrink-0"><i className="bi bi-bar-chart"></i></div>
                                 <div>
-                                    <h4 className="title"><a href="#" className="stretched-link">Sed ut perspiciatis</a></h4>
-                                    <p className="description">Duis aute irure dolor in reprehenderit in voluptate velit esse cillum</p>
+                                    <h4 className="title"><a href="#" className="stretched-link">Orthodontics</a></h4>
+                                    <p className="description">Straighten your teeth with traditional braces or clear aligners.</p>
                                 </div>
                             </div>
                         </div>
@@ -72,8 +72,8 @@ const LandingPageServices = () => {
                             <div className="service-item d-flex">
                                 <div className="icon flex-shrink-0"><i className="bi bi-binoculars"></i></div>
                                 <div>
-                                    <h4 className="title"><a href="#" className="stretched-link">Magni Dolores</a></h4>
-                                    <p className="description">Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt</p>
+                                    <h4 className="title"><a href="#" className="stretched-link">Pediatric Dentistry</a></h4>
+                                    <p className="description">Specialized dental care for children to ensure healthy smiles from a young age.</p>
                                 </div>
                             </div>
                         </div>
@@ -82,8 +82,8 @@ const LandingPageServices = () => {
                             <div className="service-item d-flex">
                                 <div className="icon flex-shrink-0"><i className="bi bi-brightness-high"></i></div>
                                 <div>
-                                    <h4 className="title"><a href="#" className="stretched-link">Nemo Enim</a></h4>
-                                    <p className="description">At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praese</p>
+                                    <h4 className="title"><a href="#" className="stretched-link">Emergency Dentistry</a></h4>
+                                    <p className="description">Immediate care for dental emergencies, including toothaches and injuries.</p>
                                 </div>
                             </div>
                         </div>
@@ -92,8 +92,8 @@ const LandingPageServices = () => {
                             <div className="service-item d-flex">
                                 <div className="icon flex-shrink-0"><i className="bi bi-calendar4-week"></i></div>
                                 <div>
-                                    <h4 className="title"><a href="#" className="stretched-link">Eiusmod Tempor</a></h4>
-                                    <p className="description">Et harum quidem rerum facilis est et expedita distinctio dasa fermo lind saca</p>
+                                    <h4 className="title"><a href="#" className="stretched-link">Dental Implants</a></h4>
+                                    <p className="description">Permanent solutions for missing teeth with natural-looking dental implants.</p>
                                 </div>
                             </div>
                         </div>

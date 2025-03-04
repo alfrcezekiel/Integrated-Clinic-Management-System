@@ -33,7 +33,7 @@ const LandingPageFeatures = () => {
         const retrieveDataFeatures = async () => {
             const response = await CMS.get("/CMS");
 
-            if(!response.data || !response.data.featuresTitle || !response.data.ehrText || !response.data.appointmentSchedulingText || !response.data.paymentIntegrationText || !response.data.inventoryText) {
+            if (!response.data || !response.data.featuresTitle || !response.data.ehrText || !response.data.appointmentSchedulingText || !response.data.paymentIntegrationText || !response.data.inventoryText) {
                 throw new Error("No retrieved data features in server");
             } else {
                 setFeaturesTitle(response.data.featuresTitle);
@@ -57,7 +57,7 @@ const LandingPageFeatures = () => {
                 {/* <!-- Section Title --> */}
                 <div className="container section-title" data-aos="fade-up">
                     <h2>{featuresTitle}</h2>
-                    <p>Necessitatibus eius consequatur ex aliquid fuga eum quidem sint consectetur velit</p>
+                    <p>Streamlining dental clinic operations with advanced features for efficient and effective patient care.</p>
                 </div>
                 {/* <!-- End Section Title --> */}
                 <div className="container">
@@ -70,7 +70,7 @@ const LandingPageFeatures = () => {
                                 <i className="bi bi-archive flex-shrink-0"></i>
                                 <div>
                                     <h4>{ehrText}</h4>
-                                    <p>Consequuntur sunt aut quasi enim aliquam quae harum pariatur laboris nisi ut aliquip</p>
+                                    <p>Securely store and manage patient records, treatment history, and prescriptions with our comprehensive EHR system.</p>
                                 </div>
                             </div>
                             {/* <!-- End Features Item--> */}
@@ -78,7 +78,7 @@ const LandingPageFeatures = () => {
                                 <i className="bi bi-basket flex-shrink-0"></i>
                                 <div>
                                     <h4>{appointmentText}</h4>
-                                    <p>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt</p>
+                                    <p>Easily book, reschedule, and manage patient appointments with an intuitive scheduling system that reduces no-shows.</p>
                                 </div>
                             </div>
                             {/* <!-- End Features Item--> */}
@@ -86,7 +86,7 @@ const LandingPageFeatures = () => {
                                 <i className="bi bi-broadcast flex-shrink-0"></i>
                                 <div>
                                     <h4>{paymentText}</h4>
-                                    <p>Aut suscipit aut cum nemo deleniti aut omnis. Doloribus ut maiores omnis facere</p>
+                                    <p>Streamline billing with automated invoicing, insurance claims, and multiple payment options for a hassle-free experience.</p>
                                 </div>
                             </div>
                             {/* <!-- End Features Item--> */}
@@ -94,7 +94,7 @@ const LandingPageFeatures = () => {
                                 <i className="bi bi-camera-reels flex-shrink-0"></i>
                                 <div>
                                     <h4>{inventoryText}</h4>
-                                    <p>Expedita veritatis consequuntur nihil tempore laudantium vitae denat pacta</p>
+                                    <p>Track and manage dental supplies efficiently to prevent shortages and ensure smooth clinic operations.</p>
                                 </div>
                             </div>
                             {/* <!-- End Features Item--> */}

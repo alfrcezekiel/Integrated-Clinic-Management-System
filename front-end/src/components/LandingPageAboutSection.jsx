@@ -6,7 +6,7 @@ import "../assets/vendor/glightbox/css/glightbox.min.css"
 import "../assets/vendor/swiper/swiper-bundle.min.css"
 import AboutImage from "../assets/img/about.jpg"
 import AOS from "aos"
-import { useEffect, useState} from "react"
+import { useEffect, useState } from "react"
 import "../assets/js/main.js";
 import "../assets/vendor/bootstrap/js/bootstrap.bundle.min.js";
 import "../assets/vendor/glightbox/js/glightbox.min.js"
@@ -16,7 +16,7 @@ import CMS from "../API/CMS.jsx"
 
 const LandingPageAboutSection = () => {
     const [aboutTitle, setAboutTitle] = useState("");
-    const [aboutDescription, setAboutDescription] = useState("");  
+    const [aboutDescription, setAboutDescription] = useState("");
 
     useEffect(() => {
         const aos = () => {
@@ -31,13 +31,13 @@ const LandingPageAboutSection = () => {
             try {
                 const response = await CMS.get("/CMS");
 
-                if(!response.data || !response.data.title, !response.data.description) {
+                if (!response.data || !response.data.title, !response.data.description) {
                     throw new Error("No retrieved data about title");
                 } else {
                     setAboutTitle(response.data.title);
                     setAboutDescription(response.data.description);
                 }
-            } catch(error) {
+            } catch (error) {
                 console.error(`Code functionality error for fetching data about title: ${error}`);
             }
         }
@@ -54,7 +54,7 @@ const LandingPageAboutSection = () => {
                 <div className="container">
                     <div className="row gy-4">
                         <div className="col-lg-6 order-1 order-lg-2" data-aos="fade-up" data-aos-delay="100">
-                            <img src={AboutImage} className="img-fluid" alt="about-image"/>
+                            <img src={AboutImage} className="img-fluid" alt="about-image" />
                         </div>
                         <div className="col-lg-6 order-2 order-lg-1 content" data-aos="fade-up" data-aos-delay="200">
                             <h3>{aboutTitle}</h3>
@@ -62,11 +62,12 @@ const LandingPageAboutSection = () => {
                                 {aboutDescription}
                             </p>
                             <ul>
-                                <li><i className="bi bi-check-circle"></i> <span>Ullamco laboris nisi ut aliquip ex ea commodo consequat.</span></li>
-                                <li><i className="bi bi-check-circle"></i> <span>Duis aute irure dolor in reprehenderit in voluptate velit.</span></li>
-                                <li><i className="bi bi-check-circle"></i> <span>Ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate trideta storacalaperda mastiro dolore eu fugiat nulla pariatur.</span></li>
+                                <li><i className="bi bi-check-circle"></i> <span>Comprehensive dental care for the whole family.</span></li>
+                                <li><i className="bi bi-check-circle"></i> <span>State-of-the-art technology for pain-free treatments.</span></li>
+                                <li><i className="bi bi-check-circle"></i> <span>Experienced and friendly dental professionals.</span></li>
+                                <li><i className="bi bi-check-circle"></i> <span>Personalized treatment plans tailored to your needs.</span></li>
+                                <li><i className="bi bi-check-circle"></i> <span>Emergency dental services available 24/7.</span></li>
                             </ul>
-                            <a href="#" className="read-more"><span>Read More</span><i className="bi bi-arrow-right"></i></a>
                         </div>
                     </div>
                 </div>

@@ -33,7 +33,7 @@ const LandingPageFAQ = () => {
                 {/* <!-- Section Title --> */}
                 <div className="container section-title" data-aos="fade-up">
                     <h2>Frequently Asked Questions</h2>
-                    <p>Necessitatibus eius consequatur ex aliquid fuga eum quidem sint consectetur velit</p>
+                    <p>Everything you need to know about your Dental Care</p>
                 </div>
                 {/* <!-- End Section Title --> */}
                 <div className="container">
