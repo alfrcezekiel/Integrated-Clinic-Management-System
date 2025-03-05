@@ -44,7 +44,6 @@ function App() {
   return (
     <>
       <BrowserRouter>
-        {/* <Suspense fallback={<Loader />}> */}
           <RouteLoader>
             <Routes>
               <Route path="/" element={<Navigate to={"/cms"} replace />} />
@@ -53,7 +52,6 @@ function App() {
               <Route path="*" element={<PageNotFound />} />
             </Routes>
           </RouteLoader>
-        {/* </Suspense> */}
       </BrowserRouter>
     </>
   )

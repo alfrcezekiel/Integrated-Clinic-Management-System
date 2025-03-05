@@ -1,13 +1,31 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef} from "react";
 
 export default function Loader() {
     const [loading, setLoading] = useState(true);
+    const ref = useRef(0);
 
     useEffect(() => {
+        const scrollToTop = () => {
+            ref.current = window.scrollY;
+            document.body.style.overflow = "hidden";
+
+            const timer = setTimeout(() => {
+                document.body.style.overflow = "auto";
+                window.scrollTo(0, ref.current);
+            }, 2000);
+    
+            return () => {
+                clearTimeout(timer);
+            }
+        }
+        scrollToTop();
+        
         const timer = setTimeout(() => setLoading(false), 2000);
         return () => {
             clearTimeout(timer);
         }
+        
+
     }, [])
 
     return (

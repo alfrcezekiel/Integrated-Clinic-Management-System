@@ -92,7 +92,7 @@ const PatientsRegistrationPortal = () => {
                 }
             } 
         } catch (error) {
-            if(error.response && error.response.data.status === 400){
+            if(error.response && error.response.status === 400){
                 setFieldsErrors(error.response.data.errors);
             } else {
                 console.error(`Failed to register patient account: ${error}`);
@@ -111,7 +111,7 @@ const PatientsRegistrationPortal = () => {
             </div>
             <div className="w-full lg:w-3/5 flex flex-col items-center justify-center">
                 <div className="text-center">
-                    <Typography variant="h4" className="font-bold mb-4" color="black">Patients Register Portal</Typography>
+                    <Typography variant="h3" className="font-bold mb-4" color="black">Patients Register Portal</Typography>
                 </div>
                 <form className="mt-8 mb-2 mx-auto w-80 max-w-screen-lg lg:w-1/2" onSubmit={handleRegistrationSubmit} autoComplete="off" id="register-patients-form"> 
                     <div className="mb-1 flex flex-col gap-6">
@@ -123,7 +123,7 @@ const PatientsRegistrationPortal = () => {
                             type="text"
                             value={formRegistrationPatientsData.firstName}
                             onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, firstName: e.target.value })}
-                            helperText={fieldsErrors.firstName ? fieldsErrors.firstName : ""}
+                            helperText={fieldsErrors.firstName || ""}
                             error={Boolean(fieldsErrors.firstName)}  
                         />
                     </div>
@@ -136,7 +136,7 @@ const PatientsRegistrationPortal = () => {
                             type="text"
                             onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, lastName: e.target.value })}
                             value={formRegistrationPatientsData.lastName}
-                            helperText={fieldsErrors.lastName ? fieldsErrors.lastName : ""}
+                            helperText={fieldsErrors.lastName || ""}
                             error={Boolean(fieldsErrors.lastName)}
                         />
                     </div>
@@ -149,7 +149,7 @@ const PatientsRegistrationPortal = () => {
                             type="text"
                             onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, email: e.target.value })}
                             value={formRegistrationPatientsData.email}
-                            helperText={fieldsErrors.email ? fieldsErrors.email : ""}
+                            helperText={fieldsErrors.email || ""}
                             error={Boolean(fieldsErrors.email)}
                         />
                     </div>
@@ -162,7 +162,7 @@ const PatientsRegistrationPortal = () => {
                             type="number"
                             value={formRegistrationPatientsData.phoneNumber}
                             onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, phoneNumber: e.target.value })}
-                            helperText={fieldsErrors.phoneNumber ? fieldsErrors.phoneNumber : ""}
+                            helperText={fieldsErrors.phoneNumber || ""}
                             error={Boolean(fieldsErrors.phoneNumber)}
                         />
                     </div>

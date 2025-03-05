@@ -7,17 +7,32 @@ import LandingPageFooter from "./LandingPageFooter"
 import LandingPageFAQ from "./LandingPageFAQ"
 import LandingPageContact from "./LandingPageContact"
 import LandingPageHeader from "./LandingPageHeader"
-import {useEffect} from "react"
+import {useEffect, useRef} from "react"
 import {useLocation} from "react-router-dom"
 
 const MainContent = () => {
     const location = useLocation();
-
+    const ref = useRef(0);
     useEffect(() => {
         const TitleHeader = () => {
             document.title = "DCMS | Home"
         }
         TitleHeader();
+
+        const scrollToTop = () => {
+            ref.current = window.scrollY;
+
+            const timer = setTimeout(() => {
+                window.scrollTo(0, ref.current);
+            }, 2000);
+
+            return () => {
+                clearTimeout(timer);
+            }
+        }
+        scrollToTop();
+
+        
     }, [location.pathname])
     
     return (
