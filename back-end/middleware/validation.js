@@ -16,8 +16,9 @@ const validateRegister = [
         .isEmail().withMessage("Invalid Email Format"),
     body("phoneNumber")
         .trim()
-        .notEmpty().withMessage("Phone number is required")
-        .isLength({ min: 11, max: 11 }).withMessage("Phone number should be 11 digits"),
+        .notEmpty().withMessage("Phone Number is required")
+        .isLength({min: 11, max: 11})
+        .withMessage("Phone Number should be 11 digits"),
     body("password")
         .notEmpty().withMessage("Password is required")
         .isLength({ min: 8 }).withMessage("Password must be at least 8 characters"),

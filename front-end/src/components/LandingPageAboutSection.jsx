@@ -17,6 +17,11 @@ import CMS from "../API/CMS.jsx"
 const LandingPageAboutSection = () => {
     const [aboutTitle, setAboutTitle] = useState("");
     const [aboutDescription, setAboutDescription] = useState("");
+    const [firstDescription, setFirstDescription] = useState("")
+    const [secondDescription, setSecondDescription] = useState("")
+    const [thirdDescription, setThirdDescription] = useState("");
+    const [fourthDescription, setFourthDescription] = useState("")
+    const [emergencyServies, setEmergencyServices] = useState("")
 
     useEffect(() => {
         const aos = () => {
@@ -36,6 +41,11 @@ const LandingPageAboutSection = () => {
                 } else {
                     setAboutTitle(response.data.title);
                     setAboutDescription(response.data.description);
+                    setFirstDescription(response.data.firstDescription)
+                    setSecondDescription(response.data.secondDescription)
+                    setThirdDescription(response.data.thirdDescription)
+                    setFourthDescription(response.data.fourthDescription);
+                    setEmergencyServices(response.data.emergencyServices);
                 }
             } catch (error) {
                 console.error(`Code functionality error for fetching data about title: ${error}`);
@@ -62,11 +72,11 @@ const LandingPageAboutSection = () => {
                                 {aboutDescription}
                             </p>
                             <ul>
-                                <li><i className="bi bi-check-circle"></i> <span>Comprehensive dental care for the whole family.</span></li>
-                                <li><i className="bi bi-check-circle"></i> <span>State-of-the-art technology for pain-free treatments.</span></li>
-                                <li><i className="bi bi-check-circle"></i> <span>Experienced and friendly dental professionals.</span></li>
-                                <li><i className="bi bi-check-circle"></i> <span>Personalized treatment plans tailored to your needs.</span></li>
-                                <li><i className="bi bi-check-circle"></i> <span>Emergency dental services available 24/7.</span></li>
+                                <li><i className="bi bi-check-circle"></i> <span>{firstDescription}</span></li>
+                                <li><i className="bi bi-check-circle"></i> <span>{secondDescription}</span></li>
+                                <li><i className="bi bi-check-circle"></i> <span>{thirdDescription}</span></li>
+                                <li><i className="bi bi-check-circle"></i> <span>{fourthDescription}</span></li>
+                                <li><i className="bi bi-check-circle"></i> <span>{emergencyServies}</span></li>
                             </ul>
                         </div>
                     </div>

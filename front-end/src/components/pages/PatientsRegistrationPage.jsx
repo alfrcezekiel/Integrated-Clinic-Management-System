@@ -45,7 +45,7 @@ const PatientsRegistrationPortal = () => {
     const handleMouseUpConfirmPassword = (e) => {
         e.preventDefault();
     }
-    
+
     const location = useLocation();
 
     useEffect(() => {
@@ -85,14 +85,14 @@ const PatientsRegistrationPortal = () => {
 
             if (response.status === 200) {
                 alert(response.data.message);
-                
+
                 setFieldsErrors({})
                 if (response.data.message === "Patient account registered successfully") {
                     window.location.href = "/patients-portal";
                 }
-            } 
+            }
         } catch (error) {
-            if(error.response && error.response.status === 400){
+            if (error.response && error.response.status === 400) {
                 setFieldsErrors(error.response.data.errors);
             } else {
                 console.error(`Failed to register patient account: ${error}`);
@@ -111,12 +111,13 @@ const PatientsRegistrationPortal = () => {
             </div>
             <div className="w-full lg:w-3/5 flex flex-col items-center justify-center">
                 <div className="text-center">
-                    <Typography variant="h3" className="font-bold mb-4" color="black">Patients Register Portal</Typography>
+                    <Typography variant="h5" className="font-bold mb-4" color="black">Patients Registration Portal</Typography>
                 </div>
-                <form className="mt-8 mb-2 mx-auto w-80 max-w-screen-lg lg:w-1/2" onSubmit={handleRegistrationSubmit} autoComplete="off" id="register-patients-form"> 
+                <form className="mt-8 mb-2 mx-auto w-80 max-w-screen-lg lg:w-1/2" onSubmit={handleRegistrationSubmit} autoComplete="off" id="register-patients-form">
                     <div className="mb-1 flex flex-col gap-6">
                         <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">First Name</Typography>
                         <TextField
+                            autoComplete="off"
                             size="lg"
                             label="Enter your First Name"
                             variant="outlined"
@@ -124,12 +125,13 @@ const PatientsRegistrationPortal = () => {
                             value={formRegistrationPatientsData.firstName}
                             onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, firstName: e.target.value })}
                             helperText={fieldsErrors.firstName || ""}
-                            error={Boolean(fieldsErrors.firstName)}  
+                            error={Boolean(fieldsErrors.firstName)}
                         />
                     </div>
                     <div className="mb-1 flex flex-col gap-6">
                         <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">Last Name</Typography>
                         <TextField
+                            autoComplete="off"
                             size="lg"
                             label="Enter your Last Name"
                             variant="outlined"
@@ -143,6 +145,7 @@ const PatientsRegistrationPortal = () => {
                     <div className="mb-1 flex flex-col gap-6">
                         <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">Email</Typography>
                         <TextField
+                            autoComplete="off"
                             size="lg"
                             label="Enter your Email"
                             variant="outlined"
@@ -156,6 +159,7 @@ const PatientsRegistrationPortal = () => {
                     <div className="mb-1 flex flex-col gap-6">
                         <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">Phone Number</Typography>
                         <TextField
+                            autoComplete="off"
                             size="lg"
                             label="Enter your Phone Number"
                             variant="outlined"
@@ -171,6 +175,7 @@ const PatientsRegistrationPortal = () => {
                         <FormControl variant="outlined" className="register-input-password" sx={{ width: '100%' }} error={Boolean(fieldsErrors.password)}>
                             <InputLabel htmlFor="outlined-adornment-password">Enter Password</InputLabel>
                             <OutlinedInput
+                                autoComplete="off"
                                 id="password"
                                 type={showPassword ? "text" : "password"}
                                 endAdornment={
@@ -192,14 +197,15 @@ const PatientsRegistrationPortal = () => {
                                 value={formRegistrationPatientsData.password}
                                 onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, password: e.target.value })}
                             />
+                            {fieldsErrors.password && <FormHelperText error>{fieldsErrors.password}</FormHelperText>}
                         </FormControl>
-                        {fieldsErrors.password && <FormHelperText error>{fieldsErrors.password}</FormHelperText>}
                     </div>
                     <div className="mb-1 flex flex-col gap-6">
                         <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">Confirm Password</Typography>
                         <FormControl variant="outlined" className="register-input-confirm-password" sx={{ width: '100%' }} error={Boolean(fieldsErrors.confirmPassword)}>
                             <InputLabel htmlFor="outlined-adornment-password">Enter Confirm Password</InputLabel>
                             <OutlinedInput
+                                autoComplete="off"
                                 id="confirm-password"
                                 type={showConfirmPassword ? "text" : "password"}
                                 endAdornment={
@@ -221,8 +227,8 @@ const PatientsRegistrationPortal = () => {
                                 value={formRegistrationPatientsData.confirmPassword}
                                 onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, confirmPassword: e.target.value })}
                             />
+                            {fieldsErrors.confirmPassword && <FormHelperText error>{fieldsErrors.confirmPassword}</FormHelperText>}
                         </FormControl>
-                        {fieldsErrors.confirmPassword && <FormHelperText error>{fieldsErrors.confirmPassword}</FormHelperText>} 
                     </div>
                     <FormControlLabel
                         control={<Checkbox />}

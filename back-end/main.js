@@ -15,6 +15,7 @@ const __dirname = path.dirname(__filename);
 
 app.set("port", process.env.PORT || 5003);
 app.set("host", process.env.HOST || "localhost");
+app.set("baseURL", process.env.BASE_URL || "/CMS")
 
 app.use(bodyParser.json());
 app.use(express.json());
@@ -39,7 +40,7 @@ app.use((req, res) => {
 // function for statrting the server
 const startServer = () => {
     app.listen(app.get("port"), app.get("host"), () => {
-        console.log(`Server is running on http://${app.get("host")}:${app.get("port")}/CMS`);
+        console.log(`Server is running on http://${app.get("host")}:${app.get("port")}${app.get("baseURL")}`);
     })
 }
 startServer();

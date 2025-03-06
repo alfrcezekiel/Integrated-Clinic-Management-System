@@ -19,7 +19,7 @@ export default function Loader() {
             }
         }
         scrollToTop();
-        
+
         const timer = setTimeout(() => setLoading(false), 2000);
         return () => {
             clearTimeout(timer);

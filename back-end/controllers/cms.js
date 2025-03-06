@@ -13,7 +13,12 @@ export const CMS = async (req, res) => {
         featuresTitle: "Features",
         inventoryText: "Inventory Management of Clinical Products",
         whatWeServeTitle: "What We Serve",
-        teethQuotes: "A smile is a curve that sets everything straight"
+        teethQuotes: "A smile is a curve that sets everything straight",
+        firstDescription: "Comprehensive Dental Care for the whole family.",
+        secondDescription: "State of the art technology for pain-free treatments.",
+        thirdDescription: "Experienced and Friendly Dental Professional.",
+        fourthDescription: "Personalized treatment plans for tailored to your needs.",
+        emergencyServices: "Emergency Dental Services avaiable 24/7."
     })
 }
 
@@ -33,4 +38,8 @@ export const registerPatientAccount = async (req, res) => {
     } catch (error) {
         console.error(`Failed to register patient account: ${error}`);
     }
+}
+
+export const contactMessageMangement = async (req, res) => {
+    
 }
