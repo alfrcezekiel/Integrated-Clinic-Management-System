@@ -71,8 +71,14 @@ export const loginPatientsAccount = async (req, res) => {
         const {email, password} = req.body;
 
         const query = "SELECT patientsregisteraccount1.email, patientsregisteraccount2.password FROM patientsregisteraccount1 INNER JOIN patientsregisteraccount2 ON patientsregisteraccount1.patientID = patientsregisteraccount2.registerPatientID WHERE patientsregisteraccount1.email = ? AND patientsregisteraccount2.password = ?;";
-        await conn.query(query, [email, password]);
+        const [rows] = await conn.query(query, [email, password]);
         
+        if(!rows.find((row) => row.email === email || row.password === password)) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                message: "Invalid email or password"
+            })
+        } 
+
         return res.status(StatusCodes.OK).json({
             message: "Login successful",
         })
