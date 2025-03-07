@@ -10,9 +10,24 @@ import "../assets/vendor/aos/aos.css"
 import "../assets/vendor/glightbox/css/glightbox.min.css"
 import "../assets/vendor/swiper/swiper-bundle.min.css"
 import AOS from "aos"
-import {useEffect} from "react"
+import { useEffect, useState } from "react"
+import CMS from "../API/CMS.jsx"
 
 const LandingPageContact = () => {
+    const [contactFormData, setContactFormData] = useState({
+        contactName: "",
+        contactEmailAddress: "",
+        contactSubject: "",
+        contactMessage: ""
+    })
+
+    const [fieldErrors, setFieldErrors] = useState({
+        contactName: "",
+        contactEmail: "",
+        contactSubject: "",
+        contactMessage: ""
+    })
+
     useEffect(() => {
         const aos = () => {
             AOS.init({
@@ -25,6 +40,30 @@ const LandingPageContact = () => {
             AOS.refresh();
         }
     }, [])
+
+    const handleContactMessage = async (e) => {
+        try {
+            e.preventDefault();
+                
+            const response = await CMS.post("/CMS/contactUs", contactFormData, {
+                headers: {
+                    "Content-Type" : "application/json"
+                }
+            })
+
+            if(response.status === 200){
+                alert(response.data.contactMessage)
+                setContactFormData(response.data.contactMessage)
+                setFieldErrors({});
+            }   
+        } catch (error) {
+            if(error.response && error.response.status === 400){
+                setFieldErrors(error.response.data.errors)
+            } else {
+                console.error(`Error at contacting the admin ${error}`)
+            }
+        }
+    }
 
     return (
         <>
@@ -78,19 +117,23 @@ const LandingPageContact = () => {
                             </div>
                         </div>
                         <div className="col-lg-6">
-                            <form action="" method="post" className="php-email-form" data-aos="fade-up" data-aos-delay="200">
+                            <form onSubmit={handleContactMessage} method="post" className="php-email-form" data-aos="fade-up" data-aos-delay="200">
                                 <div className="row gy-4">
                                     <div className="col-md-6">
-                                        <input type="text" name="name" id="name" className="form-control" placeholder="Your Name" required=""/>
+                                        <input type="text" id="name" className="form-control" placeholder="Your Name" value={contactFormData.contactName} onChange={(e) => setContactFormData({...contactFormData, contactName: e.target.value})}/>
+                                        {fieldErrors.contactName && <p className="text-red-500">{fieldErrors.contactName}</p>}
                                     </div>
                                     <div className="col-md-6 ">
-                                        <input type="email" className="form-control" id="email" name="email" placeholder="Your Email" required=""/>
+                                        <input type="text" className="form-control" id="email" placeholder="Your Email" value={contactFormData.contactEmailAddress} onChange={(e) => setContactFormData({...contactFormData, contactEmailAddress: e.target.value})}/>
+                                        {fieldErrors.contactEmail && <p className="text-red-500">{fieldErrors.contactEmail}</p>}
                                     </div>
                                     <div className="col-12">
-                                        <input type="text" className="form-control" id="subject" name="subject" placeholder="Subject" required=""/>
+                                        <input type="text" className="form-control" id="subject"  placeholder="Subject" value={contactFormData.contactSubject} onChange={(e) => setContactFormData({...contactFormData, contactSubject: e.target.value})}/>
+                                        {fieldErrors.contactSubject && <p className="text-red-500">{fieldErrors.contactSubject}</p>}
                                     </div>
                                     <div className="col-12">
-                                        <textarea className="form-control" name="message" id="message" rows="6" placeholder="Message" required=""></textarea>
+                                        <textarea className="form-control" id="message" rows="6" placeholder="Message" value={contactFormData.contactMessage} onChange={(e) => setContactFormData({...contactFormData, contactMessage: e.target.value})}></textarea>
+                                        {fieldErrors.contactMessage && <p className="text-red-500">{fieldErrors.contactMessage}</p>}
                                     </div>
                                     <div className="col-12 text-center">
                                         <div className="loading">Loading</div>

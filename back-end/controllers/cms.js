@@ -3,9 +3,10 @@ import conn from "../db/mysql/conn.js";
 import dotenv from "dotenv";
 dotenv.config();
 
+// controller for a global route
 export const CMS = async (req, res) => {
     return res.status(StatusCodes.OK).json({
-        title: "Dental Clinic Management System",
+        title: "Clinic Management System",
         description: "CMS streamlines the operational workflow of a dental clinic that automates the medical health records (EHR), appointment scheduling, payment integration and inventory of clinical products.",
         ehrText: "Electronic Health Records",
         paymentIntegrationText: "Payment Integration",
@@ -22,12 +23,13 @@ export const CMS = async (req, res) => {
     })
 }
 
+// controller for register patients accounts
 export const registerPatientAccount = async (req, res) => {
     try {
         const {firstName, lastName, email, phoneNumber, password, confirmPassword} = req.body;
     
-        const query1 = "INSERT INTO db_registeraccount_a (firstName, lastName, email) VALUES (?, ?, ?)";
-        const query2 = "INSERT INTO db_registeraccount_b (phoneNumber, password, confirmPassword) VALUES (?, ?, ?)";
+        const query1 = "INSERT INTO patientsregisteraccount1 (firstName, lastName, email) VALUES (?, ?, ?)";
+        const query2 = "INSERT INTO patientsregisteraccount2 (phoneNumber, password, confirmPassword) VALUES (?, ?, ?)";
     
         await conn.query(query1, [firstName, lastName, email]);
         await conn.query(query2, [phoneNumber, password, confirmPassword]);
@@ -40,6 +42,41 @@ export const registerPatientAccount = async (req, res) => {
     }
 }
 
-export const contactMessageMangement = async (req, res) => {
-    
+// controller for contact message in landing page
+export const contactMessageManagement = async (req, res) => {
+    try {
+        const {contactName, contactEmailAddress, contactSubject, contactMessage} = req.body;
+
+        const query = "INSERT INTO contactmanagement (contactName, contactEmailAddress, contactSubjectPerson, contactMessage) VALUES (?, ?, ?, ?)";
+
+        await conn.query(query, [contactName, contactEmailAddress, contactSubject, contactMessage])
+
+        return res.status(StatusCodes.OK).json({
+            contactMessage: "Request contact has been submitted!"
+        })
+    } catch(error) {
+        console.error(`Failed to manage contact messages: ${error}`);
+    }
+}
+
+// controller logic for login patients accounts
+export const loginPatientsAccount = async (req, res) => {
+    try {
+        const {email, password} = req.body;
+
+        const query = "SELECT patientsregisteraccount1.email, patientsregisteraccount2.password FROM patientsregisteraccount1 INNER JOIN patientsregisteraccount2 ON patientsregisteraccount1.patientID = patientsregisteraccount2.registerPatientID WHERE patientsregisteraccount1.email = ? AND patientsregisteraccount2.password = ?;";
+        const [rows] = await conn.query(query, [email, password]);
+
+        if(rows.length === 0){
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                message: "Invalid email or password"
+            })
+        }
+
+        return res.status(StatusCodes.OK).json({
+            message: "Login successful"
+        })
+    } catch (error) {
+        console.error(`Failed to login patient account: ${error}`);
+    }
 }

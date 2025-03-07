@@ -79,7 +79,7 @@ const LandingPageFooter = () => {
                     </div>
                 </div>
                 <div className="container copyright text-center mt-4">
-                    <p>© <span>Copyright</span> <strong className="px-1 sitename">DCMS</strong> <span>All Rights Reserved | 2025</span></p>
+                    <p>© <span>Copyright</span> <strong className="px-1 sitename">CMS</strong> <span>All Rights Reserved | 2025</span></p>
                     {/* <div class="credits"> */}
                         {/* {/* <!-- All the links in the footer should remain intact. --> */}
                         {/* <!-- You can delete the links only if you've purchased the pro version. --> */}

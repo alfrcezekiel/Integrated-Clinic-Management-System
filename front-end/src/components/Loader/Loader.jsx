@@ -39,7 +39,7 @@ export default function Loader() {
                 ) : (
                     <div className="flex flex-col items-center">
                         <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent border-solid rounded-full"></div>
-                        <p className="mt-2 text-purple-500">Loading</p>
+                        <p className="mt-2 text-white-200">Loading</p>
                     </div>
                 )}
             </div>

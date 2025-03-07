@@ -1,6 +1,7 @@
 import { body, validationResult } from 'express-validator';
 import { StatusCodes } from 'http-status-codes';
 
+// validation for patients registration accounts
 const validateRegister = [
     body("firstName")
         .trim().

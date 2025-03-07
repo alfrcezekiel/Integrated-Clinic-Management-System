@@ -15,7 +15,7 @@ const MainContent = () => {
     const ref = useRef(0);
     useEffect(() => {
         const TitleHeader = () => {
-            document.title = "DCMS | Home"
+            document.title = "CMS | Home"
         }
         TitleHeader();
 

@@ -13,6 +13,7 @@ import "../assets/vendor/isotope-layout/isotope.pkgd.min.js"
 import AOS from "aos"
 import { useState, useEffect } from "react"
 import CMS from "../API/CMS.jsx"
+import { Link } from "react-router-dom"
 
 const LandingPageHeroSection = () => {
     const [title, setTitle] = useState("");
@@ -58,7 +59,7 @@ const LandingPageHeroSection = () => {
                             <h1>{title}</h1>
                             <p>{teethTagline}</p>
                             <div className="d-flex">
-                                <a href="#about" className="btn-get-started">Request Appointment</a>
+                                <Link className="btn-get-started" to={"/patients-portal"}>Request Appointment</Link>
                             </div>
                         </div>
                         <div className="col-lg-6 order-1 order-lg-2 hero-img">
