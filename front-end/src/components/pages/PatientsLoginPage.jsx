@@ -63,6 +63,8 @@ function PatientsLoginPortal() {
                 alert(response.data.message)
                 setFieldErrors({})
                 navigate("/dashboard");
+            } else {
+                setFieldErrors(response.data.errors);
             }
 
         } catch (error) {

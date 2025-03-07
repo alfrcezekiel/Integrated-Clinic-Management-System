@@ -83,7 +83,7 @@ const PatientsRegistrationPortal = () => {
                 }
             });
 
-            if (response.status === 200) {
+            if (response.data.token) {
                 alert(response.data.message);
 
                 setFieldsErrors({})
