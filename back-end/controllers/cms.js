@@ -30,7 +30,10 @@ export const registerPatientAccount = async (req, res) => {
         const {firstName, lastName, email, phoneNumber, password, confirmPassword} = req.body;
         
         const SECRET_KEY = process.env.JWT_SECRET || "authen ni mang juan"
+
+        // 1st table of patients register account
         const query1 = "INSERT INTO patientsregisteraccount1 (firstName, lastName, email) VALUES (?, ?, ?)";
+        // 2nd table of patients register account
         const query2 = "INSERT INTO patientsregisteraccount2 (phoneNumber, password, confirmPassword) VALUES (?, ?, ?)";
     
         const [result] = await conn.query(query1, [firstName, lastName, email]);
@@ -73,9 +76,9 @@ export const loginPatientsAccount = async (req, res) => {
         const query = "SELECT patientsregisteraccount1.email, patientsregisteraccount2.password FROM patientsregisteraccount1 INNER JOIN patientsregisteraccount2 ON patientsregisteraccount1.patientID = patientsregisteraccount2.registerPatientID WHERE patientsregisteraccount1.email = ? AND patientsregisteraccount2.password = ?;";
         const [rows] = await conn.query(query, [email, password]);
         
-        if(!rows.find((row) => row.email === email || row.password === password)) {
+        if(!rows.find((row) => row.email === email && row.password === password)) {
             return res.status(StatusCodes.UNAUTHORIZED).json({
-                message: "Invalid email or password"
+                message: "Invalid email and password"
             })
         } 
 

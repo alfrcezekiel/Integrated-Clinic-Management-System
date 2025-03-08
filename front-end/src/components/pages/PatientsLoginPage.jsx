@@ -62,7 +62,7 @@ function PatientsLoginPortal() {
             if(response.status === 200){
                 alert(response.data.message)
                 setFieldErrors({})
-                navigate("/dashboard");
+                navigate("/patients-dashboard/home");
             } else {
                 setFieldErrors(response.data.errors);
             }
