@@ -9,4 +9,4 @@ const CMS = axios.create({
     } 
 })
 
-export default CMS;
+export default CMS

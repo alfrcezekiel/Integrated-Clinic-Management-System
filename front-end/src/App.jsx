@@ -1,14 +1,13 @@
-import { lazy } from 'react'
+import { Suspense, lazy, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { BrowserRouter, Route, Routes, Navigate, useLocation } from "react-router-dom"
-import PageNotFound from './components/pageNotFound/error.jsx'
-import { useEffect, useState } from "react"
-import Loader from "./components/Loader/Loader.jsx"
+import { Route, Routes, Navigate, useLocation, BrowserRouter } from "react-router-dom";
+import PageNotFound from './components/pageNotFound/error.jsx';
+import Loader from "./components/Loader/Loader.jsx";
 
 const Home = lazy(() => import("./components/MainContent.jsx"));
 const PatientRegistrationPortal = lazy(() => import("./components/pages/PatientsRegistrationPage.jsx"));
-const PatientsLoginPortal = lazy(() => import("./components/pages/PatientsLoginPage.jsx"))
-const PatientsDashboard = lazy(() => import("./components/pages/dashboard/PatientsDashboard.jsx"))
+const PatientsLoginPortal = lazy(() => import("./components/pages/PatientsLoginPage.jsx"));
+const PatientsDashboard = lazy(() => import("./components/pages/dashboard/PatientsDashboard.jsx"));
 
 const RouteLoader = ({ children }) => {
   const [loading, setLoading] = useState(false);
@@ -27,6 +26,7 @@ const RouteLoader = ({ children }) => {
     }, 2000);
     return () => {
       clearTimeout(timer);
+      document.body.style.overflow = "auto";
     }
   }, [location.pathname])
 
@@ -45,17 +45,19 @@ RouteLoader.propTypes = {
 function App() {
   return (
     <>
-      <BrowserRouter>
-          <RouteLoader>
+      <BrowserRouter future={{v7_startTransition: true}}>
+        <RouteLoader>
+          <Suspense fallback={<Loader />}>
             <Routes>
               <Route path="/" element={<Navigate to={"/cms"} replace />} />
               <Route path="/cms" element={<Home />} />
               <Route path="/patients-portal" element={<PatientRegistrationPortal />} />
               <Route path="/patients-login" element={<PatientsLoginPortal />} />
-              <Route path="/patients-dashboard/home" element={<PatientsDashboard />} />
+              <Route path="/patients-dashboard/*" element={<PatientsDashboard />} />
               <Route path="*" element={<PageNotFound />} />
             </Routes>
-          </RouteLoader>
+          </Suspense>
+        </RouteLoader>
       </BrowserRouter>
     </>
   )

@@ -55,14 +55,14 @@ function PatientsLoginPortal() {
             e.preventDefault();
             const response = await CMS.post("/CMS/loginPatientsAccount", patientsLoginFormData, {
                 headers: {
-                    "Content-Type": "application/json"
-                }
+                    "Content-Type": "application/json",
+                },
             });
-
-            if(response.status === 200){
+            
+            if(response.status === 200) {
                 alert(response.data.message)
                 setFieldErrors({})
-                navigate("/patients-dashboard/home");
+                navigate("/patients-dashboard");
             } else {
                 setFieldErrors(response.data.errors);
             }

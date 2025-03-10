@@ -7,6 +7,7 @@ import { fileURLToPath } from "url";
 import cms from "./routes/userRoutes.js";
 import dotenv from "dotenv";
 import { StatusCodes } from "http-status-codes";
+import session from "express-session";
 dotenv.config();
 
 const app = express();
@@ -17,14 +18,26 @@ app.set("port", process.env.PORT || 5003);
 app.set("host", process.env.HOST || "localhost");
 app.set("baseURL", process.env.BASE_URL || "/CMS")
 
-app.use(bodyParser.json());
 app.use(express.json());
+app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 app.use(express.static(path.join(__dirname, "public")));
 app.use(cors({
     origin: "http://localhost:5173",
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    credentials: true
+}))
+// session configuration
+app.use(session({
+    secret: process.env.SESSION_SECRET || "authennivayne",
+    resave: false,
+    saveUninitialized: false,
+    cookie:{
+        secure:false,
+        httpOnly:true,
+        maxAge: 1000 * 60 * 60 * 24
+    }
 }))
 
 // route for CMS

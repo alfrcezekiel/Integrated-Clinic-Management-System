@@ -20,8 +20,8 @@ const statisticsCardsData = [
   {
     color: "gray",
     icon: UsersIcon,
-    title: "Today's Users",
-    value: "2,300",
+    title: "Patients Registered",
+    value: "5454",
     footer: {
       color: "text-green-500",
       value: "+3%",
@@ -51,5 +51,6 @@ const statisticsCardsData = [
     },
   },
 ];
+
 
 export default statisticsCardsData;

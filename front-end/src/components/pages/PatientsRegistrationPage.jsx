@@ -79,8 +79,8 @@ const PatientsRegistrationPortal = () => {
 
             const response = await CMS.post("/CMS/registerPatientsAccount", formRegistrationPatientsData, {
                 headers: {
-                    "Content-Type": "application/json"
-                }
+                    "Content-Type": "application/json",
+                },
             });
 
             if (response.data.token) {
