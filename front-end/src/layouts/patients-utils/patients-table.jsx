@@ -258,8 +258,8 @@ const PatientsTable = () => {
                                 />
                             </div>
                             <DialogActions className="p-4">
-                                <Button onClick={handleClose} className="text-red-500">Cancel</Button>
-                                <Button onClick={handleClose} className="text-blue-500" type="submit">Book Appointment</Button>
+                                <Button onClick={handleClose} className="text-red-500" variant="outlined">Cancel</Button>
+                                <Button onClick={handleClose} className="text-blue-500" type="submit" variant="contained">Book Appointment</Button>
                             </DialogActions>
                         </form>
                     </DialogContent>
