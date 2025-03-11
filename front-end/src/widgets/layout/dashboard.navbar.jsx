@@ -1,24 +1,62 @@
 import { AppBar, Toolbar, Typography, IconButton, Breadcrumbs, InputBase, Menu, MenuItem, Avatar } from "@mui/material";
-import { Menu as MenuIcon, Notifications, Settings, CreditCard } from "@mui/icons-material";
+import { Menu as MenuIcon, Notifications, Settings, CreditCard, Logout } from "@mui/icons-material";
 import { useMaterialUIController } from "../../context/useController";
-import { Link, useLocation, Outlet } from "react-router-dom";
+import { Link, useLocation, Outlet, useNavigate } from "react-router-dom";
 import { setOpenConfigurator, setOpenSideNav } from "../../context/materialUIController";
 import { useState } from "react";
+import CMS from "../../API/CMS";
+import LogoutDialog from "../../components/loguoutConfirmation";
 
 // this is the navbar component for the dashboard
 const DashboardNavbar = () => {
     const [controller, dispatch] = useMaterialUIController();
     const { fixedNavbar, openSideNav } = controller;
     const location = useLocation();
-    const pathParts  = location.pathname.substring(1).split("/").filter(Boolean);
+    const pathParts = location.pathname.substring(1).split("/").filter(Boolean);
     const [layout = "home", page = ""] = pathParts;
     const [anchorEl, setAnchorEl] = useState(null);
+    const [settingsAnchorEl, setSettingsAnchorEl] = useState(null);
     const handleMenuOpen = (e) => {
         setAnchorEl(e.currentTarget);
+    }
+    const [logoutDialog, setLogoutDialog] = useState(false);
+
+    const navigate = useNavigate();
+
+    const handleLogoutConfirm = async () => {
+        try {
+            const response = await CMS.get("/CMS/patientsDashboard/logout");
+            if (!response.data || !response.data.message) {
+                throw new Error("No response data or no success message");
+            } else {
+                localStorage.removeItem("authToken");
+                navigate("/cms");
+            }
+        } catch (error) {
+            console.error(`Code functionality error for logging out: ${error}`);
+        } finally {
+            setLogoutDialog(false);
+        }
+    }
+
+    const handleLogout = () => {
+        setLogoutDialog(true);
+    }
+    
+    const handleDialogClose = () => {
+        setLogoutDialog(false);
+    }
+
+    const handleSettingsMenuOpen = (e) => {
+        setSettingsAnchorEl(e.currentTarget);
+    }
+    const handleSettingsMenuClose = () => {
+        setSettingsAnchorEl(null);
     }
     const handleMenuClose = () => {
         setAnchorEl(null);
     }
+
     return (
         <AppBar
             position={fixedNavbar ? "fixed" : "static"}
@@ -59,11 +97,31 @@ const DashboardNavbar = () => {
                             <Typography>Payment has been made</Typography>
                         </MenuItem>
                     </Menu>
-                    <IconButton onClick={() => setOpenConfigurator(dispatch, true)}>
+                    <IconButton onClick={handleSettingsMenuOpen}>
                         <Settings />
                     </IconButton>
+                    <Menu
+                        anchorEl={settingsAnchorEl}
+                        open={Boolean(settingsAnchorEl)}
+                        onClose={handleSettingsMenuClose}
+                        keepMounted
+                    >
+                        <MenuItem onClick={() => setOpenConfigurator(dispatch, true)}>
+                            <Settings className="mr-2" />
+                            <Typography>Settings</Typography>
+                        </MenuItem>
+                        <MenuItem onClick={handleLogout}>
+                            <Logout className="mr-2" />
+                            <Typography>Logout</Typography>
+                        </MenuItem>
+                    </Menu>
                 </div>
             </Toolbar>
+            <LogoutDialog 
+                open={logoutDialog}
+                onClose={handleDialogClose}
+                onConfirm={handleLogoutConfirm}
+            />
         </AppBar>
     )
 }

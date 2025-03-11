@@ -54,6 +54,7 @@ function App() {
               <Route path="/patients-portal" element={<PatientRegistrationPortal />} />
               <Route path="/patients-login" element={<PatientsLoginPortal />} />
               <Route path="/patients-dashboard/*" element={<PatientsDashboard />} />
+              <Route path="/doctor-portal/login" element={<div>login</div>} />
               <Route path="*" element={<PageNotFound />} />
             </Routes>
           </Suspense>

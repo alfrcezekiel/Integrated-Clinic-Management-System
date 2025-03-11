@@ -2,6 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 import conn from "../db/mysql/conn.js";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
+import "../main.js";
 dotenv.config();
 
 // controller logic for a global route
@@ -74,6 +75,7 @@ export const loginPatientsAccount = async (req, res) => {
         const { email, password } = req.body;
 
         const query = `SELECT
+            patientsregisteraccount1.patientID,
             patientsregisteraccount1.email,
             patientsregisteraccount2.password
             FROM patientsregisteraccount1
@@ -94,18 +96,60 @@ export const loginPatientsAccount = async (req, res) => {
         const SECRET_KEY = process.env.JWT_SECRET || "authenmimangjuan";
         
         // generate a token
-        const token = jwt.sign({id:patients.id}, SECRET_KEY, {expiresIn: "1hr"});
+        const token = jwt.sign({id: patients.patientID}, SECRET_KEY, {expiresIn: "1hr"});
 
         // session token
+        const s = req.session.user = {
+            patientID: patients.patientID,
+        }   
 
         return res.status(StatusCodes.OK).json({
             message: "Login successful",
             token,
+            req: s
         })
     } catch (error) {
         console.error(`Failed to login patient account: ${error}`);
     }
 }
+// get session of the user
+export const getLoggedInUser = (req, res) => {
+    if (!req.session.user) {
+        return res.status(StatusCodes.UNAUTHORIZED).json({
+            message: "No active session. Please log in."
+        });
+    }
+
+    return res.status(StatusCodes.OK).json({
+        message: "User session retrieved successfully",
+        user: req.session.user
+    });
+};
+
+export const requireLogin = (req, res, next) => {
+    if (!req.session.user) {
+        return res.status(StatusCodes.UNAUTHORIZED).json({
+            message: "Access denied. Please log in."
+        });
+    }
+    next();
+};
+
+// destroy the session request
+export const logout = (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "Logout failed"
+            });
+        }
+
+        res.clearCookie("connect.sid"); // remove session details
+        return res.status(StatusCodes.OK).json({
+            message: "Logged out successfully"
+        });
+    });
+};
 
 export const getPatientsDashboard = async (req, res) => {
     try {
@@ -224,14 +268,7 @@ export const verifyToken = (req, res, next) => {
 
     try {
         const SECRET_KEY = process.env.JWT_SECRET || "authenmimangjuan";
-        const decoded = jwt.verify(token, SECRET_KEY, (err, dec) => {
-            if(err){
-                return res.status(StatusCodes.UNAUTHORIZED).json({
-                    message: "Invalid or Expired token"
-                })
-            }
-            return dec;
-        });
+        const decoded = jwt.verify(token, SECRET_KEY);
         req.user = decoded;
         next();
     } catch (error) {

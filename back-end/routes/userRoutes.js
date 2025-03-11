@@ -7,7 +7,8 @@ import {
     getPatientsDashboard,
     getBookedAppointments,
     patientsBookedAppointments,
-    getPatientsAppointments
+    getPatientsAppointments,
+    logout,
 } from "../controllers/cms.js";
 import validateRegister from "../middleware/validation.js";
 import patientsLoginValidation from "../middleware/patientsLoginValidation.js";
@@ -38,5 +39,8 @@ router.post("/patientsDashboard/patientsBookedAppointments", patientsBookedAppoi
 
 // router for retrieving the patients booked appointments  to display in tables
 router.get("/patientsDashboard/bookedAppointments", getPatientsAppointments);
+
+// router for destroying the session
+router.get("/patientsDashboard/logout", logout)
 
 export default router;

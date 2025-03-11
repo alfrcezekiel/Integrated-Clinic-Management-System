@@ -15,44 +15,13 @@ import {
     CardContent,
     Table,
     TableHead,
-    TableBody,
     TableRow,
     TableCell,
 } from "@mui/material";
-
+import AppointmentsTable from "../../hooks/useMemoTableRows";
 import { useState, useEffect } from "react";
 import CMS from "../../API/CMS";
-
-// const appointmentsData = [
-//     {
-//         appointmentID: 1,
-//         patientsID: 'P001',
-//         firstName: 'John',
-//         lastName: 'Doe',
-//         email: 'john.doe@example.com',
-//         appointmentDate: '2023-10-15',
-//         phoneNumber: '123-456-7890',
-//         gender: 'Male',
-//         doctor: 'Dr. Smith',
-//         status: 'Scheduled',
-//         purposeOfAppointment: 'General Checkup',
-//     },
-//     {
-//         appointmentID: 2,
-//         patientsID: 'P002',
-//         firstName: 'Jane',
-//         lastName: 'Smith',
-//         email: 'jane.smith@example.com',
-//         appointmentDate: '2023-10-16',
-//         phoneNumber: '987-654-3210',
-//         gender: 'Female',
-//         doctor: 'Dr. Johnson',
-//         status: 'Completed',
-//         purposeOfAppointment: 'Follow-up',
-//     },
-//     // Add more data as needed
-// ];
-
+import { useNavigate } from "react-router-dom";
 
 const appointmentsTableColumn = [
     'First Name',
@@ -60,7 +29,8 @@ const appointmentsTableColumn = [
     'Appointment Date',
     'Doctor',
     'Status',
-    'Purpose of Appointment'
+    'Purpose of Appointment',
+    "Action"
 ]
 
 const PatientsTable = () => {
@@ -79,12 +49,13 @@ const PatientsTable = () => {
         appointmentDate: "",
         phoneNumber: "",
         gender: "",
-        status: "Pending",
+        status: "",
         doctor: "",
         purposeOfAppointment: ""
     });
     const [retrievedAppointmentsData, setRetrievedAppointmentsData] = useState([]);
-
+    const [isAppointmentOpen, setIsAppointmentOpen] = useState(false);
+    const navigate = useNavigate();
     const doctors = ["Dr. Smith", "Dr. Baek Kang Hyuk", "Dr. Kim"];
     const statuses = ["Pending"];
     const gender = ["Male", "Female"];
@@ -122,7 +93,6 @@ const PatientsTable = () => {
             console.error(`Failed to retrieve patient data: ${error}`);
         }
     }
-
     useEffect(() => {
         if (appointmentID) {
             retrievePatientData();
@@ -148,6 +118,7 @@ const PatientsTable = () => {
 
     }, [appointmentID]);
 
+    // this function is used to book an appointment 
     const handleBookAppointment = async (e) => {
         e.preventDefault();
         try {
@@ -173,13 +144,14 @@ const PatientsTable = () => {
 
             if (response.status === 200 || response.status === 201) {
                 alert("Appointment booked successfully");
-                handleClose();
+                setIsAppointmentOpen(true);
+                navigate("/patients-dashboard/book-appointment");
             }
         } catch (error) {
             console.log(`Failed to book appointment: ${error}`);
         }
     }
-
+    
     return (
         <>
             <div className="flex justify-center items-center gap-4 flex-co mt-4">
@@ -191,6 +163,7 @@ const PatientsTable = () => {
                         Open Appointment Form
                     </Button>
                 </div>
+                {/* clickable button to open a appointment form */}
                 <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
                     <DialogTitle className="bg-blue-500 text-white">Book Appoinment</DialogTitle>
                     <DialogContent className="space-y-4 p-4 mt-4">
@@ -230,6 +203,9 @@ const PatientsTable = () => {
                                     type="date"
                                     value={appointmentData.appointmentDate}
                                     onChange={(e) => setAppointmentData({ ...appointmentData, appointmentDate: e.target.value })}
+                                    InputLabelProps={{
+                                        shrink: true
+                                    }}
                                 />
                                 <TextField
                                     label="Enter Phone Number"
@@ -278,7 +254,6 @@ const PatientsTable = () => {
                                     value={appointmentData.purposeOfAppointment}
                                     onChange={(e) => setAppointmentData({ ...appointmentData, purposeOfAppointment: e.target.value })}
                                     multiline
-                                    rows={2}
                                 />
                             </div>
                             <DialogActions className="p-4">
@@ -289,10 +264,10 @@ const PatientsTable = () => {
                     </DialogContent>
                 </Dialog>
             </div>
-            <div className="mt-12 mb-1 flex flex-col w-full">
+            <div className="mt-12 mb-1 flex justify-center items-center w-full">
                 <Card className="shadow-lg">
                     <CardHeader
-                        title="Apointments"
+                        title="Appointments"
                         className="bg-gray-500 mb-8 p-6"
                         titleTypographyProps={{
                             variant: 'h6',
@@ -306,7 +281,7 @@ const PatientsTable = () => {
                                     {appointmentsTableColumn.map((header, i) => (
                                         <TableCell
                                             key={i}
-                                            className="border-b border-blue-gray-50 text-center py-3 px-5 text-center"
+                                            className="border-b border-blue-gray-50 text-center py-3 px-5"
                                         >
                                             <Typography
                                                 variant="caption"
@@ -318,55 +293,10 @@ const PatientsTable = () => {
                                     ))}
                                 </TableRow>
                             </TableHead>
-                            <TableBody>
-                                {retrievedAppointmentsData ? retrievedAppointmentsData.map((appointment, i) => (
-                                    <TableRow key={i}>
-                                        <TableCell className="py-3 px-5 border-b border-blue-gray-50 text-center">
-                                            <Typography variant="body2" className="text-blue-gray-900">
-                                                {appointment.firstName}
-                                            </Typography>
-                                        </TableCell>
-                                        <TableCell className="py-3 px-5 border-b border-blue-gray-50 text-center">
-                                            <Typography variant="body2" className="text-blue-gray-900">
-                                                {appointment.lastName}
-                                            </Typography>
-                                        </TableCell>
-                                        <TableCell className="py-3 px-5 border-b border-blue-gray-50 text-center">
-                                            <Typography variant="body2" className="text-blue-gray-900">
-                                                {appointment.email}
-                                            </Typography>
-                                        </TableCell>
-                                        <TableCell className="py-3 px-5 border-b border-blue-gray-50 text-center">
-                                            <Typography variant="body2" className="text-blue-gray-900">
-                                                {appointment.appointmentDate}
-                                            </Typography>
-                                        </TableCell>
-                                        <TableCell className="py-3 px-5 border-b border-blue-gray-50 text-center">
-                                            <Typography variant="body2" className="text-blue-gray-900">
-                                                {appointment.doctor}
-                                            </Typography>
-                                        </TableCell>
-                                        <TableCell className="py-3 px-5 border-b border-blue-gray-50 text-center">
-                                            <Typography variant="body2" className="text-blue-gray-900">
-                                                {appointment.status}
-                                            </Typography>
-                                        </TableCell>
-                                        <TableCell className="py-3 px-5 border-b border-blue-gray-50 text-center">
-                                            <Typography variant="body2" className="text-blue-gray-900">
-                                                {appointment.purposeOfAppointment}
-                                            </Typography>
-                                        </TableCell>
-                                    </TableRow>
-                                )) : (
-                                    <TableRow>
-                                        <TableCell colSpan={appointmentsTableColumn.length} className="py-3 px-5 border-b border-blue-gray-50 text-center">
-                                            <Typography variant="body2" className="text-blue-gray-900">
-                                                No appointments found
-                                            </Typography>
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
+                            <AppointmentsTable 
+                                isAppointmentOpen={isAppointmentOpen} 
+                                retrievedAppointmentsData={retrievedAppointmentsData}
+                            />
                         </Table>
                     </CardContent>
                 </Card>

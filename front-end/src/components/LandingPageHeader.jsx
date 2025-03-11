@@ -12,7 +12,6 @@ import AOS from "aos";
 import { useEffect, useState } from "react";
 import CMS from "../API/CMS.jsx";
 import { Link } from "react-router-dom";
-import toothlogo from "../assets/img/dental clinic assets/toothlogo3.png" 
 
 const LandingPageHeader = () => {
     const [whatWeServeTitle, setWhatWeServeTitle] = useState("");
@@ -51,8 +50,8 @@ const LandingPageHeader = () => {
 
                 <a href="/" className="logo d-flex align-items-center me-auto">
                     {/* <!-- Uncomment the line below if you also wish to use an image logo --> */}
-                    <img src={toothlogo} className="mix-blend-luminosity" alt="Tooth Logo"/>
-                    {/* <h1 className="sitename">DCMS</h1> */}
+                    {/* <img src={toothlogo} className="mix-blend-luminosity" alt="Tooth Logo"/> */}
+                    <h1 className="sitename">CMS</h1>
                 </a>
 
                 <nav id="navmenu" className="navmenu">
@@ -80,6 +79,9 @@ const LandingPageHeader = () => {
                         <li><a href="#contact">Contact</a></li>
                         <li>
                             <Link to={"/patients-portal"}>Patients Registration Portal</Link>
+                        </li>
+                        <li>
+                            <Link to={"/doctor-portal/login"}>Doctor&apos;s Login Portal</Link>
                         </li>
                         <li>
                             <Link to={"/patients-login"}>CMS Login Portal</Link>

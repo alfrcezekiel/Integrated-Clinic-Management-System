@@ -26,7 +26,7 @@ function PatientsLoginPortal() {
         email: "",
         password: ""
     })
-    
+
     const location = useLocation();
 
     useEffect(() => {
@@ -51,24 +51,30 @@ function PatientsLoginPortal() {
     const navigate = useNavigate();
 
     const handleLoggedInPatient = async (e) => {
-        try  {
+        try {
             e.preventDefault();
             const response = await CMS.post("/CMS/loginPatientsAccount", patientsLoginFormData, {
                 headers: {
                     "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
                 },
             });
-            
-            if(response.status === 200) {
+            if (response.data && response.status === 200) {
                 alert(response.data.message)
                 setFieldErrors({})
-                navigate("/patients-dashboard");
-            } else {
+                if (response.data.token) {
+                    localStorage.setItem("authToken", response.data.token);
+                    navigate("/patients-dashboard");
+                } else {
+                    console.error("No token found in response data");
+                    alert("No token found in response data")
+                }
+            } else if (response.data && response.data.errors) {
                 setFieldErrors(response.data.errors);
             }
 
         } catch (error) {
-            if(error.response && error.response.status === 400){
+            if (error.response && error.response.status === 400) {
                 setFieldErrors(error.response.data.errors);
             } else {
                 console.error(`Error in logging in patient: ${error}`);
@@ -76,7 +82,7 @@ function PatientsLoginPortal() {
         }
     }
 
-    return ( 
+    return (
         <section className="m-3 flex gap-4">
             <div className="w-full lg:w-3/5 mt-24">
                 <div className="text-center">
@@ -85,15 +91,15 @@ function PatientsLoginPortal() {
                 <form className="mt-8 mb-2 mx-auto w-80 max-w-screen-lg lg:w-1/2" autoComplete="off" onSubmit={handleLoggedInPatient} id="patients-login-form">
                     <div className="mb-4 flex flex-col gap-6">
                         <label className="-mb-3 font-medium">Email</label>
-                        <TextField 
-                            label="Enter your email" 
-                            variant="outlined" 
-                            fullWidth 
+                        <TextField
+                            label="Enter your email"
+                            variant="outlined"
+                            fullWidth
                             autoComplete="off"
                             helperText={fieldErrors.email ? fieldErrors.email : ""}
                             value={patientsLoginFormData.email}
                             error={Boolean(fieldErrors.email)}
-                            onChange={(e) => setPatientsLoginFormData({...patientsLoginFormData, email: e.target.value})}
+                            onChange={(e) => setPatientsLoginFormData({ ...patientsLoginFormData, email: e.target.value })}
                         />
                     </div>
                     <div className="mb-4 flex flex-col gap-6">
@@ -102,7 +108,7 @@ function PatientsLoginPortal() {
                             <InputLabel htmlFor="outlined-adornment-password">Enter your password</InputLabel>
                             <OutlinedInput
                                 fullWidth
-                                onChange={(e) => setPatientsLoginFormData({...patientsLoginFormData, password: e.target.value})}
+                                onChange={(e) => setPatientsLoginFormData({ ...patientsLoginFormData, password: e.target.value })}
                                 value={patientsLoginFormData.password}
                                 autoComplete="off"
                                 type={showPassword ? "text" : "password"}
