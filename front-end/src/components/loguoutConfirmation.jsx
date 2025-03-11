@@ -5,8 +5,8 @@ const LogoutDialog = ({ open, onClose, onConfirm }) => {
         <Dialog
             open={open}
             onClose={onClose}
-            disableEscapeKeyDown
-            disableBackdropClick
+            disableescapekeydown="true"
+            disablebackdropclick="true"
         >
             <DialogTitle>Confirm Logout</DialogTitle>
             <DialogContent>

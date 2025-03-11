@@ -8,6 +8,7 @@ const Home = lazy(() => import("./components/MainContent.jsx"));
 const PatientRegistrationPortal = lazy(() => import("./components/pages/PatientsRegistrationPage.jsx"));
 const PatientsLoginPortal = lazy(() => import("./components/pages/PatientsLoginPage.jsx"));
 const PatientsDashboard = lazy(() => import("./components/pages/dashboard/PatientsDashboard.jsx"));
+const DoctorLoginPortal = lazy(() => import("./components/pages/DoctorLoginPage.jsx"));
 
 const RouteLoader = ({ children }) => {
   const [loading, setLoading] = useState(false);
@@ -54,7 +55,7 @@ function App() {
               <Route path="/patients-portal" element={<PatientRegistrationPortal />} />
               <Route path="/patients-login" element={<PatientsLoginPortal />} />
               <Route path="/patients-dashboard/*" element={<PatientsDashboard />} />
-              <Route path="/doctor-portal/login" element={<div>login</div>} />
+              <Route path="/doctor-portal/login" element={<DoctorLoginPortal />} />
               <Route path="*" element={<PageNotFound />} />
             </Routes>
           </Suspense>
