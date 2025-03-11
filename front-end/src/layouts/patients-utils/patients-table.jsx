@@ -124,6 +124,7 @@ const PatientsTable = () => {
         try {
             if (!appointmentID) {
                 alert("Appointment ID is required");
+                handleOpen(true);
                 return;
             }
 
@@ -154,7 +155,7 @@ const PatientsTable = () => {
     
     return (
         <>
-            <div className="flex justify-center items-center gap-4 flex-co mt-4">
+            <div className="flex justify-center items-center gap-4 flex-col mt-4">
                 <Typography variant="h5" className="text-blue-gray-600 text-center">
                     Patients Appointments
                 </Typography>
@@ -268,10 +269,10 @@ const PatientsTable = () => {
                 <Card className="shadow-lg">
                     <CardHeader
                         title="Appointments"
-                        className="bg-gray-500 mb-8 p-6"
+                        className="bg-blue-500 mb-8 p-6"
                         titleTypographyProps={{
                             variant: 'h6',
-                            className: 'text-white',
+                            className: 'text-white text-center',
                         }}
                     />
                     <CardContent className="overflow-x-scroll px-0 pt-0 pb-2">
@@ -282,6 +283,7 @@ const PatientsTable = () => {
                                         <TableCell
                                             key={i}
                                             className="border-b border-blue-gray-50 text-center py-3 px-5"
+                                            align="center"
                                         >
                                             <Typography
                                                 variant="caption"
