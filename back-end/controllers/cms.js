@@ -320,7 +320,7 @@ export const verifyToken = (req, res, next) => {
     }
 }
 
-// controller logic for getting patients appointments
+// controller logic for getting patients appointments to display in table rows
 export const getPatientsAppointments = async (req, res) => {
     try {
         const query = `SELECT firstName, lastName, appointmentDate, doctor, status, purposeOfAppointment FROM patientsappointment`;

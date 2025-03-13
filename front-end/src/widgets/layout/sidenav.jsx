@@ -18,7 +18,7 @@ const SideNav = ({ brandName, routes }) => {
             classes={{ paper: isMobile ? "bg-white w-72 shadow-md" : "w-72 bg-white shadow-md" }}
         >
             <div className="relative p-6">
-                <Link to={"/patients-dashboard"}>
+                <Link to={"/patients-dashboard/home"}>
                     <Typography variant="h5" className="text-gray-900">
                         {brandName}
                     </Typography>
@@ -26,17 +26,17 @@ const SideNav = ({ brandName, routes }) => {
                 <Outlet />
             </div>
             <nav className="px-4">
-                {routes.map(({ title, pages }, index) => (
-                    <div key={title || index} className="mb-4">
-                        {title && (
+                {routes.map(({ layout, pages }, index) => (
+                    <div key={layout || index} className="mb-4">
+                        {layout && (
                             <Typography variant="body2" className="uppercase text-gray-500 font-bold mb-2">
-                                {title}
+                                {layout}
                             </Typography>
                         )}
                         {pages.map(({ icon, name, path }) => (
                             <NavLink
                                 key={name}
-                                to={path}
+                                to={`${layout}${path}`}
                                 className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-white" : "text-gray-700 hover:bg-gray-100"}`}
                             >
                                 {icon}
