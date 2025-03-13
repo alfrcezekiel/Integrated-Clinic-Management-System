@@ -9,11 +9,13 @@ import {
     patientsBookedAppointments,
     getPatientsAppointments,
     logout,
+    loginDoctorsAccount
 } from "../controllers/cms.js";
 import validateRegister from "../middleware/validation.js";
 import patientsLoginValidation from "../middleware/patientsLoginValidation.js";
 import validateContacts from "../middleware/contact.validation.js";
 import validateAppointmentID from "../middleware/patientId.validation.js";
+import doctorsLoginValidation from "../middleware/doctors.login.validation.js";
 
 const router = express.Router();
 
@@ -42,5 +44,8 @@ router.get("/patientsDashboard/bookedAppointments", getPatientsAppointments);
 
 // router for destroying the session
 router.get("/patientsDashboard/logout", logout)
+
+// router for logging in doctors account
+router.post("/loginDoctorsAccount", [doctorsLoginValidation], loginDoctorsAccount);
 
 export default router;

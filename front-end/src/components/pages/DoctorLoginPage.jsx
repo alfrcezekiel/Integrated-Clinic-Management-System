@@ -19,7 +19,7 @@ import doctor from "../../assets/img/page-title-bg.jpg";
 
 function DoctorLoginPortal() {
     const [showPassword, setShowPassword] = useState(false);
-    const [patientsLoginFormData, setPatientsLoginFormData] = useState({
+    const [doctorsLoginFormData, setDoctorsLoginFormData] = useState({
         email: "",
         password: ""
     })
@@ -32,7 +32,7 @@ function DoctorLoginPortal() {
 
     useEffect(() => {
         const titleElement = () => {
-            document.title = "Doctor Login Portal - CMS";
+            document.title = "Doctor's Login Portal - CMS";
         }
         titleElement();
     }, [location.pathname])
@@ -54,18 +54,19 @@ function DoctorLoginPortal() {
     const handleLoggedInPatient = async (e) => {
         try {
             e.preventDefault();
-            const response = await CMS.post("/CMS/loginPatientsAccount", patientsLoginFormData, {
+            const response = await CMS.post("/CMS/loginDoctorsAccount", doctorsLoginFormData, {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
                 },
             });
+            
             if (response.data && response.status === 200) {
                 alert(response.data.message)
                 setFieldErrors({})
                 if (response.data.token) {
                     localStorage.setItem("authToken", response.data.token);
-                    navigate("/patients-dashboard");
+                    navigate("/doctor-portal/dashboard");
                 } else {
                     console.error("No token found in response data");
                     alert("No token found in response data")
@@ -87,7 +88,7 @@ function DoctorLoginPortal() {
         <section className="m-3 flex gap-4">
             <div className="w-full lg:w-3/5 mt-24">
                 <div className="text-center">
-                    <Typography variant="h5" className="font-bold mb-4" color="black">Doctor Login Portal</Typography>
+                    <Typography variant="h5" className="font-bold mb-4" color="black">Doctor&apos;s Login Portal</Typography>
                 </div>
                 <form className="mt-8 mb-2 mx-auto w-80 max-w-screen-lg lg:w-1/2" autoComplete="off" onSubmit={handleLoggedInPatient} id="patients-login-form">
                     <div className="mb-4 flex flex-col gap-6">
@@ -98,9 +99,9 @@ function DoctorLoginPortal() {
                             fullWidth
                             autoComplete="off"
                             helperText={fieldErrors.email ? fieldErrors.email : ""}
-                            value={patientsLoginFormData.email}
+                            value={doctorsLoginFormData.email}
                             error={Boolean(fieldErrors.email)}
-                            onChange={(e) => setPatientsLoginFormData({ ...patientsLoginFormData, email: e.target.value })}
+                            onChange={(e) => setDoctorsLoginFormData({ ...doctorsLoginFormData, email: e.target.value })}
                         />
                     </div>
                     <div className="mb-4 flex flex-col gap-6">
@@ -109,8 +110,8 @@ function DoctorLoginPortal() {
                             <InputLabel htmlFor="outlined-adornment-password">Enter your password</InputLabel>
                             <OutlinedInput
                                 fullWidth
-                                onChange={(e) => setPatientsLoginFormData({ ...patientsLoginFormData, password: e.target.value })}
-                                value={patientsLoginFormData.password}
+                                onChange={(e) => setDoctorsLoginFormData({ ...doctorsLoginFormData, password: e.target.value })}
+                                value={doctorsLoginFormData.password}
                                 autoComplete="off"
                                 type={showPassword ? "text" : "password"}
                                 endAdornment={

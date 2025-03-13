@@ -112,6 +112,47 @@ export const loginPatientsAccount = async (req, res) => {
         console.error(`Failed to login patient account: ${error}`);
     }
 }
+
+// controller logic for doctors login account 
+export const loginDoctorsAccount = async (req, res) => {
+    try {
+        const {email, password} = req.body;
+
+        const query = `SELECT email, password FROM doctorsaccount WHERE email = ? AND password = ?;`;
+
+        const [rows] = await conn.query(query, [email, password]);
+
+        if (!rows.find((row) => row.email === email && row.password === password)) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                message: "Invalid email and password"
+            })
+        }
+
+        const doctorsUsers = rows[0];
+
+        const SECRET_KEY = process.env.JWT_SECRET || "authenniraul"
+        if(!SECRET_KEY){
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "Failed to login doctor account"
+            });
+        }
+
+        const token = jwt.sign({id: doctorsUsers.doctorsID}, SECRET_KEY, {expiresIn: "1hr"});
+        const ds = req.session.user = {
+            doctorsId: doctorsUsers.doctorsID
+        }
+
+        return res.status(StatusCodes.OK).json({
+            message: "Doctors Login Successful",
+            s: ds,
+            token
+        })
+        
+    } catch (error) {
+        console.error(`Failed to login doctor account: ${error}`);
+    }
+}
+
 // get session of the user
 export const getLoggedInUser = (req, res) => {
     if (!req.session.user) {
