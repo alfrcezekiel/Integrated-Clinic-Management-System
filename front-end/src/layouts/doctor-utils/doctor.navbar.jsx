@@ -8,12 +8,12 @@ import CMS from "../../API/CMS";
 import LogoutDialog from "../../components/loguoutConfirmation";
 
 // this is the navbar component for the dashboard
-const DashboardNavbar = () => {
+const DoctorsDashboardNavbar = () => {
     const [controller, dispatch] = useMaterialUIController();
     const { fixedNavbar, openSideNav } = controller;
     const location = useLocation();
     const pathParts = location.pathname.substring(1).split("/").filter(Boolean);
-    const [layout = "home", page = "", path = "home"] = pathParts;
+    const [layout = "/dashboard/home", page = "", path = "/dashboard/home"] = pathParts;
     const [anchorEl, setAnchorEl] = useState(null);
     const [settingsAnchorEl, setSettingsAnchorEl] = useState(null);
     const handleMenuOpen = (e) => {
@@ -25,9 +25,9 @@ const DashboardNavbar = () => {
 
     const handleLogoutConfirm = async () => {
         try {
-            const response = await CMS.get("/CMS/patientsDashboard/logout");
+            const response = await CMS.get("/CMS/doctors-dashboard/logout");
             if (!response.data || !response.data.message) {
-                throw new Error("No response data or no success message");
+                throw new Error("No response for logging out the doctors details");
             } else {
                 localStorage.removeItem("authToken");
                 navigate("/cms");
@@ -42,7 +42,7 @@ const DashboardNavbar = () => {
     const handleLogout = () => {
         setLogoutDialog(true);
     }
-    
+
     const handleDialogClose = () => {
         setLogoutDialog(false);
     }
@@ -69,7 +69,7 @@ const DashboardNavbar = () => {
                         <MenuIcon />
                     </IconButton>
                     <Breadcrumbs className="text-gray-600">
-                        <Link to={`/${layout}/${path}`} className="text-blue-500">
+                        <Link to={`/${layout}/dashboard/${path}`} className="text-blue-500 no-underline">
                             <Typography variant="body1">{layout}</Typography>
                         </Link>
                     </Breadcrumbs>
@@ -117,7 +117,7 @@ const DashboardNavbar = () => {
                     </Menu>
                 </div>
             </Toolbar>
-            <LogoutDialog 
+            <LogoutDialog
                 open={logoutDialog}
                 onClose={handleDialogClose}
                 onConfirm={handleLogoutConfirm}
@@ -125,4 +125,4 @@ const DashboardNavbar = () => {
         </AppBar>
     )
 }
-export default DashboardNavbar;
+export default DoctorsDashboardNavbar;

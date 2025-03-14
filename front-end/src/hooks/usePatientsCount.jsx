@@ -8,11 +8,10 @@ function usePatientsCount() {
         const retrievePatientsData = async () => {
             try {
                 const response = await CMS.get("/CMS/patientsDashboard");
-                console.log(response.data)
                 if (!response.data) {
                     throw new Error("No retrieved data for patients");
                 } else {
-                    setPatientsData(response.data.length);
+                    setPatientsData(response.data.patientsDashboard.length);
                 }
             } catch (error) {
                 console.error(`Code functionality error for fetching patients data: ${error}`);
@@ -21,6 +20,6 @@ function usePatientsCount() {
         retrievePatientsData();
     }, []);
 
-    return getPatientsData;
+    return getPatientsData ;
 }
 export default usePatientsCount;    

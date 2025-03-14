@@ -31,6 +31,7 @@ router.post("/loginPatientsAccount", [patientsLoginValidation], loginPatientsAcc
 // router for contact us in landing page
 router.post("/contactUs", [validateContacts], contactMessageManagement);
 
+// router for counting the number of patients registered
 router.get("/patientsDashboard", getPatientsDashboard);
 
 // router for retrieving the patients id details into input fields
@@ -42,10 +43,13 @@ router.post("/patientsDashboard/patientsBookedAppointments", patientsBookedAppoi
 // router for retrieving the patients booked appointments  to display in tables
 router.get("/patientsDashboard/bookedAppointments", getPatientsAppointments);
 
-// router for destroying the session
+// router for destroying the session of the patients account
 router.get("/patientsDashboard/logout", logout)
 
 // router for logging in doctors account
 router.post("/loginDoctorsAccount", [doctorsLoginValidation], loginDoctorsAccount);
+
+// router for destroying the session of the doctors account
+router.get("/doctors-dashboard/logout", logout);
 
 export default router;

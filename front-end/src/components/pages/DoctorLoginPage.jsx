@@ -66,7 +66,7 @@ function DoctorLoginPortal() {
                 setFieldErrors({})
                 if (response.data.token) {
                     localStorage.setItem("authToken", response.data.token);
-                    navigate("/doctor-portal/dashboard");
+                    navigate("/doctor-portal/dashboard/home");
                 } else {
                     console.error("No token found in response data");
                     alert("No token found in response data")

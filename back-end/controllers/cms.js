@@ -118,7 +118,7 @@ export const loginDoctorsAccount = async (req, res) => {
     try {
         const {email, password} = req.body;
 
-        const query = `SELECT email, password FROM doctorsaccount WHERE email = ? AND password = ?;`;
+        const query = `SELECT doctorsID, email, password FROM doctorsaccount WHERE email = ? AND password = ?;`;
 
         const [rows] = await conn.query(query, [email, password]);
 
@@ -192,6 +192,7 @@ export const logout = (req, res) => {
     });
 };
 
+// controller logic for counting the total number of patients in row
 export const getPatientsDashboard = async (req, res) => {
     try {
         const query = `SELECT COUNT(*) AS total_count FROM (
@@ -254,7 +255,7 @@ export const getBookedAppointments = async (req, res) => {
 export const patientsBookedAppointments = async (req, res) => {
     try {
         const {
-            appointmentID,
+            patientID,
             firstName,
             lastName,
             email,
@@ -267,7 +268,7 @@ export const patientsBookedAppointments = async (req, res) => {
         } = req.body;
 
         const query = `INSERT INTO patientsappointment (
-            appointmentID,
+            patientID,
             firstName,
             lastName,
             email,
@@ -278,7 +279,7 @@ export const patientsBookedAppointments = async (req, res) => {
             status,
             purposeOfAppointment
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
-        const [result] = await conn.query(query, [appointmentID, firstName, lastName, email, appointmentDate, phoneNumber, gender, doctor, status, purposeOfAppointment]);
+        const [result] = await conn.query(query, [patientID, firstName, lastName, email, appointmentDate, phoneNumber, gender, doctor, status, purposeOfAppointment]);
         
         if(result.affectedRows === 0){
             return res.status(StatusCodes.BAD_REQUEST).json({

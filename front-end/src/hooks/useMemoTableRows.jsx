@@ -16,37 +16,37 @@ const AppointmentsTable = ({ retrievedAppointmentsData, isAppointmentOpen }) => 
         if (!isAppointmentOpen && retrievedAppointmentsData.length >= 0 ) {
             return retrievedAppointmentsData.map((appointment, i) => (
                 <TableRow key={i}>
-                    <TableCell className="py-3 px-5 border-b border-blue-gray-50 text-center" align="center">
+                    <TableCell className="border-b border-blue-gray-50 text-center" align="center">
                         <Typography variant="body2" className="text-blue-gray-900">
                             {appointment.firstName}
                         </Typography>
                     </TableCell>
-                    <TableCell className="py-3 px-5 border-b border-blue-gray-50 text-center" align="center">
+                    <TableCell className="border-b border-blue-gray-50 text-center" align="center">
                         <Typography variant="body2" className="text-blue-gray-900">
                             {appointment.lastName}
                         </Typography>
                     </TableCell>
-                    <TableCell className="py-3 px-5 border-b border-blue-gray-50 text-center" align="center">
+                    <TableCell className="border-b border-blue-gray-50 text-center" align="center">
                         <Typography variant="body2" className="text-blue-gray-900">
                             {formatDate(appointment.appointmentDate)}
                         </Typography>
                     </TableCell>
-                    <TableCell className="py-3 px-5 border-b border-blue-gray-50 text-center" align="center">
+                    <TableCell className="border-b border-blue-gray-50 text-center" align="center">
                         <Typography variant="body2" className="text-blue-gray-900">
                             {appointment.doctor}
                         </Typography>
                     </TableCell>
-                    <TableCell className="py-3 px-5 border-b border-blue-gray-50 text-center" align="center">
+                    <TableCell className="border-b border-blue-gray-50 text-center" align="center">
                         <Typography variant="body2" className="text-blue-gray-900">
                             {appointment.status}
                         </Typography>
                     </TableCell>
-                    <TableCell className="py-3 px-5 border-b border-blue-gray-50 text-center" align="center">
+                    <TableCell className="border-b border-blue-gray-50 text-center" align="center">
                         <Typography variant="body2" className="text-blue-gray-900">
                             {appointment.purposeOfAppointment}
                         </Typography>
                     </TableCell>
-                    <TableCell className="py-3 px-5 border-b border-blue-gray-50 text-center" align="center">
+                    <TableCell className="border-b border-blue-gray-50 text-center" align="center">
                         <Typography variant="body2" className="text-blue-gray-900">
                             {appointment.action }
                         </Typography>
