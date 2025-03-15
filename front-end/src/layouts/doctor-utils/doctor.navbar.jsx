@@ -70,12 +70,12 @@ const DoctorsDashboardNavbar = () => {
                     </IconButton>
                     <Breadcrumbs className="text-gray-600">
                         <Link to={`/${layout}/dashboard/${path}`} className="text-blue-500 no-underline">
-                            <Typography variant="body1">{layout}</Typography>
+                            <Typography variant="body1">{layout} / {page}</Typography>
                         </Link>
                     </Breadcrumbs>
                     <Outlet />
-                    <Typography variant="body1" className="text-gray-600">
-                        {page}
+                    <Typography variant="body2" className="text-gray-600">
+                        / {path}
                     </Typography>
                 </div>
                 <div className="flex items-center gap-4">

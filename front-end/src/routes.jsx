@@ -3,6 +3,7 @@ import DashboardHome from "./widgets/layout/DashboardHome";
 import Schedule from "@mui/icons-material/Schedule";
 import PatientsTable from "./layouts/patients-utils/patients-table";
 import DoctorsDashboardHome from "./widgets/layout/doctors-dashboard/DoctorsDashboardHome";
+import DoctorsTablesListOfAppointments from "./layouts/doctor-utils/DoctorsTablesListOfAppointment";
 
 const iconStyle = {
     fontSize: 20,
@@ -40,6 +41,13 @@ export const doctorRoutes = [{
             name: "Doctor's Dashboard",
             path: "/home",
             element: <DoctorsDashboardHome />,
+        },
+        {
+            id: 2,
+            icon: <Schedule style={iconStyle}/>,
+            name: "Patient's Appointments",
+            path: "/patients-appointments",
+            element: <DoctorsTablesListOfAppointments/>
         }
     ]
 }]

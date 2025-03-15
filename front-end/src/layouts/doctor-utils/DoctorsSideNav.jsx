@@ -25,7 +25,7 @@ const DoctorsSideNav = ({ brandName, routes }) => {
                 </Link>
                 <Outlet />
             </div>
-            <nav className="px-4">
+            <nav className="p-3">
                 {routes.map(({ layout, pages }, index) => (
                     <div key={layout || index} className="mb-4">
                         {layout && (
