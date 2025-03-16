@@ -9,7 +9,10 @@ import {
     patientsBookedAppointments,
     getPatientsAppointments,
     logout,
-    loginDoctorsAccount
+    loginDoctorsAccount,
+    updatePatientsAppointments,
+    getBookedAppointmentsToDisplayInDoctorsDashboard,
+    verifyToken
 } from "../controllers/cms.js";
 import validateRegister from "../middleware/validation.js";
 import patientsLoginValidation from "../middleware/patientsLoginValidation.js";
@@ -51,5 +54,11 @@ router.post("/loginDoctorsAccount", [doctorsLoginValidation], loginDoctorsAccoun
 
 // router for destroying the session of the doctors account
 router.get("/doctors-dashboard/logout", logout);
+
+// router for updating the patients appointments
+router.put("/doctors-dashboard/updateAppointment/:appointmentID", updatePatientsAppointments);
+
+// router for retrieving the doctors name and patient id to display in doctors dashboard
+router.get("/doctors-dashboard/appointments", getBookedAppointmentsToDisplayInDoctorsDashboard);
 
 export default router;

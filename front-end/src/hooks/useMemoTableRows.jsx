@@ -1,6 +1,13 @@
-import{ useMemo } from "react";
+import { useMemo } from "react";
 import PropTypes from "prop-types";
-import { TableBody, TableRow, TableCell, Typography } from "@mui/material";
+import { 
+    TableBody, 
+    TableRow, 
+    TableCell, 
+    Typography,
+    IconButton
+} from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
 
 const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -11,7 +18,7 @@ const formatDate = (dateString) => {
 };
 
 // This component is used to render the table rows for the appointments table
-const AppointmentsTable = ({ retrievedAppointmentsData, isAppointmentOpen }) => {
+const AppointmentsTable = ({ retrievedAppointmentsData, isAppointmentOpen, onUpdateAppointment }) => {
     const memoizedTableRows = useMemo(() => {
         if (!isAppointmentOpen && retrievedAppointmentsData.length >= 0 ) {
             return retrievedAppointmentsData.map((appointment, i) => (
@@ -47,9 +54,13 @@ const AppointmentsTable = ({ retrievedAppointmentsData, isAppointmentOpen }) => 
                         </Typography>
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
-                        <Typography variant="body2" className="text-blue-gray-900">
-                            {appointment.action }
-                        </Typography>
+                        <IconButton
+                            onClick={() => onUpdateAppointment(appointment)}
+                            color="primary"
+                            aria-label="update appointment"
+                        >
+                            <EditIcon />
+                        </IconButton>
                     </TableCell>
                 </TableRow>
             ));
@@ -65,7 +76,7 @@ const AppointmentsTable = ({ retrievedAppointmentsData, isAppointmentOpen }) => 
                 </TableRow>
             );
         }
-    }, [isAppointmentOpen, retrievedAppointmentsData]); 
+    }, [isAppointmentOpen, retrievedAppointmentsData, onUpdateAppointment]); 
 
     return (
         <TableBody>
@@ -77,5 +88,6 @@ const AppointmentsTable = ({ retrievedAppointmentsData, isAppointmentOpen }) => 
 AppointmentsTable.propTypes = {
     retrievedAppointmentsData: PropTypes.array,
     isAppointmentOpen: PropTypes.bool,
+    onUpdateAppointment: PropTypes.func.isRequired
 };
 export default AppointmentsTable;

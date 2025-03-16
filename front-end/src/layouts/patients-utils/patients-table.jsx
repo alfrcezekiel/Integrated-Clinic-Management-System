@@ -93,6 +93,7 @@ const PatientsTable = () => {
             console.error(`Failed to retrieve patient data: ${error}`);
         }
     }
+
     useEffect(() => {
         if (appointmentID) {
             retrievePatientData();
@@ -152,7 +153,29 @@ const PatientsTable = () => {
             console.log(`Failed to book appointment: ${error}`);
         }
     }
-    
+
+    const handleUpdateAppointment = async (appointment) => {
+        try {
+            const response = await CMS.put(`/CMS/patients-dashboard/updateAppointment/${appointment.patientID}`, appointment, {
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            });
+            
+            if (response.status === 200) {
+                alert("Appointment updated successfully");
+                setIsAppointmentOpen(true);
+                setAppointmentData(appointment);
+                setAppointmentID(appointment.patientID);
+                handleOpen();
+                navigate("/patients-dashboard/book-appointment");
+            }
+        } catch (error) {
+            console.error(`Failed to update appointment: ${error}`);
+            alert("Failed to update appointment");
+        }
+    }
+
     return (
         <>
             <div className="flex justify-center items-center gap-4 flex-col mt-4">
@@ -295,9 +318,10 @@ const PatientsTable = () => {
                                     ))}
                                 </TableRow>
                             </TableHead>
-                            <AppointmentsTable 
-                                isAppointmentOpen={isAppointmentOpen} 
+                            <AppointmentsTable
+                                isAppointmentOpen={isAppointmentOpen}
                                 retrievedAppointmentsData={retrievedAppointmentsData}
+                                onUpdateAppointment={handleUpdateAppointment}
                             />
                         </Table>
                     </CardContent>

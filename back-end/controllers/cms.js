@@ -83,7 +83,7 @@ export const loginPatientsAccount = async (req, res) => {
             ON patientsregisteraccount1.patientID = patientsregisteraccount2.registerPatientID 
             WHERE patientsregisteraccount1.email = ? AND patientsregisteraccount2.password = ?;
         `;
-        
+
         const [rows] = await conn.query(query, [email, password]);
 
         if (!rows.find((row) => row.email === email && row.password === password)) {
@@ -91,17 +91,17 @@ export const loginPatientsAccount = async (req, res) => {
                 message: "Invalid email and password"
             })
         }
-        
+
         const patients = rows[0];
         const SECRET_KEY = process.env.JWT_SECRET || "authenmimangjuan";
-        
+
         // generate a token
-        const token = jwt.sign({id: patients.patientID}, SECRET_KEY, {expiresIn: "1hr"});
+        const token = jwt.sign({ id: patients.patientID }, SECRET_KEY, { expiresIn: "1hr" });
 
         // session token
         const s = req.session.user = {
             patientID: patients.patientID,
-        }   
+        }
 
         return res.status(StatusCodes.OK).json({
             message: "Login successful",
@@ -116,9 +116,9 @@ export const loginPatientsAccount = async (req, res) => {
 // controller logic for doctors login account 
 export const loginDoctorsAccount = async (req, res) => {
     try {
-        const {email, password} = req.body;
+        const { email, password } = req.body;
 
-        const query = `SELECT doctorsID, email, password FROM doctorsaccount WHERE email = ? AND password = ?;`;
+        const query = `SELECT doctorsID, firstName, lastName, email, password FROM doctorsaccount WHERE email = ? AND password = ?;`;
 
         const [rows] = await conn.query(query, [email, password]);
 
@@ -131,23 +131,24 @@ export const loginDoctorsAccount = async (req, res) => {
         const doctorsUsers = rows[0];
 
         const SECRET_KEY = process.env.JWT_SECRET || "authenniraul"
-        if(!SECRET_KEY){
+        if (!SECRET_KEY) {
             return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
                 message: "Failed to login doctor account"
             });
         }
 
-        const token = jwt.sign({id: doctorsUsers.doctorsID}, SECRET_KEY, {expiresIn: "1hr"});
-        const ds = req.session.user = {
-            doctorsId: doctorsUsers.doctorsID
+        const token = jwt.sign({ id: doctorsUsers.doctorsID, firstName: doctorsUsers.firstName, lastName: doctorsUsers.lastName }, SECRET_KEY, { expiresIn: "1hr" });
+        req.session.user = {
+            id: doctorsUsers.doctorsID,
+            firstName: doctorsUsers.firstName,
+            lastName: doctorsUsers.lastName,
         }
 
         return res.status(StatusCodes.OK).json({
             message: "Doctors Login Successful",
-            s: ds,
-            token
+            token,
+            sid: req.session.user
         })
-        
     } catch (error) {
         console.error(`Failed to login doctor account: ${error}`);
     }
@@ -280,8 +281,8 @@ export const patientsBookedAppointments = async (req, res) => {
             purposeOfAppointment
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
         const [result] = await conn.query(query, [patientID, firstName, lastName, email, appointmentDate, phoneNumber, gender, doctor, status, purposeOfAppointment]);
-        
-        if(result.affectedRows === 0){
+
+        if (result.affectedRows === 0) {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 message: "Failed to book appointment"
             });
@@ -302,7 +303,7 @@ export const patientsBookedAppointments = async (req, res) => {
 // verify a token to protect routes 
 export const verifyToken = (req, res, next) => {
     const token = req.headers.authorization?.split(" ")[1];
-    if(!token){
+    if (!token) {
         return res.status(StatusCodes.UNAUTHORIZED).json({
             message: "Access Denied! No token provided"
         })
@@ -335,3 +336,110 @@ export const getPatientsAppointments = async (req, res) => {
         console.error(`Failed to get patients appointments: ${error}`);
     }
 }
+
+// controller logic for retrieving the patients booked appointments to display in tables in doctors dashboard appointments
+export const getBookedAppointmentsToDisplayInDoctorsDashboard = async (req, res) => {
+    try {
+        const doctorName = `Dr. Baek Kang Hyuk`;
+        const query = `SELECT 
+            firstName,
+            lastName,
+            appointmentDate,
+            doctor,
+            status,
+            purposeOfAppointment
+            FROM patientsappointment
+            WHERE doctor = ?;
+        `;
+
+        const [rows] = await conn.query(query, [doctorName]);
+
+
+        if (!rows.length) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No appointments found for the specified doctor"
+            })
+        }
+
+        if (doctorName === "Dr. Baek Kang Hyuk") {
+            return res.status(StatusCodes.OK).json({
+                patientsAppointments: rows
+            });
+        }
+    } catch (error) {
+        console.error(`Failed to get booked appointments: ${error}`);
+    }
+}
+
+// controller logic for updating patients appointments details
+export const updatePatientsAppointments = async (req, res) => {
+    try {
+        const { appointmentID } = req.params;
+
+        const {
+            firstName,
+            lastName,
+            email,
+            appointmentDate,
+            phoneNumber,
+            gender,
+            doctor,
+            status,
+            purposeOfAppointment
+        } = req.body;
+
+        // Validate appointmentID
+        if (!appointmentID) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Appointment ID is required"
+            });
+        }
+
+        const query = `
+            UPDATE patientsappointment 
+            SET
+                firstName = ?,
+                lastName = ?,
+                email = ?,
+                appointmentDate = ?,
+                phoneNumber = ?,
+                gender = ?,
+                doctor = ?,
+                status = ?,
+                purposeOfAppointment = ?
+            WHERE appointmentID = ?;
+            `;
+
+        // Execute the query
+        const [result] = await conn.query(query, [
+            firstName,
+            lastName,
+            email,
+            appointmentDate,
+            phoneNumber,
+            gender,
+            doctor,
+            status,
+            purposeOfAppointment,
+            appointmentID
+        ]);
+
+        // Check if any rows were affected
+        if (result.affectedRows === 0) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No appointments found with the provided Patient ID"
+            });
+        }
+
+        // Return success response
+        return res.status(StatusCodes.OK).json({
+            message: "Patients appointments updated successfully"
+        });
+
+    } catch (error) {
+        console.error(`Failed to update patients appointments: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to update patients appointments"
+        });
+    }
+};

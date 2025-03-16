@@ -5,9 +5,9 @@ const validateAppointmentID = [
     body("patientID")
         .trim()
         .notEmpty()
-        .withMessage("This field is required")
+        .withMessage("Patient ID is required")
         .isNumeric()
-        .withMessage("Invalid Appointment ID"),
+        .withMessage("Invalid Patient ID"),
     (req, res, next) => {
         const errors = validationResult(req)
 
