@@ -24,14 +24,15 @@ import CMS from "../../API/CMS";
 import { useNavigate } from "react-router-dom";
 
 const appointmentsTableColumn = [
-    "ID",
     'First Name',
     'Last Name',
+    "Email",
     'Appointment Date',
+    "Phone Number",
+    "Gender",
     'Doctor',
     'Status',
     'Purpose of Appointment',
-    "Action"
 ]
 
 const PatientsTable = () => {
@@ -152,27 +153,6 @@ const PatientsTable = () => {
             }
         } catch (error) {
             console.log(`Failed to book appointment: ${error}`);
-        }
-    }
-
-    // this function is used to update an appointment in tables rows
-    const handleUpdateAppointment = async (appointment) => {
-        try {
-            const response = await CMS.put(`/CMS/patients-dashboard/updateAppointment/${appointment.appointmentID}`, appointment, {
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            });
-            
-            if (response.status === 200) {
-                alert("Patients appointment updated successfully");
-                setIsAppointmentOpen(true);
-                handleOpen();
-                navigate("/patients-dashboard/book-appointment");
-            }
-        } catch (error) {
-            console.error(`Failed to update appointment: ${error}`);
-            alert("Failed to update appointment");
         }
     }
 
@@ -321,7 +301,6 @@ const PatientsTable = () => {
                             <AppointmentsTable
                                 isAppointmentOpen={isAppointmentOpen}
                                 retrievedAppointmentsData={retrievedAppointmentsData}
-                                onUpdateAppointment={handleUpdateAppointment}
                             />
                         </Table>
                     </CardContent>

@@ -14,7 +14,6 @@ import {
     Dialog,
     DialogActions,
     DialogContent,
-    DialogContentText,
     DialogTitle,
     TextField,
     Button,
@@ -26,6 +25,7 @@ import {
 import { useState } from "react"
 import CMS from "../../API/CMS"
 import EditIcon from "@mui/icons-material/Edit"
+import { useNavigate } from "react-router-dom"
 
 const DoctorsTablesListOfAppointments = () => {
     const [appointmentsData, setAppointmentsData] = useState([])
@@ -77,7 +77,7 @@ const DoctorsTablesListOfAppointments = () => {
         });
         setOpen(true);
     }
-
+    const navigate = useNavigate();
     const location = useLocation();
     useEffect(() => {
         const titleHeader = () => {
@@ -120,6 +120,7 @@ const DoctorsTablesListOfAppointments = () => {
             if (response.status === 200) {
                 alert("Updated patients details")
                 setOpen(false);
+                navigate("/doctor-portal/dashboard/patients-appointments");
             } else {
                 throw new Error(`Unexpected error in status ${response.status}`)
             }

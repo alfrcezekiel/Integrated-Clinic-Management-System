@@ -5,10 +5,9 @@ import {
     TableRow, 
     TableCell, 
     Typography,
-    IconButton
 } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
 
+// This function is used to format the date string to a more readable format
 const formatDate = (dateString) => {
     const date = new Date(dateString);
     const year = date.getFullYear();
@@ -17,17 +16,25 @@ const formatDate = (dateString) => {
     return `${month}/${day}/${year}`;
 };
 
-// This component is used to render the table rows for the appointments table
-const AppointmentsTable = ({ retrievedAppointmentsData, isAppointmentOpen, onUpdateAppointment }) => {
+// function to determine  the color of patients status
+const getStatusColor = (status) => {
+    switch(status){
+        case "Scheduled":
+            return "text-green-600 bg-green-100";
+        case "Cancelled":
+            return "text-red-600 bg-red-100";
+        case "Pending": 
+            return "text-yellow-600 bg-yellow-100";
+        default:
+            return "text-gray-600 bg-gray-100";
+    }
+}
+// This component is used to rende  r the table rows for the appointments table
+const AppointmentsTable = ({ retrievedAppointmentsData, isAppointmentOpen }) => {
     const memoizedTableRows = useMemo(() => {
         if (!isAppointmentOpen && retrievedAppointmentsData.length >= 0 ) {
             return retrievedAppointmentsData.map((appointment, i) => (
                 <TableRow key={i}>
-                    <TableCell className="border-b border-blue-gray-50 text-center" align="center">
-                        <Typography variant="body2" className="text-blue-gray-900">
-                            {appointment.appointmentID}
-                        </Typography>
-                    </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
                         <Typography variant="body2" className="text-blue-gray-900">
                             {appointment.firstName}
@@ -40,7 +47,22 @@ const AppointmentsTable = ({ retrievedAppointmentsData, isAppointmentOpen, onUpd
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
                         <Typography variant="body2" className="text-blue-gray-900">
+                            {appointment.email}
+                        </Typography>
+                    </TableCell>
+                    <TableCell className="border-b border-blue-gray-50 text-center" align="center">
+                        <Typography variant="body2" className="text-blue-gray-900">
                             {formatDate(appointment.appointmentDate)}
+                        </Typography>
+                    </TableCell>
+                    <TableCell className="border-b border-blue-gray-50 text-center" align="center">
+                        <Typography variant="body2" className="text-blue-gray-900">
+                            {appointment.phoneNumber}
+                        </Typography>
+                    </TableCell>
+                    <TableCell className="border-b border-blue-gray-50 text-center" align="center">
+                        <Typography variant="body2" className="text-blue-gray-900">
+                            {appointment.gender}
                         </Typography>
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
@@ -49,23 +71,14 @@ const AppointmentsTable = ({ retrievedAppointmentsData, isAppointmentOpen, onUpd
                         </Typography>
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
-                        <Typography variant="body2" className="text-blue-gray-900">
+                        <Typography variant="body2" className={`text-blue-gray-900 ${getStatusColor(appointment.status)}`}>
                             {appointment.status}
-                        </Typography>
+                        </Typography>   
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
                         <Typography variant="body2" className="text-blue-gray-900">
                             {appointment.purposeOfAppointment}
                         </Typography>
-                    </TableCell>
-                    <TableCell className="border-b border-blue-gray-50 text-center" align="center">
-                        <IconButton
-                            onClick={() => onUpdateAppointment(appointment)}
-                            color="primary"
-                            aria-label="update appointment"
-                        >
-                            <EditIcon />
-                        </IconButton>
                     </TableCell>
                 </TableRow>
             ));
@@ -81,7 +94,7 @@ const AppointmentsTable = ({ retrievedAppointmentsData, isAppointmentOpen, onUpd
                 </TableRow>
             );
         }
-    }, [isAppointmentOpen, retrievedAppointmentsData, onUpdateAppointment]); 
+    }, [isAppointmentOpen, retrievedAppointmentsData]); 
 
     return (
         <TableBody>
@@ -93,6 +106,5 @@ const AppointmentsTable = ({ retrievedAppointmentsData, isAppointmentOpen, onUpd
 AppointmentsTable.propTypes = {
     retrievedAppointmentsData: PropTypes.array,
     isAppointmentOpen: PropTypes.bool,
-    onUpdateAppointment: PropTypes.func.isRequired
 };
 export default AppointmentsTable;

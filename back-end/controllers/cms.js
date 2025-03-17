@@ -326,15 +326,17 @@ export const verifyToken = (req, res, next) => {
 export const getPatientsAppointments = async (req, res) => {
     try {
         const query = `SELECT 
-            appointmentID,
             firstName,
             lastName,
+            email,
             appointmentDate,
+            phoneNumber,
+            gender,
             doctor,
             status,
             purposeOfAppointment
             FROM patientsappointment
-            `;
+        `;
 
         const [rows] = await conn.query(query);
 
