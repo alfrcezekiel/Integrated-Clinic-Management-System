@@ -115,6 +115,10 @@ const DoctorsTablesListOfAppointments = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            if(formData.status === "Scheduled"){
+                formData.appointmentDate = new Date(formData.appointmentDate).toISOString().split("T")[0];
+            }
+            
             const response = await CMS.put(`/CMS/doctors-dashboard/updateAppointment/${formData.appointmentID}`, formData);
 
             if (response.status === 200) {
@@ -126,6 +130,20 @@ const DoctorsTablesListOfAppointments = () => {
             }
         } catch (error) {
             console.error(`Code functionality error for updating the appointment: ${error}`);
+        }
+    }
+
+    // this function determines the color of the status of the patients
+    const getStatusColor = (status) => {
+        switch(status){
+            case "Scheduled":
+                return "text-green-600 bg-green-100";
+            case "Cancelled":
+                return "text-red-600 bg-red-100";
+            case "Pending": 
+                return "text-yellow-600 bg-yellow-100";
+            default:
+                return "text-gray-600 bg-gray-100";
         }
     }
 
@@ -205,7 +223,7 @@ const DoctorsTablesListOfAppointments = () => {
                                             </Typography>
                                         </TableCell>
                                         <TableCell align="center">
-                                            <Typography variant="body2" className="text-blue-gray-900">
+                                            <Typography variant="body2" className={`rounded-lg ${getStatusColor(appointment.status)}`}> 
                                                 {appointment.status}
                                             </Typography>
                                         </TableCell>

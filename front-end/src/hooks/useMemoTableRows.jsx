@@ -71,7 +71,7 @@ const AppointmentsTable = ({ retrievedAppointmentsData, isAppointmentOpen }) => 
                         </Typography>
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
-                        <Typography variant="body2" className={`text-blue-gray-900 ${getStatusColor(appointment.status)}`}>
+                        <Typography variant="body2" className={`rounded-lg ${getStatusColor(appointment.status)}`}>
                             {appointment.status}
                         </Typography>   
                     </TableCell>
