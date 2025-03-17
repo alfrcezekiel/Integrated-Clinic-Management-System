@@ -138,7 +138,7 @@ export const loginDoctorsAccount = async (req, res) => {
         }
 
         const token = jwt.sign({ id: doctorsUsers.doctorsID, firstName: doctorsUsers.firstName, lastName: doctorsUsers.lastName }, SECRET_KEY, { expiresIn: "1hr" });
-        req.session.user = {
+        const sid = req.session.user = {
             id: doctorsUsers.doctorsID,
             firstName: doctorsUsers.firstName,
             lastName: doctorsUsers.lastName,
@@ -147,7 +147,7 @@ export const loginDoctorsAccount = async (req, res) => {
         return res.status(StatusCodes.OK).json({
             message: "Doctors Login Successful",
             token,
-            sid: req.session.user
+            sid: sid
         })
     } catch (error) {
         console.error(`Failed to login doctor account: ${error}`);

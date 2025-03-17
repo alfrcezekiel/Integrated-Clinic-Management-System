@@ -30,6 +30,9 @@ const DoctorsDashboardNavbar = () => {
                 throw new Error("No response for logging out the doctors details");
             } else {
                 localStorage.removeItem("authToken");
+                localStorage.removeItem("sid")
+                localStorage.removeItem("sfn");
+                localStorage.removeItem("sln");
                 navigate("/cms");
             }
         } catch (error) {

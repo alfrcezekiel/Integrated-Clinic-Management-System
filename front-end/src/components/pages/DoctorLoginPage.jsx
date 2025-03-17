@@ -64,12 +64,15 @@ function DoctorLoginPortal() {
             if (response.data && response.status === 200) {
                 alert(response.data.message)
                 setFieldErrors({})
-                if (response.data.token) {
+                if (response.data.token && response.data.sid) {
                     localStorage.setItem("authToken", response.data.token);
+                    localStorage.setItem("sid", response.data.sid.id);
+                    localStorage.setItem("sfn", response.data.sid.firstName);
+                    localStorage.setItem("sln", response.data.sid.lastName);
                     navigate("/doctor-portal/dashboard/home");
                 } else {
-                    console.error("No token found in response data");
-                    alert("No token found in response data")
+                    console.error("No token found in response data and session data");
+                    alert("No token found in response data and session data");
                 }
             } else if (response.data && response.data.errors) {
                 setFieldErrors(response.data.errors);
