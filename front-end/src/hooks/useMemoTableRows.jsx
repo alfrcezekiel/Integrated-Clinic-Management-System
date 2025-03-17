@@ -25,6 +25,11 @@ const AppointmentsTable = ({ retrievedAppointmentsData, isAppointmentOpen, onUpd
                 <TableRow key={i}>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
                         <Typography variant="body2" className="text-blue-gray-900">
+                            {appointment.appointmentID}
+                        </Typography>
+                    </TableCell>
+                    <TableCell className="border-b border-blue-gray-50 text-center" align="center">
+                        <Typography variant="body2" className="text-blue-gray-900">
                             {appointment.firstName}
                         </Typography>
                     </TableCell>
@@ -68,7 +73,7 @@ const AppointmentsTable = ({ retrievedAppointmentsData, isAppointmentOpen, onUpd
             // If no data is found, render a no appointments found row
             return (
                 <TableRow>
-                    <TableCell colSpan={7} className="py-3 px-5 border-b border-blue-gray-50 text-center">
+                    <TableCell colSpan={7} className="py-3 px-5 border-b border-blue-gray-50 text-center" align="center">
                         <Typography variant="body2" className="text-blue-gray-900">
                             {retrievedAppointmentsData ? "No appointments found" : "Please input credentials to view appointments"}
                         </Typography>

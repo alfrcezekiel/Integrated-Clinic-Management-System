@@ -24,6 +24,7 @@ import CMS from "../../API/CMS";
 import { useNavigate } from "react-router-dom";
 
 const appointmentsTableColumn = [
+    "ID",
     'First Name',
     'Last Name',
     'Appointment Date',
@@ -72,13 +73,13 @@ const PatientsTable = () => {
                 },
             });
             if (response.status === 200) {
-                setAppointmentData(prevData => ({
-                    ...prevData,
+                setAppointmentID(response.data.appointmentID);
+                setAppointmentData({
                     firstName: response.data.firstName,
                     lastName: response.data.lastName,
                     email: response.data.email,
-                    phoneNumber: response.data.phoneNumber
-                }));
+                    phoneNumber: response.data.phoneNumber,
+                });
             } else {
                 setAppointmentID("");
                 setAppointmentData({
@@ -154,19 +155,18 @@ const PatientsTable = () => {
         }
     }
 
+    // this function is used to update an appointment in tables rows
     const handleUpdateAppointment = async (appointment) => {
         try {
-            const response = await CMS.put(`/CMS/patients-dashboard/updateAppointment/${appointment.patientID}`, appointment, {
+            const response = await CMS.put(`/CMS/patients-dashboard/updateAppointment/${appointment.appointmentID}`, appointment, {
                 headers: {
                     "Content-Type": "application/json"
                 }
             });
             
             if (response.status === 200) {
-                alert("Appointment updated successfully");
+                alert("Patients appointment updated successfully");
                 setIsAppointmentOpen(true);
-                setAppointmentData(appointment);
-                setAppointmentID(appointment.patientID);
                 handleOpen();
                 navigate("/patients-dashboard/book-appointment");
             }
@@ -289,7 +289,7 @@ const PatientsTable = () => {
                 </Dialog>
             </div>
             <div className="mt-12 mb-1 flex justify-center items-center w-full">
-                <Card className="shadow-lg">
+                <Card className="shadow-lg w-full">
                     <CardHeader
                         title="Appointments"
                         className="bg-blue-500 mb-8 p-6"

@@ -31,19 +31,27 @@ const DoctorsTablesListOfAppointments = () => {
     const [appointmentsData, setAppointmentsData] = useState([])
 
     const appointmentsTableColumn = [
+        "ID",
         'First Name',
         'Last Name',
+        "Email",
         'Appointment Date',
+        "Phone Number",
+        "Gender",
         'Doctor',
         'Status',
         'Purpose of Appointment',
         "Action"
     ]
+    // form data for updating the appointment details
     const [formData, setFormData] = useState({
         appointmentID: "",
         firstName: "",
         lastName: "",
+        email: "",
         appointmentDate: "",
+        phoneNumber: "",
+        gender: "",
         doctor: "",
         status: "",
         purposeOfAppointment: "",
@@ -56,9 +64,13 @@ const DoctorsTablesListOfAppointments = () => {
 
     const handleClickOpen = (appointment) => {
         setFormData({
+            appointmentID: appointment.appointmentID,
             firstName: appointment.firstName,
             lastName: appointment.lastName,
+            email: appointment.email,
             appointmentDate: formatDate(appointment.appointmentDate),
+            phoneNumber: appointment.phoneNumber,
+            gender: appointment.gender,
             doctor: appointment.doctor,
             status: appointment.status,
             purposeOfAppointment: appointment.purposeOfAppointment,
@@ -99,18 +111,17 @@ const DoctorsTablesListOfAppointments = () => {
         return `${month}/${day}/${year}`;
     };
 
+    // this function is used to update the appointment details
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await CMS.put(`/CMS/doctors-dashboard/updateAppointments/${formData.appointmentID}`, formData);
-
-            if (!response.data) {
-                throw new Error("No response data for updating the appointment");
-            }
+            const response = await CMS.put(`/CMS/doctors-dashboard/updateAppointment/${formData.appointmentID}`, formData);
 
             if (response.status === 200) {
-                alert("Update patients details")
+                alert("Updated patients details")
                 setOpen(false);
+            } else {
+                throw new Error(`Unexpected error in status ${response.status}`)
             }
         } catch (error) {
             console.error(`Code functionality error for updating the appointment: ${error}`);
@@ -154,6 +165,11 @@ const DoctorsTablesListOfAppointments = () => {
                                     <TableRow key={id}>
                                         <TableCell align="center">
                                             <Typography variant="body2" className="text-blue-gray-900">
+                                                {appointment.appointmentID}
+                                            </Typography>
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            <Typography variant="body2" className="text-blue-gray-900">
                                                 {appointment.firstName}
                                             </Typography>
                                         </TableCell>
@@ -164,7 +180,22 @@ const DoctorsTablesListOfAppointments = () => {
                                         </TableCell>
                                         <TableCell align="center">
                                             <Typography variant="body2" className="text-blue-gray-900">
+                                                {appointment.email}
+                                            </Typography>
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            <Typography variant="body2" className="text-blue-gray-900">
                                                 {formatDate(appointment.appointmentDate)}
+                                            </Typography>
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            <Typography variant="body2" className="text-blue-gray-900">
+                                                {appointment.phoneNumber}
+                                            </Typography>
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            <Typography variant="body2" className="text-blue-gray-900">
+                                                {appointment.gender}
                                             </Typography>
                                         </TableCell>
                                         <TableCell align="center">
@@ -197,10 +228,16 @@ const DoctorsTablesListOfAppointments = () => {
             <Dialog open={open} onClose={handleClose}>
                 <DialogTitle>Modify Booked Appointment</DialogTitle>
                 <DialogContent>
-                    <DialogContentText>
-
-                    </DialogContentText>
                     <form onSubmit={handleSubmit}>
+                        <TextField
+                            autoFocus
+                            margin="dense"
+                            label="Enter Appointment ID"
+                            type="text"
+                            fullWidth
+                            value={formData.appointmentID}
+                            onChange={(e) => setFormData({ ...formData, appointmentID: e.target.value })}
+                        />
                         <TextField
                             autoFocus
                             margin="dense"
@@ -208,7 +245,7 @@ const DoctorsTablesListOfAppointments = () => {
                             type="text"
                             fullWidth
                             value={formData.firstName}
-                            onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+                            onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                         />
                         <TextField
                             margin="dense"
@@ -216,7 +253,15 @@ const DoctorsTablesListOfAppointments = () => {
                             type="text"
                             fullWidth
                             value={formData.lastName}
-                            onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+                            onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                        />
+                        <TextField
+                            margin="dense"
+                            label="Enter Email"
+                            type="text"
+                            fullWidth
+                            value={formData.email}
+                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         />
                         <TextField
                             margin="dense"
@@ -224,24 +269,47 @@ const DoctorsTablesListOfAppointments = () => {
                             type="date"
                             fullWidth
                             value={formData.appointmentDate}
-                            onChange={(e) => setFormData({...formData, appointmentDate: e.target.value})}
+                            onChange={(e) => setFormData({ ...formData, appointmentDate: e.target.value })}
                             InputLabelProps={{
                                 shrink: true,
                             }}
                         />
                         <TextField
                             margin="dense"
+                            label="Enter Phone Number"
+                            type="number"
+                            fullWidth
+                            value={formData.phoneNumber}
+                            onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+                            InputLabelProps={{
+                                shrink: true,
+                            }}
+                        />
+                        <FormControl fullWidth margin="dense">
+                            <InputLabel>Gender</InputLabel>
+                            <Select
+                                value={formData.gender}
+                                onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                                label="Gender"
+                            >
+                                <MenuItem value="Male">Male</MenuItem>
+                                <MenuItem value="Female">Female</MenuItem>
+                                <MenuItem value="Other">Other</MenuItem>
+                            </Select>
+                        </FormControl>
+                        <TextField
+                            margin="dense"
                             label="Doctor"
                             type="text"
                             fullWidth
                             value={formData.doctor}
-                            onChange={(e) => setFormData({...formData, doctor: e.target.value})}
+                            onChange={(e) => setFormData({ ...formData, doctor: e.target.value })}
                         />
                         <FormControl fullWidth margin="dense">
                             <InputLabel>Status</InputLabel>
                             <Select
                                 value={formData.status}
-                                onChange={(e) => setFormData({...formData, status: e.target.value})}
+                                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                                 label="Status"
                             >
                                 <MenuItem value="Pending">Pending</MenuItem>
@@ -255,14 +323,14 @@ const DoctorsTablesListOfAppointments = () => {
                             type="text"
                             fullWidth
                             value={formData.purposeOfAppointment}
-                            onChange={(e) => setFormData({...formData, purposeOfAppointment: e.target.value})}
+                            onChange={(e) => setFormData({ ...formData, purposeOfAppointment: e.target.value })}
                         />
                         <DialogActions>
                             <Button onClick={handleClose} color="primary" variant="outlined">
                                 Cancel
                             </Button>
                             <Button type="submit" color="primary" variant="contained">
-                                Save
+                                Update Patient Appointment
                             </Button>
                         </DialogActions>
                     </form>

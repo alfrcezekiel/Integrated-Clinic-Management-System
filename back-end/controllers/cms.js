@@ -325,7 +325,16 @@ export const verifyToken = (req, res, next) => {
 // controller logic for getting patients appointments to display in table rows
 export const getPatientsAppointments = async (req, res) => {
     try {
-        const query = `SELECT firstName, lastName, appointmentDate, doctor, status, purposeOfAppointment FROM patientsappointment`;
+        const query = `SELECT 
+            appointmentID,
+            firstName,
+            lastName,
+            appointmentDate,
+            doctor,
+            status,
+            purposeOfAppointment
+            FROM patientsappointment
+            `;
 
         const [rows] = await conn.query(query);
 
@@ -342,9 +351,13 @@ export const getBookedAppointmentsToDisplayInDoctorsDashboard = async (req, res)
     try {
         const doctorName = `Dr. Baek Kang Hyuk`;
         const query = `SELECT 
+            appointmentID,
             firstName,
             lastName,
+            email,
             appointmentDate,
+            phoneNumber,
+            gender,
             doctor,
             status,
             purposeOfAppointment
@@ -374,8 +387,7 @@ export const getBookedAppointmentsToDisplayInDoctorsDashboard = async (req, res)
 // controller logic for updating patients appointments details
 export const updatePatientsAppointments = async (req, res) => {
     try {
-        const { appointmentID } = req.params;
-
+        const  {appointmentID} = req.params;
         const {
             firstName,
             lastName,
@@ -387,14 +399,10 @@ export const updatePatientsAppointments = async (req, res) => {
             status,
             purposeOfAppointment
         } = req.body;
-
-        // Validate appointmentID
-        if (!appointmentID) {
-            return res.status(StatusCodes.BAD_REQUEST).json({
-                message: "Appointment ID is required"
-            });
-        }
-
+        
+        // Debug log to check the received appointmentID and body
+        console.log(`Received appointmentID: ${appointmentID}`);
+        
         const query = `
             UPDATE patientsappointment 
             SET
