@@ -73,13 +73,13 @@ const PatientsTable = () => {
                 },
             });
             if (response.status === 200) {
-                setAppointmentID(response.data.appointmentID);
-                setAppointmentData({
+                setAppointmentData(prevData => ({
+                    ...prevData,
                     firstName: response.data.firstName,
                     lastName: response.data.lastName,
                     email: response.data.email,
-                    phoneNumber: response.data.phoneNumber,
-                });
+                    phoneNumber: response.data.phoneNumber
+                }));
             } else {
                 setAppointmentID("");
                 setAppointmentData({
