@@ -61,13 +61,9 @@ const PatientsTable = () => {
     const statuses = ["Pending"];
     const gender = ["Male", "Female"];
 
-    const retrievePatientData = async () => {
+    const retrievePatientData = async (patientID) => {
         try {
-            if (!appointmentID) {
-                alert("Please enter a valid patients id")
-                return;
-            }
-            const response = await CMS.get(`/CMS/patientsDashboard/getBookedAppointments/${appointmentID}`, {
+            const response = await CMS.get(`/CMS/patientsDashboard/getBookedAppointments/${patientID}`, {
                 headers: {
                     "Content-Type": "application/json",
                 },

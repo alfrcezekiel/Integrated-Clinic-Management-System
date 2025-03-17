@@ -30,6 +30,7 @@ const DashboardNavbar = () => {
                 throw new Error("No response data or no success message");
             } else {
                 localStorage.removeItem("authToken");
+                localStorage.removeItem("sid")
                 navigate("/cms");
             }
         } catch (error) {

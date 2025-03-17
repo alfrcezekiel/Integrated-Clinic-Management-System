@@ -105,7 +105,7 @@ export const loginPatientsAccount = async (req, res) => {
 
         return res.status(StatusCodes.OK).json({
             message: "Login successful",
-            token,
+            token: token,
             sid: s
         })
     } catch (error) {
