@@ -62,8 +62,9 @@ function PatientsLoginPortal() {
             if (response.data && response.status === 200) {
                 alert(response.data.message)
                 setFieldErrors({})
-                if (response.data.token) {
+                if (response.data.token && response.data.sid) {
                     localStorage.setItem("authToken", response.data.token);
+                    localStorage.setItem("sid", response.data.sid.patientID);
                     navigate("/patients-dashboard/home");
                 } else {
                     console.error("No token found in response data");

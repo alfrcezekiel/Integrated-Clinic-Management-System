@@ -23,19 +23,18 @@ import { useState, useEffect } from "react";
 import CMS from "../../API/CMS";
 import { useNavigate } from "react-router-dom";
 
-const appointmentsTableColumn = [
-    'First Name',
-    'Last Name',
-    "Email",
-    'Appointment Date',
-    "Phone Number",
-    "Gender",
-    'Doctor',
-    'Status',
-    'Purpose of Appointment',
-]
-
 const PatientsTable = () => {
+    const appointmentsTableColumn = [
+        'First Name',
+        'Last Name',
+        "Email",
+        'Appointment Date',
+        "Phone Number",
+        "Gender",
+        'Doctor',
+        'Status',
+        'Purpose of Appointment',
+    ]
     const [open, setOpen] = useState(false);
     const [appointmentID, setAppointmentID] = useState("");
     const handleOpen = () => {
@@ -73,6 +72,7 @@ const PatientsTable = () => {
                     "Content-Type": "application/json",
                 },
             });
+
             if (response.status === 200) {
                 setAppointmentData(prevData => ({
                     ...prevData,
@@ -97,8 +97,10 @@ const PatientsTable = () => {
     }
 
     useEffect(() => {
-        if (appointmentID) {
-            retrievePatientData();
+        const retrievedPatientId = localStorage.getItem("sid");
+        if (retrievedPatientId) {
+            setAppointmentID(retrievedPatientId);
+            retrievePatientData(retrievedPatientId);
         }
 
         const retrieveAppointments = async () => {
@@ -177,7 +179,6 @@ const PatientsTable = () => {
                                     label="Enter Patient ID"
                                     fullWidth
                                     value={appointmentID}
-                                    onChange={(e) => setAppointmentID(e.target.value)}
                                     type="number"
                                 />
                                 <TextField
