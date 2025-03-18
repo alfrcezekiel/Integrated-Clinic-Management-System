@@ -22,13 +22,25 @@ import {
     Typography,
     InputAdornment,
     IconButton,
+    FormHelperText,
 } from "@mui/material";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { Visibility, VisibilityOff, Edit, Delete } from "@mui/icons-material";
 import CMS from "../../API/CMS";
 import { useNavigate, useLocation } from "react-router-dom";
+
 const AddDoctor = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState({
+        firstName: "",
+        lastName: "",
+        email: "",
+        medicalSpecialties: "",
+        yearsOfExperience: "",
+        consultationFee: "",
+        gender: "",
+        password: "",
+    });
+    const [fieldErrors, setFieldErrors] = useState({
         firstName: "",
         lastName: "",
         email: "",
@@ -95,8 +107,8 @@ const AddDoctor = () => {
     }, [location.pathname]);
 
     const handleSubmit = async (e) => {
+        e.preventDefault();
         try {
-            e.preventDefault();
             const response = await CMS.post(`/CMS/admin-dashboard/addDoctor`, formData, {
                 headers: {
                     "Content-Type": "application/json",
@@ -107,8 +119,9 @@ const AddDoctor = () => {
                 throw new Error("No doctor data returned");
             }
 
-            if(response.status === 200){
+            if (response.data && response.status === 200) {
                 alert("Doctor added successfully");
+                setFieldErrors({}); // Reset field errors
                 setIsModalOpen(false); // Close the modal after submission
                 setDoctorsList([...doctorsList, formData]); // Update the list of doctors
                 setFormData({
@@ -123,9 +136,13 @@ const AddDoctor = () => {
                     password: ""
                 });
                 navigate("/admin-dashboard/add-doctor");
-            }
+            } 
         } catch (error) {
-            console.error(`Error in adding doctor in admin dashboard form: ${error}`);
+            if(error.response && error.response.status === 400){
+                setFieldErrors(error.response.data.errors);
+            } else {
+                console.error(`Error in adding doctor in admin dashboard form: ${error}`);
+            }
         }
     };
 
@@ -138,12 +155,24 @@ const AddDoctor = () => {
         "Years of Experience",
         "Consultation Fee",
         "Gender",
+        "Edit",
+        "Delete",
     ];
 
     // Toggle password visibility
     const handleTogglePasswordVisibility = () => {
         setShowPassword(!showPassword);
     };
+
+    // function to update the doctors details
+    const handleEdit = (doctor) => {
+        console.log("Edit doctor:", doctor);
+    }
+
+    // function to delete the doctor details
+    const handleDelete = (doctor) => {
+        console.log("Delete doctor:", doctor);
+    }
 
     return (
         <div className="p-4">
@@ -171,7 +200,7 @@ const AddDoctor = () => {
             >
                 <DialogTitle className="text-xl font-semibold">Add Doctor</DialogTitle>
                 <DialogContent>
-                    <form onSubmit={handleSubmit}>
+                    <form onSubmit={handleSubmit} autoComplete="off" id="addDoctorForm">
                         <TextField
                             fullWidth
                             margin="normal"
@@ -181,6 +210,9 @@ const AddDoctor = () => {
                             onChange={handleInputChange}
                             required
                             className="mb-4"
+                            autoComplete="off"
+                            helperText={fieldErrors.firstName}
+                            error={Boolean(fieldErrors.firstName)}
                         />
                         <TextField
                             fullWidth
@@ -190,6 +222,9 @@ const AddDoctor = () => {
                             value={formData.lastName}
                             onChange={handleInputChange}
                             required
+                            autoComplete="off"
+                            helperText={fieldErrors.lastName}
+                            error={Boolean(fieldErrors.lastName)}
                             className="mb-4"
                         />
                         <TextField
@@ -201,9 +236,12 @@ const AddDoctor = () => {
                             value={formData.email}
                             onChange={handleInputChange}
                             required
+                            autoComplete="off"
+                            helperText={fieldErrors.email}
+                            error={Boolean(fieldErrors.email)}
                             className="mb-4"
                         />
-                        <FormControl fullWidth margin="normal" className="mb-4">
+                        <FormControl fullWidth margin="normal" className="mb-4" error={Boolean(fieldErrors.medicalSpecialties)}>
                             <InputLabel>Medical Specialties</InputLabel>
                             <Select
                                 name="medicalSpecialties"
@@ -218,6 +256,7 @@ const AddDoctor = () => {
                                     </MenuItem>
                                 ))}
                             </Select>
+                            {fieldErrors.medicalSpecialties && <FormHelperText error>{fieldErrors.medicalSpecialties}</FormHelperText>}
                         </FormControl>
                         <TextField
                             fullWidth
@@ -230,6 +269,9 @@ const AddDoctor = () => {
                             required
                             inputProps={{ min: 0, step: 1 }}
                             className="mb-4"
+                            autoComplete="off"
+                            helperText={fieldErrors.yearsOfExperience}
+                            error={Boolean(fieldErrors.yearsOfExperience)}
                         />
                         <TextField
                             fullWidth
@@ -240,9 +282,13 @@ const AddDoctor = () => {
                             value={formData.consultationFee}
                             onChange={handleInputChange}
                             required
+                            inputProps={{ min: 0, step: 0.01 }}
+                            autoComplete="off"
+                            helperText={fieldErrors.consultationFee}
+                            error={Boolean(fieldErrors.consultationFee)}
                             className="mb-4"
                         />
-                        <FormControl fullWidth margin="normal" className="mb-4">
+                        <FormControl fullWidth margin="normal" className="mb-4" error={Boolean(fieldErrors.gender)}>
                             <InputLabel>Gender</InputLabel>
                             <Select
                                 name="gender"
@@ -254,6 +300,7 @@ const AddDoctor = () => {
                                 <MenuItem value="Male">Male</MenuItem>
                                 <MenuItem value="Female">Female</MenuItem>
                             </Select>
+                            {fieldErrors.gender && <FormHelperText error>{fieldErrors.gender}</FormHelperText>}
                         </FormControl>
                         <TextField
                             fullWidth
@@ -264,6 +311,9 @@ const AddDoctor = () => {
                             value={formData.password}
                             onChange={handleInputChange}
                             required
+                            autoComplete="off"
+                            helperText={fieldErrors.password}
+                            error={Boolean(fieldErrors.password)}
                             className="mb-4"
                             InputProps={{
                                 endAdornment: (
@@ -370,6 +420,22 @@ const AddDoctor = () => {
                                             <Typography variant="body2" className="text-blue-gray-900">
                                                 {doctor.gender}
                                             </Typography>
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            <IconButton
+                                                onClick={() => handleEdit(doctor)}
+                                                color="primary"
+                                            >
+                                                <Edit />
+                                            </IconButton>
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            <IconButton
+                                                onClick={() => handleDelete(doctor)}
+                                                color="error"
+                                            >
+                                                <Delete />
+                                            </IconButton>
                                         </TableCell>
                                     </TableRow>
                                 ))

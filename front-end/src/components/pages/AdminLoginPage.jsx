@@ -62,7 +62,6 @@ function AdminLoginPage() {
             });
 
             if (response.data && response.status === 200) {
-                alert(response.data.message)
                 setFieldErrors({})
                 if (response.data.token && response.data.sid) {
                     localStorage.setItem("authToken", response.data.token);

@@ -156,12 +156,9 @@ const PatientsTable = () => {
 
     return (
         <>
-            <div className="flex justify-center items-center gap-4 flex-col mt-4">
-                <Typography variant="h5" className="text-blue-gray-600 text-center">
-                    Patients Appointments
-                </Typography>
-                <div className="bg-black p-1 rounded-lg">
-                    <Button variant="outlined" className="text-white" onClick={handleOpen}>
+            <div className="mt-4 flex flex-row justify-end items-center">
+                <div className="p-1 rounded-lg">
+                    <Button variant="contained" className="text-white" onClick={handleOpen}>
                         Open Appointment Form
                     </Button>
                 </div>
@@ -265,7 +262,7 @@ const PatientsTable = () => {
                     </DialogContent>
                 </Dialog>
             </div>
-            <div className="mt-12 mb-1 flex justify-center items-center w-full">
+            <div className="mt-5 mb-1 flex justify-center items-center w-full">
                 <Card className="shadow-lg w-full">
                     <CardHeader
                         title="Appointments"

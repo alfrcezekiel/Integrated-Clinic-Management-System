@@ -23,6 +23,7 @@ import validateContacts from "../middleware/contact.validation.js";
 import validateAppointmentID from "../middleware/patientId.validation.js";
 import doctorsLoginValidation from "../middleware/doctors.login.validation.js";
 import adminLoginValidation from "../middleware/admin.validation.js";
+import validateAddDoctor from "../middleware/addingdoctor.validation.js";
 
 const router = express.Router();
 
@@ -72,7 +73,7 @@ router.post("/adminAccount", [adminLoginValidation], loginAdminAccount);
 router.get("/admin-dashboard/logout", logout);
 
 // router for adding a new doctor in the CMS admin dashboard
-router.post("/admin-dashboard/addDoctor", addDoctor);
+router.post("/admin-dashboard/addDoctor", [validateAddDoctor], addDoctor);
 
 // router for getting the list of doctors in the CMS admin dashboard
 router.get("/admin-dashboard/listOfDoctors", getDoctorsLists);
