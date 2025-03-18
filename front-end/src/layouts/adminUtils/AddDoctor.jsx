@@ -1,0 +1,395 @@
+import { useState, useEffect } from "react";
+import "../../assets/css/main.css";
+import {
+    Button,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    TextField,
+    MenuItem,
+    Select,
+    FormControl,
+    InputLabel,
+    Card,
+    CardHeader,
+    CardContent,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableRow,
+    Typography,
+    InputAdornment,
+    IconButton,
+} from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+import CMS from "../../API/CMS";
+import { useNavigate } from "react-router-dom";
+
+const AddDoctor = () => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [formData, setFormData] = useState({
+        fullName: "",
+        firstName: "",
+        lastName: "",
+        email: "",
+        medicalSpecialties: "",
+        yearsOfExperience: "",
+        consultationFee: "",
+        gender: "",
+        password: "",
+    });
+    const [showPassword, setShowPassword] = useState(false);
+    const [doctorsList, setDoctorsList] = useState([]); // State to store submitted doctors
+    const navigate = useNavigate();
+    const medicalSpecialtiesList = [
+        "Cardiology",
+        "Dermatology",
+        "Endocrinology",
+        "Gastroenterology",
+        "General Practice",
+        "Hematology",
+        "Infectious Disease",
+        "Neurology",
+        "Obstetrics and Gynecology",
+        "Oncology",
+        "Ophthalmology",
+        "Orthopedics",
+        "Pediatrics",
+        "Psychiatry",
+        "Pulmonology",
+        "Radiology",
+        "Trauma Surgeon",
+        "Rheumatology",
+        "Urology",
+    ];
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({
+            ...formData,
+            [name]: value,
+        });
+    };
+
+    useEffect(() => {
+        const retrieveListsOfDoctors = async () => {
+            try {
+                const response = await CMS.get("/CMS/admin-dashboard/listOfDoctors");
+
+                if (!response.data || !response.data.message) {
+                    throw new Error("No list of doctors data returned");
+                }
+
+                if (response.status === 200) {
+                    setDoctorsList(response.data.doctors);
+                }
+            } catch (error) {
+                console.error(`Error in retrieving list of doctors: ${error}`);
+            }
+        }
+        retrieveListsOfDoctors();
+    }, [])
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        try {
+            const response = await CMS.post(`/CMS/admin-dashboard/addDoctor`, formData, {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (!response.data || !response.data.message) {
+                throw new Error("No doctor data returned");
+            } else {
+                alert("Doctor added successfully");
+                setDoctorsList([...doctorsList, formData]); // Add the new doctor to the list
+                setIsModalOpen(false); // Close the modal after submission
+                setFormData({
+                    // Reset form data
+                    fullName: "",
+                    firstName: "",
+                    lastName: "",
+                    email: "",
+                    medicalSpecialties: "",
+                    yearsOfExperience: "",
+                    consultationFee: "",
+                    gender: "",
+                    password: ""
+                });
+                navigate("/admin-dashboard/add-doctor");
+            }
+        } catch (error) {
+            console.error(`Error in adding doctor in admin dashboard form: ${error}`);
+        }
+    };
+
+    // Table columns
+    const doctorsTableColumns = [
+        "Full Name",
+        "First Name",
+        "Last Name",
+        "Email",
+        "Medical Specialties",
+        "Years of Experience",
+        "Consultation Fee",
+        "Gender",
+    ];
+
+    // Toggle password visibility
+    const handleTogglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
+    };
+
+    return (
+        <div className="p-4">
+            {/* Button to open the modal */}
+            <div className="flex justify-end mb-4">
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => setIsModalOpen(true)}
+                    className="bg-blue-500 hover:bg-blue-600"
+                >
+                    Add Doctor
+                </Button>
+            </div>
+
+            {/* Modal */}
+            <Dialog
+                open={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                slotProps={{
+                    paper: {
+                        className: "fixed right-0 h-full w-full m-0 rounded-none", // Tailwind classes for positioning
+                    }
+                }}
+            >
+                <DialogTitle className="text-xl font-semibold">Add Doctor</DialogTitle>
+                <DialogContent>
+                    <form onSubmit={handleSubmit}>
+                        <TextField
+                            fullWidth
+                            name="fullName"
+                            margin="normal"
+                            label="Full name as a Doctor"
+                            value={formData.fullName}
+                            onChange={handleInputChange}
+                            required
+                            className="mb-4"
+                        />
+                        <TextField
+                            fullWidth
+                            margin="normal"
+                            label="First Name"
+                            name="firstName"
+                            value={formData.firstName}
+                            onChange={handleInputChange}
+                            required
+                            className="mb-4"
+                        />
+                        <TextField
+                            fullWidth
+                            margin="normal"
+                            label="Last Name"
+                            name="lastName"
+                            value={formData.lastName}
+                            onChange={handleInputChange}
+                            required
+                            className="mb-4"
+                        />
+                        <TextField
+                            fullWidth
+                            margin="normal"
+                            label="Email"
+                            name="email"
+                            type="email"
+                            value={formData.email}
+                            onChange={handleInputChange}
+                            required
+                            className="mb-4"
+                        />
+                        <FormControl fullWidth margin="normal" className="mb-4">
+                            <InputLabel>Medical Specialties</InputLabel>
+                            <Select
+                                name="medicalSpecialties"
+                                value={formData.medicalSpecialties}
+                                onChange={handleInputChange}
+                                required
+                            >
+                                <MenuItem value="">Select Medical Specialty</MenuItem>
+                                {medicalSpecialtiesList.map((specialty, index) => (
+                                    <MenuItem key={index} value={specialty}>
+                                        {specialty}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                        <TextField
+                            fullWidth
+                            margin="normal"
+                            label="Years of Experience"
+                            name="yearsOfExperience"
+                            type="number"
+                            value={formData.yearsOfExperience}
+                            onChange={handleInputChange}
+                            required
+                            className="mb-4"
+                        />
+                        <TextField
+                            fullWidth
+                            margin="normal"
+                            label="Consultation Fee"
+                            name="consultationFee"
+                            type="number"
+                            value={formData.consultationFee}
+                            onChange={handleInputChange}
+                            required
+                            className="mb-4"
+                        />
+                        <FormControl fullWidth margin="normal" className="mb-4">
+                            <InputLabel>Gender</InputLabel>
+                            <Select
+                                name="gender"
+                                value={formData.gender}
+                                onChange={handleInputChange}
+                                required
+                            >
+                                <MenuItem value="">Select Gender</MenuItem>
+                                <MenuItem value="Male">Male</MenuItem>
+                                <MenuItem value="Female">Female</MenuItem>
+                            </Select>
+                        </FormControl>
+                        <TextField
+                            fullWidth
+                            margin="normal"
+                            label="Password"
+                            name="password"
+                            type={showPassword ? "text" : "password"} // Toggle between text and password
+                            value={formData.password}
+                            onChange={handleInputChange}
+                            required
+                            className="mb-4"
+                            InputProps={{
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <IconButton
+                                            aria-label="toggle password visibility"
+                                            onClick={handleTogglePasswordVisibility}
+                                            edge="end"
+                                        >
+                                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                                        </IconButton>
+                                    </InputAdornment>
+                                ),
+                            }}
+                        />
+                    </form>
+                </DialogContent>
+                <DialogActions className="p-4 border-t flex justify-end gap-2">
+                    <Button
+                        onClick={() => setIsModalOpen(false)}
+                        color="secondary"
+                        className="bg-gray-500 hover:bg-gray-600 text-white"
+                        variant="contained"
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        onClick={handleSubmit}
+                        color="primary"
+                        className="bg-blue-500 hover:bg-blue-600 text-white"
+                        variant="contained"
+                    >
+                        Add Doctor
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Table to display submitted doctors */}
+            <Card className="shadow-lg rounded-2xl w-full">
+                <CardHeader
+                    title="List of Doctors"
+                    className="bg-blue-500 mb-8 p-6"
+                    titleTypographyProps={{
+                        variant: "h6",
+                        className: "text-white text-center",
+                    }}
+                />
+                <CardContent className="overflow-x-scroll px-0 pt-0 pb-2">
+                    <Table className="w-full min-w-[640px] table-auto">
+                        <TableHead>
+                            <TableRow>
+                                {doctorsTableColumns.map((header, i) => (
+                                    <TableCell
+                                        key={i}
+                                        className="border-b border-blue-gray-50 text-center py-3 px-5"
+                                        align="center"
+                                    >
+                                        <Typography
+                                            variant="caption"
+                                            className="text-[11px] font-bold uppercase text-blue-gray-400"
+                                        >
+                                            {header}
+                                        </Typography>
+                                    </TableCell>
+                                ))}
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {doctorsList.map((doctor, id) => (
+                                <TableRow key={id}>
+                                    <TableCell align="center">
+                                        <Typography variant="body2" className="text-blue-gray-900">
+                                            {doctor.fullName}
+                                        </Typography>
+                                    </TableCell>
+                                    <TableCell align="center">
+                                        <Typography variant="body2" className="text-blue-gray-900">
+                                            {doctor.firstName}
+                                        </Typography>
+                                    </TableCell>
+                                    <TableCell align="center">
+                                        <Typography variant="body2" className="text-blue-gray-900">
+                                            {doctor.lastName}
+                                        </Typography>
+                                    </TableCell>
+                                    <TableCell align="center">
+                                        <Typography variant="body2" className="text-blue-gray-900">
+                                            {doctor.email}
+                                        </Typography>
+                                    </TableCell>
+                                    <TableCell align="center">
+                                        <Typography variant="body2" className="text-blue-gray-900">
+                                            {doctor.medicalSpecialties}
+                                        </Typography>
+                                    </TableCell>
+                                    <TableCell align="center">
+                                        <Typography variant="body2" className="text-blue-gray-900">
+                                            {doctor.yearsOfExperience}
+                                        </Typography>
+                                    </TableCell>
+                                    <TableCell align="center">
+                                        <Typography variant="body2" className="text-blue-gray-900">
+                                            {doctor.consultationFee}
+                                        </Typography>
+                                    </TableCell>
+                                    <TableCell align="center">
+                                        <Typography variant="body2" className="text-blue-gray-900">
+                                            {doctor.gender}
+                                        </Typography>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+        </div>
+    );
+};
+
+export default AddDoctor;

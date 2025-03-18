@@ -1,9 +1,8 @@
 import { StatusCodes } from "http-status-codes"
 import { body, validationResult } from "express-validator"
 
-// validation for doctors login
-
-const doctorsLoginValidation = [
+// validation for admin login
+const adminLoginValidation = [
     body("email")
         .trim()
         .notEmpty()
@@ -14,7 +13,7 @@ const doctorsLoginValidation = [
         .trim()
         .notEmpty()
         .withMessage("Password is required")
-        .isLength({ min: 8 })
+        .isLength({ min: 8})
         .withMessage("Incorrect Password"),
     (req, res, next) => {
         const errors = validationResult(req)
@@ -28,4 +27,4 @@ const doctorsLoginValidation = [
     }
 ]
 
-export default doctorsLoginValidation;
+export default adminLoginValidation;

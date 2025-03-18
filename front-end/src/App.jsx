@@ -10,6 +10,8 @@ const PatientsLoginPortal = lazy(() => import("./components/pages/PatientsLoginP
 const PatientsDashboard = lazy(() => import("./components/pages/dashboard/PatientsDashboard.jsx"));
 const DoctorLoginPortal = lazy(() => import("./components/pages/DoctorLoginPage.jsx"));
 const DoctorsDashboard = lazy(() => import("./components/pages/dashboard/DoctorsDashboard.jsx"));
+const AdminLoginPortal = lazy(() => import("./components/pages/AdminLoginPage.jsx"));
+const AdminDashboard = lazy(() => import("./components/pages/dashboard/AdminDashboard.jsx"));
 
 const RouteLoader = ({ children }) => {
   const [loading, setLoading] = useState(false);
@@ -55,9 +57,11 @@ function App() {
               <Route path="/cms" element={<Home />} />
               <Route path="/patients-portal" element={<PatientRegistrationPortal />} />
               <Route path="/patients-login" element={<PatientsLoginPortal />} />
+              <Route path="/cms/login-admin" element={<AdminLoginPortal />}/>
               <Route path="/patients-dashboard/*" element={<PatientsDashboard />} />
               <Route path="/doctor-portal/login" element={<DoctorLoginPortal />} />
               <Route path="/doctor-portal/dashboard/*" element={<DoctorsDashboard/>} />
+              <Route path="/admin-dashboard/*" element={<AdminDashboard />}/>
               <Route path="*" element={<PageNotFound />} />
             </Routes>
           </Suspense>

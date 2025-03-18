@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom"
 
 // this is the sidenav component for the dashboard
-const SideNav = ({ brandName, routes }) => {
+const AdminSideNav = ({ brandName, routes }) => {
     const [open, setOpen] = useState(false);
     const isMobile = useMediaQuery("(max-width: 768px)");
 
@@ -18,14 +18,14 @@ const SideNav = ({ brandName, routes }) => {
             classes={{ paper: isMobile ? "bg-white w-72 shadow-md" : "w-72 bg-white shadow-md" }}
         >
             <div className="relative p-6">
-                <Link to={"/patients-dashboard/home"}>
-                    <Typography variant="h5" className="text-gray-900">
+                <Link to={"/admin-dashboard/home"}>
+                    <Typography variant="h6" className="text-gray-500">
                         {brandName}
                     </Typography>
                 </Link>
                 <Outlet />
             </div>
-            <nav className="px-4">
+            <nav className="p-3">
                 {routes.map(({ layout, pages }, index) => (
                     <div key={layout || index} className="mb-4">
                         {pages.map(({ icon, name, path }) => (
@@ -35,7 +35,7 @@ const SideNav = ({ brandName, routes }) => {
                                 className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-white" : "text-gray-700 hover:bg-gray-100"}`}
                             >
                                 {icon}
-                                <Typography sx={{ml: 2}}>{name}</Typography>
+                                <Typography sx={{ ml: 2 }}>{name}</Typography>
                             </NavLink>
                         ))}
                     </div>
@@ -45,12 +45,12 @@ const SideNav = ({ brandName, routes }) => {
     )
 }
 
-SideNav.propTypes = {
+AdminSideNav.propTypes = {
     brandName: PropTypes.string,
     routes: PropTypes.arrayOf(PropTypes.object).isRequired
 }
-SideNav.defaultProps = {
-    brandName: "Patients Dashboard"
+AdminSideNav.defaultProps = {
+    brandName: "Admin Dashboard | CMS"
 }
 
-export default SideNav;
+export default AdminSideNav;

@@ -86,6 +86,9 @@ const LandingPageHeader = () => {
                         <li>
                             <Link to={"/patients-login"}>CMS Login Portal</Link>
                         </li>
+                        <li>
+                            <Link to={"/cms/login-admin"}>CMS Admin Portal</Link>
+                        </li>
                     </ul>
                     <i className="mobile-nav-toggle d-xl-none bi bi-list"></i>
                 </nav>

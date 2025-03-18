@@ -118,7 +118,14 @@ export const loginDoctorsAccount = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        const query = `SELECT doctorsID, firstName, lastName, email, password FROM doctorsaccount WHERE email = ? AND password = ?;`;
+        const query = `SELECT 
+            doctorsID,
+            firstName,
+            lastName,
+            email,
+            password FROM doctorsaccount
+            WHERE email = ? AND password = ?;
+        `;
 
         const [rows] = await conn.query(query, [email, password]);
 
@@ -151,6 +158,45 @@ export const loginDoctorsAccount = async (req, res) => {
         })
     } catch (error) {
         console.error(`Failed to login doctor account: ${error}`);
+    }
+}
+
+// controller logic for logging in admin accounts
+export const loginAdminAccount = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        const query = `SELECT * FROM cmsadmin WHERE email = ? AND password = ?;`;
+
+        const [rows] = await conn.query(query, [email, password]);
+
+        if (!rows.find((row) => row.email === email && row.password === password)) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                message: "Invalid email and password"
+            })
+        }
+
+        const adminUsers = rows[0];
+
+        const SECRET_KEY = process.env.JWT_SECRET || "authenmimangjuan";
+        if (!SECRET_KEY) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "Failed to login admin account"
+            });
+        }
+
+        const token = jwt.sign({ id: adminUsers.adminID, email: adminUsers.email }, SECRET_KEY, { expiresIn: "1hr" });
+        const sid = req.session.user = {
+            id: adminUsers.adminID,
+        }
+
+        return res.status(StatusCodes.OK).json({
+            message: "Admin Login Successful",
+            token,
+            sid: sid
+        })
+    } catch (error) {
+        console.error(`Failed to login admin account: ${error}`);
     }
 }
 
@@ -389,7 +435,7 @@ export const getBookedAppointmentsToDisplayInDoctorsDashboard = async (req, res)
 // controller logic for updating patients appointments details
 export const updatePatientsAppointments = async (req, res) => {
     try {
-        const  {appointmentID} = req.params;
+        const { appointmentID } = req.params;
         const {
             firstName,
             lastName,
@@ -401,10 +447,10 @@ export const updatePatientsAppointments = async (req, res) => {
             status,
             purposeOfAppointment
         } = req.body;
-        
+
         // Debug log to check the received appointmentID and body
         console.log(`Received appointmentID: ${appointmentID}`);
-        
+
         const query = `
             UPDATE patientsappointment 
             SET
@@ -453,3 +499,90 @@ export const updatePatientsAppointments = async (req, res) => {
         });
     }
 };
+
+// controller logic for adding a new doctor in admin dashboard
+export const addDoctor = async (req, res) => {
+    try {
+        const {
+            fullName,
+            firstName,
+            lastName,
+            email,
+            medicalSpecialties,
+            yearsOfExperience,
+            consultationFee,
+            gender,
+            password
+        } = req.body;
+
+        const query = `INSERT INTO doctorsaccount (
+            fullName,
+            firstName,
+            lastName,
+            email,
+            medicalSpecialties,
+            yearsOfExperience,
+            consultationFee,
+            gender,
+            password
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`;
+
+        const [result] = await conn.query(query, [
+            fullName,
+            firstName,
+            lastName,
+            email,
+            medicalSpecialties,
+            yearsOfExperience,
+            consultationFee,
+            gender,
+            password
+            ]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Failed to add doctor"
+            });
+        }
+
+        return res.status(StatusCodes.OK).json({
+            message: "Doctor added successfully"
+        });
+    } catch (error) {
+        console.error(`Failed to add doctor: ${error}`);
+    }
+}
+
+// controller logic for getting the total number of doctors in the row
+export const getDoctorsLists = async (req, res) => {
+    try {
+        const query = `SELECT 
+            fullName,
+            firstName,
+            lastName,
+            email,
+            medicalSpecialties,
+            yearsOfExperience,
+            consultationFee,
+            gender
+            FROM doctorsaccount`;
+
+        const [rows] = await conn.query(query);
+
+        if(rows.length === 0) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No doctors found"
+            });
+        }
+
+        return res.status(StatusCodes.OK).json({
+            doctors: rows
+        })
+    } catch (error) {
+        console.error(`Failed to get doctors lists: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to retrieve doctors lists"
+        })
+    }   
+}

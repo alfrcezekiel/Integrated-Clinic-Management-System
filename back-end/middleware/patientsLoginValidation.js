@@ -15,7 +15,7 @@ const patientsLoginValidation = [
         .notEmpty()
         .withMessage("Password is required")
         .isLength({ min: 8})
-        .withMessage("Password must be at least 8 characters"),
+        .withMessage("Incorrect Password"),
     (req, res, next) => {
         const errors = validationResult(req)
 
