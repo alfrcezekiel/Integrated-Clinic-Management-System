@@ -504,7 +504,6 @@ export const updatePatientsAppointments = async (req, res) => {
 export const addDoctor = async (req, res) => {
     try {
         const {
-            fullName,
             firstName,
             lastName,
             email,
@@ -516,7 +515,6 @@ export const addDoctor = async (req, res) => {
         } = req.body;
 
         const query = `INSERT INTO doctorsaccount (
-            fullName,
             firstName,
             lastName,
             email,
@@ -525,10 +523,9 @@ export const addDoctor = async (req, res) => {
             consultationFee,
             gender,
             password
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`;
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?);`;
 
         const [result] = await conn.query(query, [
-            fullName,
             firstName,
             lastName,
             email,
@@ -558,7 +555,6 @@ export const addDoctor = async (req, res) => {
 export const getDoctorsLists = async (req, res) => {
     try {
         const query = `SELECT 
-            fullName,
             firstName,
             lastName,
             email,

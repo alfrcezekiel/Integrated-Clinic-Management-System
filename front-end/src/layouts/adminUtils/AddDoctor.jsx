@@ -25,12 +25,10 @@ import {
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import CMS from "../../API/CMS";
-import { useNavigate } from "react-router-dom";
-
+import { useNavigate, useLocation } from "react-router-dom";
 const AddDoctor = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState({
-        fullName: "",
         firstName: "",
         lastName: "",
         email: "",
@@ -42,7 +40,6 @@ const AddDoctor = () => {
     });
     const [showPassword, setShowPassword] = useState(false);
     const [doctorsList, setDoctorsList] = useState([]); // State to store submitted doctors
-    const navigate = useNavigate();
     const medicalSpecialtiesList = [
         "Cardiology",
         "Dermatology",
@@ -64,7 +61,8 @@ const AddDoctor = () => {
         "Rheumatology",
         "Urology",
     ];
-
+    const navigate = useNavigate();
+    const location = useLocation();
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData({
@@ -76,9 +74,13 @@ const AddDoctor = () => {
     useEffect(() => {
         const retrieveListsOfDoctors = async () => {
             try {
-                const response = await CMS.get("/CMS/admin-dashboard/listOfDoctors");
+                const response = await CMS.get("/CMS/admin-dashboard/listOfDoctors", {
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                });
 
-                if (!response.data || !response.data.message) {
+                if (!response.data) {
                     throw new Error("No list of doctors data returned");
                 }
 
@@ -90,27 +92,27 @@ const AddDoctor = () => {
             }
         }
         retrieveListsOfDoctors();
-    }, [])
+    }, [location.pathname]);
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
-
         try {
+            e.preventDefault();
             const response = await CMS.post(`/CMS/admin-dashboard/addDoctor`, formData, {
                 headers: {
                     "Content-Type": "application/json",
                 },
             });
 
-            if (!response.data || !response.data.message) {
+            if (!response.data) {
                 throw new Error("No doctor data returned");
-            } else {
+            }
+
+            if(response.status === 200){
                 alert("Doctor added successfully");
-                setDoctorsList([...doctorsList, formData]); // Add the new doctor to the list
                 setIsModalOpen(false); // Close the modal after submission
+                setDoctorsList([...doctorsList, formData]); // Update the list of doctors
                 setFormData({
                     // Reset form data
-                    fullName: "",
                     firstName: "",
                     lastName: "",
                     email: "",
@@ -129,7 +131,6 @@ const AddDoctor = () => {
 
     // Table columns
     const doctorsTableColumns = [
-        "Full Name",
         "First Name",
         "Last Name",
         "Email",
@@ -171,16 +172,6 @@ const AddDoctor = () => {
                 <DialogTitle className="text-xl font-semibold">Add Doctor</DialogTitle>
                 <DialogContent>
                     <form onSubmit={handleSubmit}>
-                        <TextField
-                            fullWidth
-                            name="fullName"
-                            margin="normal"
-                            label="Full name as a Doctor"
-                            value={formData.fullName}
-                            onChange={handleInputChange}
-                            required
-                            className="mb-4"
-                        />
                         <TextField
                             fullWidth
                             margin="normal"
@@ -237,6 +228,7 @@ const AddDoctor = () => {
                             value={formData.yearsOfExperience}
                             onChange={handleInputChange}
                             required
+                            inputProps={{ min: 0, step: 1 }}
                             className="mb-4"
                         />
                         <TextField
@@ -287,26 +279,27 @@ const AddDoctor = () => {
                                 ),
                             }}
                         />
+                        <DialogActions className="p-4 flex justify-end gap-2">
+                            <Button
+                                onClick={() => setIsModalOpen(false)}
+                                color="secondary"
+                                className="bg-gray-500 hover:bg-gray-600 text-white"
+                                variant="contained"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={handleSubmit}
+                                color="primary"
+                                className="bg-blue-500 hover:bg-blue-600 text-white"
+                                variant="contained"
+                                type="submit"
+                            >
+                                Add Doctor
+                            </Button>
+                        </DialogActions>
                     </form>
                 </DialogContent>
-                <DialogActions className="p-4 border-t flex justify-end gap-2">
-                    <Button
-                        onClick={() => setIsModalOpen(false)}
-                        color="secondary"
-                        className="bg-gray-500 hover:bg-gray-600 text-white"
-                        variant="contained"
-                    >
-                        Cancel
-                    </Button>
-                    <Button
-                        onClick={handleSubmit}
-                        color="primary"
-                        className="bg-blue-500 hover:bg-blue-600 text-white"
-                        variant="contained"
-                    >
-                        Add Doctor
-                    </Button>
-                </DialogActions>
             </Dialog>
 
             {/* Table to display submitted doctors */}
@@ -340,50 +333,55 @@ const AddDoctor = () => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {doctorsList.map((doctor, id) => (
-                                <TableRow key={id}>
-                                    <TableCell align="center">
+                            {doctorsList && doctorsList.length >= 0 ? (
+                                doctorsList.map((doctor, id) => (
+                                    <TableRow key={id}>
+                                        <TableCell align="center">
+                                            <Typography variant="body2" className="text-blue-gray-900">
+                                                {doctor.firstName}
+                                            </Typography>
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            <Typography variant="body2" className="text-blue-gray-900">
+                                                {doctor.lastName}
+                                            </Typography>
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            <Typography variant="body2" className="text-blue-gray-900">
+                                                {doctor.email}
+                                            </Typography>
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            <Typography variant="body2" className="text-blue-gray-900">
+                                                {doctor.medicalSpecialties}
+                                            </Typography>
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            <Typography variant="body2" className="text-blue-gray-900">
+                                                {doctor.yearsOfExperience}
+                                            </Typography>
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            <Typography variant="body2" className="text-blue-gray-900">
+                                                {doctor.consultationFee}
+                                            </Typography>
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            <Typography variant="body2" className="text-blue-gray-900">
+                                                {doctor.gender}
+                                            </Typography>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow key={0}>
+                                    <TableCell colSpan={doctorsTableColumns.length} align="center">
                                         <Typography variant="body2" className="text-blue-gray-900">
-                                            {doctor.fullName}
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell align="center">
-                                        <Typography variant="body2" className="text-blue-gray-900">
-                                            {doctor.firstName}
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell align="center">
-                                        <Typography variant="body2" className="text-blue-gray-900">
-                                            {doctor.lastName}
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell align="center">
-                                        <Typography variant="body2" className="text-blue-gray-900">
-                                            {doctor.email}
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell align="center">
-                                        <Typography variant="body2" className="text-blue-gray-900">
-                                            {doctor.medicalSpecialties}
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell align="center">
-                                        <Typography variant="body2" className="text-blue-gray-900">
-                                            {doctor.yearsOfExperience}
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell align="center">
-                                        <Typography variant="body2" className="text-blue-gray-900">
-                                            {doctor.consultationFee}
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell align="center">
-                                        <Typography variant="body2" className="text-blue-gray-900">
-                                            {doctor.gender}
+                                            No doctors found.
                                         </Typography>
                                     </TableCell>
                                 </TableRow>
-                            ))}
+                            )}
                         </TableBody>
                     </Table>
                 </CardContent>
