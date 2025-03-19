@@ -27,6 +27,7 @@ import {
 import { Visibility, VisibilityOff, Edit, Delete } from "@mui/icons-material";
 import CMS from "../../API/CMS";
 import { useNavigate, useLocation } from "react-router-dom";
+import DeleteConfirmationModal from "./ConfirmDeleteModal";
 
 const AddDoctor = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -43,6 +44,8 @@ const AddDoctor = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [isEditableText, setIsEditableText] = useState(false)
     const [currentDoctorID, setCurrentDoctorID] = useState("")
+    const [selectedDoctor, setSelectedDoctor] = useState(null);
+    const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const [fieldErrors, setFieldErrors] = useState({
         firstName: "",
         lastName: "",
@@ -78,13 +81,6 @@ const AddDoctor = () => {
     ];
     const navigate = useNavigate();
     const location = useLocation();
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({
-            ...formData,
-            [name]: value,
-        });
-    };
 
     useEffect(() => {
         const retrieveListsOfDoctors = async () => {
@@ -204,7 +200,6 @@ const AddDoctor = () => {
 
     // function to update the doctors details
     const handleEdit = (doctor) => {
-        console.log("Edit doctor:", doctor);
         setIsModalOpen(true);
         setIsEditableText(true)
         setCurrentDoctorID(doctor.doctorsID)
@@ -221,7 +216,43 @@ const AddDoctor = () => {
 
     // function to delete the doctor details
     const handleDelete = (doctor) => {
-        console.log("Delete doctor:", doctor);
+        setSelectedDoctor(doctor);
+        setOpenDeleteModal(true);
+    }
+
+    const handleDeleteModalClose = () => {
+        setOpenDeleteModal(false);
+    }
+
+    const confirmDelete = async () => {
+        try {
+            if (!selectedDoctor) {
+                alert("No doctor selected for deletion");
+                return;
+            }
+
+            const response = await CMS.delete(`/CMS/admin-dashboard/deleteDoctor/${selectedDoctor.doctorsID}`, {
+                headers: {
+                    "Content-Type": "application/json",
+                }
+            })
+
+            if(!response.data){
+                throw new Error("No doctor data returned");
+            }
+
+            if(response.status === 200){
+                setDoctorsList((prevDoctors) => (
+                    prevDoctors.filter((doctor) => doctor.doctorsID !== selectedDoctor.doctorsID)
+                ))
+                setOpenDeleteModal(false);
+                navigate("/admin-dashboard/add-doctor");
+            } else {
+                console.error("Error in deleting doctor");
+            }
+        } catch (error) {
+            console.error(`Error in deleting doctor: ${error}`);
+        }
     }
 
     const handleCloseModal = () => {
@@ -272,7 +303,7 @@ const AddDoctor = () => {
                             label="First Name"
                             name="firstName"
                             value={formData.firstName}
-                            onChange={handleInputChange}
+                            onChange={(e) => setFormData({...formData, firstName: e.target.value})}
                             required
                             className="mb-4"
                             autoComplete="off"
@@ -285,7 +316,7 @@ const AddDoctor = () => {
                             label="Last Name"
                             name="lastName"
                             value={formData.lastName}
-                            onChange={handleInputChange}
+                            onChange={(e) => setFormData({...formData, lastName: e.target.value})}
                             required
                             autoComplete="off"
                             helperText={fieldErrors.lastName}
@@ -299,7 +330,7 @@ const AddDoctor = () => {
                             name="email"
                             type="email"
                             value={formData.email}
-                            onChange={handleInputChange}
+                            onChange={(e) => setFormData({...formData, email: e.target.value})}
                             required
                             autoComplete="off"
                             helperText={fieldErrors.email}
@@ -311,7 +342,7 @@ const AddDoctor = () => {
                             <Select
                                 name="medicalSpecialties"
                                 value={formData.medicalSpecialties}
-                                onChange={handleInputChange}
+                                onChange={(e) => setFormData({...formData, medicalSpecialties: e.target.value})}
                                 required
                             >
                                 <MenuItem value="">Select Medical Specialty</MenuItem>
@@ -330,7 +361,7 @@ const AddDoctor = () => {
                             name="yearsOfExperience"
                             type="number"
                             value={formData.yearsOfExperience}
-                            onChange={handleInputChange}
+                            onChange={(e) => setFormData({...formData, yearsOfExperience: e.target.value})}
                             required
                             inputProps={{ min: 0, step: 1 }}
                             className="mb-4"
@@ -345,7 +376,7 @@ const AddDoctor = () => {
                             name="consultationFee"
                             type="number"
                             value={formData.consultationFee}
-                            onChange={handleInputChange}
+                            onChange={(e) => setFormData({...formData, consultationFee: e.target.value})}
                             required
                             inputProps={{ min: 0, step: 0.01 }}
                             autoComplete="off"
@@ -358,7 +389,7 @@ const AddDoctor = () => {
                             <Select
                                 name="gender"
                                 value={formData.gender}
-                                onChange={handleInputChange}
+                                onChange={(e) => setFormData({...formData, gender: e.target.value})}
                                 required
                             >
                                 <MenuItem value="">Select Gender</MenuItem>
@@ -375,7 +406,7 @@ const AddDoctor = () => {
                             name="password"
                             type={showPassword ? "text" : "password"} // Toggle between text and password
                             value={formData.password}
-                            onChange={handleInputChange}
+                            onChange={(e) => setFormData({...formData, password: e.target.value})}
                             required
                             autoComplete="off"
                             helperText={fieldErrors.password}
@@ -522,6 +553,12 @@ const AddDoctor = () => {
                             )}
                         </TableBody>
                     </Table>
+                    <DeleteConfirmationModal 
+                        open={openDeleteModal}
+                        onClose={handleDeleteModalClose}
+                        onConfirm={confirmDelete}
+                        doctor={selectedDoctor}
+                    />
                 </CardContent>
             </Card>
         </div>

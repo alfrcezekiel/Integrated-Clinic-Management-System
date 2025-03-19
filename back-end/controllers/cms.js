@@ -3,6 +3,7 @@ import conn from "../db/mysql/conn.js";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import "../main.js";
+import bcrypt from "bcrypt";
 dotenv.config();
 
 // controller logic for a global route
@@ -31,7 +32,11 @@ export const registerPatientAccount = async (req, res) => {
         const { firstName, lastName, email, phoneNumber, password, confirmPassword } = req.body;
 
         const SECRET_KEY = process.env.JWT_SECRET || "authenmimangjuan";
+        
+        const saltRounds = 10;
 
+        const hashedPassword = await bcrypt.hash(password, saltRounds); 
+        const hashedConfirmPassword = await bcrypt.hash(confirmPassword, saltRounds);
         // 1st table of patients register account
         const query1 = "INSERT INTO patientsregisteraccount1 (firstName, lastName, email) VALUES (?, ?, ?)";
         // 2nd table of patients register account
@@ -40,7 +45,7 @@ export const registerPatientAccount = async (req, res) => {
         const [result] = await conn.query(query1, [firstName, lastName, email]);
         const patientID = result.insertId;
 
-        await conn.query(query2, [phoneNumber, password, confirmPassword]);
+        await conn.query(query2, [phoneNumber, hashedPassword, hashedConfirmPassword]);
 
         const token = jwt.sign({ id: patientID, email: email }, SECRET_KEY || "sadadsasdd", { expiresIn: "1hr" });
         return res.status(StatusCodes.OK).json({
@@ -81,19 +86,25 @@ export const loginPatientsAccount = async (req, res) => {
             FROM patientsregisteraccount1
             INNER JOIN patientsregisteraccount2
             ON patientsregisteraccount1.patientID = patientsregisteraccount2.registerPatientID 
-            WHERE patientsregisteraccount1.email = ? AND patientsregisteraccount2.password = ?;
+            WHERE patientsregisteraccount1.email = ?;
         `;
 
-        const [rows] = await conn.query(query, [email, password]);
-
-        if (!rows.find((row) => row.email === email && row.password === password)) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({
-                message: "Invalid email and password"
-            })
+        const [rows] = await conn.query(query, [email]);
+        
+        if(rows.length === 0){
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "Invalid email or password"
+            });
         }
-
         const patients = rows[0];
         const SECRET_KEY = process.env.JWT_SECRET || "authenmimangjuan";
+        const isPasswordValid = await bcrypt.compare(password, patients.password);
+
+        if (!isPasswordValid) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                message: "Invalid email or password"
+            })
+        }
 
         // generate a token
         const token = jwt.sign({ id: patients.patientID }, SECRET_KEY, { expiresIn: "1hr" });
@@ -110,6 +121,9 @@ export const loginPatientsAccount = async (req, res) => {
         })
     } catch (error) {
         console.error(`Failed to login patient account: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to login patient account"
+        });
     }
 }
 
@@ -563,7 +577,7 @@ export const getDoctorsLists = async (req, res) => {
             yearsOfExperience,
             consultationFee,
             gender
-            FROM doctorsaccount`;
+            FROM doctorsaccount ORDER BY doctorsID ASC;`;
 
         const [rows] = await conn.query(query);
 
@@ -648,5 +662,28 @@ export const updateDoctorsDetails = async (req, res) => {
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             message: "Failed to update doctors account"
         });
+    }
+}
+
+// controller logic for deleting doctors details in admin dashboard
+export const deleteDoctorsDetails = async (req, res) => {
+    try {
+        const { doctorsID } = req.params;
+
+        const query = `DELETE FROM doctorsaccount WHERE doctorsID = ?;`;
+
+        const [result] = await conn.query(query, [doctorsID]);
+
+        if (result.affectedRows === 0) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No doctors found with the provided ID"
+            });
+        }
+
+        return res.status(StatusCodes.OK).json({
+            message: "Doctors account deleted successfully"
+        }); 
+    } catch (error) {
+        console.error(`Failed to delete doctors account: ${error}`);
     }
 }

@@ -48,7 +48,7 @@ const LandingPageHeader = () => {
         <header id="header" className="header d-flex align-items-center fixed-top">
             <div className="container-fluid container-xl position-relative d-flex align-items-center">
 
-                <a href="/" className="logo d-flex align-items-center me-auto">
+                <a href="/cms" className="logo d-flex align-items-center me-auto">
                     {/* <!-- Uncomment the line below if you also wish to use an image logo --> */}
                     {/* <img src={toothlogo} className="mix-blend-luminosity" alt="Tooth Logo"/> */}
                     <h1 className="sitename">CMS</h1>
@@ -56,7 +56,7 @@ const LandingPageHeader = () => {
 
                 <nav id="navmenu" className="navmenu">
                     <ul>
-                        <li><a href="/" className="active">Home</a></li>
+                        <li><a href="/cms" className="active">Home</a></li>
                         <li><a href="#about">About</a></li>
                         <li><a href="#services">Services</a></li>
                         <li className="dropdown"><a href="#"><span>{whatWeServeTitle}</span> <i className="bi bi-chevron-down toggle-dropdown"></i></a>
@@ -86,15 +86,15 @@ const LandingPageHeader = () => {
                                 <i className="bi bi-chevron-down toggle-dropdown"></i>
                             </a>
                             <ul>
-                        <li>
-                            <Link to={"/doctor-portal/login"}>Doctor&apos;s Login Portal</Link>
-                        </li>
-                        <li>
-                            <Link to={"/patients-login"}>CMS Login Portal</Link>
-                        </li>
-                        <li>
-                            <Link to={"/cms/login-admin"}>CMS Admin Portal</Link>
-                        </li>
+                                <li>
+                                    <Link to={"/doctor-portal/login"}>Doctor&apos;s Login Portal</Link>
+                                </li>
+                                <li>
+                                    <Link to={"/patients-login"}>CMS Login Portal</Link>
+                                </li>
+                                <li>
+                                    <Link to={"/cms/login-admin"}>CMS Admin Portal</Link>
+                                </li>
                             </ul>
                         </li>
                     </ul>

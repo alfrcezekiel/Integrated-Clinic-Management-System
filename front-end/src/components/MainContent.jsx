@@ -15,7 +15,7 @@ const MainContent = () => {
     const ref = useRef(0);
     useEffect(() => {
         const TitleHeader = () => {
-            document.title = "CMS | Home"
+            document.title = "Clinic Management System | CMS"
         }
         TitleHeader();
 

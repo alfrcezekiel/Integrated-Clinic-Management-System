@@ -16,7 +16,8 @@ import {
     loginAdminAccount,
     addDoctor,
     getDoctorsLists,
-    updateDoctorsDetails
+    updateDoctorsDetails,
+    deleteDoctorsDetails
 } from "../controllers/cms.js";
 import validateRegister from "../middleware/validation.js";
 import patientsLoginValidation from "../middleware/patientsLoginValidation.js";
@@ -26,6 +27,7 @@ import doctorsLoginValidation from "../middleware/doctors.login.validation.js";
 import adminLoginValidation from "../middleware/admin.validation.js";
 import validateAddDoctor from "../middleware/addingdoctor.validation.js";
 import validateUpdatingDoctor from "../middleware/updatingDoctor.validation.js";
+import validatePatientBookAppointment from "../middleware/patientBookAppointmentValidation.js";
 
 const router = express.Router();
 
@@ -48,7 +50,7 @@ router.get("/patientsDashboard", getPatientsDashboard);
 router.get("/patientsDashboard/getBookedAppointments/:id", getBookedAppointments);
 
 // router for booking the patients appointments
-router.post("/patientsDashboard/patientsBookedAppointments", patientsBookedAppointments);
+router.post("/patientsDashboard/patientsBookedAppointments", [validatePatientBookAppointment], patientsBookedAppointments);
 
 // router for retrieving the patients booked appointments  to display in tables
 router.get("/patientsDashboard/bookedAppointments", getPatientsAppointments);
@@ -82,5 +84,8 @@ router.get("/admin-dashboard/listOfDoctors", getDoctorsLists);
 
 // router for updating the doctors details in admin dashboard
 router.put("/admin-dashboard/updateDoctor/:doctorsID", [validateUpdatingDoctor], updateDoctorsDetails);
+
+// router for delete the doctors details in admin dashboard
+router.delete("/admin-dashboard/deleteDoctor/:doctorsID", deleteDoctorsDetails);
 
 export default router;

@@ -76,6 +76,8 @@ function PatientsLoginPortal() {
         } catch (error) {
             if (error.response && error.response.status === 400) {
                 setFieldErrors(error.response.data.errors);
+            } else if (error.response && error.response.status === 401) {
+                setFieldErrors({email: "Invalid Email ",password: "Invalid Password"});
             } else {
                 console.error(`Error in logging in patient: ${error}`);
             }
