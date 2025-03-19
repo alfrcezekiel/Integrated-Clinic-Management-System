@@ -2,7 +2,7 @@ import { body, validationResult } from 'express-validator';
 import { StatusCodes } from "http-status-codes"
 
 // validation for patient book appointment
-const validatePatientBookAppointment = [
+const validatePatientsDetails = [
     body("firstName")
         .notEmpty()
         .withMessage("First name is required"),
@@ -41,9 +41,7 @@ const validatePatientBookAppointment = [
         .withMessage("Doctor is required"),
     body("status")
         .notEmpty()
-        .withMessage("Status is required")
-        .isIn(["Pending"])
-        .withMessage("Status must be Pending"),
+        .withMessage("Status is required"),
     body("purposeOfAppointment")
         .notEmpty()
         .withMessage("Purpose of appointment is required"),
@@ -59,4 +57,4 @@ const validatePatientBookAppointment = [
     }
 ]
 
-export default validatePatientBookAppointment;
+export default validatePatientsDetails;

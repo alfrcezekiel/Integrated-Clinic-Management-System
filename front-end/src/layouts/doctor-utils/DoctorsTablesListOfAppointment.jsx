@@ -20,16 +20,30 @@ import {
     FormControl,
     InputLabel,
     Select,
-    MenuItem
+    MenuItem,
+    FormHelperText
 } from "@mui/material"
 import { useState } from "react"
 import CMS from "../../API/CMS"
 import EditIcon from "@mui/icons-material/Edit"
 import { useNavigate } from "react-router-dom"
+import Lottie from "lottie-react"
+import successAnimation from "../../assets/animation/Main Scene.json"
 
 const DoctorsTablesListOfAppointments = () => {
     const [appointmentsData, setAppointmentsData] = useState([])
-
+    // state for the fields error
+    const [fieldsError, setFieldsError] = useState({
+        firstName: "",
+        lastName: "",
+        email: "",
+        appointmentDate: "",
+        phoneNumber: "",
+        gender: "",
+        doctor: "",
+        status: "",
+        purposeOfAppointment: "",
+    })
     const appointmentsTableColumn = [
         "ID",
         'First Name',
@@ -41,7 +55,7 @@ const DoctorsTablesListOfAppointments = () => {
         'Doctor',
         'Status',
         'Purpose of Appointment',
-        "Action"
+        "Edit"
     ]
     // form data for updating the appointment details
     const [formData, setFormData] = useState({
@@ -57,8 +71,20 @@ const DoctorsTablesListOfAppointments = () => {
         purposeOfAppointment: "",
     });
     const [open, setOpen] = useState(false);
-
+    const [successfullAppointmentModalOpen, setSuccessfullAppointmentModalOpen] = useState(false);
     const handleClose = () => {
+        setFieldsError({})
+        setFormData({
+            firstName: "",
+            lastName: "",
+            email: "",
+            appointmentDate: "",
+            phoneNumber: "",
+            gender: "",
+            doctor: "",
+            status: "",
+            purposeOfAppointment: "",
+        })
         setOpen(false);
     }
 
@@ -103,6 +129,7 @@ const DoctorsTablesListOfAppointments = () => {
         retrievedAppointmentsData();
     }, [location.pathname])
 
+    // this function is to formate the date to YYYY-MM-DD
     const formatDate = (dateString) => {
         const date = new Date(dateString);
         const year = date.getFullYear();
@@ -115,35 +142,61 @@ const DoctorsTablesListOfAppointments = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            if(formData.status === "Scheduled"){
+            if (formData.status === "Scheduled") {
                 formData.appointmentDate = new Date(formData.appointmentDate).toISOString().split("T")[0];
             }
 
             const response = await CMS.put(`/CMS/doctors-dashboard/updateAppointment/${formData.appointmentID}`, formData);
 
             if (response.status === 200) {
-                alert("Updated patients details")
+                setFieldsError({})
                 setOpen(false);
+                setSuccessfullAppointmentModalOpen(true);
                 navigate("/doctor-portal/dashboard/patients-appointments");
             } else {
                 throw new Error(`Unexpected error in status ${response.status}`)
             }
         } catch (error) {
-            console.error(`Code functionality error for updating the appointment: ${error}`);
+            if (error.response && error.response.status === 400) {
+                setFieldsError(error.response.data.errors);
+            } else {
+                console.error(`Code functionality error for updating the appointment: ${error}`);
+            }
         }
+    }
+
+    const handleCloseSuccessfullAppointmentModal = () => {
+        setSuccessfullAppointmentModalOpen(false);
+        handleClose();
     }
 
     // this function determines the color of the status of the patients
     const getStatusColor = (status) => {
-        switch(status){
+        switch (status) {
             case "Scheduled":
                 return "text-green-600 bg-green-100";
             case "Cancelled":
                 return "text-red-600 bg-red-100";
-            case "Pending": 
+            case "Pending":
                 return "text-yellow-600 bg-yellow-100";
             default:
                 return "text-gray-600 bg-gray-100";
+        }
+    }
+
+    // this should match the status of the patients to render in appointment date
+    const statusMatch = ["Scheduled", "Cancelled", "Pending"];
+
+    const getAppointmentDateColor = (status) => {
+        switch (status) {
+            case "Scheduled":
+                return "text-green-600 bg-green-100"
+            case "Cancelled":
+                return "bg-red-100 text-red-600"
+            case "Pending":
+                return "bg-yellow-100 text-yellow-600"
+            default:
+                return "bg-gray-100 text-gray-600"
         }
     }
 
@@ -170,7 +223,7 @@ const DoctorsTablesListOfAppointments = () => {
                                             align="center"
                                         >
                                             <Typography
-                                                variant="caption"
+                                                variant="body2"
                                                 className="text-[11px] font-bold uppercase text-blue-gray-400"
                                             >
                                                 {header}
@@ -203,8 +256,8 @@ const DoctorsTablesListOfAppointments = () => {
                                             </Typography>
                                         </TableCell>
                                         <TableCell align="center">
-                                            <Typography variant="body2" className="text-blue-gray-900">
-                                                {formatDate(appointment.appointmentDate)}
+                                            <Typography variant="body2" className={`rounded-lg p-2 ${getAppointmentDateColor(appointment.status)}`}>
+                                                {statusMatch.includes(appointment.status) ? formatDate(appointment.appointmentDate) : "N/A"}
                                             </Typography>
                                         </TableCell>
                                         <TableCell align="center">
@@ -223,8 +276,8 @@ const DoctorsTablesListOfAppointments = () => {
                                             </Typography>
                                         </TableCell>
                                         <TableCell align="center">
-                                            <Typography variant="body2" className={`rounded-lg ${getStatusColor(appointment.status)}`}> 
-                                                {appointment.status}
+                                            <Typography variant="body2" className={`rounded-lg p-2 ${getStatusColor(appointment.status)}`}>
+                                                {appointment.status ? appointment.status : "N/A"}
                                             </Typography>
                                         </TableCell>
                                         <TableCell align="center">
@@ -255,7 +308,6 @@ const DoctorsTablesListOfAppointments = () => {
                             type="text"
                             fullWidth
                             value={formData.appointmentID}
-                            onChange={(e) => setFormData({ ...formData, appointmentID: e.target.value })}
                         />
                         <TextField
                             autoFocus
@@ -265,6 +317,8 @@ const DoctorsTablesListOfAppointments = () => {
                             fullWidth
                             value={formData.firstName}
                             onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                            error={Boolean(fieldsError.firstName)}
+                            helperText={fieldsError.firstName ? fieldsError.firstName : ""}
                         />
                         <TextField
                             margin="dense"
@@ -273,6 +327,8 @@ const DoctorsTablesListOfAppointments = () => {
                             fullWidth
                             value={formData.lastName}
                             onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                            error={Boolean(fieldsError.lastName)}
+                            helperText={fieldsError.lastName ? fieldsError.lastName : ""}
                         />
                         <TextField
                             margin="dense"
@@ -281,6 +337,8 @@ const DoctorsTablesListOfAppointments = () => {
                             fullWidth
                             value={formData.email}
                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                            error={Boolean(fieldsError.email)}
+                            helperText={fieldsError.email ? fieldsError.email : ""}
                         />
                         <TextField
                             margin="dense"
@@ -292,6 +350,8 @@ const DoctorsTablesListOfAppointments = () => {
                             InputLabelProps={{
                                 shrink: true,
                             }}
+                            error={Boolean(fieldsError.appointmentDate)}
+                            helperText={fieldsError.appointmentDate ? fieldsError.appointmentDate : ""}
                         />
                         <TextField
                             margin="dense"
@@ -303,8 +363,10 @@ const DoctorsTablesListOfAppointments = () => {
                             InputLabelProps={{
                                 shrink: true,
                             }}
+                            error={Boolean(fieldsError.phoneNumber)}
+                            helperText={fieldsError.phoneNumber ? fieldsError.phoneNumber : ""}
                         />
-                        <FormControl fullWidth margin="dense">
+                        <FormControl fullWidth margin="dense" error={Boolean(fieldsError.gender)}>
                             <InputLabel>Gender</InputLabel>
                             <Select
                                 value={formData.gender}
@@ -314,6 +376,7 @@ const DoctorsTablesListOfAppointments = () => {
                                 <MenuItem value="Male">Male</MenuItem>
                                 <MenuItem value="Female">Female</MenuItem>
                             </Select>
+                            {fieldsError.gender && <FormHelperText error>{fieldsError.gender}</FormHelperText>}
                         </FormControl>
                         <TextField
                             margin="dense"
@@ -322,8 +385,10 @@ const DoctorsTablesListOfAppointments = () => {
                             fullWidth
                             value={formData.doctor}
                             onChange={(e) => setFormData({ ...formData, doctor: e.target.value })}
+                            error={Boolean(fieldsError.doctor)}
+                            helperText={fieldsError.doctor ? fieldsError.doctor : ""}
                         />
-                        <FormControl fullWidth margin="dense">
+                        <FormControl fullWidth margin="dense" error={Boolean(fieldsError.status)}>
                             <InputLabel>Status</InputLabel>
                             <Select
                                 value={formData.status}
@@ -334,6 +399,7 @@ const DoctorsTablesListOfAppointments = () => {
                                 <MenuItem value="Scheduled">Scheduled</MenuItem>
                                 <MenuItem value="Cancelled">Cancelled</MenuItem>
                             </Select>
+                            {fieldsError.status && <FormHelperText error>{fieldsError.status}</FormHelperText>}
                         </FormControl>
                         <TextField
                             margin="dense"
@@ -342,6 +408,8 @@ const DoctorsTablesListOfAppointments = () => {
                             fullWidth
                             value={formData.purposeOfAppointment}
                             onChange={(e) => setFormData({ ...formData, purposeOfAppointment: e.target.value })}
+                            error={Boolean(fieldsError.purposeOfAppointment)}
+                            helperText={fieldsError.purposeOfAppointment ? fieldsError.purposeOfAppointment : ""}
                         />
                         <DialogActions>
                             <Button onClick={handleClose} color="primary" variant="outlined">
@@ -353,6 +421,31 @@ const DoctorsTablesListOfAppointments = () => {
                         </DialogActions>
                     </form>
                 </DialogContent>
+            </Dialog>
+            <Dialog 
+                open={successfullAppointmentModalOpen} 
+                onClose={handleCloseSuccessfullAppointmentModal}
+                className="flex items-center justify-center fixed inset-0"
+            >
+                <div className="bg-white rounded-2xl p-6 w-[400px] text-center shadow-lg">
+                    <DialogTitle className="text-xl font-semibold">Success</DialogTitle>
+                    <DialogContent className="flex flex-col items-center">
+                        <Lottie animationData={successAnimation} className="w-24 h-24" loop={false}/>
+                        <Typography variant="body1" className="mt-2">
+                            Patients Appointment has been successfully updated.
+                        </Typography>
+                    </DialogContent>
+                    <DialogActions className="flex justify-center mt-4 items-center flex-col">
+                        <Button
+                            onClick={handleCloseSuccessfullAppointmentModal}
+                            color="primary"
+                            variant="contained"
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md"
+                        >
+                            OK
+                        </Button>
+                    </DialogActions>
+                </div>
             </Dialog>
         </>
     )

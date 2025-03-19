@@ -1,6 +1,7 @@
 import {body, validationResult} from "express-validator"
 import { StatusCodes } from "http-status-codes"
 
+// validation for adding doctor
 const validateAddDoctor = [
     body('firstName')
         .notEmpty()

@@ -29,6 +29,22 @@ const getStatusColor = (status) => {
             return "text-gray-600 bg-gray-100";
     }
 }
+
+const statusMatch = ["Scheduled", "Cancelled", "Pending"];
+
+// function to determine the color of the appointment date to match the status
+const getAppointmentDateColor = (status) => {
+    switch(status){
+        case "Scheduled":
+            return "text-green-600 bg-green-100";
+        case "Cancelled":
+            return "text-red-600 bg-red-100";
+        case "Pending":
+            return "text-yellow-600 bg-yellow-100";
+        default:
+            return "text-gray-600 bg-gray-100";
+    }
+}
 // This component is used to rende  r the table rows for the appointments table
 const AppointmentsTable = ({ retrievedAppointmentsData, isAppointmentOpen }) => {
     const memoizedTableRows = useMemo(() => {
@@ -51,8 +67,8 @@ const AppointmentsTable = ({ retrievedAppointmentsData, isAppointmentOpen }) => 
                         </Typography>
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
-                        <Typography variant="body2" className="text-blue-gray-900">
-                            {formatDate(appointment.appointmentDate)}
+                        <Typography variant="body2" className={`rounded-lg p-2 ${getAppointmentDateColor(appointment.status)}`}>
+                            {statusMatch.includes(appointment.appointmentDate) ? appointment.appointmentDate : formatDate(appointment.appointmentDate)}
                         </Typography>
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
@@ -71,7 +87,7 @@ const AppointmentsTable = ({ retrievedAppointmentsData, isAppointmentOpen }) => 
                         </Typography>
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
-                        <Typography variant="body2" className={`rounded-lg ${getStatusColor(appointment.status)}`}>
+                        <Typography variant="body2" className={`rounded-lg p-2 ${getStatusColor(appointment.status)}`}>
                             {appointment.status}
                         </Typography>   
                     </TableCell>

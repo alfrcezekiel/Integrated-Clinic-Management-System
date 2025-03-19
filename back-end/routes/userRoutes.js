@@ -28,6 +28,7 @@ import adminLoginValidation from "../middleware/admin.validation.js";
 import validateAddDoctor from "../middleware/addingdoctor.validation.js";
 import validateUpdatingDoctor from "../middleware/updatingDoctor.validation.js";
 import validatePatientBookAppointment from "../middleware/patientBookAppointmentValidation.js";
+import validatePatientsDetails from "../middleware/updatePatientsDetailsValidation.js";
 
 const router = express.Router();
 
@@ -65,7 +66,7 @@ router.post("/loginDoctorsAccount", [doctorsLoginValidation], loginDoctorsAccoun
 router.get("/doctors-dashboard/logout", logout);
 
 // router for updating the patients appointments
-router.put("/doctors-dashboard/updateAppointment/:appointmentID", updatePatientsAppointments);
+router.put("/doctors-dashboard/updateAppointment/:appointmentID", [validatePatientsDetails], updatePatientsAppointments);
 
 // router for retrieving the doctors name and patient id to display in doctors dashboard
 router.get("/doctors-dashboard/appointments", getBookedAppointmentsToDisplayInDoctorsDashboard);

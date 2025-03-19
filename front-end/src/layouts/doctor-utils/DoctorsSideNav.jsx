@@ -28,11 +28,6 @@ const DoctorsSideNav = ({ brandName, routes }) => {
             <nav className="p-3">
                 {routes.map(({ layout, pages }, index) => (
                     <div key={layout || index} className="mb-4">
-                        {layout && (
-                            <Typography variant="body2" className="uppercase text-gray-500 font-bold mb-2">
-                                {layout}
-                            </Typography>
-                        )}
                         {pages.map(({ icon, name, path }) => (
                             <NavLink
                                 key={name}
