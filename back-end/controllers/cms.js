@@ -534,7 +534,7 @@ export const addDoctor = async (req, res) => {
             consultationFee,
             gender,
             password
-            ]
+        ]
         );
 
         if (result.affectedRows === 0) {
@@ -555,6 +555,7 @@ export const addDoctor = async (req, res) => {
 export const getDoctorsLists = async (req, res) => {
     try {
         const query = `SELECT 
+            doctorsID,
             firstName,
             lastName,
             email,
@@ -566,7 +567,7 @@ export const getDoctorsLists = async (req, res) => {
 
         const [rows] = await conn.query(query);
 
-        if(rows.length === 0) {
+        if (rows.length === 0) {
             return res.status(StatusCodes.NOT_FOUND).json({
                 message: "No doctors found"
             });
@@ -580,5 +581,72 @@ export const getDoctorsLists = async (req, res) => {
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             message: "Failed to retrieve doctors lists"
         })
-    }   
+    }
+}
+
+// controller logic for updating doctors details
+export const updateDoctorsDetails = async (req, res) => {
+    try {
+        const { doctorsID } = req.params;
+        const {
+            firstName,
+            lastName,
+            email,
+            medicalSpecialties,
+            yearsOfExperience,
+            consultationFee,
+            gender,
+            password
+        } = req.body;
+
+        const first_name = String(firstName);
+        const last_name = String(lastName);
+        const email_address = String(email);
+        const medical_specialties = String(medicalSpecialties);
+        const years_of_experience = String(yearsOfExperience);
+        const consultation_fee = String(consultationFee);
+        const sex = String(gender);
+        const pass_word = String(password);
+
+        const query = `
+            UPDATE doctorsaccount
+            SET
+                firstName = ?,
+                lastName = ?,
+                email = ?,
+                medicalSpecialties = ?,
+                yearsOfExperience = ?,
+                consultationFee = ?,
+                gender = ?,
+                password = ?
+            WHERE doctorsID = ?;
+        `;
+
+        const [result] = await conn.query(query, [
+            first_name,
+            last_name,
+            email_address,
+            medical_specialties,
+            years_of_experience,
+            consultation_fee,
+            sex,
+            pass_word,
+            doctorsID
+        ]);
+
+        if (result.affectedRows === 0) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No doctors found with the provided ID"
+            });
+        }
+
+        return res.status(StatusCodes.OK).json({
+            message: "Doctors account updated successfully"
+        });
+    } catch (error) {
+        console.error(`Failed to update doctors account: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to update doctors account"
+        });
+    }
 }

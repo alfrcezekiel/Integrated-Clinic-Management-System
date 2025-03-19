@@ -1,7 +1,7 @@
 import {body, validationResult} from "express-validator"
 import { StatusCodes } from "http-status-codes"
 
-const validateAddDoctor = [
+const validateUpdatingDoctor = [
     body('firstName')
         .notEmpty()
         .withMessage('First name is required'),
@@ -48,4 +48,4 @@ const validateAddDoctor = [
     }
 ];
 
-export default validateAddDoctor
+export default validateUpdatingDoctor

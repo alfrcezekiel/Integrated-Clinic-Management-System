@@ -80,6 +80,12 @@ const LandingPageHeader = () => {
                         <li>
                             <Link to={"/patients-portal"}>Patients Registration Portal</Link>
                         </li>
+                        <li className="dropdown">
+                            <a href="#">
+                                <span>Login</span>
+                                <i className="bi bi-chevron-down toggle-dropdown"></i>
+                            </a>
+                            <ul>
                         <li>
                             <Link to={"/doctor-portal/login"}>Doctor&apos;s Login Portal</Link>
                         </li>
@@ -88,6 +94,8 @@ const LandingPageHeader = () => {
                         </li>
                         <li>
                             <Link to={"/cms/login-admin"}>CMS Admin Portal</Link>
+                        </li>
+                            </ul>
                         </li>
                     </ul>
                     <i className="mobile-nav-toggle d-xl-none bi bi-list"></i>

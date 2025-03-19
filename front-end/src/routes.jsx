@@ -5,7 +5,7 @@ import PatientsTable from "./layouts/patients-utils/patients-table";
 import DoctorsDashboardHome from "./widgets/layout/doctors-dashboard/DoctorsDashboardHome";
 import DoctorsTablesListOfAppointments from "./layouts/doctor-utils/DoctorsTablesListOfAppointment";
 import AddIcon from "@mui/icons-material/Add";
-import AddDoctor from "./layouts/adminUtils/AddDoctor";
+import AddDoctor from "./layouts/adminUtils/Doctors";
 import AdminDashboardHome from "./layouts/adminUtils/AdminHome";
 
 const iconStyle = {

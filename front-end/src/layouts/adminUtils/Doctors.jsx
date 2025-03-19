@@ -40,6 +40,9 @@ const AddDoctor = () => {
         gender: "",
         password: "",
     });
+    const [isLoading, setIsLoading] = useState(false);
+    const [isEditableText, setIsEditableText] = useState(false)
+    const [currentDoctorID, setCurrentDoctorID] = useState("")
     const [fieldErrors, setFieldErrors] = useState({
         firstName: "",
         lastName: "",
@@ -106,10 +109,14 @@ const AddDoctor = () => {
         retrieveListsOfDoctors();
     }, [location.pathname]);
 
+    // function to add a doctor details in a modal form
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await CMS.post(`/CMS/admin-dashboard/addDoctor`, formData, {
+            setIsLoading(true);
+            const endpoint = isEditableText ? `/CMS/admin-dashboard/updateDoctor/${currentDoctorID}` : "/CMS/admin-dashboard/addDoctor";
+            const method = isEditableText ? "put" : "post";
+            const response = await CMS[method](endpoint, formData, {
                 headers: {
                     "Content-Type": "application/json",
                 },
@@ -120,10 +127,16 @@ const AddDoctor = () => {
             }
 
             if (response.data && response.status === 200) {
-                alert("Doctor added successfully");
+                alert(isEditableText ? "Doctor details updated successfully" : "Doctor added successfully");
+                if(isEditableText){
+                    setDoctorsList(doctorsList.map((doctor) => 
+                        doctor.doctorsID === currentDoctorID ? formData : doctor
+                    ));
+                } else {
+                    setDoctorsList([...doctorsList, formData]); // Update the list of doctors
+                }
                 setFieldErrors({}); // Reset field errors
                 setIsModalOpen(false); // Close the modal after submission
-                setDoctorsList([...doctorsList, formData]); // Update the list of doctors
                 setFormData({
                     // Reset form data
                     firstName: "",
@@ -143,11 +156,14 @@ const AddDoctor = () => {
             } else {
                 console.error(`Error in adding doctor in admin dashboard form: ${error}`);
             }
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    // Table columns
+    // Table columns for displaying doctors
     const doctorsTableColumns = [
+        "ID",
         "First Name",
         "Last Name",
         "Email",
@@ -167,6 +183,18 @@ const AddDoctor = () => {
     // function to update the doctors details
     const handleEdit = (doctor) => {
         console.log("Edit doctor:", doctor);
+        setIsModalOpen(true);
+        setIsEditableText(true)
+        setCurrentDoctorID(doctor.doctorsID)
+        setFormData({
+            firstName: doctor.firstName,
+            lastName: doctor.lastName,
+            email: doctor.email,
+            medicalSpecialties: doctor.medicalSpecialties,
+            yearsOfExperience: doctor.yearsOfExperience,
+            consultationFee: doctor.consultationFee,
+            gender: doctor.gender
+        })
     }
 
     // function to delete the doctor details
@@ -174,8 +202,26 @@ const AddDoctor = () => {
         console.log("Delete doctor:", doctor);
     }
 
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setFieldErrors({}); // Reset field errors
+        setCurrentDoctorID("")
+        setIsEditableText(false)
+        setFormData({
+            // Reset form data
+            firstName: "",
+            lastName: "",
+            email: "",
+            medicalSpecialties: "",
+            yearsOfExperience: "",
+            consultationFee: "",
+            gender: "",
+            password: ""
+        });
+    }
+
     return (
-        <div className="p-4">
+        <div className="p-4 m-1">
             {/* Button to open the modal */}
             <div className="flex justify-end mb-4">
                 <Button
@@ -192,13 +238,10 @@ const AddDoctor = () => {
             <Dialog
                 open={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                slotProps={{
-                    paper: {
-                        className: "fixed right-0 h-full w-full m-0 rounded-none", // Tailwind classes for positioning
-                    }
-                }}
             >
-                <DialogTitle className="text-xl font-semibold">Add Doctor</DialogTitle>
+                <DialogTitle className="text-xl font-semibold">
+                    {isEditableText ? "Modify Doctor Details" : "Add Doctor"}   
+                </DialogTitle>
                 <DialogContent>
                     <form onSubmit={handleSubmit} autoComplete="off" id="addDoctorForm">
                         <TextField
@@ -299,6 +342,7 @@ const AddDoctor = () => {
                                 <MenuItem value="">Select Gender</MenuItem>
                                 <MenuItem value="Male">Male</MenuItem>
                                 <MenuItem value="Female">Female</MenuItem>
+                                <MenuItem value="Other">Other</MenuItem>
                             </Select>
                             {fieldErrors.gender && <FormHelperText error>{fieldErrors.gender}</FormHelperText>}
                         </FormControl>
@@ -331,7 +375,7 @@ const AddDoctor = () => {
                         />
                         <DialogActions className="p-4 flex justify-end gap-2">
                             <Button
-                                onClick={() => setIsModalOpen(false)}
+                                onClick={handleCloseModal}
                                 color="secondary"
                                 className="bg-gray-500 hover:bg-gray-600 text-white"
                                 variant="contained"
@@ -344,8 +388,9 @@ const AddDoctor = () => {
                                 className="bg-blue-500 hover:bg-blue-600 text-white"
                                 variant="contained"
                                 type="submit"
+                                disabled={isLoading}
                             >
-                                Add Doctor
+                                {isEditableText ? "Modify Doctor Details" : "Add Doctor"}
                             </Button>
                         </DialogActions>
                     </form>
@@ -386,6 +431,11 @@ const AddDoctor = () => {
                             {doctorsList && doctorsList.length >= 0 ? (
                                 doctorsList.map((doctor, id) => (
                                     <TableRow key={id}>
+                                        <TableCell align="center">
+                                            <Typography variant="body2" className="text-blue-gray-900">
+                                                {doctor.doctorsID}
+                                            </Typography>
+                                        </TableCell>
                                         <TableCell align="center">
                                             <Typography variant="body2" className="text-blue-gray-900">
                                                 {doctor.firstName}

@@ -15,7 +15,8 @@ import {
     verifyToken,
     loginAdminAccount,
     addDoctor,
-    getDoctorsLists
+    getDoctorsLists,
+    updateDoctorsDetails
 } from "../controllers/cms.js";
 import validateRegister from "../middleware/validation.js";
 import patientsLoginValidation from "../middleware/patientsLoginValidation.js";
@@ -24,6 +25,7 @@ import validateAppointmentID from "../middleware/patientId.validation.js";
 import doctorsLoginValidation from "../middleware/doctors.login.validation.js";
 import adminLoginValidation from "../middleware/admin.validation.js";
 import validateAddDoctor from "../middleware/addingdoctor.validation.js";
+import validateUpdatingDoctor from "../middleware/updatingDoctor.validation.js";
 
 const router = express.Router();
 
@@ -77,5 +79,8 @@ router.post("/admin-dashboard/addDoctor", [validateAddDoctor], addDoctor);
 
 // router for getting the list of doctors in the CMS admin dashboard
 router.get("/admin-dashboard/listOfDoctors", getDoctorsLists);
+
+// router for updating the doctors details in admin dashboard
+router.put("/admin-dashboard/updateDoctor/:doctorsID", [validateUpdatingDoctor], updateDoctorsDetails);
 
 export default router;
