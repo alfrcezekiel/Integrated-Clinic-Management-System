@@ -128,13 +128,35 @@ const AddDoctor = () => {
 
             if (response.data && response.status === 200) {
                 alert(isEditableText ? "Doctor details updated successfully" : "Doctor added successfully");
-                if(isEditableText){
-                    setDoctorsList(doctorsList.map((doctor) => 
+                if (isEditableText) {
+                    setDoctorsList(doctorsList.map((doctor) =>
                         doctor.doctorsID === currentDoctorID ? formData : doctor
                     ));
                 } else {
                     setDoctorsList([...doctorsList, formData]); // Update the list of doctors
                 }
+                // function to refresh the list of doctors
+                const retrieveListsOfDoctors = async () => {
+                    try {
+                        const response = await CMS.get("/CMS/admin-dashboard/listOfDoctors", {
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                        });
+
+                        if (!response.data) {
+                            throw new Error("No list of doctors data returned");
+                        }
+
+                        if (response.status === 200) {
+                            setDoctorsList(response.data.doctors);
+                        }
+                    } catch (error) {
+                        console.error(`Error in retrieving list of doctors: ${error}`);
+                    }
+                }
+                retrieveListsOfDoctors();
+
                 setFieldErrors({}); // Reset field errors
                 setIsModalOpen(false); // Close the modal after submission
                 setFormData({
@@ -149,9 +171,9 @@ const AddDoctor = () => {
                     password: ""
                 });
                 navigate("/admin-dashboard/add-doctor");
-            } 
+            }
         } catch (error) {
-            if(error.response && error.response.status === 400){
+            if (error.response && error.response.status === 400) {
                 setFieldErrors(error.response.data.errors);
             } else {
                 console.error(`Error in adding doctor in admin dashboard form: ${error}`);
@@ -240,7 +262,7 @@ const AddDoctor = () => {
                 onClose={() => setIsModalOpen(false)}
             >
                 <DialogTitle className="text-xl font-semibold">
-                    {isEditableText ? "Modify Doctor Details" : "Add Doctor"}   
+                    {isEditableText ? "Modify Doctor Details" : "Add Doctor"}
                 </DialogTitle>
                 <DialogContent>
                     <form onSubmit={handleSubmit} autoComplete="off" id="addDoctorForm">
