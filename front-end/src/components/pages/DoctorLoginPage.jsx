@@ -3,7 +3,7 @@ import Checkbox from "@mui/material/Checkbox"
 import Button from "@mui/material/Button"
 import Typography from "@mui/material/Typography"
 import FormControlLabel from "@mui/material/FormControlLabel"
-import {useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import "../../assets/css/main.css"
 import FormControl from "@mui/material/FormControl"
 import InputLabel from "@mui/material/InputLabel"
@@ -60,7 +60,7 @@ function DoctorLoginPortal() {
                     "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
                 },
             });
-            
+
             if (response.data && response.status === 200) {
                 setFieldErrors({})
                 if (response.data.token && response.data.sid) {
@@ -80,6 +80,11 @@ function DoctorLoginPortal() {
         } catch (error) {
             if (error.response && error.response.status === 400) {
                 setFieldErrors(error.response.data.errors);
+            } else if (error.response && error.response.status === 401) {
+                setFieldErrors({
+                    email: error.response.data.messageEmail,
+                    password: error.response.data.messagePassword
+                });
             } else {
                 console.error(`Error in logging in patient: ${error}`);
             }

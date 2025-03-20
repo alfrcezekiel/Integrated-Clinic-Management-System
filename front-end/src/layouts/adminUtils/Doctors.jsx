@@ -28,6 +28,7 @@ import { Visibility, VisibilityOff, Edit, Delete } from "@mui/icons-material";
 import CMS from "../../API/CMS";
 import { useNavigate, useLocation } from "react-router-dom";
 import DeleteConfirmationModal from "./ConfirmDeleteModal";
+import UpdatingDoctorDetailsModal from "./UpdatingDoctorDetailsModal";
 
 const AddDoctor = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -46,6 +47,8 @@ const AddDoctor = () => {
     const [currentDoctorID, setCurrentDoctorID] = useState("")
     const [selectedDoctor, setSelectedDoctor] = useState(null);
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
+    const [isUpdatingModalOpen, setIsUpdatingModalOpen] = useState(false);
+    const [successUpdatingMessage, setSuccessUpdatingMessage] = useState("");   
     const [fieldErrors, setFieldErrors] = useState({
         firstName: "",
         lastName: "",
@@ -81,7 +84,11 @@ const AddDoctor = () => {
     ];
     const navigate = useNavigate();
     const location = useLocation();
-
+    
+    // function for closing the success modal
+    const handleSuccesfulUpdateModalClose = () => {
+        setIsUpdatingModalOpen(false);
+    }
     useEffect(() => {
         const retrieveListsOfDoctors = async () => {
             try {
@@ -123,7 +130,8 @@ const AddDoctor = () => {
             }
 
             if (response.data && response.status === 200) {
-                alert(isEditableText ? "Doctor details updated successfully" : "Doctor added successfully");
+                setSuccessUpdatingMessage(isEditableText ? "Doctor details updated successfully" : "Doctor added successfully");  // Set success message for updating the doctor details
+                setIsUpdatingModalOpen(true); // Open the success modal
                 if (isEditableText) {
                     setDoctorsList(doctorsList.map((doctor) =>
                         doctor.doctorsID === currentDoctorID ? formData : doctor
@@ -558,6 +566,12 @@ const AddDoctor = () => {
                         onClose={handleDeleteModalClose}
                         onConfirm={confirmDelete}
                         doctor={selectedDoctor}
+                    />
+                    {/* Updating Modal component if was successful */}
+                    <UpdatingDoctorDetailsModal
+                        isOpen={isUpdatingModalOpen}
+                        onClose={handleSuccesfulUpdateModalClose}
+                        message={successUpdatingMessage}
                     />
                 </CardContent>
             </Card>

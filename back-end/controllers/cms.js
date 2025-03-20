@@ -32,10 +32,10 @@ export const registerPatientAccount = async (req, res) => {
         const { firstName, lastName, email, phoneNumber, password, confirmPassword } = req.body;
 
         const SECRET_KEY = process.env.JWT_SECRET || "authenmimangjuan";
-        
+
         const saltRounds = 10;
 
-        const hashedPassword = await bcrypt.hash(password, saltRounds); 
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
         const hashedConfirmPassword = await bcrypt.hash(confirmPassword, saltRounds);
         // 1st table of patients register account
         const query1 = "INSERT INTO patientsregisteraccount1 (firstName, lastName, email) VALUES (?, ?, ?)";
@@ -62,7 +62,13 @@ export const contactMessageManagement = async (req, res) => {
     try {
         const { contactName, contactEmailAddress, contactSubject, contactMessage } = req.body;
 
-        const query = "INSERT INTO contactmanagement (contactName, contactEmailAddress, contactSubjectPerson, contactMessage) VALUES (?, ?, ?, ?)";
+        const query = `INSERT INTO contactmanagement (
+            contactName,
+            contactEmailAddress, 
+            contactSubjectPerson,
+            contactMessage
+            ) VALUES (?, ?, ?, ?);
+        `;
 
         await conn.query(query, [contactName, contactEmailAddress, contactSubject, contactMessage])
 
@@ -90,10 +96,10 @@ export const loginPatientsAccount = async (req, res) => {
         `;
 
         const [rows] = await conn.query(query, [email]);
-        
-        if(rows.length === 0){
-            return res.status(StatusCodes.NOT_FOUND).json({
-                message: "Invalid email or password"
+
+        if (rows.length === 0) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                emailMessage: "Invalid Email Address"
             });
         }
         const patients = rows[0];
@@ -102,7 +108,7 @@ export const loginPatientsAccount = async (req, res) => {
 
         if (!isPasswordValid) {
             return res.status(StatusCodes.UNAUTHORIZED).json({
-                message: "Invalid email or password"
+                passwordMessage: "Invalid Password"
             })
         }
 
@@ -138,18 +144,25 @@ export const loginDoctorsAccount = async (req, res) => {
             lastName,
             email,
             password FROM doctorsaccount
-            WHERE email = ? AND password = ?;
+            WHERE email = ?;
         `;
 
-        const [rows] = await conn.query(query, [email, password]);
+        const [rows] = await conn.query(query, [email]);
 
-        if (!rows.find((row) => row.email === email && row.password === password)) {
+        if (rows.length === 0) {
             return res.status(StatusCodes.UNAUTHORIZED).json({
-                message: "Invalid email and password"
+                messageEmail: "Invalid Email Address"
             })
         }
 
         const doctorsUsers = rows[0];
+
+        const isPasswordValid = await bcrypt.compare(password, doctorsUsers.password)
+        if(!isPasswordValid){
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                messagePassword: "Invalid Password"
+            })
+        }
 
         const SECRET_KEY = process.env.JWT_SECRET || "authenniraul"
         if (!SECRET_KEY) {
@@ -528,6 +541,10 @@ export const addDoctor = async (req, res) => {
             password
         } = req.body;
 
+        const saltRounds = 10;
+
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+
         const query = `INSERT INTO doctorsaccount (
             firstName,
             lastName,
@@ -547,9 +564,8 @@ export const addDoctor = async (req, res) => {
             yearsOfExperience,
             consultationFee,
             gender,
-            password
-        ]
-        );
+            hashedPassword
+        ]);
 
         if (result.affectedRows === 0) {
             return res.status(StatusCodes.BAD_REQUEST).json({
@@ -622,6 +638,9 @@ export const updateDoctorsDetails = async (req, res) => {
         const sex = String(gender);
         const pass_word = String(password);
 
+        const saltRound = 10;
+        const hashedPassword = await bcrypt.hash(pass_word, saltRound);
+        
         const query = `
             UPDATE doctorsaccount
             SET
@@ -644,7 +663,7 @@ export const updateDoctorsDetails = async (req, res) => {
             years_of_experience,
             consultation_fee,
             sex,
-            pass_word,
+            hashedPassword,
             doctorsID
         ]);
 
@@ -682,7 +701,7 @@ export const deleteDoctorsDetails = async (req, res) => {
 
         return res.status(StatusCodes.OK).json({
             message: "Doctors account deleted successfully"
-        }); 
+        });
     } catch (error) {
         console.error(`Failed to delete doctors account: ${error}`);
     }
