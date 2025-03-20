@@ -33,67 +33,67 @@ const LandingPageServices = () => {
                 {/* <!-- Section Title --> */}
                 <div className="container section-title" data-aos="fade-up">
                     <h2>Services</h2>
-                    <p>Providing comprehensive and compassionate dental care to ensure your optimal oral health.</p>
+                    <p>Providing comprehensive and compassionate healthcare to ensure your optimal well-being.</p>
                 </div>
                 {/* <!-- End Section Title --> */}
                 <div className="container">
                     <div className="row gy-4">
                         <div className="col-xl-4 col-lg-6" data-aos="fade-up" data-aos-delay="100">
                             <div className="service-item d-flex">
-                                <div className="icon flex-shrink-0"><i className="bi bi-briefcase"></i></div>
+                                <div className="icon flex-shrink-0"><i className="bi bi-heart-pulse"></i></div> {/* Icon for General Health Checkups */}
                                 <div>
-                                    <h4 className="title"><a href="#" className="stretched-link">General Dentistry</a></h4>
-                                    <p className="description">Comprehensive dental exams, cleanings, and preventive care for all ages.</p>
+                                    <h4 className="title"><a href="#" className="stretched-link">General Health Checkups</a></h4>
+                                    <p className="description">Comprehensive health exams, screenings, and preventive care for all ages.</p>
                                 </div>
                             </div>
                         </div>
                         {/* <!-- End Service Item --> */}
                         <div className="col-xl-4 col-lg-6" data-aos="fade-up" data-aos-delay="200">
                             <div className="service-item d-flex">
-                                <div className="icon flex-shrink-0"><i className="bi bi-card-checklist"></i></div>
+                                <div className="icon flex-shrink-0"><i className="bi bi-clipboard2-pulse"></i></div> {/* Icon for Chronic Disease Management */}
                                 <div>
-                                    <h4 className="title"><a href="#" className="stretched-link">Cosmetic Dentistry</a></h4>
-                                    <p className="description">Enhance your smile with teeth whitening, veneers, and more.</p>
+                                    <h4 className="title"><a href="#" className="stretched-link">Chronic Disease Management</a></h4>
+                                    <p className="description">Personalized care plans for managing diabetes, hypertension, and other chronic conditions.</p>
                                 </div>
                             </div>
                         </div>
                         {/* <!-- End Service Item --> */}
                         <div className="col-xl-4 col-lg-6" data-aos="fade-up" data-aos-delay="300">
                             <div className="service-item d-flex">
-                                <div className="icon flex-shrink-0"><i className="bi bi-bar-chart"></i></div>
+                                <div className="icon flex-shrink-0"><i className="bi bi-emoji-smile"></i></div> {/* Icon for Pediatric Care */}
                                 <div>
-                                    <h4 className="title"><a href="#" className="stretched-link">Orthodontics</a></h4>
-                                    <p className="description">Straighten your teeth with traditional braces or clear aligners.</p>
+                                    <h4 className="title"><a href="#" className="stretched-link">Pediatric Care</a></h4>
+                                    <p className="description">Specialized healthcare services for children to ensure healthy growth and development.</p>
                                 </div>
                             </div>
                         </div>
                         {/* <!-- End Service Item --> */}
                         <div className="col-xl-4 col-lg-6" data-aos="fade-up" data-aos-delay="400">
                             <div className="service-item d-flex">
-                                <div className="icon flex-shrink-0"><i className="bi bi-binoculars"></i></div>
+                                <div className="icon flex-shrink-0"><i className="bi bi-gender-female"></i></div> {/* Icon for Women's Health */}
                                 <div>
-                                    <h4 className="title"><a href="#" className="stretched-link">Pediatric Dentistry</a></h4>
-                                    <p className="description">Specialized dental care for children to ensure healthy smiles from a young age.</p>
+                                    <h4 className="title"><a href="#" className="stretched-link">Women&apos;s Health</a></h4>
+                                    <p className="description">Comprehensive care for women, including prenatal, gynecological, and wellness services.</p>
                                 </div>
                             </div>
                         </div>
                         {/* <!-- End Service Item --> */}
                         <div className="col-xl-4 col-lg-6" data-aos="fade-up" data-aos-delay="500">
                             <div className="service-item d-flex">
-                                <div className="icon flex-shrink-0"><i className="bi bi-brightness-high"></i></div>
+                                <div className="icon flex-shrink-0"><i className="bi bi-exclamation-triangle"></i></div> {/* Icon for Emergency Care */}
                                 <div>
-                                    <h4 className="title"><a href="#" className="stretched-link">Emergency Dentistry</a></h4>
-                                    <p className="description">Immediate care for dental emergencies, including toothaches and injuries.</p>
+                                    <h4 className="title"><a href="#" className="stretched-link">Emergency Care</a></h4>
+                                    <p className="description">Immediate medical attention for emergencies, including injuries and acute illnesses.</p>
                                 </div>
                             </div>
                         </div>
                         {/* <!-- End Service Item --> */}
                         <div className="col-xl-4 col-lg-6" data-aos="fade-up" data-aos-delay="600">
                             <div className="service-item d-flex">
-                                <div className="icon flex-shrink-0"><i className="bi bi-calendar4-week"></i></div>
+                                <div className="icon flex-shrink-0"><i className="bi bi-clipboard2-data"></i></div> {/* Icon for Diagnostic Services */}
                                 <div>
-                                    <h4 className="title"><a href="#" className="stretched-link">Dental Implants</a></h4>
-                                    <p className="description">Permanent solutions for missing teeth with natural-looking dental implants.</p>
+                                    <h4 className="title"><a href="#" className="stretched-link">Diagnostic Services</a></h4>
+                                    <p className="description">Advanced diagnostic tools for accurate and timely health assessments.</p>
                                 </div>
                             </div>
                         </div>
@@ -103,7 +103,7 @@ const LandingPageServices = () => {
             </section>
             {/* <!-- /Services Section --> */}
         </>
-    )
+    );
 }
 
 export default LandingPageServices;

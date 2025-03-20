@@ -31,11 +31,11 @@ const LandingPageHeroSection = () => {
         const retriveDataTitle = async () => {
             try {
                 const response = await CMS.get("/CMS");
-                if(!response.data || !response.data.title || !response.data.teethQuotes) {
+                if(!response.data || !response.data.title || !response.data.healthQuotes) {
                     throw new Error("No retrieved data title");
                 } else {
                     setTitle(response.data.title);
-                    setTeethTagline(response.data.teethQuotes);
+                    setTeethTagline(response.data.healthQuotes);
                 }
             } catch (error) {
                 console.error(`Code functionality error for fetching data title: ${error}`);

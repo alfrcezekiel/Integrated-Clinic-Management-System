@@ -17,11 +17,11 @@ export const CMS = async (req, res) => {
         featuresTitle: "Features",
         inventoryText: "Inventory Management of Clinical Products",
         whatWeServeTitle: "What We Serve",
-        teethQuotes: "A smile is a curve that sets everything straight",
-        firstDescription: "Comprehensive Dental Care for the whole family.",
-        secondDescription: "State of the art technology for pain-free treatments.",
-        thirdDescription: "Experienced and Friendly Dental Professional.",
-        fourthDescription: "Personalized treatment plans for tailored to your needs.",
+        healthQuotes: "Your health is an investment, not an expense.",
+        firstDescription: "Comprehensive healthcare services for the whole family.",
+        secondDescription: "Advanced medical technology for accurate diagnoses and treatments.",
+        thirdDescription: "Experienced and compassionate healthcare professionals.",
+        fourthDescription: "Personalized care plans tailored to your unique needs.",
         emergencyServices: "Emergency Dental Services avaiable 24/7."
     })
 }

@@ -66,32 +66,39 @@ const LandingPageFeatures = () => {
                             <img src={FeaturesImage} className="img-fluid" alt="Features Image" />
                         </div>
                         <div className="col-lg-6 d-flex flex-column justify-content-center">
+                            {/* EHR Feature */}
                             <div className="features-item d-flex ps-0 ps-lg-3 pt-4 pt-lg-0" data-aos="fade-up" data-aos-delay="200">
-                                <i className="bi bi-archive flex-shrink-0"></i>
+                                <i className="bi bi-file-earmark-medical flex-shrink-0"></i>
                                 <div>
                                     <h4>{ehrText}</h4>
                                     <p>Securely store and manage patient records, treatment history, and prescriptions with our comprehensive EHR system.</p>
                                 </div>
                             </div>
                             {/* <!-- End Features Item--> */}
+
+                            {/* Appointment Feature */}
                             <div className="features-item d-flex mt-5 ps-0 ps-lg-3" data-aos="fade-up" data-aos-delay="300">
-                                <i className="bi bi-basket flex-shrink-0"></i>
+                                <i className="bi bi-calendar-check flex-shrink-0"></i>
                                 <div>
                                     <h4>{appointmentText}</h4>
                                     <p>Easily book, reschedule, and manage patient appointments with an intuitive scheduling system that reduces no-shows.</p>
                                 </div>
                             </div>
                             {/* <!-- End Features Item--> */}
+
+                            {/* Payment Feature */}
                             <div className="features-item d-flex mt-5 ps-0 ps-lg-3" data-aos="fade-up" data-aos-delay="400">
-                                <i className="bi bi-broadcast flex-shrink-0"></i>
+                                <i className="bi bi-credit-card flex-shrink-0"></i>
                                 <div>
                                     <h4>{paymentText}</h4>
                                     <p>Streamline billing with automated invoicing, insurance claims, and multiple payment options for a hassle-free experience.</p>
                                 </div>
                             </div>
                             {/* <!-- End Features Item--> */}
+
+                            {/* Inventory Feature */}
                             <div className="features-item d-flex mt-5 ps-0 ps-lg-3" data-aos="fade-up" data-aos-delay="500">
-                                <i className="bi bi-camera-reels flex-shrink-0"></i>
+                                <i className="bi bi-clipboard-data flex-shrink-0"></i>
                                 <div>
                                     <h4>{inventoryText}</h4>
                                     <p>Track and manage dental supplies efficiently to prevent shortages and ensure smooth clinic operations.</p>
