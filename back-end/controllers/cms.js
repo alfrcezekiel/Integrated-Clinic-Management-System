@@ -336,8 +336,6 @@ export const patientsBookedAppointments = async (req, res) => {
             appointmentDate,
             phoneNumber,
             gender,
-            doctor,
-            status,
             purposeOfAppointment
         } = req.body;
 
@@ -349,11 +347,9 @@ export const patientsBookedAppointments = async (req, res) => {
             appointmentDate,
             phoneNumber,
             gender,
-            doctor,
-            status,
             purposeOfAppointment
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
-        const [result] = await conn.query(query, [patientID, firstName, lastName, email, appointmentDate, phoneNumber, gender, doctor, status, purposeOfAppointment]);
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?);`;
+        const [result] = await conn.query(query, [patientID, firstName, lastName, email, appointmentDate, phoneNumber, gender, doctor, purposeOfAppointment]);
 
         if (result.affectedRows === 0) {
             return res.status(StatusCodes.BAD_REQUEST).json({
@@ -704,5 +700,82 @@ export const deleteDoctorsDetails = async (req, res) => {
         });
     } catch (error) {
         console.error(`Failed to delete doctors account: ${error}`);
+    }
+}
+
+// controller logic for creating a new clinic in admin dashboard
+export const createClinic = async (req, res) => {
+    try {
+        const {
+            clinicName,
+            address,
+            email,
+            password,
+            confirmPassword,
+            clinicType,
+        } = req.body;
+    
+        const clinic_name = String(clinicName);
+        const clinic_address = String(address);
+        const clinic_email = String(email);
+        const clinic_password = String(password);
+        const clinic_confirm_password = String(confirmPassword);
+        const clinic_type = String(clinicType);
+    
+        const saltRound = 10;
+        const hashedPassword = await bcrypt.hash(clinic_password, saltRound);
+        const hashedConfirmPassword = await bcrypt.hash(clinic_confirm_password, saltRound);
+    
+        const query = `INSERT INTO clinic (
+            clinic_name,
+            clinic_address,
+            email,
+            password, 
+            confirm_password,
+            clinic_type
+            ) VALUES (?, ?, ?, ?, ?, ?);`;
+    
+        const [result] = await conn.query(query, [
+            clinic_name,
+            clinic_address,
+            clinic_email,
+            hashedPassword,
+            hashedConfirmPassword,
+            clinic_type
+        ]);
+    
+        if (result.affectedRows === 0) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Failed to create clinic"
+            });
+        }
+    
+        return res.status(StatusCodes.OK).json({
+            message: "Clinic created successfully"
+        });
+    } catch (error){
+        console.error(`Failed to create clinic: ${error}`);
+    }
+}
+
+// controller logic for getting the list of clinics in the admin dashboard
+export const getClinics = async (req, res) => {
+    try {
+        const query = `SELECT * FROM clinic ORDER BY clinic_id ASC;`;
+
+        const [rows] = await conn.query(query);
+
+        if (rows.length === 0) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No clinics found"
+            });
+        }
+
+        return res.status(StatusCodes.OK).json({
+            clinics: rows
+        });
+
+    } catch (error){
+        console.error(`Failed to get clinics: ${error}`);
     }
 }

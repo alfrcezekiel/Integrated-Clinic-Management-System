@@ -36,14 +36,6 @@ const validatePatientBookAppointment = [
         .withMessage("Gender is required")
         .isIn(["Male", "Female"])
         .withMessage("Gender must be either Male or Female"),
-    body("doctor")
-        .notEmpty()
-        .withMessage("Doctor is required"),
-    body("status")
-        .notEmpty()
-        .withMessage("Status is required")
-        .isIn(["Pending"])
-        .withMessage("Status must be Pending"),
     body("purposeOfAppointment")
         .notEmpty()
         .withMessage("Purpose of appointment is required"),

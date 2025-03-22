@@ -17,7 +17,9 @@ import {
     addDoctor,
     getDoctorsLists,
     updateDoctorsDetails,
-    deleteDoctorsDetails
+    deleteDoctorsDetails,
+    createClinic,
+    getClinics
 } from "../controllers/cms.js";
 import validateRegister from "../middleware/validation.js";
 import patientsLoginValidation from "../middleware/patientsLoginValidation.js";
@@ -88,5 +90,11 @@ router.put("/admin-dashboard/updateDoctor/:doctorsID", [validateUpdatingDoctor],
 
 // router for delete the doctors details in admin dashboard
 router.delete("/admin-dashboard/deleteDoctor/:doctorsID", deleteDoctorsDetails);
+
+// router for creating a clinic in admin dashboard
+router.post("/admin-dashboard/create-clinic", createClinic);
+
+// router for getting the clinic details in admin dashboard
+router.get("/admin-dashboard/clinics", getClinics);
 
 export default router;

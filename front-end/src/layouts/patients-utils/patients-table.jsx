@@ -200,6 +200,7 @@ const PatientsTable = () => {
                                     fullWidth
                                     value={appointmentID}
                                     type="number"
+                                    hidden
                                 />
                                 <TextField
                                     label="Enter First Name"

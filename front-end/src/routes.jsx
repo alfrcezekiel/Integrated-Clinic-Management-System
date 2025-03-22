@@ -7,6 +7,10 @@ import DoctorsTablesListOfAppointments from "./layouts/doctor-utils/DoctorsTable
 import AddIcon from "@mui/icons-material/Add";
 import AddDoctor from "./layouts/adminUtils/Doctors";
 import AdminDashboardHome from "./layouts/adminUtils/AdminHome";
+import ClinicIcon from "@mui/icons-material/LocalHospital";
+import ClinicCard from "./layouts/patients-utils/ClinicCards";
+import AddClinicIcon from "@mui/icons-material/LocalHospital"; // Add this import
+import AddClinic from "./layouts/adminUtils/AddClinic";
 
 const iconStyle = {
     fontSize: 20,
@@ -31,6 +35,13 @@ const routes = [
                 path: "book-appointment",
                 element: <PatientsTable />,
             },
+            {
+                id: 3,
+                icon: <ClinicIcon style={iconStyle} />,
+                name: "Clinic",
+                path: "Clinic",
+                element: <ClinicCard />
+            }
         ],
     },
 ];
@@ -65,7 +76,7 @@ export const adminRoutes = [
                 id: 1,
                 icon: <HomeIcon style={iconStyle} />,
                 name: "Admin Dashboard",
-                path:"/home",
+                path: "/home",
                 element: <AdminDashboardHome />
             },
             {
@@ -74,6 +85,13 @@ export const adminRoutes = [
                 name: "Add Doctor",
                 path: "/add-doctor",
                 element: <AddDoctor />
+            },
+            {
+                id: 3,
+                icon: <AddClinicIcon style={iconStyle} />, // Use the new icon here
+                name: "Add Clinic",
+                path: "/add-clinic",
+                element: <AddClinic />
             }
         ]
     }
