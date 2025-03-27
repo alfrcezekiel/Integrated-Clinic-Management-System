@@ -158,7 +158,7 @@ export const loginDoctorsAccount = async (req, res) => {
         const doctorsUsers = rows[0];
 
         const isPasswordValid = await bcrypt.compare(password, doctorsUsers.password)
-        if(!isPasswordValid){
+        if (!isPasswordValid) {
             return res.status(StatusCodes.UNAUTHORIZED).json({
                 messagePassword: "Invalid Password"
             })
@@ -636,7 +636,7 @@ export const updateDoctorsDetails = async (req, res) => {
 
         const saltRound = 10;
         const hashedPassword = await bcrypt.hash(pass_word, saltRound);
-        
+
         const query = `
             UPDATE doctorsaccount
             SET
@@ -714,18 +714,18 @@ export const createClinic = async (req, res) => {
             confirmPassword,
             clinicType,
         } = req.body;
-    
+
         const clinic_name = String(clinicName);
         const clinic_address = String(address);
         const clinic_email = String(email);
         const clinic_password = String(password);
         const clinic_confirm_password = String(confirmPassword);
         const clinic_type = String(clinicType);
-    
+
         const saltRound = 10;
         const hashedPassword = await bcrypt.hash(clinic_password, saltRound);
         const hashedConfirmPassword = await bcrypt.hash(clinic_confirm_password, saltRound);
-    
+
         const query = `INSERT INTO clinic (
             clinic_name,
             clinic_address,
@@ -734,7 +734,7 @@ export const createClinic = async (req, res) => {
             confirm_password,
             clinic_type
             ) VALUES (?, ?, ?, ?, ?, ?);`;
-    
+
         const [result] = await conn.query(query, [
             clinic_name,
             clinic_address,
@@ -743,17 +743,17 @@ export const createClinic = async (req, res) => {
             hashedConfirmPassword,
             clinic_type
         ]);
-    
+
         if (result.affectedRows === 0) {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 message: "Failed to create clinic"
             });
         }
-    
+
         return res.status(StatusCodes.OK).json({
             message: "Clinic created successfully"
         });
-    } catch (error){
+    } catch (error) {
         console.error(`Failed to create clinic: ${error}`);
     }
 }
@@ -775,7 +775,7 @@ export const getClinics = async (req, res) => {
             clinics: rows
         });
 
-    } catch (error){
+    } catch (error) {
         console.error(`Failed to get clinics: ${error}`);
     }
 }

@@ -82,7 +82,7 @@ const AddClinic = () => {
 
     // Group clinics by type for better organization
     const getClinicTypes = () => {
-        return [...new Set(clinics.map(clinic => clinic.clinicType))];
+        return [...new Set(clinics.map(clinic => clinic.clinic_type))];
     };
 
     return (
@@ -157,14 +157,16 @@ const AddClinic = () => {
                         <Typography variant="h6" color="secondary" className="font-bold">
                             Clinic Types
                         </Typography>
-                        <Typography variant="h3" className="mt-2">{getClinicTypes().length}</Typography>
+                        <Typography variant="h3" className="mt-2">
+                            {getClinicTypes().length}
+                        </Typography>
                     </Paper>
                     <Paper sx={{ p: 2, borderRadius: 2, bgcolor: '#f8fff5' }}>
                         <Typography variant="h6" style={{ color: '#4caf50' }} className="font-bold">
                             Latest Addition
                         </Typography>
                         <Typography variant="body1" className="mt-2 font-medium">
-                            {clinics.length > 0 ? clinics[0].clinic_name : 'N/A'}
+                            {clinics.length > 0 ? clinics[clinics.length - 1].clinic_name : 'N/A'}
                         </Typography>
                     </Paper>
                 </Box>
@@ -174,7 +176,7 @@ const AddClinic = () => {
             {loading ? (
                 <Box className="flex flex-col items-center justify-center py-12">
                     <CircularProgress size={60} />
-                    <Typography variant="h6" className="mt-4">Loading clinics...</Typography>
+                    <Typography variant="h6" className="mt-4">Loading clinics</Typography>
                 </Box>
             ) : error ? (
                 <Fade in={true}>
@@ -194,10 +196,7 @@ const AddClinic = () => {
                 <Fade in={true}>
                     <Paper className="text-center py-12 rounded-lg" elevation={0} sx={{ bgcolor: '#f8fafc', border: '1px dashed #ccc' }}>
                         <MedicalServicesIcon sx={{ fontSize: 60, color: '#9e9e9e', mb: 2 }} />
-                        <Typography variant="h5" className="mb-2 font-medium">No clinics registered yet</Typography>
-                        <Typography variant="body1" className="text-gray-600 mb-6 max-w-md mx-auto">
-                            Start building your healthcare network by registering your first clinic
-                        </Typography>
+                        <Typography variant="h5" className="mb-5 font-medium">No clinics registered yet</Typography>
                         <Button
                             variant="contained"
                             size="large"
@@ -221,9 +220,9 @@ const AddClinic = () => {
 
                                 <Grid container spacing={3}>
                                     {clinics
-                                        .filter(clinic => clinic.clinicType === clinicType)
+                                        .filter(clinic => clinic.clinic_type === clinicType)
                                         .map((clinic) => (
-                                            <Grid item xs={12} sm={6} md={4} key={clinic._id || clinic.email}>
+                                            <Grid item xs={12} sm={6} md={4} key={clinic.clinic_id || clinic.email}>
                                                 <Fade in={true} timeout={500}>
                                                     <Box>
                                                         <ClinicCard

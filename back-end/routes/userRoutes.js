@@ -1,6 +1,6 @@
 import express from "express";
-import { 
-    CMS, 
+import {
+    CMS,
     registerPatientAccount,
     loginPatientsAccount,
     contactMessageManagement,
@@ -76,7 +76,7 @@ router.get("/doctors-dashboard/appointments", getBookedAppointmentsToDisplayInDo
 // router for logging in as admin in CMS
 router.post("/adminAccount", [adminLoginValidation], loginAdminAccount);
 
-// router for destroying the session of the admin account 
+// router for destroying the session of the admin account
 router.get("/admin-dashboard/logout", logout);
 
 // router for adding a new doctor in the CMS admin dashboard
