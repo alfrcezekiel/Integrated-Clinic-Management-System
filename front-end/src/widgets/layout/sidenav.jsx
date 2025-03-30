@@ -63,8 +63,8 @@ const SideNav = ({ brandName, routes }) => {
                     </div>
                 ))}
                 <List className="bg-white shadow-lg rounded-2xl">
-                    <ListItemButton onClick={handleClinicClick} className="hover:bg-gray-100">
-                        <ListItemText primary="Clinic Management" />
+                    <ListItemButton onClick={handleClinicClick}>
+                        <ListItemText primary="Clinic Management"/>
                         {clinicOpen ? <ExpandLess /> : <ExpandMore />}
                     </ListItemButton>
                     <Collapse in={clinicOpen} timeout="auto" unmountOnExit className="p-3">
@@ -74,7 +74,7 @@ const SideNav = ({ brandName, routes }) => {
                                     <NavLink
                                         key={index}
                                         to={`${layout}${path}`}
-                                        className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-black" : "hover:bg-gray-100"}`}
+                                        className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-black" : "hover:bg-gray-100 p-2"}`}
                                     >
                                         <ListItem button="true">
                                             <ListItemText primary="View Clinics" className="text-black"/>

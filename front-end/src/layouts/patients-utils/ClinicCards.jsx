@@ -19,6 +19,12 @@ import {
     MedicalServices,
 } from "@mui/icons-material";
 import CMS from "../../API/CMS";
+import {
+    Clock,
+    Mail,
+    Stethoscope,
+    DollarSign
+} from 'lucide-react';
 
 const ClinicCards = () => {
     const [clinics, setClinics] = useState([]);
@@ -109,12 +115,17 @@ const ClinicCards = () => {
                 handleCloseModal();
             }
         } catch (error) {
-            if(error.response === error.response.data.status === 400){
+            if (error.response === error.response.data.status === 400) {
                 setFieldErrors(error.response.data.error);
             } else {
                 console.error(`Failed to book appointment: ${error}`);
             }
         }
+    };
+
+    const clinicData = {
+        hours: "Mon-Fri: 8:00 AM - 7:00 PM, Sat: 9:00 AM - 2:00 PM",
+        fee: "$60 - $120 (based on consultation type)",
     };
 
     return (
@@ -127,52 +138,54 @@ const ClinicCards = () => {
                 </Typography>
             ) : (
                 clinics.map((clinic) => (
-                    <Card
-                        key={clinic.clinic_id}
-                        className="w-80 p-4 rounded-2xl bg-white/80 shadow-xl backdrop-blur-lg transform transition duration-300 hover:scale-105"
-                    >
-                        {clinic.image && (
-                            <CardMedia
-                                component="img"
-                                height="160"
-                                image="https://source.unsplash.com/300x200/?hospital,clinic"
-                                alt={`Image of ${clinic.clinic_name}`}
-                                className="rounded-t-2xl"
-                            />
-                        )}
-                        <CardContent>
-                            {/* Clinic Name */}
-                            <Typography
-                                variant="h6"
-                                className="font-bold text-blue-800 text-center"
-                            >
-                                {clinic.clinic_name}
-                            </Typography>
-
-                            {/* Address */}
-                            <Typography
-                                variant="body2"
-                                className="text-gray-700 text-center mt-2"
-                            >
-                                {clinic.clinic_address}
-                            </Typography>
-
-                            {/* Email */}
-                            <div className="flex items-center justify-center mt-3 text-blue-600">
-                                <Email className="mr-2" />
-                                <Typography variant="body2">{clinic.email}</Typography>
-                            </div>
-
-                            {/* Clinic Type */}
-                            <div className="flex items-center justify-center mt-3 text-green-600">
-                                <LocalHospital className="mr-2" />
-                                <Typography variant="body2" className="font-medium">
-                                    {clinic.clinic_type}
+                    <Card key={clinic.clinic_id} className="max-w-md mx-auto bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl shadow-lg overflow-hidden transform transition duration-300 hover:scale-105">
+                        <CardMedia
+                            className="h-48 w-full bg-blue-200 flex items-center justify-center"
+                            component="div"
+                        >
+                            <div className="text-center p-4">
+                                <Stethoscope size={64} className="mx-auto text-blue-600" />
+                                <Typography variant="subtitle1" className="text-blue-700 mt-2 font-semibold">
+                                    Clinic Building Image
+                                </Typography>
+                                <Typography variant="caption" className="text-xs text-blue-500">
+                                    (Placeholder - replace with actual clinic image)
                                 </Typography>
                             </div>
-                            <div className="mt-4">
-                                <Button variant="contained" className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white" onClick={() => handleOpenModal(clinic)}>Book an Appointment</Button>
+                        </CardMedia>
+
+                        <CardContent className="p-6">
+                            <Typography variant="h5" className="text-3xl font-extrabold text-blue-800 mb-4">
+                                {clinic.clinic_name}
+                            </Typography>
+                            <div className="space-y-3">
+                                <div className="flex items-center">
+                                    <Mail className="h-6 w-6 text-blue-600 mr-3" />
+                                    <a href={`mailto:${clinic.email}`} className="text-gray-800 hover:text-blue-600 transition-colors">
+                                        {clinic.email}
+                                    </a>
+                                </div>
+                                <div className="flex items-center">
+                                    <Clock className="h-6 w-6 text-blue-600 mr-3" />
+                                    <span className="text-gray-800">{clinicData.hours}</span>
+                                </div>
+                                <div className="flex items-center">
+                                    <DollarSign className="h-6 w-6 text-blue-600 mr-3" />
+                                    <span className="text-gray-800">{clinicData.fee}</span>
+                                </div>
+                                <div className="flex items-center">
+                                    <Stethoscope className="h-6 w-6 text-blue-600 mr-3" />
+                                    <span className="text-gray-800">{clinic.clinic_type}</span>
+                                </div>
                             </div>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                className="mt-6 w-full py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-lg shadow-md hover:shadow-xl transition-all"
+                                onClick={() => handleOpenModal(clinic)}
+                            >
+                                Book Appointment
+                            </Button>
                         </CardContent>
                     </Card>
                 ))
