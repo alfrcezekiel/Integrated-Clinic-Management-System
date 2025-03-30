@@ -2,8 +2,8 @@ import "../assets/css/main.css";
 import routes from "../routes";
 import SideNav from "../widgets/layout/sidenav";
 import DashboardNavbar from "../widgets/layout/dashboard.navbar";
-import Footer from "../widgets/layout/footer";  
-import {Routes, Route, Outlet} from "react-router-dom";
+import Footer from "../widgets/layout/footer";
+import { Routes, Route, Outlet } from "react-router-dom";
 
 const Dashboard = () => {
     return (
@@ -15,7 +15,7 @@ const Dashboard = () => {
                 <DashboardNavbar />
                 <Outlet />
                 <Routes>
-                    {routes.flatMap((layout) => 
+                    {routes.flatMap((layout) =>
                         layout.pages.map((page) => (
                             <Route
                                 key={page.id}

@@ -1,13 +1,35 @@
 import PropTypes from "prop-types"
 import "../../assets/css/main.css";
-import { Drawer, Typography, useMediaQuery } from "@mui/material";
+import {
+    Drawer,
+    Typography,
+    useMediaQuery,
+    Collapse,
+    List,
+    ListItem,
+    ListItemButton,
+    ListItemText
+} from "@mui/material";
 import { useState } from "react";
-import { Link, NavLink, Outlet } from "react-router-dom"
+import {
+    Link,
+    NavLink,
+    Outlet
+} from "react-router-dom"
+import {
+    ExpandLess,
+    ExpandMore
+} from "@mui/icons-material";
 
 // this is the sidenav component for the dashboard
 const SideNav = ({ brandName, routes }) => {
     const [open, setOpen] = useState(false);
     const isMobile = useMediaQuery("(max-width: 768px)");
+    const [clinicOpen, setClinicOpen] = useState(false);
+
+    const handleClinicClick = () => {
+        setClinicOpen(!clinicOpen);
+    }
 
     return (
         <Drawer
@@ -25,21 +47,44 @@ const SideNav = ({ brandName, routes }) => {
                 </Link>
                 <Outlet />
             </div>
-            <nav className="px-4">
+            <nav className="p-4">
                 {routes.map(({ layout, pages }, index) => (
-                    <div key={layout || index} className="mb-4">
-                        {pages.map(({ icon, name, path }) => (
+                    <div key={index} className="mb-4">
+                        {pages.filter((page) => page.name !== "Clinics" ).map(({ icon, name, path }) => (
                             <NavLink
-                                key={name}
+                                key={index}
                                 to={`${layout}${path}`}
                                 className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-white" : "text-gray-700 hover:bg-gray-100"}`}
                             >
                                 {icon}
-                                <Typography sx={{ml: 2}}>{name}</Typography>
+                                <Typography sx={{ml: 2}} className="text-black">{name}</Typography>
                             </NavLink>
                         ))}
                     </div>
                 ))}
+                <List className="bg-white shadow-lg rounded-2xl">
+                    <ListItemButton onClick={handleClinicClick} className="hover:bg-gray-100">
+                        <ListItemText primary="Clinic Management" />
+                        {clinicOpen ? <ExpandLess /> : <ExpandMore />}
+                    </ListItemButton>
+                    <Collapse in={clinicOpen} timeout="auto" unmountOnExit className="p-3">
+                        <List component="div" disablePadding>
+                            {routes.map(({ layout, pages }, index) => (
+                                pages.filter((page) => page.name === "Clinics").map(({ path }) => (
+                                    <NavLink
+                                        key={index}
+                                        to={`${layout}${path}`}
+                                        className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-black" : "hover:bg-gray-100"}`}
+                                    >
+                                        <ListItem button="true">
+                                            <ListItemText primary="View Clinics" className="text-black"/>
+                                        </ListItem>
+                                    </NavLink>
+                                ))
+                            ))}
+                        </List>
+                    </Collapse>
+                </List>
             </nav>
         </Drawer>
     )

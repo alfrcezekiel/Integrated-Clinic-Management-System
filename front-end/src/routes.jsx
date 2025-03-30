@@ -1,7 +1,7 @@
 import HomeIcon from "@mui/icons-material/Home";
 import DashboardHome from "./widgets/layout/DashboardHome";
 import Schedule from "@mui/icons-material/Schedule";
-import PatientsTable from "./layouts/patients-utils/patients-table";
+// import PatientsTable from "./layouts/patients-utils/patients-table";
 import DoctorsDashboardHome from "./widgets/layout/doctors-dashboard/DoctorsDashboardHome";
 import DoctorsTablesListOfAppointments from "./layouts/doctor-utils/DoctorsTablesListOfAppointment";
 import AddIcon from "@mui/icons-material/Add";
@@ -30,16 +30,9 @@ const routes = [
             },
             {
                 id: 2,
-                icon: <Schedule style={iconStyle} />,
-                name: "Book Appointment",
-                path: "book-appointment",
-                element: <PatientsTable />,
-            },
-            {
-                id: 3,
                 icon: <ClinicIcon style={iconStyle} />,
-                name: "Clinic",
-                path: "Clinic",
+                name: "Clinics",
+                path: "View-Clinics",
                 element: <ClinicCard />
             }
         ],
