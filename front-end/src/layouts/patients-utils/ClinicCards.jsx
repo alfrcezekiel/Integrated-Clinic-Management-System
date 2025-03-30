@@ -23,7 +23,8 @@ import {
     Clock,
     Mail,
     Stethoscope,
-    DollarSign
+    DollarSign,
+    Building
 } from 'lucide-react';
 
 const ClinicCards = () => {
@@ -124,7 +125,8 @@ const ClinicCards = () => {
     };
 
     const clinicData = {
-        hours: "Mon-Fri: 8:00 AM - 7:00 PM, Sat: 9:00 AM - 2:00 PM",
+        clinicWeekdays: "Monday - Friday",
+        hours: "8:00 AM - 7:00 PM",
         fee: "$60 - $120 (based on consultation type)",
     };
 
@@ -138,7 +140,7 @@ const ClinicCards = () => {
                 </Typography>
             ) : (
                 clinics.map((clinic) => (
-                    <Card key={clinic.clinic_id} className="max-w-md mx-auto bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl shadow-lg overflow-hidden transform transition duration-300 hover:scale-105">
+                    <Card key={clinic.clinic_id} className="w-md mx-auto bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl shadow-lg overflow-hidden transform transition duration-300 hover:scale-105">
                         <CardMedia
                             className="h-48 w-full bg-blue-200 flex items-center justify-center"
                             component="div"
@@ -166,6 +168,10 @@ const ClinicCards = () => {
                                     </a>
                                 </div>
                                 <div className="flex items-center">
+                                    <Building className="h-6 w-6 text-blue-600 mr-3" />
+                                    <span className="text-gray-800">{clinicData.clinicWeekdays}</span>
+                                </div>
+                                <div className="flex items-center">
                                     <Clock className="h-6 w-6 text-blue-600 mr-3" />
                                     <span className="text-gray-800">{clinicData.hours}</span>
                                 </div>
@@ -178,14 +184,16 @@ const ClinicCards = () => {
                                     <span className="text-gray-800">{clinic.clinic_type}</span>
                                 </div>
                             </div>
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                className="mt-6 w-full py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-lg shadow-md hover:shadow-xl transition-all"
-                                onClick={() => handleOpenModal(clinic)}
-                            >
-                                Book Appointment
-                            </Button>
+                            <div className="flex justify-center mt-6">
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    className="mt-6 w-full py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-lg shadow-md hover:shadow-xl transition-all"
+                                    onClick={() => handleOpenModal(clinic)}
+                                >
+                                    Book Appointment
+                                </Button>
+                            </div>
                         </CardContent>
                     </Card>
                 ))
