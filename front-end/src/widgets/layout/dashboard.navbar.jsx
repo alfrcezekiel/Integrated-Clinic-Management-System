@@ -13,7 +13,7 @@ const DashboardNavbar = () => {
     const { fixedNavbar, openSideNav } = controller;
     const location = useLocation();
     const pathParts = location.pathname.substring(1).split("/").filter(Boolean);
-    const [layout = "home", page = "", path = "home"] = pathParts;
+    const [layout = "home", page = "", path = "Home", name="Patient's Dashboard"] = pathParts;
     const [anchorEl, setAnchorEl] = useState(null);
     const [settingsAnchorEl, setSettingsAnchorEl] = useState(null);
     const handleMenuOpen = (e) => {
@@ -71,10 +71,11 @@ const DashboardNavbar = () => {
                     </IconButton>
                     <Breadcrumbs className="text-gray-600">
                         <Link to={`/${layout}/${path}`} className="text-blue-500">
-                            <Typography variant="body1">{layout}</Typography>
+                            <Typography variant="body1">{name}</Typography>
                         </Link>
                     </Breadcrumbs>
                     <Outlet />
+                    <Typography variant="body2" className="text-gray-600">/</Typography>
                     <Typography variant="body1" className="text-gray-600">
                         {page}
                     </Typography>

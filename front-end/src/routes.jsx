@@ -25,7 +25,7 @@ const routes = [
                 id: 1,
                 icon: <HomeIcon style={iconStyle} />,
                 name: "Patients Dashboard",
-                path: "home",
+                path: "Home",
                 element: <DashboardHome />,
             },
             {

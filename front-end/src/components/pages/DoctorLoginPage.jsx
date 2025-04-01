@@ -32,7 +32,7 @@ function DoctorLoginPortal() {
 
     useEffect(() => {
         const titleElement = () => {
-            document.title = "Doctor's Login Portal - CMS";
+            document.title = "Clinic's Login Portal - CMS";
         }
         titleElement();
     }, [location.pathname])
@@ -95,7 +95,7 @@ function DoctorLoginPortal() {
         <section className="m-3 flex gap-4">
             <div className="w-full lg:w-3/5 mt-24">
                 <div className="text-center">
-                    <Typography variant="h5" className="font-bold mb-4" color="black">Doctor&apos;s Login Portal</Typography>
+                    <Typography variant="h5" className="font-bold mb-4" color="black">Clinic&apos;s Login Portal</Typography>
                 </div>
                 <form className="mt-8 mb-2 mx-auto w-80 max-w-screen-lg lg:w-1/2" autoComplete="off" onSubmit={handleLoggedInPatient} id="patients-login-form">
                     <div className="mb-4 flex flex-col gap-6">

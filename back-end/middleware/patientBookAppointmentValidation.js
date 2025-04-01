@@ -36,6 +36,12 @@ const validatePatientBookAppointment = [
         .withMessage("Gender is required")
         .isIn(["Male", "Female"])
         .withMessage("Gender must be either Male or Female"),
+    body("preferredDays")
+        .notEmpty()
+        .withMessage("Preferred days are required"),
+    body("preferredTime")
+        .notEmpty()
+        .withMessage("Preferred time is required"),
     body("purposeOfAppointment")
         .notEmpty()
         .withMessage("Purpose of appointment is required"),
@@ -44,7 +50,7 @@ const validatePatientBookAppointment = [
 
         if (!errors.isEmpty()) {
             return res.status(StatusCodes.BAD_REQUEST).json({
-                errors: errors.formatWith((err) => err.msg).mapped()
+                errors: errors.formatWith((error) => error.msg).mapped()
             })
         }
         next();

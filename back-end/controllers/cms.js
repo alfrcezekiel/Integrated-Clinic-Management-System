@@ -336,6 +336,8 @@ export const patientsBookedAppointments = async (req, res) => {
             appointmentDate,
             phoneNumber,
             gender,
+            preferredDays,
+            preferredTime,
             purposeOfAppointment
         } = req.body;
 
@@ -347,9 +349,23 @@ export const patientsBookedAppointments = async (req, res) => {
             appointmentDate,
             phoneNumber,
             gender,
+            preferredDays,
+            preferredTime,
             purposeOfAppointment
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?);`;
-        const [result] = await conn.query(query, [patientID, firstName, lastName, email, appointmentDate, phoneNumber, gender, doctor, purposeOfAppointment]);
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
+
+        const [result] = await conn.query(query, [
+            patientID,
+            firstName,
+            lastName,
+            email,
+            appointmentDate,
+            phoneNumber,
+            gender,
+            preferredDays,
+            preferredTime,
+            purposeOfAppointment
+        ]);
 
         if (result.affectedRows === 0) {
             return res.status(StatusCodes.BAD_REQUEST).json({
