@@ -16,17 +16,50 @@ import {
 } from '@mui/icons-material';
 import { useMemo } from 'react';
 import PropTypes from 'prop-types';
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
-const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooking, appointmentData, setAppointmentData, fieldErrors, appointmentID }) => {
+const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooking, appointmentData, setAppointmentData, fieldErrors, setFieldErrors, appointmentID }) => {
     const memoizedFirstNameValue = useMemo(() => appointmentData.firstName, [appointmentData.firstName]);
     const memoizedLastNameValue = useMemo(() => appointmentData.lastName, [appointmentData.lastName]);
     const memoizedEmailValue = useMemo(() => appointmentData.email, [appointmentData.email]);
     const memoizedPhoneNumberValue = useMemo(() => appointmentData.phoneNumber, [appointmentData.phoneNumber]);
     const memoizedGenderValue = useMemo(() => appointmentData.gender, [appointmentData.gender])
-    const memoizedAppointmentDateValue = useMemo(() => appointmentData.appointmentDate, [appointmentData.appointmentDate]);
+    const memoizedAppointmentDateValue = useMemo(() => {
+        const date = new Date(appointmentData.appointmentDate);
+        // Check if the date is valid before formatting it
+        if (isNaN(date.getTime())) {
+            return null; // Return empty string if invalid date
+        }
+        return date;
+    }, [appointmentData.appointmentDate]);
     const memoizedPreferredDaysValue = useMemo(() => appointmentData.preferredDays, [appointmentData.preferredDays]);
     const memoizedPreferredTimeValue = useMemo(() => appointmentData.preferredTime, [appointmentData.preferredTime]);
     const memoizedPurposeOfAppointmentValue = useMemo(() => appointmentData.purposeOfAppointment, [appointmentData.purposeOfAppointment]);
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setAppointmentData({
+            ...appointmentData,
+            [name]: value
+        })
+
+        if (fieldErrors[name]) {
+            setFieldErrors({
+                ...fieldErrors,
+                [name]: ""
+            })
+        }
+    }
+    // Date change handler for DatePicker
+    const handleDateChange = (newDate) => {
+        setAppointmentData({
+            ...appointmentData,
+            appointmentDate: newDate ? newDate.toISOString().split('T')[0] : ''
+        });
+    };
 
     return (
         <Modal open={!!selectedClinic} onClose={handleCloseModal}>
@@ -75,22 +108,24 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
                         </div>
 
                         <form onSubmit={handleBooking}>
-                            <div className="mt-4">
-                                <input
-                                    type="hidden"
+                            <div className="mt-2">
+                                <TextField
+                                    hidden
                                     value={appointmentID}
                                     name="appointmentID"
+                                    margin="dense"
                                 />
                             </div>
-                            <div className="mt-5">
+                            <div className="mt-2">
                                 <TextField
                                     fullWidth
                                     label="First Name"
                                     variant="outlined"
                                     name="firstName"
                                     autoComplete="off"
+                                    margin="dense"
                                     value={memoizedFirstNameValue}
-                                    onChange={(e) => setAppointmentData({ ...appointmentData, firstName: e.target.value })}
+                                    onChange={handleInputChange}
                                     error={Boolean(fieldErrors.firstName)}
                                     helperText={fieldErrors.firstName ? fieldErrors.firstName : ""}
                                 />
@@ -103,8 +138,9 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
                                     label="Last Name"
                                     variant="outlined"
                                     autoComplete="off"
+                                    margin="dense"
                                     value={memoizedLastNameValue}
-                                    onChange={(e) => setAppointmentData({ ...appointmentData, lastName: e.target.value })}
+                                    onChange={handleInputChange}
                                     error={Boolean(fieldErrors.lastName)}
                                     helperText={fieldErrors.lastName ? fieldErrors.lastName : ""}
                                     name="lastName"
@@ -119,11 +155,12 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
                                     type="text"
                                     autoComplete="off"
                                     variant="outlined"
+                                    margin="dense"
                                     error={Boolean(fieldErrors.email)}
                                     helperText={fieldErrors.email ? fieldErrors.email : ""}
                                     value={memoizedEmailValue}
                                     name="email"
-                                    onChange={(e) => setAppointmentData({ ...appointmentData, email: e.target.value })}
+                                    onChange={handleInputChange}
                                 />
                             </div>
 
@@ -136,8 +173,9 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
                                     autoComplete="off"
                                     type="number"
                                     variant="outlined"
+                                    margin="dense"
                                     value={memoizedPhoneNumberValue}
-                                    onChange={(e) => setAppointmentData({ ...appointmentData, phoneNumber: e.target.value })}
+                                    onChange={handleInputChange}
                                     error={Boolean(fieldErrors.phoneNumber)}
                                     helperText={fieldErrors.phoneNumber ? fieldErrors.phoneNumber : ""}
                                 />
@@ -152,10 +190,11 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
                                     label="Gender"
                                     name="gender"
                                     variant="outlined"
+                                    margin="dense"
                                     error={Boolean(fieldErrors.gender)}
                                     helperText={fieldErrors.gender ? fieldErrors.gender : ""}
                                     value={memoizedGenderValue}
-                                    onChange={(e) => setAppointmentData({ ...appointmentData, gender: e.target.value })}
+                                    onChange={handleInputChange}
                                 >
                                     <MenuItem value="Male">Male</MenuItem>
                                     <MenuItem value="Female">Female</MenuItem>
@@ -164,19 +203,31 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
 
                             {/* Date of Appointment */}
                             <div className="mt-2">
-                                <TextField
-                                    fullWidth
-                                    type="date"
-                                    autoComplete="off"
-                                    name="dateOfAppointment"
-                                    label="Date of Appointment"
-                                    slotProps={{ inputLabel: { shrink: true } }}
-                                    variant="outlined"
-                                    error={Boolean(fieldErrors.appointmentDate)}
-                                    helperText={fieldErrors.appointmentDate ? fieldErrors.appointmentDate : ""}
-                                    value={memoizedAppointmentDateValue}
-                                    onChange={(e) => setAppointmentData({ ...appointmentData, appointmentDate: e.target.value })}
-                                />
+                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                    <DemoContainer components={['DatePicker']}>
+                                        <DatePicker
+                                            fullWidth
+                                            autoComplete="off"
+                                            name="dateOfAppointment"
+                                            label="Date of Appointment"
+                                            margin="dense"
+                                            variant="outlined"
+                                            onChange={handleDateChange}
+                                            renderInput={(params) => (
+                                                <TextField
+                                                    {...params}
+                                                    fullWidth
+                                                    margin="dense"
+                                                    variant="outlined"
+                                                    error={Boolean(fieldErrors.appointmentDate)}
+                                                    helperText={fieldErrors.appointmentDate ? fieldErrors.appointmentDate : ""}
+                                                />
+                                            )}
+                                            InputLabelProps={{ shrink: true }}
+                                            value={memoizedAppointmentDateValue}
+                                        />
+                                    </DemoContainer>
+                                </LocalizationProvider>
                             </div>
 
                             <div className="mt-2">
@@ -184,10 +235,11 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
                                     fullWidth
                                     label="Preffered Days"
                                     autoComplete="off"
+                                    margin="dense"
                                     name="preferredDays"
                                     variant="outlined"
                                     value={memoizedPreferredDaysValue}
-                                    onChange={(e) => setAppointmentData({ ...appointmentData, preferredDays: e.target.value })}
+                                    onChange={handleInputChange}
                                     placeholder="e.g. Monday to Friday"
                                     className="mt-2"
                                     error={Boolean(fieldErrors.preferredDays)}
@@ -200,12 +252,13 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
                                     fullWidth
                                     label="Preferred Time"
                                     variant="outlined"
+                                    margin="dense"
                                     autoComplete="off"
                                     name="preferredTime"
                                     type="time"
                                     InputLabelProps={{ shrink: true }}
                                     value={memoizedPreferredTimeValue}
-                                    onChange={(e) => setAppointmentData({ ...appointmentData, preferredTime: e.target.value })}
+                                    onChange={handleInputChange}
                                     className="mt-2"
                                     error={Boolean(fieldErrors.preferredTime)}
                                     helperText={fieldErrors.preferredTime ? fieldErrors.preferredTime : ""}
@@ -215,6 +268,7 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
                             <div className="mt-2">
                                 <TextField
                                     fullWidth
+                                    margin="dense"
                                     label="Purpose of Appointment"
                                     variant="outlined"
                                     autoComplete="off"
@@ -224,7 +278,7 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
                                     helperText={fieldErrors.purposeOfAppointment ? fieldErrors.purposeOfAppointment : ""}
                                     rows={3}
                                     value={memoizedPurposeOfAppointmentValue}
-                                    onChange={(e) => setAppointmentData({ ...appointmentData, purposeOfAppointment: e.target.value })}
+                                    onChange={handleInputChange}
                                 />
                             </div>
 
@@ -254,6 +308,7 @@ BookingAppointmentModal.propTypes = {
     appointmentData: PropTypes.object.isRequired,
     setAppointmentData: PropTypes.func.isRequired,
     fieldErrors: PropTypes.object.isRequired,
+    setFieldErrors: PropTypes.func.isRequired,
     appointmentID: PropTypes.string.isRequired,
 }
 export default BookingAppointmentModal;

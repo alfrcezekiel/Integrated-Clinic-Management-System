@@ -211,6 +211,7 @@ const ClinicCards = () => {
                     appointmentData={appointmentData}
                     setAppointmentData={setAppointmentData}
                     fieldErrors={fieldErrors}
+                    setFieldErrors={setFieldErrors}
                     appointmentID={appointmentID}
                 />
             )}
