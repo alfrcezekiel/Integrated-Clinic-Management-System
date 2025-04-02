@@ -144,7 +144,7 @@ const ClinicCards = () => {
                 </Typography>
             ) : (
                 clinics.map((clinic) => (
-                    <Card key={clinic.clinic_id} className="w-md mx-auto bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl shadow-lg overflow-hidden transform transition duration-300 hover:scale-105">
+                    <Card key={clinic} className="w-md mx-auto bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl shadow-lg overflow-hidden transform transition duration-300 hover:scale-105">
                         <CardMedia
                             className="h-48 w-full bg-blue-200 flex items-center justify-center"
                             component="div"
@@ -164,7 +164,7 @@ const ClinicCards = () => {
                             <Typography variant="h5" className="text-3xl font-extrabold text-blue-800 mb-4">
                                 {clinic.clinic_name}
                             </Typography>
-                            <div className="space-y-3">
+                            <div className="space-y-4">
                                 <div className="flex items-center">
                                     <Mail className="h-6 w-6 text-blue-600 mr-3" />
                                     <a href={`mailto:${clinic.email}`} className="text-gray-800 hover:text-blue-600 transition-colors">
