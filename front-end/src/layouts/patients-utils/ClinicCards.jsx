@@ -6,6 +6,8 @@ import {
     CircularProgress,
     Button,
     CardMedia,
+    ImageList,
+    ImageListItem
 } from "@mui/material";
 import CMS from "../../API/CMS";
 import {
@@ -139,12 +141,6 @@ const ClinicCards = () => {
         }
     };
 
-    const clinicData = {
-        clinicWeekdays: "Monday - Friday",
-        hours: "8:00 AM - 7:00 PM",
-        fee: "$60 - $120 (based on consultation type)",
-    };
-
     return (
         <div className="flex flex-row flex-wrap justify-center gap-6 p-6 from-blue-50 to-blue-100">
             {loading ? (
@@ -161,13 +157,15 @@ const ClinicCards = () => {
                             component="div"
                         >
                             <div className="text-center p-4">
-                                <Stethoscope size={64} className="mx-auto text-blue-600" />
-                                <Typography variant="subtitle1" className="text-blue-700 mt-2 font-semibold">
-                                    Clinic Building Image
-                                </Typography>
-                                <Typography variant="caption" className="text-xs text-blue-500">
-                                    (Placeholder - replace with actual clinic image)
-                                </Typography>
+                                <ImageList sx={{ width: '100%', height: 450 }} cols={3} rowHeight={164}>
+                                    <ImageListItem>
+                                        <img
+                                            src={clinics.clinic_image}
+                                            alt="Clinic Image"
+                                            loading="lazy"
+                                        />
+                                    </ImageListItem>
+                                </ImageList>
                             </div>
                         </CardMedia>
 
@@ -184,15 +182,17 @@ const ClinicCards = () => {
                                 </div>
                                 <div className="flex items-center">
                                     <Building className="h-6 w-6 text-blue-600 mr-3" />
-                                    <span className="text-gray-800">{clinicData.clinicWeekdays}</span>
+                                    <span className="text-gray-800">
+                                        {clinic ? clinic.clinic_date_open : "N/A"} - {clinic ? clinic.clinic_close_date : "N/A"}
+                                    </span>
                                 </div>
                                 <div className="flex items-center">
                                     <Clock className="h-6 w-6 text-blue-600 mr-3" />
-                                    <span className="text-gray-800">{clinicData.hours}</span>
+                                    <span className="text-gray-800">{clinic ? clinic.clinic_time : "N/A"} - {clinic ? clinic.clinic_close_time : "N/A"}</span>
                                 </div>
                                 <div className="flex items-center">
                                     <DollarSign className="h-6 w-6 text-blue-600 mr-3" />
-                                    <span className="text-gray-800">{clinicData.fee}</span>
+                                    <span className="text-gray-800">{clinic.consultation_fee}</span>
                                 </div>
                                 <div className="flex items-center">
                                     <Stethoscope className="h-6 w-6 text-blue-600 mr-3" />
