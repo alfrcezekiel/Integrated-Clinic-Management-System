@@ -34,6 +34,7 @@ import {
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import CMS from "../../API/CMS";
+import dayjs from 'dayjs';
 
 const ClinicRegistrationModal = ({ open, onClose, }) => {
     const [fileName, setFileName] = useState('');
@@ -112,10 +113,12 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
 
             // Convert time values to a string format (if they exist)
             if (memoizedFormDataValue.openingHours) {
-                data.append("openingHours", memoizedFormDataValue.openingHours.format("HH:mm"));
+                const openingTime = dayjs(memoizedFormDataValue.openingHours).format('HH:mm');  // Format the time
+                data.append('openingHours', openingTime);
             }
             if (memoizedFormDataValue.closingHours) {
-                data.append("closingHours", memoizedFormDataValue.closingHours.format("HH:mm"));
+                const closingTime = dayjs(memoizedFormDataValue.closingHours).format('HH:mm');  // Format the time
+                data.append('closingHours', closingTime)
             }
 
             data.append("consultationFee", memoizedFormDataValue.consultationFee);

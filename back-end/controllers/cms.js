@@ -597,7 +597,7 @@ export const addDoctor = async (req, res) => {
 // controller logic for getting the total number of doctors in the row
 export const getDoctorsLists = async (req, res) => {
     try {
-        const query = `SELECT 
+        const query = `SELECT
             doctorsID,
             firstName,
             lastName,
@@ -725,32 +725,32 @@ export const createClinic = async (req, res) => {
     try {
         const {
             clinicName,
-            address,
-            email,
+            clinicAddress,
+            clinicEmail,
             password,
             confirmPassword,
             clinicType,
-            openDate,
-            closeDate,
-            openTime,
-            closeTime,
+            openingDays,
+            closingDays,
+            openingHours,
+            closingHours,
             consultationFee,
-            clinic_id,
+            clinicId,
         } = req.body;
 
         const clinic_name = String(clinicName);
-        const clinic_address = String(address);
-        const clinic_date_open = String(openDate)
-        const clinic_time_open = String(openTime);
+        const clinic_address = String(clinicAddress);
+        const clinic_date_open = String(openingDays);
+        const clinic_time_open = String(openingHours);
         const consultation_fee = String(consultationFee);
-        const email_address = String(email);
+        const email_address = String(clinicEmail);
         const clinic_password = String(password);
         const clinic_confirm_password = String(confirmPassword);
         const clinic_type = String(clinicType);
         const clinic_image = req.file.path;
-        const clinic_close_date = String(closeDate);
-        const clinic_close_time = String(closeTime);
-        const clinic_id_field = String(clinic_id);
+        const clinic_close_date = String(closingDays);
+        const clinic_close_time = String(closingHours);
+        const clinic_id_field = String(clinicId);
 
         const saltRound = 10;
         const hashedPassword = await bcrypt.hash(clinic_password, saltRound);
