@@ -34,6 +34,10 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 app.use(express.static(path.join(__dirname, "public")));
+
+// Ensure the directory exists before serving it as static content
+const clinicImagesPath = path.join(__dirname, "uploads");
+app.use(express.static(clinicImagesPath));
 app.use(cors({
     origin: "http://localhost:5173",
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],

@@ -31,6 +31,7 @@ import validateAddDoctor from "../middleware/addingdoctor.validation.js";
 import validateUpdatingDoctor from "../middleware/updatingDoctor.validation.js";
 import validatePatientBookAppointment from "../middleware/patientBookAppointmentValidation.js";
 import validatePatientsDetails from "../middleware/updatePatientsDetailsValidation.js";
+import upload from "../middleware/fileImage/clinicImage.js";
 
 const router = express.Router();
 
@@ -92,7 +93,7 @@ router.put("/admin-dashboard/updateDoctor/:doctorsID", [validateUpdatingDoctor],
 router.delete("/admin-dashboard/deleteDoctor/:doctorsID", deleteDoctorsDetails);
 
 // router for creating a clinic in admin dashboard
-router.post("/admin-dashboard/create-clinic", createClinic);
+router.post("/admin-dashboard/create-clinic", upload.single("clinicImage"), createClinic);
 
 // router for getting the clinic details in admin dashboard
 router.get("/admin-dashboard/clinics", getClinics);

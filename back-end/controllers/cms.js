@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import "../main.js";
 import bcrypt from "bcrypt";
+import e from 'express';
 dotenv.config();
 
 // controller logic for a global route
@@ -729,35 +730,66 @@ export const createClinic = async (req, res) => {
             password,
             confirmPassword,
             clinicType,
+            openDate,
+            closeDate,
+            openTime,
+            closeTime,
+            consultationFee,
+            clinic_id,
         } = req.body;
 
         const clinic_name = String(clinicName);
         const clinic_address = String(address);
-        const clinic_email = String(email);
+        const clinic_date_open = String(openDate)
+        const clinic_time_open = String(openTime);
+        const consultation_fee = String(consultationFee);
+        const email_address = String(email);
         const clinic_password = String(password);
         const clinic_confirm_password = String(confirmPassword);
         const clinic_type = String(clinicType);
+        const clinic_image = req.file.path;
+        const clinic_close_date = String(closeDate);
+        const clinic_close_time = String(closeTime);
+        const clinic_id_field = String(clinic_id);
 
         const saltRound = 10;
         const hashedPassword = await bcrypt.hash(clinic_password, saltRound);
         const hashedConfirmPassword = await bcrypt.hash(clinic_confirm_password, saltRound);
 
+        if (!req.file) {
+            return res.status(400).json({ message: 'Please upload a clinic image' });
+        }
+
         const query = `INSERT INTO clinic (
             clinic_name,
             clinic_address,
+            clinic_date_open,
+            clinic_time,
+            consultation_fee,
             email,
-            password, 
+            password,
             confirm_password,
-            clinic_type
-            ) VALUES (?, ?, ?, ?, ?, ?);`;
+            clinic_type,
+            clinic_image,
+            clinic_close_date,
+            clinic_close_time,
+            clinic_id_field
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
 
         const [result] = await conn.query(query, [
             clinic_name,
             clinic_address,
-            clinic_email,
+            clinic_date_open,
+            clinic_time_open,
+            consultation_fee,
+            email_address,
             hashedPassword,
             hashedConfirmPassword,
-            clinic_type
+            clinic_type,
+            clinic_image,
+            clinic_close_date,
+            clinic_close_time,
+            clinic_id_field
         ]);
 
         if (result.affectedRows === 0) {

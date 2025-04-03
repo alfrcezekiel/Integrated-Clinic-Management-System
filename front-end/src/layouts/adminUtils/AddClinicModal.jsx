@@ -33,6 +33,7 @@ import {
 } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import CMS from "../../API/CMS";
 
 const ClinicRegistrationModal = ({ open, onClose, }) => {
     const [fileName, setFileName] = useState('');
@@ -94,7 +95,52 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
         setConfirmShowPassword((prev) => !prev);
     }
 
-    const preferredOpeningDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday", "Monday - Friday", "Saturday - Sunday"];
+    const handleSubmit = useCallback(async (e) => {
+        try {
+            e.preventDefault();
+            const data = new FormData();
+            data.append("clinicName", memoizedFormDataValue.clinicName);
+            data.append("clinicAddress", memoizedFormDataValue.clinicAddress);
+            data.append("clinicEmail", memoizedFormDataValue.clinicEmail);
+
+            if (memoizedFormDataValue.clinicImage) {
+                data.append("clinicImage", memoizedFormDataValue.clinicImage);  // Append file if present
+            }
+
+            data.append("openingDays", memoizedFormDataValue.openingDays);
+            data.append("closingDays", memoizedFormDataValue.closingDays);
+
+            // Convert time values to a string format (if they exist)
+            if (memoizedFormDataValue.openingHours) {
+                data.append("openingHours", memoizedFormDataValue.openingHours.format("HH:mm"));
+            }
+            if (memoizedFormDataValue.closingHours) {
+                data.append("closingHours", memoizedFormDataValue.closingHours.format("HH:mm"));
+            }
+
+            data.append("consultationFee", memoizedFormDataValue.consultationFee);
+            data.append("clinicType", memoizedFormDataValue.clinicType);
+            data.append("clinicId", memoizedFormDataValue.clinicId);
+            data.append("password", memoizedFormDataValue.password);
+            data.append("confirmPassword", memoizedFormDataValue.confirmPassword);
+
+            const response = await CMS.post("/CMS/admin-dashboard/create-clinic", data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    'Accept': 'application/json',
+                }
+            });
+
+            if (response.status === 200) {
+                alert("Clinic registered successfully");
+                onClose()
+            }
+        } catch (error) {
+            console.log(`Error in clinic registration: ${error}`)
+        }
+    }, [memoizedFormDataValue, onClose])
+
+    const preferredOpeningDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
     const consultationFee = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000];
     const clinicTypes = ["General Clinic", "Specialist Clinic", "Dental Clinic", "Pediatric Clinic", "Dermatology Clinic", "Psychiatry Clinic", "Physiotherapy Clinic", "Optometry Clinic", "Gynecology Clinic", "Orthopedic Clinic"];
 
@@ -107,7 +153,7 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
         >
             <DialogTitle className="text-white bg-blue-300 text-center">Registration Clinic</DialogTitle>
 
-            <form>
+            <form onSubmit={handleSubmit}>
                 <DialogContent className='space-y-6'>
                     {/* Clinic Information */}
                     <Box className="space-y-4 p-4 border rounded-lg shadow bg-blue-50" item="true">
@@ -242,7 +288,7 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
                             <Box className="flex items-center space-x-2" >
                                 <AccessTime color="success" />
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                    <DemoContainer components={['TimePicker']}>
+                                    <DemoContainer components={['TimePicker']} className="w-full">
                                         <TimePicker
                                             label="Select Opening Hours"
                                             value={memoizedFormDataValue.openingHours}
@@ -268,10 +314,10 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                                     <DemoContainer components={['TimePicker']}>
                                         <TimePicker
+                                            className='w-screen'
                                             label="Select Closing Hours"
                                             value={memoizedFormDataValue.closingHours}
                                             name="closingHours"
-                                            className='w-full'
                                             onChange={(value) => handleFormDataChange(value, "closingHours")}
                                             renderinput={(params) =>
                                                 <TextField
@@ -410,7 +456,7 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
                 {/* Action Buttons */}
                 <DialogActions>
                     <Button onClick={onClose} variant="outlined">Cancel</Button>
-                    <Button variant="contained" color="primary">Register Clinic</Button>
+                    <Button variant="contained" color="primary" type="submit">Register Clinic</Button>
                 </DialogActions>
             </form>
         </Dialog>
