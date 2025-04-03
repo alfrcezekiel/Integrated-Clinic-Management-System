@@ -14,7 +14,11 @@ import {
 } from '@mui/material';
 import {
     Visibility,
-    VisibilityOff
+    VisibilityOff,
+    AccessTime,
+    AccessAlarm,
+    AttachMoney,
+    Business
 } from '@mui/icons-material';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import Person from '@mui/icons-material/Person';
@@ -193,117 +197,135 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
                         </Box>
                         <Box className="space-y-2">
                             <Typography variant="subtitle2" className="text-green-600">Opening Days</Typography>
-                            <TextField
-                                fullWidth
-                                select
-                                autoComplete='off'
-                                name="openingDays"
-                                value={memoizedFormDataValue.openingDays}
-                                onChange={handleFormDataChange}
-                                label="Select Opening Days"
-                                variant="outlined"
-                                margin="dense"
-                            >
-                                {preferredOpeningDays.map((day) => (
-                                    <MenuItem key={day} value={day}>{day}</MenuItem>
-                                ))}
-                            </TextField>
+                            <Box className="flex items-center space-x-2">
+                                <AccessTime color="success" />
+                                <TextField
+                                    fullWidth
+                                    select
+                                    autoComplete='off'
+                                    name="openingDays"
+                                    value={memoizedFormDataValue.openingDays}
+                                    onChange={handleFormDataChange}
+                                    label="Select Opening Days"
+                                    variant="outlined"
+                                    margin="dense"
+                                >
+                                    {preferredOpeningDays.map((day) => (
+                                        <MenuItem key={day} value={day}>{day}</MenuItem>
+                                    ))}
+                                </TextField>
+                            </Box>
                         </Box>
                         <Box className="space-y-2">
                             <Typography variant="subtitle2" className="text-green-600">Closing Days</Typography>
-                            <TextField
-                                fullWidth
-                                select
-                                autoComplete='off'
-                                name="closingDays"
-                                value={memoizedFormDataValue.closingDays}
-                                onChange={handleFormDataChange}
-                                label="Select Closing Days"
-                                variant="outlined"
-                                margin="dense"
-                            >
-                                {preferredOpeningDays.map((day) => (
-                                    <MenuItem key={day} value={day}>{day}</MenuItem>
-                                ))}
-                            </TextField>
+                            <Box className="flex items-center space-x-2">
+                                <AccessAlarm color="success" />
+                                <TextField
+                                    fullWidth
+                                    select
+                                    autoComplete='off'
+                                    name="closingDays"
+                                    value={memoizedFormDataValue.closingDays}
+                                    onChange={handleFormDataChange}
+                                    label="Select Closing Days"
+                                    variant="outlined"
+                                    margin="dense"
+                                >
+                                    {preferredOpeningDays.map((day) => (
+                                        <MenuItem key={day} value={day}>{day}</MenuItem>
+                                    ))}
+                                </TextField>
+                            </Box>
                         </Box>
                         <Box className="space-y-2">
                             <Typography variant="subtitle2" className="text-green-600">Opening Hours</Typography>
-                            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                <DemoContainer components={['TimePicker']}>
-                                    <TimePicker
-                                        label="Select Opening Hours"
-                                        value={memoizedFormDataValue.openingHours}
-                                        name="openingHours"
-                                        className='w-full'
-                                        onChange={(value) => handleFormDataChange(value, "openingHours")}
-                                        renderinput={(params) =>
-                                            <TextField
-                                                fullWidth
-                                                margin="dense"
-                                                {...params}
-                                            />
-                                        }
-                                    />
-                                </DemoContainer>
-                            </LocalizationProvider>
+                            <Box className="flex items-center space-x-2" >
+                                <AccessTime color="success" />
+                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                    <DemoContainer components={['TimePicker']}>
+                                        <TimePicker
+                                            label="Select Opening Hours"
+                                            value={memoizedFormDataValue.openingHours}
+                                            name="openingHours"
+                                            className='w-screen'
+                                            onChange={(value) => handleFormDataChange(value, "openingHours")}
+                                            renderinput={(params) =>
+                                                <TextField
+                                                    fullWidth
+                                                    margin="dense"
+                                                    {...params}
+                                                />
+                                            }
+                                        />
+                                    </DemoContainer>
+                                </LocalizationProvider>
+                            </Box>
                         </Box>
                         <Box className="space-y-2">
                             <Typography variant="subtitle2" className="text-green-600">Closing Hours</Typography>
-                            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                <DemoContainer components={['TimePicker']}>
-                                    <TimePicker
-                                        label="Select Closing Hours"
-                                        value={memoizedFormDataValue.closingHours}
-                                        name="closingHours"
-                                        className='w-full'
-                                        onChange={(value) => handleFormDataChange(value, "closingHours")}
-                                        renderinput={(params) =>
-                                            <TextField
-                                                fullWidth
-                                                margin="dense"
-                                                {...params}
-                                            />
-                                        }
-                                    />
-                                </DemoContainer>
-                            </LocalizationProvider>
+                            <Box className="flex items-center space-x-2">
+                                <AccessAlarm color="success" />
+                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                    <DemoContainer components={['TimePicker']}>
+                                        <TimePicker
+                                            label="Select Closing Hours"
+                                            value={memoizedFormDataValue.closingHours}
+                                            name="closingHours"
+                                            className='w-full'
+                                            onChange={(value) => handleFormDataChange(value, "closingHours")}
+                                            renderinput={(params) =>
+                                                <TextField
+                                                    fullWidth
+                                                    margin="dense"
+                                                    {...params}
+                                                />
+                                            }
+                                        />
+                                    </DemoContainer>
+                                </LocalizationProvider>
+                            </Box>
                         </Box>
                         <Box className="space-y-2">
                             <Typography variant="subtitle2" className="text-green-600">Consultation Fee</Typography>
-                            <TextField
-                                fullWidth
-                                label="Enter Consultation Fee"
-                                variant="outlined"
-                                margin="dense"
-                                type="number"
-                                name="consultationFee"
-                                value={memoizedFormDataValue.consultationFee}
-                                select
-                                onChange={handleFormDataChange}
-                            >
-                                {consultationFee.map((fee) => (
-                                    <MenuItem key={fee} value={fee}>{fee}</MenuItem>
-                                ))}
-                            </TextField>
+                            <Box className="flex items-center space-x-2">
+                                <AttachMoney color="success" />
+                                <TextField
+                                    fullWidth
+                                    label="Enter Consultation Fee"
+                                    variant="outlined"
+                                    margin="dense"
+                                    type="number"
+                                    name="consultationFee"
+                                    value={memoizedFormDataValue.consultationFee}
+                                    select
+                                    onChange={handleFormDataChange}
+                                >
+                                    {consultationFee.map((fee) => (
+                                        <MenuItem key={fee} value={fee}>{fee}</MenuItem>
+                                    ))}
+                                </TextField>
+                            </Box>
                         </Box>
                         <Box className="space-y-2">
                             <Typography variant="subtitle2" className="text-green-600">Clinic Type</Typography>
-                            <TextField
-                                fullWidth
-                                select
-                                autoCapitalize="off"
-                                name="clinicType"
-                                value={memoizedFormDataValue.clinicType}
-                                onChange={handleFormDataChange}
-                                label="Enter Clinic Type"
-                                variant="outlined"
-                                margin="dense"
-                            >
-                                {clinicTypes.map((type) => (
-                                    <MenuItem key={type} value={type}>{type}</MenuItem>
-                                ))}
-                            </TextField>
+                            <Box className="flex items-center space-x-2">
+                                <Business color="success" />
+                                <TextField
+                                    fullWidth
+                                    select
+                                    autoCapitalize="off"
+                                    name="clinicType"
+                                    value={memoizedFormDataValue.clinicType}
+                                    onChange={handleFormDataChange}
+                                    label="Enter Clinic Type"
+                                    variant="outlined"
+                                    margin="dense"
+                                >
+                                    {clinicTypes.map((type) => (
+                                        <MenuItem key={type} value={type}>{type}</MenuItem>
+                                    ))}
+                                </TextField>
+                            </Box>
                         </Box>
                     </Box>
 
