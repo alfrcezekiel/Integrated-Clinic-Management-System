@@ -10,6 +10,7 @@ import {
     ImageListItem
 } from "@mui/material";
 import CMS from "../../API/CMS";
+import LocationOn from "@mui/icons-material/LocationOn";
 import {
     Clock,
     Mail,
@@ -179,6 +180,12 @@ const ClinicCards = () => {
                                     <a href={`mailto:${clinic.email}`} className="text-gray-800 hover:text-blue-600 transition-colors">
                                         {clinic.email}
                                     </a>
+                                </div>
+                                <div className="flex items-center">
+                                    <LocationOn className="h-6 w-6 text-blue-600 mr-3" />
+                                    <span className="text-gray-800">
+                                        {clinic ? clinic.clinic_address : "N/A"}
+                                    </span>
                                 </div>
                                 <div className="flex items-center">
                                     <Building className="h-6 w-6 text-blue-600 mr-3" />
