@@ -129,15 +129,6 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
                             </div>
                         </div>
 
-                        <div className="border-t border-gray-300 my-2"></div>
-
-                        {/* Appointment Booking Form */}
-                        <div className="flex justify-center mb-1">
-                            <Typography variant="h6" className="font-semibold text-blue-800">
-                                Book an Appointment
-                            </Typography>
-                        </div>
-
                         <div className="grid grid-cols-1 gap-6">
                             <form onSubmit={handleBooking} id='bookingForm'>
                                 <div className="hidden">

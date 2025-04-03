@@ -112,9 +112,20 @@ const ClinicCards = () => {
                 alert("Appointment booking failed. Please try again later");
             }
 
-            if (response.data && response.status === 200) {
+            if (response.status === 200) {
                 alert("Appointment booked successfully");
                 setFieldErrors({})
+                setAppointmentData({
+                    firstName: "",
+                    lastName: "",
+                    email: "",
+                    phoneNumber: "",
+                    gender: "",
+                    appointmentDate: "",
+                    preferredDays: "",
+                    preferredTime: "",
+                    purposeOfAppointment: ""
+                });
                 handleCloseModal();
             } else {
                 console.error(`Error in rendering the status code: ${response.status}`);

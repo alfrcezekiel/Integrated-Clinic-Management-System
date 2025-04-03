@@ -3,7 +3,7 @@ import {
     Typography,
     Container,
     Box,
-    Grid2 as Grid,
+    Grid,
     CircularProgress,
     Paper,
     Divider,
@@ -29,7 +29,6 @@ const AddClinic = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [refreshing, setRefreshing] = useState(false);
-
     // Fetch clinics from API
     const fetchClinics = async () => {
         try {
@@ -55,7 +54,9 @@ const AddClinic = () => {
     }, []);
 
     // Handle modal open/close
-    const handleOpenModal = () => setIsModalOpen(true);
+    const handleOpenModal = () => {
+        setIsModalOpen(true);
+    }
     const handleCloseModal = () => {
         setIsModalOpen(false);
         // Refresh the clinics list after modal closes
