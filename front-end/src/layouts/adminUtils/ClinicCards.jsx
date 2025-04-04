@@ -6,9 +6,10 @@ import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
 import SettingsIcon from '@mui/icons-material/Settings';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import PhoneIcon from '@mui/icons-material/Phone';
+import Business from '@mui/icons-material/Business';
 
 const ClinicCard = ({ clinic, onViewDetails, onEditClinic }) => {
-    const firstLetter = clinic.clinicName ? clinic.clinicName.charAt(0).toUpperCase() : 'C';
+    const firstLetter = clinic.clinic_name ? clinic.clinic_name.charAt(0).toUpperCase() : 'C';
 
     const getClinicTypeColor = (type) => {
         const colors = {
@@ -21,13 +22,15 @@ const ClinicCard = ({ clinic, onViewDetails, onEditClinic }) => {
             "Mental Health": "#8bc34a",
             "Physical Therapy": "#ff5722",
             "Urgent Care": "#f44336",
-            "Specialty Clinic": "#673ab7"
+            "Specialty Clinic": "#673ab7",
+            "General Clinic" :  "#607d8b",
+            "Specialist Clinic": "#3f51b5"
         };
         return colors[type] || "#757575";
     };
 
     const formatAddress = () => {
-        return clinic.address ? clinic.address : 'No address provided';
+        return clinic.clinic_address ? clinic.clinic_address : 'No address provided';
     };
 
     return (
@@ -46,7 +49,7 @@ const ClinicCard = ({ clinic, onViewDetails, onEditClinic }) => {
                 sx={{
                     height: '6px',
                     width: '100%',
-                    background: `linear-gradient(90deg, ${getClinicTypeColor(clinic.clinicType)} 30%, #ffffff 100%)`,
+                    background: `linear-gradient(90deg, ${getClinicTypeColor(clinic.clinic_type)} 30%, #ffffff 100%)`,
                 }}
             />
 
@@ -54,7 +57,7 @@ const ClinicCard = ({ clinic, onViewDetails, onEditClinic }) => {
                 avatar={
                     <Avatar
                         sx={{
-                            bgcolor: getClinicTypeColor(clinic.clinicType),
+                            bgcolor: getClinicTypeColor(clinic.clinic_type),
                             boxShadow: '0 3px 6px rgba(0,0,0,0.15)',
                             width: 50,
                             height: 50,
@@ -70,16 +73,16 @@ const ClinicCard = ({ clinic, onViewDetails, onEditClinic }) => {
                         className="font-bold text-gray-800"
                         sx={{ fontSize: '1.2rem' }}
                     >
-                        {clinic.clinicName}
+                        {clinic.clinic_name}
                     </Typography>
                 }
                 subheader={
                     <Chip
                         icon={<MedicalServicesIcon sx={{ fontSize: '1rem' }} />}
-                        label={clinic.clinicType}
+                        label={clinic.clinic_type}
                         size="small"
                         sx={{
-                            backgroundColor: getClinicTypeColor(clinic.clinicType),
+                            backgroundColor: getClinicTypeColor(clinic.clinic_type),
                             color: 'white',
                             fontWeight: 'bold',
                             mt: 1,
@@ -110,6 +113,13 @@ const ClinicCard = ({ clinic, onViewDetails, onEditClinic }) => {
                     </Box>
 
                     <Box className="flex items-center">
+                        <Business className="text-gray-500 mr-2" fontSize="small" />
+                        <Typography variant="body2" className="text-gray-600">
+                            {clinic.clinic_date_open ? clinic.clinic_date_open : ''} - {clinic.clinic_close_date ? clinic.clinic_close_date : ''}
+                        </Typography>
+                    </Box>
+
+                    <Box className="flex items-center">
                         <EmailIcon className="text-gray-500 mr-2" fontSize="small" />
                         <Typography variant="body2" className="text-gray-600">
                             {clinic.email}
@@ -124,11 +134,13 @@ const ClinicCard = ({ clinic, onViewDetails, onEditClinic }) => {
                             </Typography>
                         </Box>
                     )}
+
+                    
                 </Box>
 
                 <Box className="flex justify-between items-center mt-4">
                     <Typography variant="caption" className="italic text-gray-400">
-                        ID: {clinic.id?.substring(0, 8) || 'Pending'}
+                        ID: {clinic.clinic_id ? clinic.clinic_id :   'Pending'}
                     </Typography>
 
                     <Button
@@ -137,12 +149,12 @@ const ClinicCard = ({ clinic, onViewDetails, onEditClinic }) => {
                         startIcon={<InfoOutlinedIcon />}
                         onClick={() => onViewDetails && onViewDetails(clinic)}
                         sx={{
-                            backgroundColor: getClinicTypeColor(clinic.clinicType),
+                            backgroundColor: getClinicTypeColor(clinic.clinic_type),
                             color: 'white',
                             fontWeight: 'bold',
                             textTransform: 'none',
                             '&:hover': {
-                                backgroundColor: `${getClinicTypeColor(clinic.clinicType)}cc`,
+                                backgroundColor: `${getClinicTypeColor(clinic.clinic_type)}`,
                             }
                         }}
                     >
@@ -156,12 +168,14 @@ const ClinicCard = ({ clinic, onViewDetails, onEditClinic }) => {
 
 ClinicCard.propTypes = {
     clinic: PropTypes.shape({
-        id: PropTypes.string,
-        clinicName: PropTypes.string.isRequired,
+        clinic_id: PropTypes.string.isRequired,
+        clinic_name: PropTypes.string.isRequired,
         email: PropTypes.string.isRequired,
         phone: PropTypes.string,
-        address: PropTypes.string,
-        clinicType: PropTypes.oneOf([
+        clinic_address: PropTypes.string,
+        clinic_date_open: PropTypes.string,
+        clinic_close_date: PropTypes.string,
+        clinic_type: PropTypes.oneOf([
             "General Practice",
             "Dental Clinic",
             "Pediatric",
