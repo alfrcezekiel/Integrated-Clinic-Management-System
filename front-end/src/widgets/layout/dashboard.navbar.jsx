@@ -1,9 +1,21 @@
-import { AppBar, Toolbar, Typography, IconButton, Breadcrumbs, InputBase, Menu, MenuItem, Avatar } from "@mui/material";
+import {
+    AppBar,
+    Toolbar,
+    Typography,
+    IconButton,
+    Breadcrumbs,
+    InputBase,
+    Menu,
+    MenuItem,
+    Avatar,
+    Card,
+    CardContent
+} from "@mui/material";
 import { Menu as MenuIcon, Notifications, Settings, CreditCard, Logout } from "@mui/icons-material";
 import { useMaterialUIController } from "../../context/useController";
 import { Link, useLocation, Outlet, useNavigate } from "react-router-dom";
 import { setOpenConfigurator, setOpenSideNav } from "../../context/materialUIController";
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import CMS from "../../API/CMS";
 import LogoutDialog from "../../components/loguoutConfirmation";
 
@@ -13,15 +25,49 @@ const DashboardNavbar = () => {
     const { fixedNavbar, openSideNav } = controller;
     const location = useLocation();
     const pathParts = location.pathname.substring(1).split("/").filter(Boolean);
-    const [layout = "home", page = "", path = "Home", name="Patient's Dashboard"] = pathParts;
+    const [layout = "home", page = "", path = "Home", name = "Patient's Dashboard"] = pathParts;
     const [anchorEl, setAnchorEl] = useState(null);
     const [settingsAnchorEl, setSettingsAnchorEl] = useState(null);
     const handleMenuOpen = (e) => {
         setAnchorEl(e.currentTarget);
     }
     const [logoutDialog, setLogoutDialog] = useState(false);
-
+    const [filteredClinics, setFilteredClinics] = useState([]);
+    const [searchQuery, setSearchQuery] = useState('');
     const navigate = useNavigate();
+
+
+    useEffect(() => {
+        const fetchClinicData = async () => {
+            try {
+                const response = await CMS.get("/CMS/patients-dashboard/filter_search", {
+                    params: {
+                        clinicName: searchQuery,
+                        clinicType: searchQuery,
+                        clinicAddress: searchQuery
+                    }
+                })
+
+                if (response.status === 200) {
+                    setFilteredClinics(response.data.clinics)
+                }
+            } catch (error) {
+                console.error(`Code functionality error for fetching clinic data: ${error}`);
+            }
+        }
+
+        if (searchQuery.length > 2) {
+            fetchClinicData();
+        } else {
+            setFilteredClinics([])
+        }
+    }, [searchQuery])
+
+    const memoizedSearchQueryValue = useMemo(() => searchQuery, [searchQuery])
+    const handleSearchChange = useCallback(async (e) => {
+        const { value } = e.target;
+        setSearchQuery(value);
+    }, [])
 
     const handleLogoutConfirm = async () => {
         try {
@@ -43,7 +89,7 @@ const DashboardNavbar = () => {
     const handleLogout = () => {
         setLogoutDialog(true);
     }
-    
+
     const handleDialogClose = () => {
         setLogoutDialog(false);
     }
@@ -81,7 +127,30 @@ const DashboardNavbar = () => {
                     </Typography>
                 </div>
                 <div className="flex items-center gap-4">
-                    <InputBase placeholder="Search your desired clinic center" className="border px-2 py-1 rounded-md w-full" />
+                    <InputBase
+                        placeholder="Search your desired clinic center"
+                        className="border px-2 py-1 rounded-md w-full"
+                        value={memoizedSearchQueryValue}
+                        name="filterSearch"
+                        onChange={handleSearchChange}
+                    />
+                    <div className="search-results">
+                        {filteredClinics.length > 0 ? (
+                            filteredClinics.map((clinic, index) => (
+                                <div key={index} className="clinic-item">
+                                    <Card key={index} className="clinic-card mb-4" sx={{ width: 300 }}>
+                                        <CardContent>
+                                            <Typography variant="h6">{clinic.clinic_name}</Typography>
+                                            <Typography variant="body2">{clinic.clinic_address}</Typography>
+                                            <Typography variant="body2">{clinic.clinic_type}</Typography>
+                                        </CardContent>
+                                    </Card>
+                                </div>
+                            ))
+                        ) : (
+                            <Typography>No results found</Typography>
+                        )}
+                    </div>
                     <IconButton onClick={handleMenuOpen}>
                         <Notifications />
                     </IconButton>
@@ -119,7 +188,7 @@ const DashboardNavbar = () => {
                     </Menu>
                 </div>
             </Toolbar>
-            <LogoutDialog 
+            <LogoutDialog
                 open={logoutDialog}
                 onClose={handleDialogClose}
                 onConfirm={handleLogoutConfirm}

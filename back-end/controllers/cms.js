@@ -730,6 +730,7 @@ export const createClinic = async (req, res) => {
             password,
             confirmPassword,
             clinicType,
+            clinicPhoneNumber,
             openingDays,
             closingDays,
             openingHours,
@@ -738,18 +739,53 @@ export const createClinic = async (req, res) => {
             clinicId,
         } = req.body;
 
+        const formatTimeToAMPM = (time) => {
+            if (!time) return null;
+
+            // Check if time is already in AM/PM format
+            if (time.includes("AM") || time.includes("PM")) {
+                // Ensure consistent format (e.g., "2:30 PM" instead of "2:30PM")
+                const [timePart, meridian] = time.includes(" ") ?
+                    [time.split(" ")[0], time.split(" ")[1]] :
+                    [time.replace(/[APM]/g, ""), time.match(/[APM]{2}/)[0]];
+
+                // Ensure minutes are present
+                const [hours, minutes] = timePart.includes(":") ?
+                    timePart.split(":") :
+                    [timePart, "00"];
+
+                return `${hours}:${minutes} ${meridian.toUpperCase()}`;
+            }
+
+            // Handle 24-hour format (e.g., "14:30")
+            try {
+                const [hours, minutes] = time.split(":");
+                let hour = parseInt(hours, 10);
+                const ampm = hour >= 12 ? "PM" : "AM";
+
+                // Convert to 12-hour format
+                hour = hour % 12;
+                hour = hour ? hour : 12; // Convert 0 to 12
+
+                return `${hour}:${minutes || "00"} ${ampm}`;
+            } catch (error) {
+                console.error("Error formatting time:", error);
+                return time; // Return original if parsing fails
+            }
+        };
+
         const clinic_name = String(clinicName);
         const clinic_address = String(clinicAddress);
         const clinic_date_open = String(openingDays);
-        const clinic_time_open = String(openingHours);
+        const clinic_time_open = formatTimeToAMPM(String(openingHours));
         const consultation_fee = String(consultationFee);
+        const clinic_PhoneNumber = String(clinicPhoneNumber);
         const email_address = String(clinicEmail);
         const clinic_password = String(password);
         const clinic_confirm_password = String(confirmPassword);
         const clinic_type = String(clinicType);
-        const clinic_image = req.file.path;
         const clinic_close_date = String(closingDays);
-        const clinic_close_time = String(closingHours);
+        const clinic_close_time = formatTimeToAMPM(String(closingHours));
         const clinic_id_field = String(clinicId);
 
         const saltRound = 10;
@@ -757,8 +793,9 @@ export const createClinic = async (req, res) => {
         const hashedConfirmPassword = await bcrypt.hash(clinic_confirm_password, saltRound);
 
         if (!req.file) {
-            return res.status(400).json({ message: 'Please upload a clinic image' });
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Please upload a clinic image' });
         }
+        const clinic_image = req.file.path;
 
         const query = `INSERT INTO clinic (
             clinic_name,
@@ -766,6 +803,7 @@ export const createClinic = async (req, res) => {
             clinic_date_open,
             clinic_time,
             consultation_fee,
+            phoneNumber,
             email,
             password,
             confirm_password,
@@ -774,7 +812,7 @@ export const createClinic = async (req, res) => {
             clinic_close_date,
             clinic_close_time,
             clinic_id_field
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
 
         const [result] = await conn.query(query, [
             clinic_name,
@@ -782,6 +820,7 @@ export const createClinic = async (req, res) => {
             clinic_date_open,
             clinic_time_open,
             consultation_fee,
+            clinic_PhoneNumber,
             email_address,
             hashedPassword,
             hashedConfirmPassword,
@@ -803,6 +842,7 @@ export const createClinic = async (req, res) => {
         });
     } catch (error) {
         console.error(`Failed to create clinic: ${error}`);
+        return res.status(500).json({ message: "Internal server error", error: error.message });
     }
 }
 
@@ -825,5 +865,66 @@ export const getClinics = async (req, res) => {
 
     } catch (error) {
         console.error(`Failed to get clinics: ${error}`);
+    }
+}
+
+export const filterClinicDetails = async (req, res) => {
+    try {
+        const { clinicName, clinicType, clinicAddress } = req.query;
+
+        const clinic_name = String(clinicName)
+        const clinic_type = String(clinicType);
+        const clinic_address = String(clinicAddress);
+
+        let query = `SELECT
+            clinic_name,
+            clinic_address,
+            clinic_type
+            FROM clinic
+        `
+
+        const params = [];
+
+        if (clinicName) {
+            query += `WHERE clinic_name LIKE ?`;
+            params.push(`%${clinic_name}%`);
+        }
+
+        if (clinic_address) {
+            if (params.length > 0) {
+                query += `OR clinic_address LIKE ?`;
+            } else {
+                query += `WHERE clinic_address LIKE ?`
+            }
+            params.push(`%${clinic_address}%`);
+        }
+
+        if (clinic_type) {
+            if (params.length > 0) {
+                query += `OR clinic_type LIKE ?`;
+            } else {
+                query += `WHERE clinic_type LIKE ?`;
+            }
+            params.push(`%${clinic_type}%`);
+        }
+
+        query += `ORDER BY clinic_id ASC`
+
+        const [rows] = await conn.query(query, params);
+
+        if (rows.length === 0) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No filter clinic details"
+            });
+        }
+
+        return res.status(StatusCodes.OK).json({
+            clinics: rows
+        })
+    } catch (error) {
+        console.error(`Failed to filter clinic details: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to filter clinic details"
+        });
     }
 }

@@ -13,7 +13,6 @@ import {
     MedicalServices,
     CalendarMonth,
     AccessTime,
-    AttachMoney
 } from '@mui/icons-material';
 import { useMemo } from 'react';
 import PropTypes from 'prop-types';
@@ -22,6 +21,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 
 const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooking, appointmentData, setAppointmentData, fieldErrors, setFieldErrors, appointmentID }) => {
     const memoizedFirstNameValue = useMemo(() => appointmentData.firstName, [appointmentData.firstName]);
@@ -73,6 +73,30 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
     const preferredDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     const purposeOfAppointment = ["Regular Checkup", "Consultation", "Follow-up", "Emergency", "Urgent Care", "Other"];
 
+    const formatTimeToAMPM = (time) => {
+        if (!time) return "N/A";
+
+        // Check if time is already in AM/PM format
+        if (time.includes("AM") || time.includes("PM")) {
+            return time;
+        }
+
+        try {
+            // Handle 24-hour format (e.g., "14:30")
+            const [hours, minutes] = time.split(":");
+            let hour = parseInt(hours, 10);
+            const ampm = hour >= 12 ? "PM" : "AM";
+
+            // Convert to 12-hour format
+            hour = hour % 12;
+            hour = hour ? hour : 12; // Convert 0 to 12
+
+            return `${hour}:${minutes || "00"} ${ampm}`;
+        } catch (error) {
+            console.error("Error formatting time:", error);
+            return time; // Return original if parsing fails
+        }
+    };
     return (
         <Modal open={!!selectedClinic} onClose={handleCloseModal}>
             <Box className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-8 rounded-2xl shadow-lg w-full max-w-[50vw] max-h-[80vh] overflow-y-auto">
@@ -103,23 +127,27 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
                                 </div>
 
                                 <div className="flex items-center text-gray-700 mb-1">
-                                    <Email className="mr-2 text-blue-600" />
+                                    <Email className="mr-2 text-red-600" />
                                     <Typography variant="body1">{selectedClinic.email}</Typography>
                                 </div>
 
                                 <div className="flex items-center text-gray-700 mb-1">
-                                    <AccessTime className="mr-2 text-blue-600" />
-                                    <Typography variant="body1">Opening Days: {selectedClinic.opening_days || "Monday - Friday"}</Typography>
+                                    <AccessTime className="mr-2 text-black" />
+                                    <Typography variant="body1">
+                                        Opening Days: {selectedClinic.clinic_date_open ? selectedClinic.clinic_date_open : ""} - {selectedClinic.clinic_close_date ? selectedClinic.clinic_close_date : ""}
+                                    </Typography>
                                 </div>
 
                                 <div className="flex items-center text-gray-700 mb-1">
-                                    <AccessTime className="mr-2 text-blue-600" />
-                                    <Typography variant="body1">Opening Hours: {selectedClinic.opening_hours || "9:00 AM - 5:00 PM"}</Typography>
+                                    <AccessTime className="mr-2 text-lime-600" />
+                                    <Typography variant="body1">
+                                        Opening Hours: {formatTimeToAMPM(selectedClinic.clinic_time) ? formatTimeToAMPM(selectedClinic.clinic_time) : ""} - {formatTimeToAMPM(selectedClinic.clinic_close_time) ? formatTimeToAMPM(selectedClinic.clinic_close_time) : ""}
+                                    </Typography>
                                 </div>
 
                                 <div className="flex items-center text-gray-700 mb-1">
-                                    <AttachMoney className="mr-2 text-green-600" />
-                                    <Typography variant="body1">Consultation Fee: ${selectedClinic.consultation_fee || "50"}</Typography>
+                                    <AttachMoneyIcon className="mr-2 text-pink-600" />
+                                    <Typography variant="body1">Consultation Fee: ₱ {selectedClinic.consultation_fee}</Typography>
                                 </div>
 
                                 <div className="flex items-center text-gray-700 mb-1">

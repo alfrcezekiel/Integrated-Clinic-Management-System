@@ -11,12 +11,13 @@ import {
 } from "@mui/material";
 import CMS from "../../API/CMS";
 import LocationOn from "@mui/icons-material/LocationOn";
+import { Phone } from "@mui/icons-material";
 import {
     Clock,
     Mail,
     Stethoscope,
-    DollarSign,
-    Building
+    Building,
+    DollarSign
 } from 'lucide-react';
 import BookingAppointmentModal from "./BookingAppointmentModal";
 
@@ -70,10 +71,36 @@ const ClinicCards = () => {
         }
     }
 
+    const formatTimeToAMPM = (time) => {
+        if (!time) return "N/A";
+
+        // Check if time is already in AM/PM format
+        if (time.includes("AM") || time.includes("PM")) {
+            return time;
+        }
+
+        try {
+            // Handle 24-hour format (e.g., "14:30")
+            const [hours, minutes] = time.split(":");
+            let hour = parseInt(hours, 10);
+            const ampm = hour >= 12 ? "PM" : "AM";
+
+            // Convert to 12-hour format
+            hour = hour % 12;
+            hour = hour ? hour : 12; // Convert 0 to 12
+
+            return `${hour}:${minutes || "00"} ${ampm}`;
+        } catch (error) {
+            console.error("Error formatting time:", error);
+            return time; // Return original if parsing fails
+        }
+    };
+
     useEffect(() => {
         const fetchClinics = async () => {
             try {
                 const response = await CMS.get("/CMS/admin-dashboard/clinics");
+
                 setClinics(response.data.clinics);
                 setLoading(false);
             } catch (error) {
@@ -188,6 +215,12 @@ const ClinicCards = () => {
                                     </span>
                                 </div>
                                 <div className="flex items-center">
+                                    <Phone className="h-6 w-6 text-blue-600 mr-3" />
+                                    <span className="text-gray-800">
+                                        {clinic ? clinic.phoneNumber : ""}
+                                    </span>
+                                </div>
+                                <div className="flex items-center">
                                     <Building className="h-6 w-6 text-blue-600 mr-3" />
                                     <span className="text-gray-800">
                                         {clinic ? clinic.clinic_date_open : "N/A"} - {clinic ? clinic.clinic_close_date : "N/A"}
@@ -195,11 +228,11 @@ const ClinicCards = () => {
                                 </div>
                                 <div className="flex items-center">
                                     <Clock className="h-6 w-6 text-blue-600 mr-3" />
-                                    <span className="text-gray-800">{clinic ? clinic.clinic_time : "N/A"} - {clinic ? clinic.clinic_close_time : "N/A"}</span>
+                                    <span className="text-gray-800">{formatTimeToAMPM(clinic.clinic_time)} - {formatTimeToAMPM(clinic.clinic_close_time)}</span>
                                 </div>
                                 <div className="flex items-center">
                                     <DollarSign className="h-6 w-6 text-blue-600 mr-3" />
-                                    <span className="text-gray-800">{clinic.consultation_fee}</span>
+                                    <span className="text-gray-800">₱ {clinic.consultation_fee}</span>
                                 </div>
                                 <div className="flex items-center">
                                     <Stethoscope className="h-6 w-6 text-blue-600 mr-3" />

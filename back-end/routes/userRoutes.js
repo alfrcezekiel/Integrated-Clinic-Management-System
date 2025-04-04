@@ -19,7 +19,8 @@ import {
     updateDoctorsDetails,
     deleteDoctorsDetails,
     createClinic,
-    getClinics
+    getClinics,
+    filterClinicDetails
 } from "../controllers/cms.js";
 import validateRegister from "../middleware/validation.js";
 import patientsLoginValidation from "../middleware/patientsLoginValidation.js";
@@ -97,5 +98,8 @@ router.post("/admin-dashboard/create-clinic", upload.single("clinicImage"), crea
 
 // router for getting the clinic details in admin dashboard
 router.get("/admin-dashboard/clinics", getClinics);
+
+// router for filtering the clinic details in search field in patient's dashboard
+router.get("/patients-dashboard/filter_search", filterClinicDetails)
 
 export default router;

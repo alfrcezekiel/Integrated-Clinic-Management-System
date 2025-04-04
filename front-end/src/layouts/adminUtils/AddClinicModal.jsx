@@ -18,7 +18,8 @@ import {
     AccessTime,
     AccessAlarm,
     AttachMoney,
-    Business
+    Business,
+    Phone
 } from '@mui/icons-material';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import Person from '@mui/icons-material/Person';
@@ -43,6 +44,7 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
         clinicAddress: "",
         clinicEmail: "",
         clinicImage: null,
+        clinicPhoneNumber: "",
         openingDays: "",
         closingDays: "",
         openingHours: null,
@@ -120,7 +122,7 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
                 const closingTime = dayjs(memoizedFormDataValue.closingHours).format('HH:mm');  // Format the time
                 data.append('closingHours', closingTime)
             }
-
+            data.append("clinicPhoneNumber", memoizedFormDataValue.clinicPhoneNumber);
             data.append("consultationFee", memoizedFormDataValue.consultationFee);
             data.append("clinicType", memoizedFormDataValue.clinicType);
             data.append("clinicId", memoizedFormDataValue.clinicId);
@@ -192,6 +194,24 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
                                     autoComplete="off"
                                     value={memoizedFormDataValue.clinicAddress}
                                     label="Enter Clinic Address"
+                                    variant="outlined"
+                                    onChange={handleFormDataChange}
+                                />
+                            </Box>
+                        </Box>
+                        <Box className="space-y-2">
+                            <Typography variant="subtitle2" className="text-blue-600">Clinic Phone Number</Typography>
+                            <Box className="flex items-center space-x-2">
+                                <Phone color="primary" />
+                                <TextField
+                                    fullWidth
+                                    margin="dense"
+                                    type="text"
+                                    name="clinicPhoneNumber"
+                                    placeholder="Enter Clinic Phone Number"
+                                    autoComplete="off"
+                                    value={memoizedFormDataValue.clinicPhoneNumber}
+                                    label="Enter Clinic Phone Number"
                                     variant="outlined"
                                     onChange={handleFormDataChange}
                                 />

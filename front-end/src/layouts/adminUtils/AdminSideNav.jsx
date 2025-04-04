@@ -66,7 +66,7 @@ const AdminSideNav = ({ brandName, routes }) => {
                         ))}
                     </div>
                 ))}
-                <List className="bg-white shadow-lg rounded-2xl mb-4">
+                <List className="bg-white shadow-lg rounded-2xl">
                     <ListItemButton onClick={handleClinicClick}>
                         <ListItemText primary="Clinic Management" />
                         {createClinicOpen ? <ExpandLess /> : <ExpandMore />}
@@ -89,8 +89,8 @@ const AdminSideNav = ({ brandName, routes }) => {
                         </List>
                     </Collapse>
                 </List>
-                <div className="h-2"></div>
-                <List className="bg-white shadow-lg rounded-2xl mb-4">
+                <div className="h-4"></div>
+                <List className="bg-white shadow-lg rounded-2xl">
                     <ListItemButton onClick={handleDoctorClick}>
                         <ListItemText primary="Doctor Management" />
                         {doctorOpen ? <ExpandLess /> : <ExpandMore />}
