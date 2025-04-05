@@ -4,7 +4,6 @@ import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import "../main.js";
 import bcrypt from "bcrypt";
-import e from 'express';
 dotenv.config();
 
 // controller logic for a global route
@@ -737,6 +736,7 @@ export const createClinic = async (req, res) => {
             closingHours,
             consultationFee,
             clinicId,
+            adminID
         } = req.body;
 
         const formatTimeToAMPM = (time) => {
@@ -787,6 +787,7 @@ export const createClinic = async (req, res) => {
         const clinic_close_date = String(closingDays);
         const clinic_close_time = formatTimeToAMPM(String(closingHours));
         const clinic_id_field = String(clinicId);
+        const admin_id = String(adminID);
 
         const saltRound = 10;
         const hashedPassword = await bcrypt.hash(clinic_password, saltRound);
@@ -811,8 +812,9 @@ export const createClinic = async (req, res) => {
             clinic_image,
             clinic_close_date,
             clinic_close_time,
-            clinic_id_field
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
+            clinic_id_field,
+            created_by
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
 
         const [result] = await conn.query(query, [
             clinic_name,
@@ -828,7 +830,8 @@ export const createClinic = async (req, res) => {
             clinic_image,
             clinic_close_date,
             clinic_close_time,
-            clinic_id_field
+            clinic_id_field,
+            admin_id
         ]);
 
         if (result.affectedRows === 0) {

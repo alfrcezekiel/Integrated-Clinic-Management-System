@@ -29,6 +29,8 @@ const AddClinic = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [refreshing, setRefreshing] = useState(false);
+    const [setFieldErrors] = useState({});
+    
     // Fetch clinics from API
     const fetchClinics = async () => {
         try {
@@ -59,6 +61,7 @@ const AddClinic = () => {
     }
     const handleCloseModal = () => {
         setIsModalOpen(false);
+        setFieldErrors({}); // Clear field errors when modal closes
         // Refresh the clinics list after modal closes
         fetchClinics();
     };

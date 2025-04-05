@@ -56,6 +56,25 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
         confirmPassword: ""
     })
 
+    const [fieldErrors, setFieldErrors] = useState({
+        clinicName: "",
+        clinicAddress: "",
+        clinicEmail: "",
+        clinicImage: null,
+        clinicPhoneNumber: "",
+        openingDays: "",
+        closingDays: "",
+        openingHours: null,
+        closingHours: null,
+        consultationFee: "",
+        clinicType: "",
+        clinicId: "",
+        password: "",
+        confirmPassword: ""
+    })
+
+    const memoizedFieldErrorsValue = useMemo(() => fieldErrors, [fieldErrors]);
+
     const memoizedFormDataValue = useMemo(() => {
         return (
             formData
@@ -115,11 +134,11 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
 
             // Convert time values to a string format (if they exist)
             if (memoizedFormDataValue.openingHours) {
-                const openingTime = dayjs(memoizedFormDataValue.openingHours).format('HH:mm');  // Format the time
+                const openingTime = dayjs(memoizedFormDataValue.openingHours).format('hh:mm A');  // Format the time
                 data.append('openingHours', openingTime);
             }
             if (memoizedFormDataValue.closingHours) {
-                const closingTime = dayjs(memoizedFormDataValue.closingHours).format('HH:mm');  // Format the time
+                const closingTime = dayjs(memoizedFormDataValue.closingHours).format('hh:mm A');  // Format the time
                 data.append('closingHours', closingTime)
             }
             data.append("clinicPhoneNumber", memoizedFormDataValue.clinicPhoneNumber);
@@ -128,7 +147,7 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
             data.append("clinicId", memoizedFormDataValue.clinicId);
             data.append("password", memoizedFormDataValue.password);
             data.append("confirmPassword", memoizedFormDataValue.confirmPassword);
-
+            data.append("adminID", localStorage.getItem("sid"))
             const response = await CMS.post("/CMS/admin-dashboard/create-clinic", data, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
@@ -136,12 +155,65 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
                 }
             });
 
-            if (response.status === 200) {
+            if (response.data && response.status === 200) {
+                setFieldErrors({
+                    clinicName: "",
+                    clinicAddress: "",
+                    clinicEmail: "",
+                    clinicImage: null,
+                    clinicPhoneNumber: "",
+                    openingDays: "",
+                    closingDays: "",
+                    openingHours: null,
+                    closingHours: null,
+                    consultationFee: "",
+                    clinicType: "",
+                    clinicId: "",
+                    password: "",
+                    confirmPassword: ""
+                });
                 alert("Clinic registered successfully");
+                setFormData({
+                    clinicName: "",
+                    clinicAddress: "",
+                    clinicEmail: "",
+                    clinicImage: null,
+                    clinicPhoneNumber: "",
+                    openingDays: "",
+                    closingDays: "",
+                    openingHours: null,
+                    closingHours: null,
+                    consultationFee: "",
+                    clinicType: "",
+                    clinicId: "",
+                    password: "",
+                    confirmPassword: ""
+                })
                 onClose()
+            } else {
+                setFormData({
+                    clinicName: "",
+                    clinicAddress: "",
+                    clinicEmail: "",
+                    clinicImage: null,
+                    clinicPhoneNumber: "",
+                    openingDays: "",
+                    closingDays: "",
+                    openingHours: null,
+                    closingHours: null,
+                    consultationFee: "",
+                    clinicType: "",
+                    clinicId: "",
+                    password: "",
+                    confirmPassword: ""
+                })
             }
         } catch (error) {
-            console.log(`Error in clinic registration: ${error}`)
+            if (error.response || error.response.data.status === 400) {
+                setFieldErrors(error.response.data.errors);
+            } else {
+                console.log(`Error in clinic registration: ${error}`)
+            }
         }
     }, [memoizedFormDataValue, onClose])
 
@@ -178,6 +250,8 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
                                     placeholder="Enter Clinic Name"
                                     value={memoizedFormDataValue.clinicName}
                                     onChange={handleFormDataChange}
+                                    error={Boolean(memoizedFieldErrorsValue.clinicName)}
+                                    helperText={memoizedFieldErrorsValue.clinicName ? memoizedFieldErrorsValue.clinicName : ""}
                                 />
                             </Box>
                         </Box>
@@ -196,6 +270,8 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
                                     label="Enter Clinic Address"
                                     variant="outlined"
                                     onChange={handleFormDataChange}
+                                    error={Boolean(memoizedFieldErrorsValue.clinicAddress)}
+                                    helperText={memoizedFieldErrorsValue.clinicAddress ? memoizedFieldErrorsValue.clinicAddress : ""}
                                 />
                             </Box>
                         </Box>
@@ -206,7 +282,7 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
                                 <TextField
                                     fullWidth
                                     margin="dense"
-                                    type="text"
+                                    type="number"
                                     name="clinicPhoneNumber"
                                     placeholder="Enter Clinic Phone Number"
                                     autoComplete="off"
@@ -214,6 +290,8 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
                                     label="Enter Clinic Phone Number"
                                     variant="outlined"
                                     onChange={handleFormDataChange}
+                                    error={Boolean(memoizedFieldErrorsValue.clinicPhoneNumber)}
+                                    helperText={memoizedFieldErrorsValue.clinicPhoneNumber ? memoizedFieldErrorsValue.clinicPhoneNumber : ""}
                                 />
                             </Box>
                         </Box>
@@ -232,6 +310,8 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
                                     onChange={handleFormDataChange}
                                     name="clinicEmail"
                                     value={memoizedFormDataValue.clinicEmail}
+                                    error={Boolean(memoizedFieldErrorsValue.clinicEmail)}
+                                    helperText={memoizedFieldErrorsValue.clinicEmail ? memoizedFieldErrorsValue.clinicEmail : ""}
                                 />
                             </Box>
                         </Box>
@@ -252,6 +332,11 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
                                 {fileName && (
                                     <Typography variant="body2" className="text-blue-500">
                                         {fileName}
+                                    </Typography>
+                                )}
+                                {memoizedFieldErrorsValue.clinicImage && (
+                                    <Typography variant="body2" className="text-red-500">
+                                        {memoizedFieldErrorsValue.clinicImage}
                                     </Typography>
                                 )}
                             </Box>
@@ -278,6 +363,8 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
                                     label="Select Opening Days"
                                     variant="outlined"
                                     margin="dense"
+                                    error={Boolean(memoizedFieldErrorsValue.openingDays)}
+                                    helperText={memoizedFieldErrorsValue.openingDays ? memoizedFieldErrorsValue.openingDays : ""}
                                 >
                                     {preferredOpeningDays.map((day) => (
                                         <MenuItem key={day} value={day}>{day}</MenuItem>
@@ -299,6 +386,8 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
                                     label="Select Closing Days"
                                     variant="outlined"
                                     margin="dense"
+                                    error={Boolean(memoizedFieldErrorsValue.closingDays)}
+                                    helperText={memoizedFieldErrorsValue.closingDays ? memoizedFieldErrorsValue.closingDays : ""}
                                 >
                                     {preferredOpeningDays.map((day) => (
                                         <MenuItem key={day} value={day}>{day}</MenuItem>
@@ -317,14 +406,24 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
                                             value={memoizedFormDataValue.openingHours}
                                             name="openingHours"
                                             className='w-screen'
+                                            ampm
                                             onChange={(value) => handleFormDataChange(value, "openingHours")}
                                             renderinput={(params) =>
                                                 <TextField
                                                     fullWidth
                                                     margin="dense"
+                                                    error={Boolean(memoizedFieldErrorsValue.openingHours)}
+                                                    helperText={memoizedFieldErrorsValue.openingHours ? memoizedFieldErrorsValue.openingHours : ""}
                                                     {...params}
                                                 />
                                             }
+                                            slotProps={{
+                                                textField: {
+                                                    margin: "dense",
+                                                    error: Boolean(memoizedFieldErrorsValue.openingHours),
+                                                    helperText: memoizedFieldErrorsValue.openingHours ? memoizedFieldErrorsValue.openingHours : ""
+                                                }
+                                            }}
                                         />
                                     </DemoContainer>
                                 </LocalizationProvider>
@@ -341,6 +440,7 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
                                             label="Select Closing Hours"
                                             value={memoizedFormDataValue.closingHours}
                                             name="closingHours"
+                                            ampm
                                             onChange={(value) => handleFormDataChange(value, "closingHours")}
                                             renderinput={(params) =>
                                                 <TextField
@@ -349,6 +449,13 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
                                                     {...params}
                                                 />
                                             }
+                                            slotProps={{
+                                                textField: {
+                                                    margin: "dense",
+                                                    error: Boolean(memoizedFieldErrorsValue.closingHours),
+                                                    helperText: memoizedFieldErrorsValue.closingHours ? memoizedFieldErrorsValue.closingHours : ""
+                                                }
+                                            }}
                                         />
                                     </DemoContainer>
                                 </LocalizationProvider>
@@ -368,6 +475,8 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
                                     value={memoizedFormDataValue.consultationFee}
                                     select
                                     onChange={handleFormDataChange}
+                                    error={Boolean(memoizedFieldErrorsValue.consultationFee)}
+                                    helperText={memoizedFieldErrorsValue.consultationFee ? memoizedFieldErrorsValue.consultationFee : ""}
                                 >
                                     {consultationFee.map((fee) => (
                                         <MenuItem key={fee} value={fee}>{fee}</MenuItem>
@@ -389,6 +498,8 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
                                     label="Enter Clinic Type"
                                     variant="outlined"
                                     margin="dense"
+                                    error={Boolean(memoizedFieldErrorsValue.clinicType)}
+                                    helperText={memoizedFieldErrorsValue.clinicType ? memoizedFieldErrorsValue.clinicType : ""}
                                 >
                                     {clinicTypes.map((type) => (
                                         <MenuItem key={type} value={type}>{type}</MenuItem>
@@ -416,6 +527,8 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
                                     placeholder="Enter Clinic ID"
                                     value={memoizedFormDataValue.clinicId}
                                     variant="outlined"
+                                    error={Boolean(memoizedFieldErrorsValue.clinicId)}
+                                    helperText={memoizedFieldErrorsValue.clinicId ? memoizedFieldErrorsValue.clinicId : ""}
                                 />
                             </Box>
                         </Box>
@@ -434,6 +547,8 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
                                     type={showPassword ? 'text' : 'password'}
                                     label={"Enter Password"}
                                     onChange={handleFormDataChange}
+                                    error={Boolean(memoizedFieldErrorsValue.password)}
+                                    helperText={memoizedFieldErrorsValue.password ? memoizedFieldErrorsValue.password : ""}
                                     InputProps={{
                                         endAdornment: (
                                             <InputAdornment position="end">
@@ -459,8 +574,10 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
                                     value={memoizedFormDataValue.confirmPassword}
                                     onChange={handleFormDataChange}
                                     variant="outlined"
-                                    type={confirmShowPassword ? 'text' : 'password'}
-                                    label={"Enter Password"}
+                                    type={confirmShowPassword ? 'text' : 'password'} s
+                                    label="Enter Password"
+                                    error={Boolean(memoizedFieldErrorsValue.confirmPassword)}
+                                    helperText={memoizedFieldErrorsValue.confirmPassword ? memoizedFieldErrorsValue.confirmPassword : ""}
                                     InputProps={{
                                         endAdornment: (
                                             <InputAdornment position="end">
