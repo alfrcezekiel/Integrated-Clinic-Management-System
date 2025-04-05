@@ -24,7 +24,9 @@ const ClinicCard = ({ clinic, onViewDetails, onEditClinic }) => {
             "Urgent Care": "#f44336",
             "Specialty Clinic": "#673ab7",
             "General Clinic" :  "#607d8b",
-            "Specialist Clinic": "#3f51b5"
+            "Specialist Clinic": "#3f51b5",
+            "Dermatology Clinic": "#9c27b0",
+            "Psychiatry Clinic": "#f44336",
         };
         return colors[type] || "#757575";
     };
@@ -126,11 +128,11 @@ const ClinicCard = ({ clinic, onViewDetails, onEditClinic }) => {
                         </Typography>
                     </Box>
 
-                    {clinic.phone && (
+                    {clinic.phoneNumber && (
                         <Box className="flex items-center">
                             <PhoneIcon className="text-gray-500 mr-2" fontSize="small" />
                             <Typography variant="body2" className="text-gray-600">
-                                {clinic.phone}
+                                {clinic.phoneNumber}
                             </Typography>
                         </Box>
                     )}
@@ -171,7 +173,7 @@ ClinicCard.propTypes = {
         clinic_id: PropTypes.string.isRequired,
         clinic_name: PropTypes.string.isRequired,
         email: PropTypes.string.isRequired,
-        phone: PropTypes.string,
+        phoneNumber: PropTypes.string,
         clinic_address: PropTypes.string,
         clinic_date_open: PropTypes.string,
         clinic_close_date: PropTypes.string,

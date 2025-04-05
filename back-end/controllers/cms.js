@@ -858,18 +858,21 @@ export const createClinic = async (req, res) => {
 export const getClinics = async (req, res) => {
     try {
         const query = `SELECT
+            clinic_id,
             clinic_name,
             clinic_address,
+            clinic_date_open,
+            clinic_time,
+            consultation_fee,
             clinic_type,
             phoneNumber,
             email,
             clinic_type,
             clinic_image,
             clinic_close_date,
-            clinic_close_time,
-            clinic_id
+            clinic_close_time
             FROM clinic
-            ORDER BY clinic_name ASC;`;
+        `;
 
         const [rows] = await conn.query(query);
 
