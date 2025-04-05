@@ -134,6 +134,7 @@ const ClinicCards = () => {
             const payload = {
                 ...appointmentData,
                 patientID: appointmentID,
+                clinicID: selectedClinic.clinic_id,
             }
 
             const response = await CMS.post("/CMS/patientsDashboard/patientsBookedAppointments", payload);

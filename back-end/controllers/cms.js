@@ -338,8 +338,11 @@ export const patientsBookedAppointments = async (req, res) => {
             gender,
             preferredDays,
             preferredTime,
-            purposeOfAppointment
+            purposeOfAppointment,
+            clinicID
         } = req.body;
+
+        const clinic_id = String(clinicID);
 
         const query = `INSERT INTO patientsappointment (
             patientID,
@@ -351,8 +354,9 @@ export const patientsBookedAppointments = async (req, res) => {
             gender,
             preferredDays,
             preferredTime,
-            purposeOfAppointment
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
+            purposeOfAppointment,
+            clinic_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
 
         const [result] = await conn.query(query, [
             patientID,
@@ -364,7 +368,8 @@ export const patientsBookedAppointments = async (req, res) => {
             gender,
             preferredDays,
             preferredTime,
-            purposeOfAppointment
+            purposeOfAppointment,
+            clinic_id
         ]);
 
         if (result.affectedRows === 0) {
@@ -385,7 +390,7 @@ export const patientsBookedAppointments = async (req, res) => {
     }
 }
 
-// verify a token to protect routes 
+// verify a token to protect routes
 export const verifyToken = (req, res, next) => {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) {
@@ -852,7 +857,19 @@ export const createClinic = async (req, res) => {
 // controller logic for getting the list of clinics in the admin dashboard
 export const getClinics = async (req, res) => {
     try {
-        const query = `SELECT * FROM clinic ORDER BY clinic_id ASC;`;
+        const query = `SELECT
+            clinic_name,
+            clinic_address,
+            clinic_type,
+            phoneNumber,
+            email,
+            clinic_type,
+            clinic_image,
+            clinic_close_date,
+            clinic_close_time,
+            clinic_id
+            FROM clinic
+            ORDER BY clinic_name ASC;`;
 
         const [rows] = await conn.query(query);
 
