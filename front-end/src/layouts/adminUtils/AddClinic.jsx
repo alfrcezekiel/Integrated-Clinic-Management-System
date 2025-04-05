@@ -29,8 +29,39 @@ const AddClinic = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [refreshing, setRefreshing] = useState(false);
-    const [setFieldErrors] = useState({});
-    
+    const [formData, setFormData] = useState({
+        clinicName: "",
+        clinicAddress: "",
+        clinicEmail: "",
+        clinicImage: null,
+        clinicPhoneNumber: "",
+        openingDays: "",
+        closingDays: "",
+        openingHours: null,
+        closingHours: null,
+        consultationFee: "",
+        clinicType: "",
+        clinicId: "",
+        password: "",
+        confirmPassword: ""
+    })
+    const [fieldErrors, setFieldErrors] = useState({
+        clinicName: "",
+        clinicAddress: "",
+        clinicEmail: "",
+        clinicImage: null,
+        clinicPhoneNumber: "",
+        openingDays: "",
+        closingDays: "",
+        openingHours: null,
+        closingHours: null,
+        consultationFee: "",
+        clinicType: "",
+        clinicId: "",
+        password: "",
+        confirmPassword: ""
+    })
+
     // Fetch clinics from API
     const fetchClinics = async () => {
         try {
@@ -61,7 +92,39 @@ const AddClinic = () => {
     }
     const handleCloseModal = () => {
         setIsModalOpen(false);
-        setFieldErrors({}); // Clear field errors when modal closes
+        setFieldErrors({
+            clinicName: "",
+            clinicAddress: "",
+            clinicEmail: "",
+            clinicImage: null,
+            clinicPhoneNumber: "",
+            openingDays: "",
+            closingDays: "",
+            openingHours: null,
+            closingHours: null,
+            consultationFee: "",
+            clinicType: "",
+            clinicId: "",
+            password: "",
+            confirmPassword: ""
+        });
+        setFormData({
+            clinicName: "",
+            clinicAddress: "",
+            clinicEmail: "",
+            clinicImage: null,
+            clinicPhoneNumber: "",
+            openingDays: "",
+            closingDays: "",
+            openingHours: null,
+            closingHours: null,
+            consultationFee: "",
+            clinicType: "",
+            clinicId: "",
+            password: "",
+            confirmPassword: ""
+        })
+        // Clear field errors when modal closes
         // Refresh the clinics list after modal closes
         fetchClinics();
     };
@@ -249,6 +312,10 @@ const AddClinic = () => {
             <ClinicRegistrationModal
                 open={isModalOpen}
                 onClose={handleCloseModal}
+                fieldErrors={fieldErrors}
+                setFieldErrors={setFieldErrors}
+                formData={formData}
+                setFormData={setFormData}
             />
         </Container>
     );

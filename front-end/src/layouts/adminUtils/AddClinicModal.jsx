@@ -37,41 +37,24 @@ import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import CMS from "../../API/CMS";
 import dayjs from 'dayjs';
 
-const ClinicRegistrationModal = ({ open, onClose, }) => {
+const ClinicRegistrationModal = ({ open, onClose, fieldErrors, setFieldErrors, formData, setFormData }) => {
     const [fileName, setFileName] = useState('');
-    const [formData, setFormData] = useState({
-        clinicName: "",
-        clinicAddress: "",
-        clinicEmail: "",
-        clinicImage: null,
-        clinicPhoneNumber: "",
-        openingDays: "",
-        closingDays: "",
-        openingHours: null,
-        closingHours: null,
-        consultationFee: "",
-        clinicType: "",
-        clinicId: "",
-        password: "",
-        confirmPassword: ""
-    })
-
-    const [fieldErrors, setFieldErrors] = useState({
-        clinicName: "",
-        clinicAddress: "",
-        clinicEmail: "",
-        clinicImage: null,
-        clinicPhoneNumber: "",
-        openingDays: "",
-        closingDays: "",
-        openingHours: null,
-        closingHours: null,
-        consultationFee: "",
-        clinicType: "",
-        clinicId: "",
-        password: "",
-        confirmPassword: ""
-    })
+    // const [formData, setFormData] = useState({
+    //     clinicName: "",
+    //     clinicAddress: "",
+    //     clinicEmail: "",
+    //     clinicImage: null,
+    //     clinicPhoneNumber: "",
+    //     openingDays: "",
+    //     closingDays: "",
+    //     openingHours: null,
+    //     closingHours: null,
+    //     consultationFee: "",
+    //     clinicType: "",
+    //     clinicId: "",
+    //     password: "",
+    //     confirmPassword: ""
+    // })
 
     const memoizedFieldErrorsValue = useMemo(() => fieldErrors, [fieldErrors]);
 
@@ -94,9 +77,17 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
                 [field]: e
             }));
         }
-    }, []);
 
-    const handleFileChange = (event) => {
+        const { name } = e.target;
+        if (fieldErrors[name]) {
+            setFieldErrors((prev) => ({
+                ...prev,
+                [name]: null
+            }));
+        }
+    }, [fieldErrors, setFieldErrors, setFormData]);
+
+    const handleFileChange = useCallback((event) => {
         const file = event.target.files[0];
         if (file) {
             setFileName(file.name);
@@ -105,7 +96,15 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
                 clinicImage: file,
             }));
         }
-    };
+
+        if (memoizedFieldErrorsValue.clinicImage) {
+            setFieldErrors((prev) => ({
+                ...prev,
+                clinicImage: ""
+            }));
+        }
+    }, [memoizedFieldErrorsValue.clinicImage, setFieldErrors, setFormData]);
+
     const [showPassword, setShowPassword] = useState(false);
     const [confirmShowPassword, setConfirmShowPassword] = useState(false);
 
@@ -190,23 +189,6 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
                     confirmPassword: ""
                 })
                 onClose()
-            } else {
-                setFormData({
-                    clinicName: "",
-                    clinicAddress: "",
-                    clinicEmail: "",
-                    clinicImage: null,
-                    clinicPhoneNumber: "",
-                    openingDays: "",
-                    closingDays: "",
-                    openingHours: null,
-                    closingHours: null,
-                    consultationFee: "",
-                    clinicType: "",
-                    clinicId: "",
-                    password: "",
-                    confirmPassword: ""
-                })
             }
         } catch (error) {
             if (error.response || error.response.data.status === 400) {
@@ -215,7 +197,16 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
                 console.log(`Error in clinic registration: ${error}`)
             }
         }
-    }, [memoizedFormDataValue, onClose])
+    }, [memoizedFormDataValue, onClose, setFieldErrors, setFormData]);
+
+    const handleClose = useCallback(() => {
+        onClose();
+        setFileName('');
+        setFieldErrors(prev => ({
+            ...prev,
+            clinicImage: ""
+        }));
+    }, [onClose, setFieldErrors]);
 
     const preferredOpeningDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
     const consultationFee = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000];
@@ -329,11 +320,9 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
                                         name="clinicImage"
                                     />
                                 </Button>
-                                {fileName && (
-                                    <Typography variant="body2" className="text-blue-500">
-                                        {fileName}
-                                    </Typography>
-                                )}
+                                <Typography variant="body2" className="text-blue-500">
+                                    {fileName}
+                                </Typography>
                                 {memoizedFieldErrorsValue.clinicImage && (
                                     <Typography variant="body2" className="text-red-500">
                                         {memoizedFieldErrorsValue.clinicImage}
@@ -420,6 +409,7 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
                                             slotProps={{
                                                 textField: {
                                                     margin: "dense",
+                                                    name: "openingHours",
                                                     error: Boolean(memoizedFieldErrorsValue.openingHours),
                                                     helperText: memoizedFieldErrorsValue.openingHours ? memoizedFieldErrorsValue.openingHours : ""
                                                 }
@@ -452,6 +442,7 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
                                             slotProps={{
                                                 textField: {
                                                     margin: "dense",
+                                                    name: "closingHours",
                                                     error: Boolean(memoizedFieldErrorsValue.closingHours),
                                                     helperText: memoizedFieldErrorsValue.closingHours ? memoizedFieldErrorsValue.closingHours : ""
                                                 }
@@ -574,7 +565,7 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
                                     value={memoizedFormDataValue.confirmPassword}
                                     onChange={handleFormDataChange}
                                     variant="outlined"
-                                    type={confirmShowPassword ? 'text' : 'password'} s
+                                    type={confirmShowPassword ? 'text' : 'password'}
                                     label="Enter Password"
                                     error={Boolean(memoizedFieldErrorsValue.confirmPassword)}
                                     helperText={memoizedFieldErrorsValue.confirmPassword ? memoizedFieldErrorsValue.confirmPassword : ""}
@@ -595,8 +586,19 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
 
                 {/* Action Buttons */}
                 <DialogActions>
-                    <Button onClick={onClose} variant="outlined">Cancel</Button>
-                    <Button variant="contained" color="primary" type="submit">Register Clinic</Button>
+                    <Button
+                        onClick={handleClose}
+                        variant="outlined"
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        type="submit"
+                    >
+                        Register Clinic
+                    </Button>
                 </DialogActions>
             </form>
         </Dialog>
@@ -605,10 +607,10 @@ const ClinicRegistrationModal = ({ open, onClose, }) => {
 
 ClinicRegistrationModal.propTypes = {
     open: Proptypes.bool.isRequired,
-    openingHours: Proptypes.object.isRequired,
-    setOpeningHours: Proptypes.func.isRequired,
-    closingHours: Proptypes.object.isRequired,
-    setClosingHours: Proptypes.func.isRequired,
-    onClose: Proptypes.func.isRequired
+    fieldErrors: Proptypes.object.isRequired,
+    setFieldErrors: Proptypes.func.isRequired,
+    onClose: Proptypes.func.isRequired,
+    formData: Proptypes.object.isRequired,
+    setFormData: Proptypes.func.isRequired,
 }
 export default ClinicRegistrationModal;
