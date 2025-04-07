@@ -87,11 +87,13 @@ export const loginPatientsAccount = async (req, res) => {
 
         const query = `SELECT
             patientsregisteraccount1.patientID,
+            patientsregisteraccount1.firstName,
+            patientsregisteraccount1.lastName,
             patientsregisteraccount1.email,
             patientsregisteraccount2.password
             FROM patientsregisteraccount1
             INNER JOIN patientsregisteraccount2
-            ON patientsregisteraccount1.patientID = patientsregisteraccount2.registerPatientID 
+            ON patientsregisteraccount1.patientID = patientsregisteraccount2.registerPatientID
             WHERE patientsregisteraccount1.email = ?;
         `;
 
@@ -118,6 +120,9 @@ export const loginPatientsAccount = async (req, res) => {
         // session token
         const s = req.session.user = {
             patientID: patients.patientID,
+            sfn: patients.firstName,
+            sln: patients.lastName,
+            sem: patients.email
         }
 
         return res.status(StatusCodes.OK).json({
@@ -444,6 +449,7 @@ export const getBookedAppointmentsToDisplayInDoctorsDashboard = async (req, res)
             lastName,
             email,
             appointmentDate,
+            gender,
             phoneNumber,
             status,
             purposeOfAppointment
@@ -480,7 +486,6 @@ export const updatePatientsAppointments = async (req, res) => {
             appointmentDate,
             phoneNumber,
             gender,
-            doctor,
             status,
             purposeOfAppointment
         } = req.body;
@@ -497,7 +502,6 @@ export const updatePatientsAppointments = async (req, res) => {
                 appointmentDate = ?,
                 phoneNumber = ?,
                 gender = ?,
-                doctor = ?,
                 status = ?,
                 purposeOfAppointment = ?
             WHERE appointmentID = ?;
@@ -511,7 +515,6 @@ export const updatePatientsAppointments = async (req, res) => {
             appointmentDate,
             phoneNumber,
             gender,
-            doctor,
             status,
             purposeOfAppointment,
             appointmentID
@@ -946,9 +949,19 @@ export const filterClinicDetails = async (req, res) => {
 }
 
 // controller logic for getting the patients pending status in patients dashboard
-export const getPatientPendingStatus = async (_req, res) => {
+export const getPatientPendingStatus = async (req, res) => {
     try {
         const status = "Pending";
+
+        const {email} = req.params
+
+        if(!email){
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Please enter a valid email address"
+            })
+        }
+
+        const emailAddress = String(email)
 
         const query = `
             SELECT
@@ -963,12 +976,12 @@ export const getPatientPendingStatus = async (_req, res) => {
             patientsappointment.purposeOfAppointment
             FROM patientsappointment
             INNER JOIN clinic ON patientsappointment.clinic_id = clinic.clinic_id
-            WHERE patientsappointment.status = ?;
+            WHERE patientsappointment.status = ? AND patientsappointment.email = ?;
         `
 
-        const [rows] = await conn.query(query, [status]);
+        const [rows] = await conn.query(query, [status, emailAddress]);
 
-        if(rows.length === 0) {
+        if (rows.length === 0) {
             return res.status(StatusCodes.NOT_FOUND).json({
                 message: "No pending status found"
             });

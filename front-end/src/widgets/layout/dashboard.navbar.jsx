@@ -77,6 +77,9 @@ const DashboardNavbar = () => {
             } else {
                 localStorage.removeItem("authToken");
                 localStorage.removeItem("sid")
+                localStorage.removeItem("sfn")
+                localStorage.removeItem("sln")
+                localStorage.removeItem("sem")
                 navigate("/cms");
             }
         } catch (error) {

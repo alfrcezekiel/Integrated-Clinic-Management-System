@@ -67,6 +67,7 @@ const PendingStatusAppointmentTable = ({ retrievedAppointmentsData }) => {
             return time;
         }
     };
+    
     const memoizedTableRows = useMemo(() => {
         const statusMatch = ["Approved", "Declined", "Pending", "Consulted"];
 

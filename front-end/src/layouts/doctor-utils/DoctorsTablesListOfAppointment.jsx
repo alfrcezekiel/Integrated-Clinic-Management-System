@@ -40,7 +40,6 @@ const DoctorsTablesListOfAppointments = () => {
         appointmentDate: "",
         phoneNumber: "",
         gender: "",
-        doctor: "",
         status: "",
         purposeOfAppointment: "",
     })
@@ -52,7 +51,6 @@ const DoctorsTablesListOfAppointments = () => {
         'Appointment Date',
         "Phone Number",
         "Gender",
-        'Doctor',
         'Status',
         'Purpose of Appointment',
         "Edit"
@@ -66,7 +64,6 @@ const DoctorsTablesListOfAppointments = () => {
         appointmentDate: "",
         phoneNumber: "",
         gender: "",
-        doctor: "",
         status: "",
         purposeOfAppointment: "",
     });
@@ -97,7 +94,6 @@ const DoctorsTablesListOfAppointments = () => {
             appointmentDate: formatDate(appointment.appointmentDate),
             phoneNumber: appointment.phoneNumber,
             gender: appointment.gender,
-            doctor: appointment.doctor,
             status: appointment.status,
             purposeOfAppointment: appointment.purposeOfAppointment,
         });
@@ -107,7 +103,7 @@ const DoctorsTablesListOfAppointments = () => {
     const location = useLocation();
     useEffect(() => {
         const titleHeader = () => {
-            document.title = "Doctor's Dashboard | Patient's Appointment | CMS"
+            document.title = "Clinic's Dashboard | Patient's Appointment | CMS"
         }
         titleHeader();
 
@@ -142,7 +138,7 @@ const DoctorsTablesListOfAppointments = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            if (formData.status === "Scheduled") {
+            if (formData.status === "Approved") {
                 formData.appointmentDate = new Date(formData.appointmentDate).toISOString().split("T")[0];
             }
 
@@ -203,6 +199,8 @@ const DoctorsTablesListOfAppointments = () => {
                 return "bg-gray-100 text-gray-600"
         }
     }
+
+    const status = ["Approved", "Declined", "Pending", "Consulted"];
 
     return (
         <>
@@ -272,11 +270,6 @@ const DoctorsTablesListOfAppointments = () => {
                                         <TableCell align="center">
                                             <Typography variant="body2" className="text-blue-gray-900">
                                                 {appointment.gender}
-                                            </Typography>
-                                        </TableCell>
-                                        <TableCell align="center">
-                                            <Typography variant="body2" className="text-blue-gray-900">
-                                                {appointment.doctor}
                                             </Typography>
                                         </TableCell>
                                         <TableCell align="center">
@@ -382,16 +375,6 @@ const DoctorsTablesListOfAppointments = () => {
                             </Select>
                             {fieldsError.gender && <FormHelperText error>{fieldsError.gender}</FormHelperText>}
                         </FormControl>
-                        <TextField
-                            margin="dense"
-                            label="Doctor"
-                            type="text"
-                            fullWidth
-                            value={formData.doctor}
-                            onChange={(e) => setFormData({ ...formData, doctor: e.target.value })}
-                            error={Boolean(fieldsError.doctor)}
-                            helperText={fieldsError.doctor ? fieldsError.doctor : ""}
-                        />
                         <FormControl fullWidth margin="dense" error={Boolean(fieldsError.status)}>
                             <InputLabel>Status</InputLabel>
                             <Select
@@ -399,9 +382,11 @@ const DoctorsTablesListOfAppointments = () => {
                                 onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                                 label="Status"
                             >
-                                <MenuItem value="Pending">Pending</MenuItem>
-                                <MenuItem value="Scheduled">Scheduled</MenuItem>
-                                <MenuItem value="Cancelled">Cancelled</MenuItem>
+                                {status.map((status, i) => (
+                                    <MenuItem key={i} value={status}>
+                                        {status}
+                                    </MenuItem>
+                                ))}
                             </Select>
                             {fieldsError.status && <FormHelperText error>{fieldsError.status}</FormHelperText>}
                         </FormControl>

@@ -25,12 +25,14 @@ const PendingAppointmentTable = () => {
         'Purpose of Appointment',
     ]
 
+    const patientEmail = localStorage.getItem("sem");
+
     const [retrievedAppointmentsData, setRetrievedAppointmentsData] = useState([]);
 
     useEffect(() => {
         const retrievePendingStatus = async () => {
             try {
-                const response = await CMS.get("/CMS/patients-dashboard/getPatientPendingStatus", {
+                const response = await CMS.get(`/CMS/patients-dashboard/getPatientPendingStatus/${patientEmail}`, {
                     headers: {
                         "Content-Type": "application/json",
                     },
@@ -47,7 +49,7 @@ const PendingAppointmentTable = () => {
             }
         }
         retrievePendingStatus();
-    }, []);
+    }, [patientEmail]);
 
     return (
         <>

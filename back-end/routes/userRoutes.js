@@ -106,7 +106,7 @@ router.get("/admin-dashboard/clinics", getClinics);
 router.get("/patients-dashboard/filter_search", filterClinicDetails)
 
 // router for getting the pending status of the patients appointments
-router.get("/patients-dashboard/getPatientPendingStatus", getPatientPendingStatus);
+router.get("/patients-dashboard/getPatientPendingStatus/:email", getPatientPendingStatus);
 
 router.post("/clinicLoggedInAccount", [doctorsLoginValidation], loggedInClinicAccount);
 
