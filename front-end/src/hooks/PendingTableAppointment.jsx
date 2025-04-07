@@ -8,8 +8,8 @@ import {
 } from "@mui/material";
 
 // This component is used to rende  r the table rows for the appointments table
-const AppointmentsTable = ({ retrievedAppointmentsData }) => {
-    
+const PendingStatusAppointmentTable = ({ retrievedAppointmentsData }) => {
+
     // This function is used to format the date string to a more readable format
     const formatDate = (dateString) => {
         const date = new Date(dateString);
@@ -19,24 +19,24 @@ const AppointmentsTable = ({ retrievedAppointmentsData }) => {
             day: "numeric"
         })
     };
-    
+
     // function to determine  the color of patients status
     const getStatusColor = (status) => {
         switch (status) {
             case "Approved":
                 return "text-green-600 bg-green-100";
-                case "Declined":
-                    return "text-red-600 bg-red-100";
+            case "Declined":
+                return "text-red-600 bg-red-100";
             case "Pending":
                 return "text-black bg-yellow-300";
             case "Consulted":
                 return "text-black bg-blue-100";
-                default:
+            default:
                 return "text-gray-600 bg-gray-100";
         }
     }
-    
-    
+
+
     // function to determine the color of the appointment date to match the status
     const getAppointmentDateColor = (status) => {
         switch (status) {
@@ -44,19 +44,19 @@ const AppointmentsTable = ({ retrievedAppointmentsData }) => {
                 return "text-green-600 bg-green-100";
             case "Declined":
                 return "text-red-600 bg-red-100";
-                case "Pending":
-                    return "text-black bg-yellow-300";
+            case "Pending":
+                return "text-black bg-yellow-300";
             case "Consulted":
                 return "text-black bg-blue-100";
-                default:
-                    return "text-gray-600 bg-gray-100";
-                }
-            }
-    
-            const formatTimeToAMPM = (time) => {
-                if (!time) return "N/A";
+            default:
+                return "text-gray-600 bg-gray-100";
+        }
+    }
+
+    const formatTimeToAMPM = (time) => {
+        if (!time) return "N/A";
         if (time.includes("AM") || time.includes("PM")) return time;
-        
+
         try {
             const [hours, minutes] = time.split(":");
             let hour = parseInt(hours, 10);
@@ -69,10 +69,15 @@ const AppointmentsTable = ({ retrievedAppointmentsData }) => {
     };
     const memoizedTableRows = useMemo(() => {
         const statusMatch = ["Approved", "Declined", "Pending", "Consulted"];
-        
+
         if (retrievedAppointmentsData && retrievedAppointmentsData.length > 0) {
             return retrievedAppointmentsData.map((appointment, i) => (
                 <TableRow key={i}>
+                    <TableCell className="border-b border-blue-gray-50 text-center" align="center">
+                        <Typography variant="body2" className="text-blue-gray-900">
+                            {appointment.clinic_name}
+                        </Typography>
+                    </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
                         <Typography variant="body2" className="text-blue-gray-900">
                             {appointment.firstName}
@@ -90,7 +95,7 @@ const AppointmentsTable = ({ retrievedAppointmentsData }) => {
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
                         <Typography variant="body2" className={`rounded-lg p-2 ${getAppointmentDateColor(appointment.status)}`}>
-                            {statusMatch.includes(appointment.appointmentDate) ? "": formatDate(appointment.appointmentDate)}
+                            {statusMatch.includes(appointment.appointmentDate) ? formatDate(appointment.appointmentDate) : formatDate(appointment.appointmentDate)}
                         </Typography>
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
@@ -136,7 +141,7 @@ const AppointmentsTable = ({ retrievedAppointmentsData }) => {
     );
 };
 
-AppointmentsTable.propTypes = {
+PendingStatusAppointmentTable.propTypes = {
     retrievedAppointmentsData: PropTypes.array,
 };
-export default AppointmentsTable;
+export default PendingStatusAppointmentTable;

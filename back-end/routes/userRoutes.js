@@ -20,7 +20,9 @@ import {
     deleteDoctorsDetails,
     createClinic,
     getClinics,
-    filterClinicDetails
+    filterClinicDetails,
+    getPatientPendingStatus,
+    loggedInClinicAccount
 } from "../controllers/cms.js";
 import validateRegister from "../middleware/validation.js";
 import patientsLoginValidation from "../middleware/patientsLoginValidation.js";
@@ -102,5 +104,10 @@ router.get("/admin-dashboard/clinics", getClinics);
 
 // router for filtering the clinic details in search field in patient's dashboard
 router.get("/patients-dashboard/filter_search", filterClinicDetails)
+
+// router for getting the pending status of the patients appointments
+router.get("/patients-dashboard/getPatientPendingStatus", getPatientPendingStatus);
+
+router.post("/clinicLoggedInAccount", [doctorsLoginValidation], loggedInClinicAccount);
 
 export default router;

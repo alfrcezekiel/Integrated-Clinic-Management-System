@@ -173,28 +173,32 @@ const DoctorsTablesListOfAppointments = () => {
     // this function determines the color of the status of the patients
     const getStatusColor = (status) => {
         switch (status) {
-            case "Scheduled":
+            case "Approved":
                 return "text-green-600 bg-green-100";
-            case "Cancelled":
+            case "Declined":
                 return "text-red-600 bg-red-100";
             case "Pending":
-                return "text-yellow-600 bg-yellow-100";
+                return "text-black bg-yellow-100";
+            case "Consulted":
+                return "text-black bg-blue-100";
             default:
                 return "text-gray-600 bg-gray-100";
         }
     }
 
     // this should match the status of the patients to render in appointment date
-    const statusMatch = ["Scheduled", "Cancelled", "Pending"];
+    const statusMatch = ["Approved", "Declined", "Pending", "Consulted"];
 
     const getAppointmentDateColor = (status) => {
         switch (status) {
-            case "Scheduled":
+            case "Approved":
                 return "text-green-600 bg-green-100"
-            case "Cancelled":
+            case "Declined":
                 return "bg-red-100 text-red-600"
             case "Pending":
-                return "bg-yellow-100 text-yellow-600"
+                return "bg-yellow-100 text-black"
+            case "Consulted":
+                return "bg-blue-100 text-black"
             default:
                 return "bg-gray-100 text-gray-600"
         }

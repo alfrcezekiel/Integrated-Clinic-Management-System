@@ -438,19 +438,16 @@ export const getPatientsAppointments = async (req, res) => {
 export const getBookedAppointmentsToDisplayInDoctorsDashboard = async (req, res) => {
     try {
         const doctorName = `Dr. Baek Kang Hyuk`;
-        const query = `SELECT 
+        const query = `SELECT
             appointmentID,
             firstName,
             lastName,
             email,
             appointmentDate,
             phoneNumber,
-            gender,
-            doctor,
             status,
             purposeOfAppointment
             FROM patientsappointment
-            WHERE doctor = ?;
         `;
 
         const [rows] = await conn.query(query, [doctorName]);
@@ -945,5 +942,92 @@ export const filterClinicDetails = async (req, res) => {
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             message: "Failed to filter clinic details"
         });
+    }
+}
+
+// controller logic for getting the patients pending status in patients dashboard
+export const getPatientPendingStatus = async (_req, res) => {
+    try {
+        const status = "Pending";
+
+        const query = `
+            SELECT
+            clinic.clinic_name,
+            patientsappointment.firstName,
+            patientsappointment.lastName,
+            patientsappointment.email,
+            patientsappointment.phoneNumber,
+            patientsappointment.preferredTime,
+            patientsappointment.appointmentDate,
+            patientsappointment.status,
+            patientsappointment.purposeOfAppointment
+            FROM patientsappointment
+            INNER JOIN clinic ON patientsappointment.clinic_id = clinic.clinic_id
+            WHERE patientsappointment.status = ?;
+        `
+
+        const [rows] = await conn.query(query, [status]);
+
+        if(rows.length === 0) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No pending status found"
+            });
+        }
+
+        return res.status(StatusCodes.OK).json({
+            patientsPendingStatus: rows
+        })
+
+    } catch (error) {
+        console.error(`Failed to get patients pending status: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to get patients pending status"
+        });
+    }
+}
+
+// controller logic for logging in clinic's account
+
+export const loggedInClinicAccount = async (req, res) => {
+    const { email, password } = req.body;
+    try {
+        const query = `SELECT clinic_id, email, password FROM clinic WHERE email = ?;`;
+
+        const [rows] = await conn.query(query, [email]);
+
+        if (rows.length === 0) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                message: "Invalid email"
+            })
+        }
+
+        const clinicUsers = rows[0];
+
+        const SECRET_KEY = process.env.JWT_SECRET || "authenmimangjuan";
+        if (!SECRET_KEY) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "Failed to login clinic account"
+            });
+        }
+
+        const isPasswordValid = await bcrypt.compare(password, clinicUsers.password);
+        if (!isPasswordValid) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                message: "Invalid Password"
+            })
+        }
+
+        const token = jwt.sign({ id: clinicUsers.clinic_id, email: clinicUsers.email }, SECRET_KEY, { expiresIn: "1hr" });
+        const sid = req.session.user = {
+            id: clinicUsers.clinic_id,
+        }
+
+        return res.status(StatusCodes.OK).json({
+            message: "Clinic Login Successful",
+            token,
+            sid: sid
+        })
+    } catch (error) {
+        console.error(`Failed to login clinic account: ${error}`);
     }
 }

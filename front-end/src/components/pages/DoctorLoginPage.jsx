@@ -54,7 +54,7 @@ function DoctorLoginPortal() {
     const handleLoggedInPatient = async (e) => {
         try {
             e.preventDefault();
-            const response = await CMS.post("/CMS/loginDoctorsAccount", doctorsLoginFormData, {
+            const response = await CMS.post("/CMS/clinicLoggedInAccount", doctorsLoginFormData, {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${localStorage.getItem("authToken")}`,

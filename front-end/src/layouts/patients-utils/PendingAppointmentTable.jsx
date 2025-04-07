@@ -8,12 +8,13 @@ import {
     TableRow,
     TableCell,
 } from "@mui/material";
-import AppointmentsTable from "../../hooks/useMemoTableRows";
+import PendingStatusAppointmentTable from "../../hooks/PendingTableAppointment";
 import { useState, useEffect } from "react";
 import CMS from "../../API/CMS";
 
-const PatientsTable = () => {
+const PendingAppointmentTable = () => {
     const appointmentsTableColumn = [
+        "Clinic Name",
         'First Name',
         'Last Name',
         "Email",
@@ -27,24 +28,25 @@ const PatientsTable = () => {
     const [retrievedAppointmentsData, setRetrievedAppointmentsData] = useState([]);
 
     useEffect(() => {
-        const retrieveAppointments = async () => {
+        const retrievePendingStatus = async () => {
             try {
-                const response = await CMS.get("/CMS/patientsDashboard/bookedAppointments", {
+                const response = await CMS.get("/CMS/patients-dashboard/getPatientPendingStatus", {
                     headers: {
                         "Content-Type": "application/json",
                     },
                 });
 
                 if (response.status === 200) {
-                    setRetrievedAppointmentsData(response.data.patientsAppointments);
+                    setRetrievedAppointmentsData(response.data.patientsPendingStatus);
+                } else {
+                    console.log(`Failed to retrieve pending appointment status in server: ${response.status}`);
                 }
 
             } catch (error) {
-                console.log(`Failed to retrieve appointments: ${error}`);
+                console.log(`Failed to retrieve pending appointment status: ${error}`);
             }
         }
-        retrieveAppointments();
-
+        retrievePendingStatus();
     }, []);
 
     return (
@@ -52,7 +54,7 @@ const PatientsTable = () => {
             <div className="mt-5 mb-1 flex justify-center items-center w-full">
                 <Card className="shadow-lg w-full">
                     <CardHeader
-                        title="View All Appointments"
+                        title="Pending Appointments"
                         className="bg-blue-500 mb-2 p-6"
                         slotProps={{
                             title: {
@@ -81,7 +83,7 @@ const PatientsTable = () => {
                                     ))}
                                 </TableRow>
                             </TableHead>
-                            <AppointmentsTable
+                            <PendingStatusAppointmentTable
                                 retrievedAppointmentsData={retrievedAppointmentsData}
                             />
                         </Table>
@@ -92,4 +94,4 @@ const PatientsTable = () => {
     )
 }
 
-export default PatientsTable;
+export default PendingAppointmentTable;
