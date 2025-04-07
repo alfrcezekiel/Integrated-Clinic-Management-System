@@ -44,7 +44,7 @@ const DoctorsTablesListOfAppointments = () => {
         purposeOfAppointment: "",
     })
     const appointmentsTableColumn = [
-        "ID",
+        "Clinic Name",
         'First Name',
         'Last Name',
         "Email",
@@ -85,31 +85,21 @@ const DoctorsTablesListOfAppointments = () => {
         setOpen(false);
     }
 
-    const handleClickOpen = (appointment) => {
-        setFormData({
-            appointmentID: appointment.appointmentID,
-            firstName: appointment.firstName,
-            lastName: appointment.lastName,
-            email: appointment.email,
-            appointmentDate: formatDate(appointment.appointmentDate),
-            phoneNumber: appointment.phoneNumber,
-            gender: appointment.gender,
-            status: appointment.status,
-            purposeOfAppointment: appointment.purposeOfAppointment,
-        });
-        setOpen(true);
-    }
+
     const navigate = useNavigate();
     const location = useLocation();
+
     useEffect(() => {
         const titleHeader = () => {
             document.title = "Clinic's Dashboard | Patient's Appointment | CMS"
         }
         titleHeader();
 
+        const clinicID = localStorage.getItem("sid")
+
         const retrievedAppointmentsData = async () => {
             try {
-                const response = await CMS.get(`/CMS/doctors-dashboard/appointments`);
+                const response = await CMS.get(`/CMS/doctors-dashboard/appointments/${clinicID}`);
 
                 if (!response.data) {
                     throw new Error("No retrieved data for appointments");
@@ -125,6 +115,7 @@ const DoctorsTablesListOfAppointments = () => {
         retrievedAppointmentsData();
     }, [location.pathname])
 
+    
     // this function is to formate the date to YYYY-MM-DD
     const formatDate = (dateString) => {
         const date = new Date(dateString);
@@ -160,12 +151,29 @@ const DoctorsTablesListOfAppointments = () => {
             }
         }
     }
+    // this function is used to open the modal for updating the appointment details
+    const handleClickOpen = (appointment) => {
+        setFormData({
+            appointmentID: appointment.appointmentID,
+            firstName: appointment.firstName,
+            lastName: appointment.lastName,
+            email: appointment.email,
+            appointmentDate: formatDate(appointment.appointmentDate),
+            phoneNumber: appointment.phoneNumber,
+            gender: appointment.gender,
+            status: appointment.status,
+            purposeOfAppointment: appointment.purposeOfAppointment,
+        });
+        setOpen(true);
+    }
+    // this should match the status of the patients to render in appointment date
+    const statusMatch = ["Approved", "Declined", "Pending", "Consulted"];
 
     const handleCloseSuccessfullAppointmentModal = () => {
         setSuccessfullAppointmentModalOpen(false);
         handleClose();
     }
-
+    
     // this function determines the color of the status of the patients
     const getStatusColor = (status) => {
         switch (status) {
@@ -173,7 +181,7 @@ const DoctorsTablesListOfAppointments = () => {
                 return "text-green-600 bg-green-100";
             case "Declined":
                 return "text-red-600 bg-red-100";
-            case "Pending":
+                case "Pending":
                 return "text-black bg-yellow-100";
             case "Consulted":
                 return "text-black bg-blue-100";
@@ -182,8 +190,6 @@ const DoctorsTablesListOfAppointments = () => {
         }
     }
 
-    // this should match the status of the patients to render in appointment date
-    const statusMatch = ["Approved", "Declined", "Pending", "Consulted"];
 
     const getAppointmentDateColor = (status) => {
         switch (status) {
@@ -235,60 +241,70 @@ const DoctorsTablesListOfAppointments = () => {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {appointmentsData.map((appointment, id) => (
-                                    <TableRow key={id}>
-                                        <TableCell align="center">
+                                {appointmentsData && appointmentsData.length > 0 ? (
+                                    appointmentsData.map((appointment, id) => (
+                                        <TableRow key={id}>
+                                            <TableCell align="center">
+                                                <Typography variant="body2" className="text-blue-gray-900">
+                                                    {appointment.clinic_name}
+                                                </Typography>
+                                            </TableCell>
+                                            <TableCell align="center">
+                                                <Typography variant="body2" className="text-blue-gray-900">
+                                                    {appointment.firstName}
+                                                </Typography>
+                                            </TableCell>
+                                            <TableCell align="center">
+                                                <Typography variant="body2" className="text-blue-gray-900">
+                                                    {appointment.lastName}
+                                                </Typography>
+                                            </TableCell>
+                                            <TableCell align="center">
+                                                <Typography variant="body2" className="text-blue-gray-900">
+                                                    {appointment.email}
+                                                </Typography>
+                                            </TableCell>
+                                            <TableCell align="center">
+                                                <Typography variant="body2" className={`rounded-lg p-2 ${getAppointmentDateColor(appointment.status)}`}>
+                                                    {statusMatch.includes(appointment.status) ? formatDate(appointment.appointmentDate) : "N/A"}
+                                                </Typography>
+                                            </TableCell>
+                                            <TableCell align="center">
+                                                <Typography variant="body2" className="text-blue-gray-900">
+                                                    {appointment.phoneNumber}
+                                                </Typography>
+                                            </TableCell>
+                                            <TableCell align="center">
+                                                <Typography variant="body2" className="text-blue-gray-900">
+                                                    {appointment.gender}
+                                                </Typography>
+                                            </TableCell>
+                                            <TableCell align="center">
+                                                <Typography variant="body2" className={`rounded-lg p-2 ${getStatusColor(appointment.status)}`}>
+                                                    {appointment.status ? appointment.status : "N/A"}
+                                                </Typography>
+                                            </TableCell>
+                                            <TableCell align="center">
+                                                <Typography variant="body2" className="text-blue-gray-900">
+                                                    {appointment.purposeOfAppointment}
+                                                </Typography>
+                                            </TableCell>
+                                            <TableCell align="center">
+                                                <IconButton aria-label="edit" onClick={() => handleClickOpen(appointment)}>
+                                                    <EditIcon />
+                                                </IconButton>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                ) : (
+                                    <TableRow>
+                                        <TableCell colSpan={appointmentsTableColumn.length} align="center">
                                             <Typography variant="body2" className="text-blue-gray-900">
-                                                {appointment.appointmentID}
+                                                No appointments available.
                                             </Typography>
-                                        </TableCell>
-                                        <TableCell align="center">
-                                            <Typography variant="body2" className="text-blue-gray-900">
-                                                {appointment.firstName}
-                                            </Typography>
-                                        </TableCell>
-                                        <TableCell align="center">
-                                            <Typography variant="body2" className="text-blue-gray-900">
-                                                {appointment.lastName}
-                                            </Typography>
-                                        </TableCell>
-                                        <TableCell align="center">
-                                            <Typography variant="body2" className="text-blue-gray-900">
-                                                {appointment.email}
-                                            </Typography>
-                                        </TableCell>
-                                        <TableCell align="center">
-                                            <Typography variant="body2" className={`rounded-lg p-2 ${getAppointmentDateColor(appointment.status)}`}>
-                                                {statusMatch.includes(appointment.status) ? formatDate(appointment.appointmentDate) : "N/A"}
-                                            </Typography>
-                                        </TableCell>
-                                        <TableCell align="center">
-                                            <Typography variant="body2" className="text-blue-gray-900">
-                                                {appointment.phoneNumber}
-                                            </Typography>
-                                        </TableCell>
-                                        <TableCell align="center">
-                                            <Typography variant="body2" className="text-blue-gray-900">
-                                                {appointment.gender}
-                                            </Typography>
-                                        </TableCell>
-                                        <TableCell align="center">
-                                            <Typography variant="body2" className={`rounded-lg p-2 ${getStatusColor(appointment.status)}`}>
-                                                {appointment.status ? appointment.status : "N/A"}
-                                            </Typography>
-                                        </TableCell>
-                                        <TableCell align="center">
-                                            <Typography variant="body2" className="text-blue-gray-900">
-                                                {appointment.purposeOfAppointment}
-                                            </Typography>
-                                        </TableCell>
-                                        <TableCell align="center">
-                                            <IconButton aria-label="edit" onClick={() => handleClickOpen(appointment)}>
-                                                <EditIcon />
-                                            </IconButton>
                                         </TableCell>
                                     </TableRow>
-                                ))}
+                                )}
                             </TableBody>
                         </Table>
                     </CardContent>
@@ -304,6 +320,7 @@ const DoctorsTablesListOfAppointments = () => {
                             label="Enter Appointment ID"
                             type="text"
                             fullWidth
+                            hidden
                             value={formData.appointmentID}
                         />
                         <TextField
@@ -411,15 +428,15 @@ const DoctorsTablesListOfAppointments = () => {
                     </form>
                 </DialogContent>
             </Dialog>
-            <Dialog 
-                open={successfullAppointmentModalOpen} 
+            <Dialog
+                open={successfullAppointmentModalOpen}
                 onClose={handleCloseSuccessfullAppointmentModal}
                 className="flex items-center justify-center fixed inset-0"
             >
                 <div className="bg-white rounded-2xl p-6 w-[400px] text-center shadow-lg">
                     <DialogTitle className="text-xl font-semibold">Success</DialogTitle>
                     <DialogContent className="flex flex-col items-center">
-                        <Lottie animationData={successAnimation} className="w-24 h-24" loop={false}/>
+                        <Lottie animationData={successAnimation} className="w-24 h-24" loop={false} />
                         <Typography variant="body1" className="mt-2">
                             Patients Appointment has been successfully updated.
                         </Typography>

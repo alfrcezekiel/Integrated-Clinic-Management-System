@@ -19,7 +19,7 @@ const DoctorsSideNav = ({ brandName, routes }) => {
         >
             <div className="relative p-6">
                 <Link to={"/doctor-portal/dashboard/home"}>
-                    <Typography variant="h5" className="text-gray-900">
+                    <Typography variant="h5" className="text-gray-900 text-center">
                         {brandName}
                     </Typography>
                 </Link>
@@ -48,9 +48,6 @@ const DoctorsSideNav = ({ brandName, routes }) => {
 DoctorsSideNav.propTypes = {
     brandName: PropTypes.string,
     routes: PropTypes.arrayOf(PropTypes.object).isRequired
-}
-DoctorsSideNav.defaultProps = {
-    brandName: "Doctor's Dashboard"
 }
 
 export default DoctorsSideNav;

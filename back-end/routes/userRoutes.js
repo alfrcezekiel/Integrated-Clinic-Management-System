@@ -75,8 +75,8 @@ router.get("/doctors-dashboard/logout", logout);
 // router for updating the patients appointments
 router.put("/doctors-dashboard/updateAppointment/:appointmentID", [validatePatientsDetails], updatePatientsAppointments);
 
-// router for retrieving the doctors name and patient id to display in doctors dashboard
-router.get("/doctors-dashboard/appointments", getBookedAppointmentsToDisplayInDoctorsDashboard);
+// router for retrieving the clinic name and patient id to display in doctors dashboard
+router.get("/doctors-dashboard/appointments/:clinicID", getBookedAppointmentsToDisplayInDoctorsDashboard);
 
 // router for logging in as admin in CMS
 router.post("/adminAccount", [adminLoginValidation], loginAdminAccount);

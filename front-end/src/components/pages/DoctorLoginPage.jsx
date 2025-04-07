@@ -66,8 +66,8 @@ function DoctorLoginPortal() {
                 if (response.data.token && response.data.sid) {
                     localStorage.setItem("authToken", response.data.token);
                     localStorage.setItem("sid", response.data.sid.id);
-                    localStorage.setItem("sfn", response.data.sid.firstName);
-                    localStorage.setItem("sln", response.data.sid.lastName);
+                    localStorage.setItem("scn", response.data.sid.scn);
+                    localStorage.setItem("sem", response.data.sid.sem);
                     navigate("/doctor-portal/dashboard/home");
                 } else {
                     console.error("No token found in response data and session data");

@@ -31,8 +31,8 @@ const DoctorsDashboardNavbar = () => {
             } else {
                 localStorage.removeItem("authToken");
                 localStorage.removeItem("sid")
-                localStorage.removeItem("sfn");
-                localStorage.removeItem("sln");
+                localStorage.removeItem("sem");
+                localStorage.removeItem("scn");
                 navigate("/cms");
             }
         } catch (error) {

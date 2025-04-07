@@ -442,36 +442,41 @@ export const getPatientsAppointments = async (req, res) => {
 // controller logic for retrieving the patients booked appointments to display in tables in doctors dashboard appointments
 export const getBookedAppointmentsToDisplayInDoctorsDashboard = async (req, res) => {
     try {
-        const doctorName = `Dr. Baek Kang Hyuk`;
+
+        const { clinicID } = req.params;
         const query = `SELECT
-            appointmentID,
-            firstName,
-            lastName,
-            email,
-            appointmentDate,
-            gender,
-            phoneNumber,
-            status,
-            purposeOfAppointment
-            FROM patientsappointment
+            c.clinic_name,
+            p.appointmentID,
+            p.firstName,
+            p.lastName,
+            p.email,
+            p.appointmentDate,
+            p.gender,
+            p.phoneNumber,
+            p.status,
+            p.purposeOfAppointment
+            FROM patientsappointment p
+            INNER JOIN clinic c
+            ON p.clinic_id = c.clinic_id
+            WHERE p.clinic_id = ?
         `;
 
-        const [rows] = await conn.query(query, [doctorName]);
-
+        const [rows] = await conn.query(query, [clinicID]);
 
         if (!rows.length) {
             return res.status(StatusCodes.NOT_FOUND).json({
-                message: "No appointments found for the specified doctor"
+                message: "No appointments found for the specified clinic"
             })
         }
 
-        if (doctorName === "Dr. Baek Kang Hyuk") {
-            return res.status(StatusCodes.OK).json({
-                patientsAppointments: rows
-            });
-        }
+        return res.status(StatusCodes.OK).json({
+            patientsAppointments: rows
+        });
     } catch (error) {
         console.error(`Failed to get booked appointments: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to retrieve booked appointments"
+        })
     }
 }
 
@@ -482,8 +487,8 @@ export const updatePatientsAppointments = async (req, res) => {
         const {
             firstName,
             lastName,
-            email,
             appointmentDate,
+            email,
             phoneNumber,
             gender,
             status,
@@ -494,7 +499,7 @@ export const updatePatientsAppointments = async (req, res) => {
         console.log(`Received appointmentID: ${appointmentID}`);
 
         const query = `
-            UPDATE patientsappointment 
+            UPDATE patientsappointment
             SET
                 firstName = ?,
                 lastName = ?,
@@ -953,9 +958,9 @@ export const getPatientPendingStatus = async (req, res) => {
     try {
         const status = "Pending";
 
-        const {email} = req.params
+        const { email } = req.params
 
-        if(!email){
+        if (!email) {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 message: "Please enter a valid email address"
             })
@@ -1004,7 +1009,7 @@ export const getPatientPendingStatus = async (req, res) => {
 export const loggedInClinicAccount = async (req, res) => {
     const { email, password } = req.body;
     try {
-        const query = `SELECT clinic_id, email, password FROM clinic WHERE email = ?;`;
+        const query = `SELECT clinic_id, clinic_name, email, password FROM clinic WHERE email = ?;`;
 
         const [rows] = await conn.query(query, [email]);
 
@@ -1033,6 +1038,8 @@ export const loggedInClinicAccount = async (req, res) => {
         const token = jwt.sign({ id: clinicUsers.clinic_id, email: clinicUsers.email }, SECRET_KEY, { expiresIn: "1hr" });
         const sid = req.session.user = {
             id: clinicUsers.clinic_id,
+            scn: clinicUsers.clinic_name,
+            sem: clinicUsers.email
         }
 
         return res.status(StatusCodes.OK).json({
