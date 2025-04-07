@@ -32,7 +32,6 @@ const ClinicCards = () => {
         phoneNumber: "",
         gender: "",
         appointmentDate: "",
-        preferredDays: "",
         preferredTime: "",
         purposeOfAppointment: ""
     });
@@ -44,7 +43,6 @@ const ClinicCards = () => {
         phoneNumber: "",
         gender: "",
         appointmentDate: "",
-        preferredDays: "",
         preferredTime: "",
         purposeOfAppointment: ""
     });
@@ -153,7 +151,6 @@ const ClinicCards = () => {
                     phoneNumber: "",
                     gender: "",
                     appointmentDate: "",
-                    preferredDays: "",
                     preferredTime: "",
                     purposeOfAppointment: ""
                 });

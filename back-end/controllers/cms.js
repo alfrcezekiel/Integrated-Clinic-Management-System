@@ -336,7 +336,6 @@ export const patientsBookedAppointments = async (req, res) => {
             appointmentDate,
             phoneNumber,
             gender,
-            preferredDays,
             preferredTime,
             purposeOfAppointment,
             clinicID
@@ -352,11 +351,10 @@ export const patientsBookedAppointments = async (req, res) => {
             appointmentDate,
             phoneNumber,
             gender,
-            preferredDays,
             preferredTime,
             purposeOfAppointment,
             clinic_id
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
 
         const [result] = await conn.query(query, [
             patientID,
@@ -366,7 +364,6 @@ export const patientsBookedAppointments = async (req, res) => {
             appointmentDate,
             phoneNumber,
             gender,
-            preferredDays,
             preferredTime,
             purposeOfAppointment,
             clinic_id
@@ -421,9 +418,8 @@ export const getPatientsAppointments = async (req, res) => {
             email,
             appointmentDate,
             phoneNumber,
-            gender,
-            doctor,
             status,
+            preferredTime,
             purposeOfAppointment
             FROM patientsappointment
         `;

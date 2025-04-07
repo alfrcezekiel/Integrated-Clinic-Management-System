@@ -36,7 +36,6 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
         }
         return dayjs(date);
     }, [appointmentData.appointmentDate]);
-    const memoizedPreferredDaysValue = useMemo(() => appointmentData.preferredDays, [appointmentData.preferredDays]);
     const memoizedPreferredTimeValue = useMemo(() => appointmentData.preferredTime, [appointmentData.preferredTime]);
     const memoizedPurposeOfAppointmentValue = useMemo(() => appointmentData.purposeOfAppointment, [appointmentData.purposeOfAppointment]);
 
@@ -70,7 +69,6 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
     };
 
     const gender = ["Male", "Female"];
-    const preferredDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     const purposeOfAppointment = ["Regular Checkup", "Consultation", "Follow-up", "Emergency", "Urgent Care", "Other"];
 
     const formatTimeToAMPM = (time) => {
@@ -278,26 +276,6 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
 
                                 {/* Form Layout - Bottom Row */}
                                 <div className="grid grid-cols-3 gap-6 mt-6">
-                                    {/* Preferred Days */}
-                                    <TextField
-                                        select
-                                        fullWidth
-                                        label="Preferred Days"
-                                        margin="dense"
-                                        autoComplete="off"
-                                        name="preferredDays"
-                                        variant="outlined"
-                                        value={memoizedPreferredDaysValue}
-                                        onChange={handleInputChange}
-                                        placeholder="e.g. Monday to Friday"
-                                        error={Boolean(fieldErrors.preferredDays)}
-                                        helperText={fieldErrors.preferredDays ? fieldErrors.preferredDays : ""}
-                                    >
-                                        {preferredDays.map((preferredDay) => (
-                                            <MenuItem key={preferredDay} value={preferredDay}>{preferredDay}</MenuItem>
-                                        ))}
-                                    </TextField>
-
                                     {/* Preferred Time */}
                                     <TextField
                                         fullWidth
