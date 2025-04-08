@@ -1104,3 +1104,58 @@ export const getPatientApprovedStatus = async (req, res) => {
         });
     }
 }
+
+/*
+    controller logic for getting the declined patients status in patients dashboard
+*/
+
+export const getPatientsDeclinedStatus = async (req, res) => {
+    try {
+        const status = "Declined";
+
+        const { email } = req.params
+
+        if (!email) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Please enter a valid email address"
+            })
+        }
+
+        const emailAddress = String(email)
+
+        const query = `
+            SELECT
+            clinic.clinic_name,
+            patientsappointment.firstName,
+            patientsappointment.lastName,
+            patientsappointment.email,
+            patientsappointment.phoneNumber,
+            patientsappointment.preferredTime,
+            patientsappointment.appointmentDate,
+            patientsappointment.status,
+            patientsappointment.purposeOfAppointment
+            FROM patientsappointment
+            INNER JOIN clinic ON patientsappointment.clinic_id = clinic.clinic_id
+            WHERE patientsappointment.status = ? AND patientsappointment.email = ?
+            ORDER BY patientsappointment.appointmentDate ASC;
+        `
+
+        const [rows] = await conn.query(query, [status, emailAddress]);
+
+        if (rows.length === 0) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No declined status found"
+            });
+        }
+
+        return res.status(StatusCodes.OK).json({
+            patientsDeclinedStatus: rows
+        })
+
+    } catch (error) {
+        console.error(`Failed to get patients declined status: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to get patients declined status"
+        });
+    }
+}

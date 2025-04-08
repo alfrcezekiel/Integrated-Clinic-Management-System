@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 
 // This component is used to rende  r the table rows for the appointments table
-const PendingStatusAppointmentTable = ({ retrievedAppointmentsData }) => {
+const DeclinedAppointmentsTableValue = ({ retrievedAppointmentsData }) => {
 
     // This function is used to format the date string to a more readable format
     const formatDate = (dateString) => {
@@ -24,13 +24,13 @@ const PendingStatusAppointmentTable = ({ retrievedAppointmentsData }) => {
     const getStatusColor = (status) => {
         switch (status) {
             case "Approved":
-                return "text-green-600 bg-green-100";
+                return "text-black bg-green-300";
             case "Declined":
-                return "text-red-600 bg-red-100";
+                return "text-black bg-red-300";
             case "Pending":
                 return "text-black bg-yellow-300";
             case "Consulted":
-                return "text-black bg-blue-100";
+                return "text-black bg-blue-300";
             default:
                 return "text-gray-600 bg-gray-100";
         }
@@ -41,13 +41,13 @@ const PendingStatusAppointmentTable = ({ retrievedAppointmentsData }) => {
     const getAppointmentDateColor = (status) => {
         switch (status) {
             case "Approved":
-                return "text-green-600 bg-green-100";
+                return "text-black bg-green-300";
             case "Declined":
-                return "text-red-600 bg-red-100";
+                return "text-black bg-red-300";
             case "Pending":
                 return "text-black bg-yellow-300";
             case "Consulted":
-                return "text-black bg-blue-100";
+                return "text-black bg-blue-300";
             default:
                 return "text-gray-600 bg-gray-100";
         }
@@ -67,7 +67,7 @@ const PendingStatusAppointmentTable = ({ retrievedAppointmentsData }) => {
             return time;
         }
     };
-    
+
     const memoizedTableRows = useMemo(() => {
         const statusMatch = ["Approved", "Declined", "Pending", "Consulted"];
 
@@ -127,7 +127,7 @@ const PendingStatusAppointmentTable = ({ retrievedAppointmentsData }) => {
                 <TableRow key={0}>
                     <TableCell colSpan={9} className="py-3 px-5 border-b border-blue-gray-50 text-center" align="center">
                         <Typography variant="body2" className="text-blue-gray-900">
-                            {retrievedAppointmentsData ? "No appointments found" : "Please input credentials to view pending appointments"}
+                            {retrievedAppointmentsData ? "No appointments found" : "Please input credentials to view declined appointments"}
                         </Typography>
                     </TableCell>
                 </TableRow>
@@ -142,7 +142,7 @@ const PendingStatusAppointmentTable = ({ retrievedAppointmentsData }) => {
     );
 };
 
-PendingStatusAppointmentTable.propTypes = {
+DeclinedAppointmentsTableValue.propTypes = {
     retrievedAppointmentsData: PropTypes.array,
 };
-export default PendingStatusAppointmentTable;
+export default DeclinedAppointmentsTableValue;

@@ -21,7 +21,7 @@ import {
     ExpandMore
 } from "@mui/icons-material";
 
-// this is the sidenav component for the dashboard
+// this is the sidenav component for the dashboard of patients
 const SideNav = ({ brandName, routes }) => {
     const [open, setOpen] = useState(false);
     const isMobile = useMediaQuery("(max-width: 768px)");
@@ -56,16 +56,16 @@ const SideNav = ({ brandName, routes }) => {
             <nav className="p-4">
                 {routes.map(({ layout, pages }, index) => (
                     <div key={index} className="mb-4">
-                        {pages.filter((page) => page.name !== "Clinics" && page.name !== "Appointments" && page.name !== "Pending Appointments" && page.name !== "Approved Appointments").map(({ icon, name, path }) => (
-                                <NavLink
-                                    key={index}
-                                    to={`${layout}${path}`}
-                                    className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-white" : "text-gray-700 hover:bg-gray-100"}`}
-                                >
-                                    {icon}
-                                    <Typography sx={{ ml: 2 }} className="text-black">{name}</Typography>
-                                </NavLink>
-                            ))}
+                        {pages.filter((page) => page.name !== "Clinics" && page.name !== "Appointments" && page.name !== "Pending Appointments" && page.name !== "Approved Appointments" && page.name !== "Declined Appointments").map(({ icon, name, path }) => (
+                            <NavLink
+                                key={index}
+                                to={`${layout}${path}`}
+                                className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-white" : "text-gray-700 hover:bg-gray-100"}`}
+                            >
+                                {icon}
+                                <Typography sx={{ ml: 2 }} className="text-black">{name}</Typography>
+                            </NavLink>
+                        ))}
                     </div>
                 ))}
                 <List className="bg-white shadow-lg rounded-2xl">
@@ -142,6 +142,23 @@ const SideNav = ({ brandName, routes }) => {
                                     >
                                         <ListItem button="true">
                                             <ListItemText primary="Approved Appointments" className="text-black" />
+                                        </ListItem>
+                                    </NavLink>
+                                ))
+                            ))}
+                        </List>
+                    </Collapse>
+                    <Collapse in={appointmentOpen} timeout="auto" unmountOnExit className="p-2">
+                        <List component="div" disablePadding>
+                            {routes.map(({ layout, pages }, index) => (
+                                pages.filter((page) => page.name === "Declined Appointments").map(({ path }) => (
+                                    <NavLink
+                                        key={index}
+                                        to={`${layout}${path}`}
+                                        className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-black" : "hover:bg-gray-100 p-2"}`}
+                                    >
+                                        <ListItem button="true">
+                                            <ListItemText primary="Declined Appointments" className="text-black" />
                                         </ListItem>
                                     </NavLink>
                                 ))

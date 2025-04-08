@@ -10,9 +10,10 @@ import {
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import CMS from "../../API/CMS";
-import ApprovedAppointmentsTableValue from "../../hooks/ApprovedAppointmentValues";
+import DeclinedAppointmentsTableValue from "../../hooks/DeclinedAppointmentValues";
 
-const ApprovedAppointmentsTable = () => {
+// this component is used to render the declined appointments table
+const DeclinedAppointmentStatusTable = () => {
     const appointmentsTableColumn = [
         "Clinic Name",
         'First Name',
@@ -30,25 +31,25 @@ const ApprovedAppointmentsTable = () => {
     const [retrievedAppointmentsData, setRetrievedAppointmentsData] = useState([]);
 
     useEffect(() => {
-        const retrieveApprovedStatus = async () => {
+        const retrieveDeclinedStatus = async () => {
             try {
-                const response = await CMS.get(`/CMS/patients-dashboard/getPatientApprovedStatus/${patientEmail}`, {
+                const response = await CMS.get(`/CMS/patients-dashboard/getPatientDeclinedStatus/${patientEmail}`, {
                     headers: {
                         "Content-Type": "application/json",
                     },
                 });
 
                 if (response.status === 200) {
-                    setRetrievedAppointmentsData(response.data.patientsApprovedStatus);
+                    setRetrievedAppointmentsData(response.data.patientsDeclinedStatus);
                 } else {
-                    console.log(`Failed to retrieve approved appointment status in server: ${response.status}`);
+                    console.log(`Failed to retrieve declined appointment status in server: ${response.status}`);
                 }
 
             } catch (error) {
-                console.log(`Failed to retrieve approved appointment status: ${error}`);
+                console.log(`Failed to retrieve declined appointment status: ${error}`);
             }
         }
-        retrieveApprovedStatus();
+        retrieveDeclinedStatus();
     }, [patientEmail]);
 
     return (
@@ -56,7 +57,7 @@ const ApprovedAppointmentsTable = () => {
             <div className="mt-5 mb-1 flex justify-center items-center w-full">
                 <Card className="shadow-lg w-full">
                     <CardHeader
-                        title="Approved Appointments"
+                        title="Declined Appointments"
                         className="bg-blue-500 mb-2 p-6"
                         slotProps={{
                             title: {
@@ -85,7 +86,7 @@ const ApprovedAppointmentsTable = () => {
                                     ))}
                                 </TableRow>
                             </TableHead>
-                            <ApprovedAppointmentsTableValue
+                            <DeclinedAppointmentsTableValue
                                 retrievedAppointmentsData={retrievedAppointmentsData}
                             />
                         </Table>
@@ -96,4 +97,4 @@ const ApprovedAppointmentsTable = () => {
     )
 }
 
-export default ApprovedAppointmentsTable;
+export default DeclinedAppointmentStatusTable;

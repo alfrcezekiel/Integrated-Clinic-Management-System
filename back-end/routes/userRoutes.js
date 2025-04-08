@@ -23,7 +23,8 @@ import {
     filterClinicDetails,
     getPatientPendingStatus,
     loggedInClinicAccount,
-    getPatientApprovedStatus
+    getPatientApprovedStatus,
+    getPatientsDeclinedStatus
 } from "../controllers/cms.js";
 import validateRegister from "../middleware/validation.js";
 import patientsLoginValidation from "../middleware/patientsLoginValidation.js";
@@ -114,5 +115,10 @@ router.post("/clinicLoggedInAccount", [doctorsLoginValidation], loggedInClinicAc
 
 // router for getting the approved status of the patients appointments
 router.get("/patients-dashboard/getPatientApprovedStatus/:email", getPatientApprovedStatus);
+
+/*
+    router for getting the declined status of patients appointments
+*/
+router.get("/patients-dashboard/getPatientDeclinedStatus/:email", getPatientsDeclinedStatus);
 
 export default router;
