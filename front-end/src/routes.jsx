@@ -40,7 +40,7 @@ const routes = [
             {
                 id: 2,
                 icon: <ClinicIcon style={iconStyle} />,
-                name: "Clinics",
+                name: "View Clinics",
                 path: "View-Clinics",
                 element: <ClinicCard />
             },

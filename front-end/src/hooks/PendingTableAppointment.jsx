@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 
 // This component is used to rende  r the table rows for the appointments table
-const PendingStatusAppointmentTable = ({ retrievedAppointmentsData }) => {
+const PendingStatusAppointmentTable = ({ retrievedAppointmentsData, appointmentTableColumn }) => {
 
     // This function is used to format the date string to a more readable format
     const formatDate = (dateString) => {
@@ -125,7 +125,7 @@ const PendingStatusAppointmentTable = ({ retrievedAppointmentsData }) => {
             // If no data is found, render a no appointments found row
             return (
                 <TableRow key={0}>
-                    <TableCell colSpan={9} className="py-3 px-5 border-b border-blue-gray-50 text-center" align="center">
+                    <TableCell colSpan={appointmentTableColumn?.length ?? 1} className="py-3 px-5 border-b border-blue-gray-50 text-center" align="center">
                         <Typography variant="body2" className="text-blue-gray-900">
                             {retrievedAppointmentsData ? "No appointments found" : "Please input credentials to view pending appointments"}
                         </Typography>
@@ -133,7 +133,7 @@ const PendingStatusAppointmentTable = ({ retrievedAppointmentsData }) => {
                 </TableRow>
             );
         }
-    }, [retrievedAppointmentsData]);
+    }, [retrievedAppointmentsData, appointmentTableColumn]);
 
     return (
         <TableBody>
@@ -144,5 +144,6 @@ const PendingStatusAppointmentTable = ({ retrievedAppointmentsData }) => {
 
 PendingStatusAppointmentTable.propTypes = {
     retrievedAppointmentsData: PropTypes.array,
+    appointmentTableColumn: PropTypes.array,
 };
 export default PendingStatusAppointmentTable;

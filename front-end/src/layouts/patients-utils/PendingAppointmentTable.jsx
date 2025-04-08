@@ -87,6 +87,7 @@ const PendingAppointmentTable = () => {
                             </TableHead>
                             <PendingStatusAppointmentTable
                                 retrievedAppointmentsData={retrievedAppointmentsData}
+                                appointmentsTableColumn={appointmentsTableColumn}
                             />
                         </Table>
                     </CardContent>

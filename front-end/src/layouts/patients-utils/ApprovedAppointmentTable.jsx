@@ -86,6 +86,7 @@ const ApprovedAppointmentsTable = () => {
                                 </TableRow>
                             </TableHead>
                             <ApprovedAppointmentsTableValue
+                                appointmentsTableColumn={appointmentsTableColumn}
                                 retrievedAppointmentsData={retrievedAppointmentsData}
                             />
                         </Table>

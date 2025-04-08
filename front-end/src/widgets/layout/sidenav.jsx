@@ -56,7 +56,7 @@ const SideNav = ({ brandName, routes }) => {
             <nav className="p-4">
                 {routes.map(({ layout, pages }, index) => (
                     <div key={index} className="mb-4">
-                        {pages.filter((page) => page.name !== "Clinics" && page.name !== "Appointments" && page.name !== "Pending Appointments" && page.name !== "Approved Appointments" && page.name !== "Declined Appointments").map(({ icon, name, path }) => (
+                        {pages.filter((page) => page.name !== "View Clinics" && page.name !== "Appointments" && page.name !== "Pending Appointments" && page.name !== "Approved Appointments" && page.name !== "Declined Appointments").map(({ icon, name, path }) => (
                             <NavLink
                                 key={index}
                                 to={`${layout}${path}`}
@@ -77,7 +77,7 @@ const SideNav = ({ brandName, routes }) => {
                         <List component="div" disablePadding>
                             {routes.map(({ layout, pages }, index) => (
                                 pages
-                                .filter((page) => page.name === "Clinics")
+                                .filter((page) => page.name === "View Clinics")
                                 .map(({ path, icon, name }) => (
                                     <NavLink
                                         key={index}

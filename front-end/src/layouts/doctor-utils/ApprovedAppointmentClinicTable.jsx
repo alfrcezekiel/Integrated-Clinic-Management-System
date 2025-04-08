@@ -149,7 +149,7 @@ const ApprovedAppointmentClinicTable = () => {
                 setFieldsError({})
                 setOpen(false);
                 setSuccessfullAppointmentModalOpen(true);
-                navigate("/doctor-portal/dashboard/patients-appointments");
+                navigate("/doctor-portal/dashboard/pending-appointments");
             } else {
                 throw new Error(`Unexpected error in status ${response.status}`)
             }
