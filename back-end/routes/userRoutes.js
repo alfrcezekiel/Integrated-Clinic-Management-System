@@ -24,7 +24,10 @@ import {
     getPatientPendingStatus,
     loggedInClinicAccount,
     getPatientApprovedStatus,
-    getPatientsDeclinedStatus
+    getPatientsDeclinedStatus,
+    getPendingAppointmentStatus,
+    getApprovedAppointmentStatusInClinic,
+    getDeclinedAppointmentStatusInClinic
 } from "../controllers/cms.js";
 import validateRegister from "../middleware/validation.js";
 import patientsLoginValidation from "../middleware/patientsLoginValidation.js";
@@ -120,5 +123,14 @@ router.get("/patients-dashboard/getPatientApprovedStatus/:email", getPatientAppr
     router for getting the declined status of patients appointments
 */
 router.get("/patients-dashboard/getPatientDeclinedStatus/:email", getPatientsDeclinedStatus);
+
+// router for getting the patients pending status to display in the table of clinics dashboard
+router.get("/doctors-dashboard/getPatientPendingStatus/:clinicID", getPendingAppointmentStatus);
+
+// router for getting the patients approved status to display in the table of clinics dashboard
+router.get("/doctors-dashboard/getPatientApprovedStatus/:clinicID", getApprovedAppointmentStatusInClinic);
+
+// router for getting the patients declined status to display in the table of clinics dashboard
+router.get("/doctors-dashboard/getPatientDeclinedStatus/:clinicID", getDeclinedAppointmentStatusInClinic);
 
 export default router;

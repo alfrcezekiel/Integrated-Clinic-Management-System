@@ -1159,3 +1159,155 @@ export const getPatientsDeclinedStatus = async (req, res) => {
         });
     }
 }
+/*
+
+    controller logic for getting the pending patients status in clinic's dashboard
+
+*/
+export const getPendingAppointmentStatus = async (req, res) => {
+    try {
+        const { clinicID } = req.params;
+
+        if (!clinicID) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Please enter a valid clinic ID"
+            })
+        }
+
+        const status = "Pending";
+
+        const query = `SELECT
+            c.clinic_name,
+            p.appointmentID,
+            p.firstName,
+            p.lastName,
+            p.email,
+            p.appointmentDate,
+            p.gender,
+            p.phoneNumber,
+            p.status,
+            p.purposeOfAppointment
+            FROM patientsappointment p
+            INNER JOIN clinic c
+            ON p.clinic_id = c.clinic_id
+            WHERE p.clinic_id = ? AND p.status = ?
+            ORDER BY p.appointmentDate ASC;
+        `;
+
+        const [rows] = await conn.query(query, [clinicID, status]);
+
+        if (!rows.length) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No pending status found"
+            })
+        }
+
+        return res.status(StatusCodes.OK).json({
+            patientsPendingStatus: rows
+        });
+    } catch (error) {
+        console.error(`Failed to get pending status appointments: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to pending status booked appointments"
+        })
+    }
+}
+
+// controller logic for getting the approved patients status in clinic's dashboard
+export const getApprovedAppointmentStatusInClinic = async (req, res) => {
+    try {
+        const { clinicID } = req.params;
+
+        if (!clinicID) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Please enter a valid clinic ID"
+            })
+        }
+
+        const status = "Approved";
+
+        const query = `SELECT
+            c.clinic_name,
+            p.appointmentID,
+            p.firstName,
+            p.lastName,
+            p.email,
+            p.appointmentDate,
+            p.gender,
+            p.phoneNumber,
+            p.status,
+            p.purposeOfAppointment
+            FROM patientsappointment p
+            INNER JOIN clinic c
+            ON p.clinic_id = c.clinic_id
+            WHERE p.clinic_id = ? AND p.status = ?
+            ORDER BY p.appointmentDate ASC;
+        `;
+
+        const [rows] = await conn.query(query, [clinicID, status]);
+
+        if (!rows.length) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No approved status found"
+            })
+        }
+
+        return res.status(StatusCodes.OK).json({
+            patientsApprovedStatus: rows
+        });
+    } catch (error) {
+        console.error(`Failed to get approved status appointments: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to retrieve approved status appointments"
+        })
+    }
+}
+// controller logic for getting the declined patients status in clinic's dashboard
+export const getDeclinedAppointmentStatusInClinic = async (req, res) => {
+    try {
+        const { clinicID } = req.params;
+
+        if (!clinicID) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Please enter a valid clinic ID"
+            })
+        }
+
+        const status = "Declined";
+
+        const query = `SELECT
+            c.clinic_name,
+            p.appointmentID,
+            p.firstName,
+            p.lastName,
+            p.email,
+            p.appointmentDate,
+            p.gender,
+            p.phoneNumber,
+            p.status,
+            p.purposeOfAppointment
+            FROM patientsappointment p
+            INNER JOIN clinic c
+            ON p.clinic_id = c.clinic_id
+            WHERE p.clinic_id = ? AND p.status = ?
+            ORDER BY p.appointmentDate ASC;
+        `;
+
+        const [rows] = await conn.query(query, [clinicID, status]);
+
+        if (!rows.length) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No declined status found"
+            })
+        }
+
+        return res.status(StatusCodes.OK).json({
+            patientsDeclinedStatus: rows
+        });
+    } catch (error) {
+        console.error(`Failed to get declined status appointments: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to retrieve declined status appointments"
+        })
+    }
+}

@@ -13,7 +13,13 @@ import AddClinicIcon from "@mui/icons-material/LocalHospital"; // Add this impor
 import AddClinic from "./layouts/adminUtils/AddClinic";
 import PendingAppointmentTable from "./layouts/patients-utils/PendingAppointmentTable";
 import ApprovedAppointmentsTable from "./layouts/patients-utils/ApprovedAppointmentTable";
+/*
+    modules of clinics dashboard
+*/
 import DeclinedAppointmentStatusTable from "./layouts/patients-utils/DeclinedAppointmentTable";
+import PendingAppointmentClinicTable from "./layouts/doctor-utils/PendingAppointmentClinicTable";
+import ApprovedAppointmentClinicTable from "./layouts/doctor-utils/ApprovedAppointmentClinicTable";
+import DeclinedAppointmentStatusClinicTable from "./layouts/doctor-utils/DeclinedAppointmentStatusClinicTable";
 
 const iconStyle = {
     fontSize: 20,
@@ -74,16 +80,37 @@ export const doctorRoutes = [
             {
                 id: 1,
                 icon: <HomeIcon style={iconStyle} />,
-                name: "Doctor's Dashboard",
+                name: "Clinics Dashboard",
                 path: "/home",
                 element: <DoctorsDashboardHome />,
             },
             {
                 id: 2,
                 icon: <Schedule style={iconStyle} />,
-                name: "Patient's Appointments",
+                name: "Appointments",
                 path: "/patients-appointments",
                 element: <DoctorsTablesListOfAppointments />
+            },
+            {
+                id: 3,
+                icon: <Schedule style={iconStyle} />,
+                name: "Pending Appointments",
+                path: "/pending-appointments",
+                element: <PendingAppointmentClinicTable />
+            },
+            {
+                id: 4,
+                icon: <Schedule style={iconStyle} />,
+                name: "Approved Appointments",
+                path: "/approved-appointments",
+                element: <ApprovedAppointmentClinicTable />
+            },
+            {
+                id: 5,
+                icon: <Schedule style={iconStyle} />,
+                name: "Declined Appointments",
+                path: "/declined-appointments",
+                element: <DeclinedAppointmentStatusClinicTable />
             }
         ]
     }

@@ -30,7 +30,7 @@ import { useNavigate } from "react-router-dom"
 import Lottie from "lottie-react"
 import successAnimation from "../../assets/animation/Main Scene.json"
 
-const DoctorsTablesListOfAppointments = () => {
+const ApprovedAppointmentClinicTable = () => {
     const [appointmentsData, setAppointmentsData] = useState([])
     // state for the fields error
     const [fieldsError, setFieldsError] = useState({
@@ -97,22 +97,22 @@ const DoctorsTablesListOfAppointments = () => {
 
         const clinicID = localStorage.getItem("sid")
 
-        const retrievedAppointmentsData = async () => {
+        const retrieveAppoinmentApprovedStatus = async () => {
             try {
-                const response = await CMS.get(`/CMS/doctors-dashboard/appointments/${clinicID}`);
+                const response = await CMS.get(`/CMS/doctors-dashboard/getPatientApprovedStatus/${clinicID}`);
 
                 if (!response.data) {
-                    throw new Error("No retrieved data for appointments");
+                    throw new Error("No retrieved approved status for appointments");
                 }
 
                 if (response.status === 200) {
-                    setAppointmentsData(response.data.patientsAppointments);
+                    setAppointmentsData(response.data.patientsApprovedStatus);
                 }
             } catch (error) {
-                console.error(`Code functionality error for fetching appointments data: ${error}`);
+                console.error(`Code functionality error for fetching approved status data: ${error}`);
             }
         }
-        retrievedAppointmentsData();
+        retrieveAppoinmentApprovedStatus();
     }, [location.pathname])
 
 
@@ -125,6 +125,7 @@ const DoctorsTablesListOfAppointments = () => {
         return `${year}-${month}-${day}`;
     };
 
+    // function to format to MM/DD/YYYY to display in the table
     const dateFormat = (dateString) => {
         const date = new Date(dateString);
         return date.toLocaleDateString("en-US", {
@@ -133,7 +134,7 @@ const DoctorsTablesListOfAppointments = () => {
             day: "numeric"
         })
     };
-    
+
     // this function is used to update the appointment details
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -221,7 +222,7 @@ const DoctorsTablesListOfAppointments = () => {
             <div className="mt-12 mb-1 flex justify-center items-center w-full">
                 <Card className="shadow-lg rounded-2xl w-full">
                     <CardHeader
-                        title="View All Appointments"
+                        title="Approved Appointments"
                         className="bg-blue-500 mb-8 p-6"
                         slotProps={{
                             title: {
@@ -467,4 +468,4 @@ const DoctorsTablesListOfAppointments = () => {
     )
 }
 
-export default DoctorsTablesListOfAppointments;
+export default ApprovedAppointmentClinicTable;

@@ -1,13 +1,38 @@
 import PropTypes from "prop-types"
 import "../../assets/css/main.css";
-import { Drawer, Typography, useMediaQuery } from "@mui/material";
-import { useState } from "react";
-import { Link, NavLink, Outlet } from "react-router-dom"
+import {
+    Drawer,
+    Typography,
+    useMediaQuery,
+    List,
+    ListItemButton,
+    ListItemText,
+    Collapse,
+    ListItem,
+} from "@mui/material";
+import {
+    ExpandLess,
+    ExpandMore
+} from "@mui/icons-material";
+import {
+    useCallback,
+    useState
+} from "react";
+import {
+    Link,
+    NavLink,
+    Outlet
+} from "react-router-dom"
 
 // this is the sidenav component for the dashboard
 const DoctorsSideNav = ({ brandName, routes }) => {
     const [open, setOpen] = useState(false);
     const isMobile = useMediaQuery("(max-width: 768px)");
+    const [appointmentDropDownOpen, setAppointmentDropDownOpen] = useState(false);
+
+    const handleAppointmentDropDownClick = useCallback(() => {
+        setAppointmentDropDownOpen(!appointmentDropDownOpen);
+    }, [appointmentDropDownOpen])
 
     return (
         <Drawer
@@ -28,18 +53,106 @@ const DoctorsSideNav = ({ brandName, routes }) => {
             <nav className="p-3">
                 {routes.map(({ layout, pages }, index) => (
                     <div key={layout || index} className="mb-4">
-                        {pages.map(({ icon, name, path }) => (
+                        {pages
+                        .filter((page) => page.name !== "Appointments" && page.name !== "Pending Appointments" && page.name !== "Approved Appointments" && page.name !== "Declined Appointments")
+                        .map(({ icon, name, path }) => (
                             <NavLink
                                 key={name}
                                 to={`${layout}${path}`}
                                 className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-white" : "text-gray-700 hover:bg-gray-100"}`}
                             >
                                 {icon}
-                                <Typography sx={{ml: 2}}>{name}</Typography>
+                                <Typography sx={{ ml: 2 }}>{name}</Typography>
                             </NavLink>
                         ))}
                     </div>
                 ))}
+                <List className="bg-white shadow-lg rounded-2xl">
+                    <ListItemButton onClick={handleAppointmentDropDownClick}>
+                        <ListItemText primary="Appointments Management" />
+                        {appointmentDropDownOpen ? <ExpandLess /> : <ExpandMore />}
+                    </ListItemButton>
+                    <Collapse in={appointmentDropDownOpen} timeout="auto" unmountOnExit className="p-3">
+                        <List component="div" disablePadding>
+                            {routes.map(({ layout, pages }, index) => (
+                                pages
+                                    .filter((page) => page.name === "Appointments")
+                                    .map(({ icon, name, path }) => (
+                                        <NavLink
+                                            key={index}
+                                            to={`${layout}${path}`}
+                                            className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-white" : "text-gray-700 hover:bg-gray-100"}`}
+                                        >
+                                            {icon}
+                                            <ListItem button="true">
+                                                <ListItemText primary={name} className="text-black" />
+                                            </ListItem>
+                                        </NavLink>
+                                    ))
+                            ))}
+                        </List>
+                    </Collapse>
+                    <Collapse in={appointmentDropDownOpen} timeout="auto" unmountOnExit className="p-3">
+                        <List component="div" disablePadding>
+                            {routes.map(({ layout, pages }, index) => (
+                                pages
+                                    .filter((page) => page.name === "Pending Appointments")
+                                    .map(({ icon, name, path }) => (
+                                        <NavLink
+                                            key={index}
+                                            to={`${layout}${path}`}
+                                            className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-white" : "text-gray-700 hover:bg-gray-100"}`}
+                                        >
+                                            {icon}
+                                            <ListItem button="true">
+                                                <ListItemText primary={name} className="text-black" />
+                                            </ListItem>
+                                        </NavLink>
+                                    ))
+                            ))}
+                        </List>
+                    </Collapse>
+                    <Collapse in={appointmentDropDownOpen} timeout="auto" unmountOnExit className="p-3">
+                        <List component="div" disablePadding>
+                            {routes.map(({ layout, pages }, index) => (
+                                pages
+                                    .filter((page) => page.name === "Approved Appointments")
+                                    .map(({ icon, name, path }) => (
+                                        <NavLink
+                                            key={index}
+                                            to={`${layout}${path}`}
+                                            className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-white" : "text-gray-700 hover:bg-gray-100"}`}
+                                        >
+                                            {icon}
+                                            <ListItem button="true">
+                                                <ListItemText primary={name} className="text-black" />
+                                            </ListItem>
+                                        </NavLink>
+                                    ))
+                            ))}
+                        </List>
+                    </Collapse>
+                    <Collapse in={appointmentDropDownOpen} timeout="auto" unmountOnExit className="p-3">
+                        <List component="div" disablePadding>
+                            {routes.map(({ layout, pages }, index) => (
+                                pages
+                                    .filter((page) => page.name === "Declined Appointments")
+                                    .map(({ icon, name, path }) => (
+                                        <NavLink
+                                            key={index}
+                                            to={`${layout}${path}`}
+                                            className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-white" : "text-gray-700 hover:bg-gray-100"}`}
+                                        >
+                                            {icon}
+                                            <ListItem button="true">
+                                                <ListItemText primary={name} className="text-black" />
+                                            </ListItem>
+                                        </NavLink>
+                                    ))
+                            ))}
+                        </List>
+                    </Collapse>
+                </List>
             </nav>
         </Drawer>
     )
