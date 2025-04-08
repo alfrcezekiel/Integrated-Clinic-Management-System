@@ -892,6 +892,7 @@ export const getClinics = async (req, res) => {
     }
 }
 
+// controller logic for filtering the clinic details in search field in patients dashboard
 export const filterClinicDetails = async (req, res) => {
     try {
         const { clinicName, clinicType, clinicAddress } = req.query;
@@ -981,7 +982,8 @@ export const getPatientPendingStatus = async (req, res) => {
             patientsappointment.purposeOfAppointment
             FROM patientsappointment
             INNER JOIN clinic ON patientsappointment.clinic_id = clinic.clinic_id
-            WHERE patientsappointment.status = ? AND patientsappointment.email = ?;
+            WHERE patientsappointment.status = ? AND patientsappointment.email = ? 
+            ORDER BY patientsappointment.appointmentDate ASC;
         `
 
         const [rows] = await conn.query(query, [status, emailAddress]);
@@ -1005,7 +1007,6 @@ export const getPatientPendingStatus = async (req, res) => {
 }
 
 // controller logic for logging in clinic's account
-
 export const loggedInClinicAccount = async (req, res) => {
     const { email, password } = req.body;
     try {
@@ -1049,5 +1050,57 @@ export const loggedInClinicAccount = async (req, res) => {
         })
     } catch (error) {
         console.error(`Failed to login clinic account: ${error}`);
+    }
+}
+
+// controller logic for getting the approved patients status
+export const getPatientApprovedStatus = async (req, res) => {
+    try {
+        const status = "Approved";
+
+        const { email } = req.params
+
+        if (!email) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Please enter a valid email address"
+            })
+        }
+
+        const emailAddress = String(email)
+
+        const query = `
+            SELECT
+            clinic.clinic_name,
+            patientsappointment.firstName,
+            patientsappointment.lastName,
+            patientsappointment.email,
+            patientsappointment.phoneNumber,
+            patientsappointment.preferredTime,
+            patientsappointment.appointmentDate,
+            patientsappointment.status,
+            patientsappointment.purposeOfAppointment
+            FROM patientsappointment
+            INNER JOIN clinic ON patientsappointment.clinic_id = clinic.clinic_id
+            WHERE patientsappointment.status = ? AND patientsappointment.email = ?
+            ORDER BY patientsappointment.appointmentDate ASC;
+        `
+
+        const [rows] = await conn.query(query, [status, emailAddress]);
+
+        if (rows.length === 0) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No approved status found"
+            });
+        }
+
+        return res.status(StatusCodes.OK).json({
+            patientsApprovedStatus: rows
+        })
+
+    } catch (error) {
+        console.error(`Failed to get patients approved status: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to get patients approved status"
+        });
     }
 }

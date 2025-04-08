@@ -22,7 +22,8 @@ import {
     getClinics,
     filterClinicDetails,
     getPatientPendingStatus,
-    loggedInClinicAccount
+    loggedInClinicAccount,
+    getPatientApprovedStatus
 } from "../controllers/cms.js";
 import validateRegister from "../middleware/validation.js";
 import patientsLoginValidation from "../middleware/patientsLoginValidation.js";
@@ -108,6 +109,10 @@ router.get("/patients-dashboard/filter_search", filterClinicDetails)
 // router for getting the pending status of the patients appointments
 router.get("/patients-dashboard/getPatientPendingStatus/:email", getPatientPendingStatus);
 
+// router for logging in the clinic account
 router.post("/clinicLoggedInAccount", [doctorsLoginValidation], loggedInClinicAccount);
+
+// router for getting the approved status of the patients appointments
+router.get("/patients-dashboard/getPatientApprovedStatus/:email", getPatientApprovedStatus);
 
 export default router;

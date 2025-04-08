@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 
 // This component is used to rende  r the table rows for the appointments table
-const AppointmentsTable = ({ retrievedAppointmentsData }) => {
+const ApprovedAppointmentsTableValue = ({ retrievedAppointmentsData }) => {
 
     // This function is used to format the date string to a more readable format
     const formatDate = (dateString) => {
@@ -32,7 +32,7 @@ const AppointmentsTable = ({ retrievedAppointmentsData }) => {
             case "Consulted":
                 return "text-black bg-blue-300";
             default:
-                return "text-black bg-gray-300";
+                return "text-gray-600 bg-gray-100";
         }
     }
 
@@ -49,7 +49,7 @@ const AppointmentsTable = ({ retrievedAppointmentsData }) => {
             case "Consulted":
                 return "text-black bg-blue-300";
             default:
-                return "text-black bg-gray-300";
+                return "text-gray-600 bg-gray-100";
         }
     }
 
@@ -67,12 +67,18 @@ const AppointmentsTable = ({ retrievedAppointmentsData }) => {
             return time;
         }
     };
+
     const memoizedTableRows = useMemo(() => {
         const statusMatch = ["Approved", "Declined", "Pending", "Consulted"];
 
         if (retrievedAppointmentsData && retrievedAppointmentsData.length > 0) {
             return retrievedAppointmentsData.map((appointment, i) => (
                 <TableRow key={i}>
+                    <TableCell className="border-b border-blue-gray-50 text-center" align="center">
+                        <Typography variant="body2" className="text-blue-gray-900">
+                            {appointment.clinic_name}
+                        </Typography>
+                    </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
                         <Typography variant="body2" className="text-blue-gray-900">
                             {appointment.firstName}
@@ -90,7 +96,7 @@ const AppointmentsTable = ({ retrievedAppointmentsData }) => {
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
                         <Typography variant="body2" className={`rounded-lg p-2 ${getAppointmentDateColor(appointment.status)}`}>
-                            {statusMatch.includes(appointment.appointmentDate) ? "" : formatDate(appointment.appointmentDate)}
+                            {statusMatch.includes(appointment.appointmentDate) ? formatDate(appointment.appointmentDate) : formatDate(appointment.appointmentDate)}
                         </Typography>
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
@@ -136,7 +142,7 @@ const AppointmentsTable = ({ retrievedAppointmentsData }) => {
     );
 };
 
-AppointmentsTable.propTypes = {
+ApprovedAppointmentsTableValue.propTypes = {
     retrievedAppointmentsData: PropTypes.array,
 };
-export default AppointmentsTable;
+export default ApprovedAppointmentsTableValue;

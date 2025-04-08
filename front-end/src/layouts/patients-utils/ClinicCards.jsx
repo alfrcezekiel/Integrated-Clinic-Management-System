@@ -20,6 +20,10 @@ import {
     DollarSign
 } from 'lucide-react';
 import BookingAppointmentModal from "./BookingAppointmentModal";
+import {
+    useNavigate,
+    useLocation
+} from "react-router-dom";
 
 const ClinicCards = () => {
     const [clinics, setClinics] = useState([]);
@@ -69,6 +73,9 @@ const ClinicCards = () => {
         }
     }
 
+    const location = useLocation();
+    const navigate = useNavigate();
+
     const formatTimeToAMPM = (time) => {
         if (!time) return "N/A";
 
@@ -99,8 +106,10 @@ const ClinicCards = () => {
             try {
                 const response = await CMS.get("/CMS/admin-dashboard/clinics");
 
-                setClinics(response.data.clinics);
-                setLoading(false);
+                if (response.status === 200) {
+                    setClinics(response.data.clinics);
+                    setLoading(false);
+                }
             } catch (error) {
                 console.error(error);
             }
@@ -114,7 +123,7 @@ const ClinicCards = () => {
             retrievePatientData(retrievePatientId);
         }
 
-    }, [appointmentID]);
+    }, [appointmentID, location.pathname]);
 
     const handleOpenModal = (clinic) => {
         setSelectedClinic(clinic);
@@ -155,6 +164,7 @@ const ClinicCards = () => {
                     purposeOfAppointment: ""
                 });
                 handleCloseModal();
+                navigate("/patients-dashboard/Pending-Appointment")
             } else {
                 console.error(`Error in rendering the status code: ${response.status}`);
             }

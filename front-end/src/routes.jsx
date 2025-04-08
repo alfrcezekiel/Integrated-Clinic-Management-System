@@ -12,6 +12,7 @@ import ClinicCard from "./layouts/patients-utils/ClinicCards";
 import AddClinicIcon from "@mui/icons-material/LocalHospital"; // Add this import
 import AddClinic from "./layouts/adminUtils/AddClinic";
 import PendingAppointmentTable from "./layouts/patients-utils/PendingAppointmentTable";
+import ApprovedAppointmentsTable from "./layouts/patients-utils/ApprovedAppointmentTable";
 
 const iconStyle = {
     fontSize: 20,
@@ -53,7 +54,7 @@ const routes = [
                 icon: <Schedule style={iconStyle} />,
                 name: "Approved Appointments",
                 path: "Approved-Appointment",
-                element: <PendingAppointmentTable />
+                element: <ApprovedAppointmentsTable />
             }
         ],
     },
