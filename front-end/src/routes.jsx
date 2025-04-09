@@ -21,6 +21,9 @@ import PendingAppointmentClinicTable from "./layouts/doctor-utils/PendingAppoint
 import ApprovedAppointmentClinicTable from "./layouts/doctor-utils/ApprovedAppointmentClinicTable";
 import DeclinedAppointmentStatusClinicTable from "./layouts/doctor-utils/DeclinedAppointmentStatusClinicTable";
 
+import AccountCircle from '@mui/icons-material/AccountCircle';
+import RegisterPatientsAccountTable from "./layouts/adminUtils/RegisterPatientsAccountTable";
+
 const iconStyle = {
     fontSize: 20,
     color: "inherit",
@@ -137,9 +140,16 @@ export const adminRoutes = [
             {
                 id: 3,
                 icon: <AddClinicIcon style={iconStyle} />, // Use the new icon here
-                name: "Add Clinic",
+                name: "Create Clinic",
                 path: "/add-clinic",
                 element: <AddClinic />
+            },
+            {
+                id: 4,
+                icon: <AccountCircle style={iconStyle} />,
+                name: "Register Patients Account",
+                path: "/register-patients-account",
+                element: <RegisterPatientsAccountTable />
             }
         ]
     }

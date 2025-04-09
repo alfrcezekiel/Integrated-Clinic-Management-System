@@ -125,7 +125,7 @@ const ApprovedAppointmentsTableValue = ({ retrievedAppointmentsData, appointment
             // If no data is found, render a no appointments found row
             return (
                 <TableRow key={0}>
-                    <TableCell colSpan={appointmentTableColumn?.length ?? 1} className="py-3 px-5 border-b border-blue-gray-50 text-center" align="center">
+                    <TableCell colSpan={appointmentTableColumn?.length ?? 9} className="py-3 px-5 border-b border-blue-gray-50 text-center" align="center">
                         <Typography variant="body2" className="text-blue-gray-900">
                             {retrievedAppointmentsData ? "No appointments found" : "Please input credentials to view approved appointments"}
                         </Typography>

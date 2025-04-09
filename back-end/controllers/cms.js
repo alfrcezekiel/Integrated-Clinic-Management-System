@@ -29,23 +29,53 @@ export const CMS = async (req, res) => {
 // controller logic for register patients accounts
 export const registerPatientAccount = async (req, res) => {
     try {
-        const { firstName, lastName, email, phoneNumber, password, confirmPassword } = req.body;
+        const {
+            firstName,
+            lastName,
+            email,
+            phoneNumber,
+            password,
+            confirmPassword,
+        } = req.body;
 
         const SECRET_KEY = process.env.JWT_SECRET || "authenmimangjuan";
 
         const saltRounds = 10;
+        const status = "Pending"
 
         const hashedPassword = await bcrypt.hash(password, saltRounds);
         const hashedConfirmPassword = await bcrypt.hash(confirmPassword, saltRounds);
         // 1st table of patients register account
-        const query1 = "INSERT INTO patientsregisteraccount1 (firstName, lastName, email) VALUES (?, ?, ?)";
-        // 2nd table of patients register account
-        const query2 = "INSERT INTO patientsregisteraccount2 (phoneNumber, password, confirmPassword) VALUES (?, ?, ?)";
+        const query1 = `INSERT INTO patientsregisteraccount1 (
+        firstName,
+        lastName,
+        email
+        ) VALUES (?, ?, ?)`;
 
-        const [result] = await conn.query(query1, [firstName, lastName, email]);
+        // 2nd table of patients register account
+        const query2 = `INSERT INTO patientsregisteraccount2 (
+            phoneNumber,
+            password,
+            confirmPassword,
+            patientID,
+            status
+        ) VALUES (?, ?, ?, ?, ?)
+        `;
+
+        const [result] = await conn.query(query1, [
+            firstName,
+            lastName,
+            email
+        ]);
         const patientID = result.insertId;
 
-        await conn.query(query2, [phoneNumber, hashedPassword, hashedConfirmPassword]);
+        await conn.query(query2, [
+            phoneNumber,
+            hashedPassword,
+            hashedConfirmPassword,
+            patientID,
+            status
+        ]);
 
         const token = jwt.sign({ id: patientID, email: email }, SECRET_KEY || "sadadsasdd", { expiresIn: "1hr" });
         return res.status(StatusCodes.OK).json({
@@ -1308,6 +1338,40 @@ export const getDeclinedAppointmentStatusInClinic = async (req, res) => {
         console.error(`Failed to get declined status appointments: ${error}`);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             message: "Failed to retrieve declined status appointments"
+        })
+    }
+}
+
+// controller logic for getting the registered patients account in admin dashboard
+export const getRegisteredPatientsAccountInAdmin = async (req, res) => {
+    try {
+        const query = `
+            SELECT
+            patientsregisteraccount1.firstName,
+            patientsregisteraccount1.lastName,
+            patientsregisteraccount1.email,
+            patientsregisteraccount2.phoneNumber,
+            patientsregisteraccount2.status
+            FROM patientsregisteraccount1
+            INNER JOIN patientsregisteraccount2
+            ON patientsregisteraccount1.patientID = patientsregisteraccount2.patientID
+        `
+
+        const [rows] = await conn.query(query);
+
+        if (rows.length === 0) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No registered patients account found"
+            })
+        }
+
+        return res.status(StatusCodes.OK).json({
+            registeredPatientsAccount: rows
+        })
+    } catch (error) {
+        console.error(`Failed to get registered patients account: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to retrieve registered patients account"
         })
     }
 }
