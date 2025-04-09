@@ -55,10 +55,11 @@ const RegisterPatientsAccountTable = () => {
         setOpenModal(true);
     }
 
-    const handleCloseModal = () => {
+    const handleCloseModal = useCallback(() =>{
         setSelectedPatient(null);
         setOpenModal(false);
-    }
+        retrievedPatientsAccountData();
+    }, [])
 
     const handleChange = useCallback(async (e, field) => {
         if (e && e.target) {
@@ -95,7 +96,7 @@ const RegisterPatientsAccountTable = () => {
         } catch (error) {
             console.error("Error updating patient account:", error);
         }
-    }, [selectedPatient])
+    }, [selectedPatient, handleCloseModal]);
 
     const retrievedPatientsAccountData = async () => {
         try {

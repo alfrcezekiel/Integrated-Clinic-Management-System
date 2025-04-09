@@ -23,7 +23,7 @@ const PatientsAccountsTableValue = ({ patientsAccountData, registerPatientColumn
             case "Pending":
                 return "text-black bg-yellow-300";
             default:
-                return "text-gray-600 bg-gray-100";
+                return "text-gray-600 bg-gray-300";
         }
     }
 

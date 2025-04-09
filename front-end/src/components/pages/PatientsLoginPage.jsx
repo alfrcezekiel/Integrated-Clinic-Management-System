@@ -3,7 +3,11 @@ import Checkbox from "@mui/material/Checkbox"
 import Button from "@mui/material/Button"
 import Typography from "@mui/material/Typography"
 import FormControlLabel from "@mui/material/FormControlLabel"
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import {
+    Link,
+    useNavigate,
+    useLocation
+} from "react-router-dom";
 import "../../assets/css/main.css"
 import FormControl from "@mui/material/FormControl"
 import InputLabel from "@mui/material/InputLabel"
@@ -15,6 +19,11 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff"
 import { useState, useEffect } from "react"
 import CMS from "../../API/CMS";
 import FormHelperText from "@mui/material/FormHelperText"
+import  { useCallback } from "react";
+import Dialog from "@mui/material/Dialog"
+import DialogTitle from "@mui/material/DialogTitle"
+import DialogContent from "@mui/material/DialogContent"
+import DialogActions from "@mui/material/DialogActions"
 
 function PatientsLoginPortal() {
     const [showPassword, setShowPassword] = useState(false);
@@ -26,6 +35,19 @@ function PatientsLoginPortal() {
         email: "",
         password: ""
     })
+    const [openModal, setOpenModal] = useState(false);
+    const [accountStatus, setAccountStatus] = useState("");
+
+    const handleAccountStatus = useCallback(async (response) => {
+        if(response.data.status === "Pending"){
+            setAccountStatus("Your account is pending approval. Please wait for the admin to approve your account.");
+            setOpenModal(true)
+        } else {
+            setAccountStatus("Your account is active. You can proceed to login.");
+            setOpenModal(false);
+        }
+    }, [])
+
 
     const location = useLocation();
 
@@ -40,6 +62,10 @@ function PatientsLoginPortal() {
         setShowPassword((show) => !show);
     }
 
+    const handleCloseModal = useCallback(async () => {
+        setOpenModal(false);
+    }, [])
+    
     const handleMouseDownPassword = (e) => {
         e.preventDefault();
     }
@@ -49,7 +75,7 @@ function PatientsLoginPortal() {
     }
 
     const navigate = useNavigate();
-
+    
     const handleLoggedInPatient = async (e) => {
         try {
             e.preventDefault();
@@ -61,6 +87,7 @@ function PatientsLoginPortal() {
             });
             if (response.data && response.status === 200) {
                 setFieldErrors({})
+                handleAccountStatus(response.data.messageStatus);
                 if (response.data.token && response.data.sid) {
                     localStorage.setItem("authToken", response.data.token);
                     localStorage.setItem("sid", response.data.sid.patientID);
@@ -75,11 +102,13 @@ function PatientsLoginPortal() {
                 setFieldErrors(response.data.errors);
             } else if (response.data && response.data.messageStatus) {
                 alert(response.data.messageStatus);
-            } else {
+                return;
+            }
+            else {
                 console.error(`Error in logging in patient: ${response.status}`);
                 alert("Error in logging in patient")
             }
-
+            
         } catch (error) {
             if (error.response && error.response.status === 400) {
                 setFieldErrors(error.response.data.errors);
@@ -89,6 +118,7 @@ function PatientsLoginPortal() {
                     password: error.response.data.passwordMessage
                 });
             } else if (error.response.data && error.response.data.messageStatus) {
+                handleAccountStatus(error.response.data.messageStatus);
                 alert(error.response.data.messageStatus);
             } else {
                 console.error(`Error in logging in patient: ${error}`);
@@ -209,6 +239,20 @@ function PatientsLoginPortal() {
             <div className="w-2/5 h-screen hidden lg:block">
                 <img src="img/pattern.png" className="h-full w-full object-cover rounded-3xl" alt="Pattern" />
             </div>
+
+            <Dialog open={openModal} onClose={handleCloseModal}>
+                <DialogTitle>Account Status</DialogTitle>
+                <DialogContent>
+                    <Typography variant="body2" color="textSecondary">
+                        {accountStatus}
+                    </Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseModal} color="primary">
+                        Close
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </section>
     );
 }

@@ -1364,7 +1364,6 @@ export const getDeclinedAppointmentStatusInClinic = async (req, res) => {
 // controller logic for getting the registered patients account in admin dashboard
 export const getRegisteredPatientsAccountInAdmin = async (req, res) => {
     try {
-        const status = "Pending";
         const query = `
             SELECT
             patientsregisteraccount1.patientID,
@@ -1379,10 +1378,9 @@ export const getRegisteredPatientsAccountInAdmin = async (req, res) => {
             FROM patientsregisteraccount1
             INNER JOIN patientsregisteraccount2
             ON patientsregisteraccount1.patientID = patientsregisteraccount2.patientID
-            WHERE patientsregisteraccount2.status = ?;
         `
 
-        const [rows] = await conn.query(query, [status]);
+        const [rows] = await conn.query(query);
 
         if (rows.length === 0) {
             return res.status(StatusCodes.NOT_FOUND).json({
@@ -1456,7 +1454,7 @@ export const updateRegisteredPatientsAccountInAdmin = async (req, res) => {
 
         const [result] = await conn.query(query, values);
 
-        if(result.affectedRows === 0) {
+        if (result.affectedRows === 0) {
             return res.status(StatusCodes.NOT_FOUND).json({
                 message: "No registered patients account found with the provided ID"
             })
