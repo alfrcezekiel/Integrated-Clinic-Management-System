@@ -16,7 +16,7 @@ export default defineConfig({
     historyApiFallback: true,
     proxy: {
       "/CMS":{
-        target: "http://localhost:5003",
+        target: "http://localhost:7506",
         changeOrigin: true,
         secure: false,
         ws: true,

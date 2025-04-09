@@ -14,9 +14,9 @@ const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-app.set("port", process.env.PORT || 5003);
-app.set("host", process.env.HOST || "localhost");
-app.set("baseURL", process.env.BASE_URL || "/CMS")
+app.set("port", process.env.SERVER_PORT);
+app.set("host", process.env.SERVER_HOST);
+app.set("baseURL", process.env.SERVER_BASE_URL)
 
 // session configuration
 app.use(session({
@@ -54,9 +54,13 @@ app.use((req, res) => {
 })
 
 // function for statrting the server
-const startServer = () => {
-    app.listen(app.get("port"), app.get("host"), () => {
-        console.log(`Server is running on http://${app.get("host")}:${app.get("port")}${app.get("baseURL")}`);
-    })
+const startServer = async () => {
+    try {
+        app.listen(app.get("port"), app.get("host"), () => {
+            console.log(`Server is running on http://${app.get("host")}:${app.get("port")}${app.get("baseURL")}`);
+        })
+    } catch (error){
+        console.error("Error starting server:", error);
+    }
 }
 startServer();
