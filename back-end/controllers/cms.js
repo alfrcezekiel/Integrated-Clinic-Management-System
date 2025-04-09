@@ -33,10 +33,17 @@ export const registerPatientAccount = async (req, res) => {
             firstName,
             lastName,
             email,
+            address,
+            civilStatus,
+            dateOfBirth,
             phoneNumber,
             password,
             confirmPassword,
         } = req.body;
+
+        const address_field = String(address);
+        const civil_status = String(civilStatus);
+        const date_of_birth = String(dateOfBirth);
 
         const SECRET_KEY = process.env.JWT_SECRET || "authenmimangjuan";
 
@@ -49,8 +56,11 @@ export const registerPatientAccount = async (req, res) => {
         const query1 = `INSERT INTO patientsregisteraccount1 (
         firstName,
         lastName,
-        email
-        ) VALUES (?, ?, ?)`;
+        email,
+        address,
+        civilStatus,
+        dateOfBirth
+        ) VALUES (?, ?, ?, ?, ?, ?)`;
 
         // 2nd table of patients register account
         const query2 = `INSERT INTO patientsregisteraccount2 (
@@ -65,7 +75,10 @@ export const registerPatientAccount = async (req, res) => {
         const [result] = await conn.query(query1, [
             firstName,
             lastName,
-            email
+            email,
+            address_field,
+            civil_status,
+            date_of_birth
         ]);
         const patientID = result.insertId;
 
@@ -120,7 +133,8 @@ export const loginPatientsAccount = async (req, res) => {
             patientsregisteraccount1.firstName,
             patientsregisteraccount1.lastName,
             patientsregisteraccount1.email,
-            patientsregisteraccount2.password
+            patientsregisteraccount2.password,
+            patientsregisteraccount2.status
             FROM patientsregisteraccount1
             INNER JOIN patientsregisteraccount2
             ON patientsregisteraccount1.patientID = patientsregisteraccount2.registerPatientID
@@ -144,6 +158,11 @@ export const loginPatientsAccount = async (req, res) => {
             })
         }
 
+        if (patients.status === "Pending") {
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                messageStatus: "Account is still pending for wait for the admin approval!"
+            })
+        }
         // generate a token
         const token = jwt.sign({ id: patients.patientID }, SECRET_KEY, { expiresIn: "1hr" });
 
@@ -1345,19 +1364,25 @@ export const getDeclinedAppointmentStatusInClinic = async (req, res) => {
 // controller logic for getting the registered patients account in admin dashboard
 export const getRegisteredPatientsAccountInAdmin = async (req, res) => {
     try {
+        const status = "Pending";
         const query = `
             SELECT
+            patientsregisteraccount1.patientID,
             patientsregisteraccount1.firstName,
             patientsregisteraccount1.lastName,
             patientsregisteraccount1.email,
+            patientsregisteraccount1.address,
+            patientsregisteraccount1.civilStatus,
+            patientsregisteraccount1.dateOfBirth,
             patientsregisteraccount2.phoneNumber,
             patientsregisteraccount2.status
             FROM patientsregisteraccount1
             INNER JOIN patientsregisteraccount2
             ON patientsregisteraccount1.patientID = patientsregisteraccount2.patientID
+            WHERE patientsregisteraccount2.status = ?;
         `
 
-        const [rows] = await conn.query(query);
+        const [rows] = await conn.query(query, [status]);
 
         if (rows.length === 0) {
             return res.status(StatusCodes.NOT_FOUND).json({
@@ -1372,6 +1397,79 @@ export const getRegisteredPatientsAccountInAdmin = async (req, res) => {
         console.error(`Failed to get registered patients account: ${error}`);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             message: "Failed to retrieve registered patients account"
+        })
+    }
+}
+
+// controller logic for updating the registered patients account in admin dashboard
+export const updateRegisteredPatientsAccountInAdmin = async (req, res) => {
+    try {
+        const {
+            firstName,
+            lastName,
+            email,
+            address,
+            civilStatus,
+            dateOfBirth,
+            phoneNumber,
+            status
+        } = req.body;
+
+        const { patientID } = req.params;
+
+        const first_name = String(firstName);
+        const last_name = String(lastName);
+        const email_address = String(email);
+        const patient_address = String(address);
+        const civil_status = String(civilStatus);
+        const date_of_birth = String(dateOfBirth);
+        const phone_number = String(phoneNumber);
+        const patient_status = String(status);
+
+        const query = `
+            UPDATE patientsregisteraccount1 AS p1
+            INNER JOIN patientsregisteraccount2 AS p2
+            ON p1.patientID = p2.patientID
+            SET
+            p1.firstName = ?,
+            p1.lastName = ?,
+            p1.email = ?,
+            p1.address = ?,
+            p1.civilStatus = ?,
+            p1.dateOfBirth = ?,
+            p2.phoneNumber = ?,
+            p2.status = ?
+            WHERE p1.patientID = ?;
+        `
+
+        const values = [
+            first_name,
+            last_name,
+            email_address,
+            patient_address,
+            civil_status,
+            date_of_birth,
+            phone_number,
+            patient_status,
+            patientID
+        ];
+
+        const [result] = await conn.query(query, values);
+
+        if(result.affectedRows === 0) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No registered patients account found with the provided ID"
+            })
+        }
+
+        return res.status(StatusCodes.OK).json({
+            message: "Registered patients account updated successfully"
+        })
+
+    } catch (error) {
+        console.error(`Failed to update registered patients account: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to update registered patients account"
         })
     }
 }

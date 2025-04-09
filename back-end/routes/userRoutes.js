@@ -28,7 +28,8 @@ import {
     getPendingAppointmentStatus,
     getApprovedAppointmentStatusInClinic,
     getDeclinedAppointmentStatusInClinic,
-    getRegisteredPatientsAccountInAdmin
+    getRegisteredPatientsAccountInAdmin,
+    updateRegisteredPatientsAccountInAdmin
 } from "../controllers/cms.js";
 import validateRegister from "../middleware/validation.js";
 import patientsLoginValidation from "../middleware/patientsLoginValidation.js";
@@ -136,5 +137,8 @@ router.get("/doctors-dashboard/getPatientDeclinedStatus/:clinicID", getDeclinedA
 
 // router for retrieving the data of registered patients account to admin dashboard
 router.get("/admin-dashboard/registeredPatientAccount", getRegisteredPatientsAccountInAdmin);
+
+// router for updating the patient registered account in admin dashboard
+router.put("/admin-dashboard/updateRegisteredPatientAccount/:patientID", updateRegisteredPatientsAccountInAdmin);
 
 export default router;

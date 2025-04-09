@@ -134,7 +134,7 @@ const AdminSideNav = ({ brandName, routes }) => {
                                             }
                                         >
                                             <ListItem button="true">
-                                                <ListItemText primary="Create Doctors" className="text-black" />
+                                                <ListItemText primary="Add Doctors" className="text-black" />
                                             </ListItem>
                                         </NavLink>
                                     ))

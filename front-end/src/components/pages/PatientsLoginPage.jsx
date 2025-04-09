@@ -70,10 +70,14 @@ function PatientsLoginPortal() {
                     navigate("/patients-dashboard/Home");
                 } else {
                     console.error("No token found in response data");
-                    alert("No token found in response data")
                 }
             } else if (response.data && response.data.errors) {
                 setFieldErrors(response.data.errors);
+            } else if (response.data && response.data.messageStatus) {
+                alert(response.data.messageStatus);
+            } else {
+                console.error(`Error in logging in patient: ${response.status}`);
+                alert("Error in logging in patient")
             }
 
         } catch (error) {
@@ -84,6 +88,8 @@ function PatientsLoginPortal() {
                     email: error.response.data.emailMessage,
                     password: error.response.data.passwordMessage
                 });
+            } else if (error.response.data && error.response.data.messageStatus) {
+                alert(error.response.data.messageStatus);
             } else {
                 console.error(`Error in logging in patient: ${error}`);
             }

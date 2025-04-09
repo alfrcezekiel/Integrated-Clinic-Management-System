@@ -10,8 +10,9 @@ import {
     IconButton
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 
-const PatientsAccountsTableValue = ({ patientsAccountData, registerPatientColumns }) => {
+const PatientsAccountsTableValue = ({ patientsAccountData, registerPatientColumns, updateRegisteredPatientsAccount }) => {
     // function to determine  the color of registered patient account status
     const getStatusColor = (status) => {
         switch (status) {
@@ -25,7 +26,17 @@ const PatientsAccountsTableValue = ({ patientsAccountData, registerPatientColumn
                 return "text-gray-600 bg-gray-100";
         }
     }
-    
+
+    // function to format to MM/DD/YYYY to display in the table
+    const dateFormat = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+        })
+    };
+
     const memoizedTableRows = useMemo(() => {
         if (patientsAccountData && patientsAccountData.length > 0) {
             return patientsAccountData.map((patient, i) => (
@@ -47,6 +58,21 @@ const PatientsAccountsTableValue = ({ patientsAccountData, registerPatientColumn
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
                         <Typography variant="body2" className="text-blue-gray-900">
+                            {patient.address}
+                        </Typography>
+                    </TableCell>
+                    <TableCell className="border-b border-blue-gray-50 text-center" align="center">
+                        <Typography variant="body2" className="text-blue-gray-900">
+                            {patient.civilStatus}
+                        </Typography>
+                    </TableCell>
+                    <TableCell className="border-b border-blue-gray-50 text-center" align="center">
+                        <Typography variant="body2" className="text-blue-gray-900">
+                            {dateFormat(patient.dateOfBirth)}
+                        </Typography>
+                    </TableCell>
+                    <TableCell className="border-b border-blue-gray-50 text-center" align="center">
+                        <Typography variant="body2" className="text-blue-gray-900">
                             {patient.phoneNumber}
                         </Typography>
                     </TableCell>
@@ -56,8 +82,13 @@ const PatientsAccountsTableValue = ({ patientsAccountData, registerPatientColumn
                         </Typography>
                     </TableCell>
                     <TableCell align="center">
-                        <IconButton aria-label="edit">
+                        <IconButton aria-label="edit" onClick={() => updateRegisteredPatientsAccount(patient)}>
                             <EditIcon />
+                        </IconButton>
+                    </TableCell>
+                    <TableCell align="center">
+                        <IconButton aria-label="edit">
+                            <DeleteIcon />
                         </IconButton>
                     </TableCell>
                 </TableRow>
@@ -66,7 +97,7 @@ const PatientsAccountsTableValue = ({ patientsAccountData, registerPatientColumn
             // If no data is found, render a no appointments found row
             return (
                 <TableRow key={0}>
-                    <TableCell colSpan={registerPatientColumns?.length ?? 6} className="py-3 px-5 border-b border-blue-gray-50 text-center" align="center">
+                    <TableCell colSpan={registerPatientColumns?.length ?? 10} className="py-3 px-5 border-b border-blue-gray-50 text-center" align="center">
                         <Typography variant="body2" className="text-blue-gray-900">
                             {patientsAccountData ? "No appointments found" : "Please input credentials to view approved appointments"}
                         </Typography>
@@ -74,7 +105,7 @@ const PatientsAccountsTableValue = ({ patientsAccountData, registerPatientColumn
                 </TableRow>
             );
         }
-    }, [patientsAccountData, registerPatientColumns]);
+    }, [patientsAccountData, registerPatientColumns, updateRegisteredPatientsAccount]);
 
     return (
         <TableBody>
@@ -86,6 +117,7 @@ const PatientsAccountsTableValue = ({ patientsAccountData, registerPatientColumn
 PatientsAccountsTableValue.propTypes = {
     patientsAccountData: PropTypes.array.isRequired,
     registerPatientColumns: PropTypes.array.isRequired,
+    updateRegisteredPatientsAccount: PropTypes.func.isRequired,
 }
 
 export default PatientsAccountsTableValue

@@ -16,6 +16,12 @@ import IconButton from "@mui/material/IconButton";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import FormHelperText from "@mui/material/FormHelperText";
+import MenuItem from "@mui/material/MenuItem";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DatePicker } from "@mui/x-date-pickers";
+import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
+import dayjs from "dayjs";
 
 const PatientsRegistrationPortal = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -47,6 +53,8 @@ const PatientsRegistrationPortal = () => {
 
     const location = useLocation();
 
+    const civilStatus = ["Single", "Married", "Divorced", "Widowed"];
+
     useEffect(() => {
         const displayTitleHeader = () => {
             document.title = "Patients Registration Portal | CMS";
@@ -59,6 +67,9 @@ const PatientsRegistrationPortal = () => {
         lastName: "",
         email: "",
         phoneNumber: "",
+        address: "",
+        civilStatus: "",
+        dateOfBirth: "",
         password: "",
         confirmPassword: ""
     });
@@ -67,6 +78,9 @@ const PatientsRegistrationPortal = () => {
         firstName: "",
         lastName: "",
         email: "",
+        address: "",
+        civilStatus: "",
+        dateOfBirth: null,
         phoneNumber: "",
         password: "",
         confirmPassword: ""
@@ -154,6 +168,65 @@ const PatientsRegistrationPortal = () => {
                             helperText={fieldsErrors.email || ""}
                             error={Boolean(fieldsErrors.email)}
                         />
+                    </div>
+                    <div className="mb-1 flex flex-col gap-6">
+                        <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">Address</Typography>
+                        <TextField
+                            autoComplete="off"
+                            size="lg"
+                            label="Enter your Address"
+                            variant="outlined"
+                            type="text"
+                            onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, address: e.target.value })}
+                            value={formRegistrationPatientsData.address}
+                            helperText={fieldsErrors.address || ""}
+                            error={Boolean(fieldsErrors.address)}
+                        />
+                    </div>
+                    <div className="mb-1 flex flex-col gap-6">
+                        <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">Civil Status</Typography>
+                        <TextField
+                            autoComplete="off"
+                            size="lg"
+                            select
+                            label="Select Civil status"
+                            variant="outlined"
+                            onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, civilStatus: e.target.value })}
+                            value={formRegistrationPatientsData.civilStatus}
+                            helperText={fieldsErrors.civilStatus || ""}
+                            error={Boolean(fieldsErrors.civilStatus)}
+                        >
+                            {civilStatus.map((status, index) => (
+                                <MenuItem key={index} value={status}>
+                                    {status}
+                                </MenuItem>
+                            ))}
+                        </TextField>
+                    </div>
+                    <div className="mb-1 flex flex-col gap-6">
+                        <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">Date of Birth</Typography>
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                            <DemoContainer components={['DatePicker']}>
+                                <DatePicker
+                                    className="w-full"
+                                    margin="dense"
+                                    id="date-of-birth"
+                                    name="dateOfBirth"
+                                    value={formRegistrationPatientsData.dateOfBirth}
+                                    onChange={(newValue) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, dateOfBirth: dayjs(newValue) })}
+                                    label="Date of Birth"
+                                    slotProps={{
+                                        textField: {
+                                            className: "w-full",
+                                            variant: "outlined",
+                                            fullWidth: true,
+                                            error: Boolean(fieldsErrors.dateOfBirth),
+                                            helperText: fieldsErrors.dateOfBirth || "",
+                                        },
+                                    }}
+                                />
+                            </DemoContainer>
+                        </LocalizationProvider>
                     </div>
                     <div className="mb-1 flex flex-col gap-6">
                         <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">Phone Number</Typography>
