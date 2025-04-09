@@ -46,9 +46,13 @@ function Login(){
                             <div className="login-group-password">
                                 <InputPassword/>
                             </div>
+<<<<<<< HEAD
                             <div className="button-login">
                                 <LoginButton name="Login"/>
                             </div>
+=======
+                            <LoginButton name="Login"/>
+>>>>>>> 9d3c371969277c2fa7b4fdfff5fa530d00f31763
                         </div>
                     </form>
                 </div>

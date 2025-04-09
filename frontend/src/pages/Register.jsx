@@ -8,7 +8,10 @@ import RegisterTextFieldPhoneNumber from '../components/RegisterTextFieldPhoneNu
 // import RegisterDateOfBirth from '../components/RegisterDateOfBirth';
 import RegisterTextFieldPassword from '../components/RegisterTextFieldPassword';
 import RegisterTextFieldConfirmPassword from '../components/RegisterTextFieldConfirmPassword';
+<<<<<<< HEAD
 import { Link, Outlet } from "react-router-dom";
+=======
+>>>>>>> 9d3c371969277c2fa7b4fdfff5fa530d00f31763
 import RegisterSubmitButton from '../components/RegisterSubmitButton';
 import RegistrationSuccessfulModal from '../components/RegistrationSuccessfullModal';
 
@@ -66,6 +69,17 @@ function RegisterAccount() {
             }
 
             if(res.status === 200){
+<<<<<<< HEAD
+=======
+                // setFormData({
+                //     firstName: "",
+                //     lastName: "",
+                //     email: "",
+                //     phoneNumber: "",
+                //     password: "",
+                //     confirmPassword: ""
+                // })
+>>>>>>> 9d3c371969277c2fa7b4fdfff5fa530d00f31763
                 setRegistrationMessage(res.data.successfullRegistration);
                 setFieldsMessage(res.data.fieldsMessage);
                 setStatusMessage(res.data.statusMessage);
@@ -143,10 +157,13 @@ function RegisterAccount() {
                 </div>
                 <RegistrationSuccessfulModal isOpen={modalOpen} onClose={() => setModalOpen(false)} fieldsMessage={fieldsMessage} statusMessage={statusMessage}/>
                 <div>
+<<<<<<< HEAD
                     <Link to="/login">Login</Link>
                     <Outlet />
                 </div>
                 <div>
+=======
+>>>>>>> 9d3c371969277c2fa7b4fdfff5fa530d00f31763
                     <h1>{registrationMessage}</h1>
                 </div>
             </div>

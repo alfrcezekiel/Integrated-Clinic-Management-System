@@ -22,6 +22,10 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.1.3",
+<<<<<<< HEAD
+=======
+    "react-router-hash-link": "^2.4.3",
+>>>>>>> 9d3c371969277c2fa7b4fdfff5fa530d00f31763
     "styled-components": "^6.1.14",
     "tailwindcss": "^4.0.1"
   },

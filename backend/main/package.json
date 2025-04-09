@@ -17,6 +17,10 @@
     "express": "^4.21.2",
     "express-session": "^1.18.1",
     "jsonwebtoken": "^9.0.2",
+<<<<<<< HEAD
+=======
+    "morgan": "^1.10.0",
+>>>>>>> 9d3c371969277c2fa7b4fdfff5fa530d00f31763
     "mysql": "^2.18.1",
     "mysql2": "^3.12.0",
     "nodemon": "^3.1.9"

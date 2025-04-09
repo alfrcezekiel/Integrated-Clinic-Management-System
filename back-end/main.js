@@ -1,0 +1,66 @@
+import express from "express";
+import path from "path";
+import bodyParser from "body-parser";
+import morgan from "morgan";
+import cors from "cors";
+import { fileURLToPath } from "url";
+import cms from "./routes/userRoutes.js";
+import dotenv from "dotenv";
+import { StatusCodes } from "http-status-codes";
+import session from "express-session";
+dotenv.config();
+
+const app = express();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+app.set("port", process.env.SERVER_PORT);
+app.set("host", process.env.SERVER_HOST);
+app.set("baseURL", process.env.SERVER_BASE_URL)
+
+// session configuration
+app.use(session({
+    secret: process.env.SESSION_SECRET || "authennivayne",
+    resave: false,
+    saveUninitialized: false,
+    cookie:{
+        secure:false,
+        httpOnly:true,
+        maxAge: 1000 * 60 * 60 * 24
+    }
+}))
+app.use(express.json());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(morgan("dev"));
+app.use(express.static(path.join(__dirname, "public")));
+
+// Ensure the directory exists before serving it as static content
+const clinicImagesPath = path.join(__dirname, "uploads");
+app.use(express.static(clinicImagesPath));
+app.use(cors({
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    credentials: true
+}))
+// route for CMS
+app.use("/CMS", cms);
+
+// error handling for server not found
+app.use((req, res) => {
+    return res.status(StatusCodes.NOT_FOUND).json({
+        routeMessage: "Server route not found"
+    })
+})
+
+// function for statrting the server
+const startServer = async () => {
+    try {
+        app.listen(app.get("port"), app.get("host"), () => {
+            console.log(`Server is running on http://${app.get("host")}:${app.get("port")}${app.get("baseURL")}`);
+        })
+    } catch (error){
+        console.error("Error starting server:", error);
+    }
+}
+startServer();
