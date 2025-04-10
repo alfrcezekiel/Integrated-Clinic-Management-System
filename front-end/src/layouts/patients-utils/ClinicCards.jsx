@@ -186,8 +186,8 @@ const ClinicCards = () => {
                     No clinics found.
                 </Typography>
             ) : (
-                clinics.map((clinic) => (
-                    <Card key={clinic} className="w-md mx-auto bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl shadow-lg overflow-hidden transform transition duration-300 hover:scale-105">
+                clinics.map((clinic, i) => (
+                    <Card key={i} className="w-md mx-auto bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl shadow-lg overflow-hidden transform transition duration-300 hover:scale-105">
                         <CardMedia
                             className="h-48 w-full bg-blue-200 flex items-center justify-center"
                             component="div"

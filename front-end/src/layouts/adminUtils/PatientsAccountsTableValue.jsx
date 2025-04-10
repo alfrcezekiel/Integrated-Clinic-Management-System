@@ -17,13 +17,13 @@ const PatientsAccountsTableValue = ({ patientsAccountData, registerPatientColumn
     const getStatusColor = (status) => {
         switch (status) {
             case "Approved":
-                return "text-black bg-green-300";
+                return "text-black bg-green-200";
             case "Declined":
-                return "text-black bg-red-300";
+                return "text-black bg-red-200";
             case "Pending":
-                return "text-black bg-yellow-300";
+                return "text-black bg-white";
             default:
-                return "text-gray-600 bg-gray-300";
+                return "text-black bg-white";
         }
     }
 
@@ -40,7 +40,7 @@ const PatientsAccountsTableValue = ({ patientsAccountData, registerPatientColumn
     const memoizedTableRows = useMemo(() => {
         if (patientsAccountData && patientsAccountData.length > 0) {
             return patientsAccountData.map((patient, i) => (
-                <TableRow key={i}>
+                <TableRow key={i} className={`hover:bg-gray-200 transition duration-200 ease-in-out ${getStatusColor(patient.status)}`}>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
                         <Typography variant="body2" className="text-blue-gray-900">
                             {patient.firstName}
@@ -77,18 +77,18 @@ const PatientsAccountsTableValue = ({ patientsAccountData, registerPatientColumn
                         </Typography>
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
-                        <Typography variant="body2" className={`rounded-lg p-2 ${getStatusColor(patient.status)}`}>
+                        <Typography variant="body2" className="text-blue-gray-900">
                             {patient.status}
                         </Typography>
                     </TableCell>
                     <TableCell align="center">
                         <IconButton aria-label="edit" onClick={() => updateRegisteredPatientsAccount(patient)}>
-                            <EditIcon />
+                            <EditIcon color="primary" />
                         </IconButton>
                     </TableCell>
                     <TableCell align="center">
                         <IconButton aria-label="edit">
-                            <DeleteIcon />
+                            <DeleteIcon color="error"/>
                         </IconButton>
                     </TableCell>
                 </TableRow>

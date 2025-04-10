@@ -6,7 +6,12 @@ import InputAdornment from "@mui/material/InputAdornment"
 import IconButton from "@mui/material/IconButton"
 import Visibility from "@mui/icons-material/Visibility"
 import VisibilityOff from "@mui/icons-material/VisibilityOff"
-import { useState, useEffect } from "react"
+import {
+    useState,
+    useEffect,
+    useMemo,
+    useCallback
+} from "react"
 import CMS from "../../API/CMS";
 import FormHelperText from "@mui/material/FormHelperText"
 import TextField from "@mui/material/TextField"
@@ -14,7 +19,7 @@ import Checkbox from "@mui/material/Checkbox"
 import Button from "@mui/material/Button"
 import Typography from "@mui/material/Typography"
 import FormControlLabel from "@mui/material/FormControlLabel"
-import {useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import pattern from "../../assets/img/hero-bg.jpg"
 
 function AdminLoginPage() {
@@ -50,6 +55,25 @@ function AdminLoginPage() {
     }
 
     const navigate = useNavigate();
+
+    const handleInputChange = useCallback((e) => {
+        const { name, value } = e.target;
+        setAdminLoginFormData((prevData) => ({
+            ...prevData,
+            [name]: value,
+        }));
+
+        if(fieldErrors[name]) {
+            setFieldErrors((prevErrors) => ({
+                ...prevErrors,
+                [name]: "",
+            }));
+        }
+    }, [fieldErrors]);
+
+    const memoizedClinicLoginDataValues = useMemo(() => {
+        return adminLoginFormData
+    }, [adminLoginFormData])
 
     const handleLoggedInAdmin = async (e) => {
         try {
@@ -99,9 +123,11 @@ function AdminLoginPage() {
                             fullWidth
                             autoComplete="off"
                             helperText={fieldErrors.email ? fieldErrors.email : ""}
-                            value={adminLoginFormData.email}
+                            value={memoizedClinicLoginDataValues.email}
                             error={Boolean(fieldErrors.email)}
-                            onChange={(e) => setAdminLoginFormData({ ...adminLoginFormData, email: e.target.value })}
+                            name="email"
+                            type="text"
+                            onChange={handleInputChange}
                         />
                     </div>
                     <div className="mb-4 flex flex-col gap-6">
@@ -110,8 +136,9 @@ function AdminLoginPage() {
                             <InputLabel htmlFor="outlined-adornment-password">Enter your password</InputLabel>
                             <OutlinedInput
                                 fullWidth
-                                onChange={(e) => setAdminLoginFormData({ ...adminLoginFormData, password: e.target.value })}
-                                value={adminLoginFormData.password}
+                                name="password"
+                                onChange={handleInputChange}
+                                value={memoizedClinicLoginDataValues.password}
                                 autoComplete="off"
                                 type={showPassword ? "text" : "password"}
                                 endAdornment={

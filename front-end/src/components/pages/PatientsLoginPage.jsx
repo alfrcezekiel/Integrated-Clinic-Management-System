@@ -16,10 +16,14 @@ import InputAdornment from "@mui/material/InputAdornment"
 import IconButton from "@mui/material/IconButton"
 import Visibility from "@mui/icons-material/Visibility"
 import VisibilityOff from "@mui/icons-material/VisibilityOff"
-import { useState, useEffect } from "react"
+import {
+    useState,
+    useEffect,
+    useCallback,
+    useMemo
+} from "react"
 import CMS from "../../API/CMS";
 import FormHelperText from "@mui/material/FormHelperText"
-import  { useCallback } from "react";
 import Dialog from "@mui/material/Dialog"
 import DialogTitle from "@mui/material/DialogTitle"
 import DialogContent from "@mui/material/DialogContent"
@@ -39,7 +43,7 @@ function PatientsLoginPortal() {
     const [accountStatus, setAccountStatus] = useState("");
 
     const handleAccountStatus = useCallback(async (response) => {
-        if(response.data.status === "Pending"){
+        if (response.data.status === "Pending") {
             setAccountStatus("Your account is pending approval. Please wait for the admin to approve your account.");
             setOpenModal(true)
         } else {
@@ -65,17 +69,36 @@ function PatientsLoginPortal() {
     const handleCloseModal = useCallback(async () => {
         setOpenModal(false);
     }, [])
-    
+
     const handleMouseDownPassword = (e) => {
         e.preventDefault();
     }
+
+    const handleInputChange = useCallback((e) => {
+        const { name, value } = e.target;
+        setPatientsLoginFormData((prevState) => ({
+            ...prevState,
+            [name]: value,
+        }));
+
+        if (fieldErrors[name]) {
+            setFieldErrors((prevState) => ({
+                ...prevState,
+                [name]: "",
+            }));
+        }
+    }, [fieldErrors])
+
+    const memoizedPatientsLoginDataValue = useMemo(() => {
+        return patientsLoginFormData;
+    }, [patientsLoginFormData])
 
     const handleMouseUpPassword = (e) => {
         e.preventDefault();
     }
 
     const navigate = useNavigate();
-    
+
     const handleLoggedInPatient = async (e) => {
         try {
             e.preventDefault();
@@ -108,7 +131,7 @@ function PatientsLoginPortal() {
                 console.error(`Error in logging in patient: ${response.status}`);
                 alert("Error in logging in patient")
             }
-            
+
         } catch (error) {
             if (error.response && error.response.status === 400) {
                 setFieldErrors(error.response.data.errors);
@@ -140,10 +163,11 @@ function PatientsLoginPortal() {
                             variant="outlined"
                             fullWidth
                             autoComplete="off"
+                            name="email"
                             helperText={fieldErrors.email ? fieldErrors.email : ""}
-                            value={patientsLoginFormData.email}
+                            value={memoizedPatientsLoginDataValue.email}
                             error={Boolean(fieldErrors.email)}
-                            onChange={(e) => setPatientsLoginFormData({ ...patientsLoginFormData, email: e.target.value })}
+                            onChange={handleInputChange}
                         />
                     </div>
                     <div className="mb-4 flex flex-col gap-6">
@@ -152,10 +176,11 @@ function PatientsLoginPortal() {
                             <InputLabel htmlFor="outlined-adornment-password">Enter your password</InputLabel>
                             <OutlinedInput
                                 fullWidth
-                                onChange={(e) => setPatientsLoginFormData({ ...patientsLoginFormData, password: e.target.value })}
-                                value={patientsLoginFormData.password}
+                                value={memoizedPatientsLoginDataValue.password}
                                 autoComplete="off"
                                 type={showPassword ? "text" : "password"}
+                                name="password"
+                                onChange={handleInputChange}
                                 endAdornment={
                                     <InputAdornment position="end">
                                         <IconButton

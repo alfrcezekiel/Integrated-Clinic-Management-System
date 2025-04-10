@@ -16,7 +16,7 @@ const fileFilter = (_req, file, cb) => {
     if(file.mimetype.startsWith('image/')){
         cb(null, true);
     } else {
-        cb(new Error("Please upload an image file"), false);
+        cb(new multer.MulterError("LIMIT_UNEXPECTED_FILE", "Please upload an image file"), false);
     }
 }
 

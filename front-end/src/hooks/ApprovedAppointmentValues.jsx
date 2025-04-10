@@ -24,32 +24,13 @@ const ApprovedAppointmentsTableValue = ({ retrievedAppointmentsData, appointment
     const getStatusColor = (status) => {
         switch (status) {
             case "Approved":
-                return "text-black bg-green-300";
+                return "text-black bg-green-200";
             case "Declined":
                 return "text-black bg-red-300";
-            case "Pending":
-                return "text-black bg-yellow-300";
             case "Consulted":
                 return "text-black bg-blue-300";
             default:
-                return "text-gray-600 bg-gray-100";
-        }
-    }
-
-
-    // function to determine the color of the appointment date to match the status
-    const getAppointmentDateColor = (status) => {
-        switch (status) {
-            case "Approved":
-                return "text-black bg-green-300";
-            case "Declined":
-                return "text-black bg-red-300";
-            case "Pending":
-                return "text-black bg-yellow-300";
-            case "Consulted":
-                return "text-black bg-blue-300";
-            default:
-                return "text-gray-600 bg-gray-100";
+                return "text-black bg-white";
         }
     }
 
@@ -73,7 +54,7 @@ const ApprovedAppointmentsTableValue = ({ retrievedAppointmentsData, appointment
 
         if (retrievedAppointmentsData && retrievedAppointmentsData.length > 0) {
             return retrievedAppointmentsData.map((appointment, i) => (
-                <TableRow key={i}>
+                <TableRow key={i} className={`hover:bg-gray-200 transition duration-200 ease-in-out ${getStatusColor(appointment.status)}`}>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
                         <Typography variant="body2" className="text-blue-gray-900">
                             {appointment.clinic_name}
@@ -95,7 +76,7 @@ const ApprovedAppointmentsTableValue = ({ retrievedAppointmentsData, appointment
                         </Typography>
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
-                        <Typography variant="body2" className={`rounded-lg p-2 ${getAppointmentDateColor(appointment.status)}`}>
+                        <Typography variant="body2" className="text-blue-gray-900">
                             {statusMatch.includes(appointment.appointmentDate) ? formatDate(appointment.appointmentDate) : formatDate(appointment.appointmentDate)}
                         </Typography>
                     </TableCell>
@@ -110,7 +91,7 @@ const ApprovedAppointmentsTableValue = ({ retrievedAppointmentsData, appointment
                         </Typography>
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
-                        <Typography variant="body2" className={`rounded-lg p-2 ${getStatusColor(appointment.status)}`}>
+                        <Typography variant="body2" className="text-blue-gray-900">
                             {appointment.status}
                         </Typography>
                     </TableCell>

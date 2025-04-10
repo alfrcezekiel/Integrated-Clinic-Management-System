@@ -3,7 +3,10 @@ import Checkbox from "@mui/material/Checkbox"
 import Button from "@mui/material/Button"
 import Typography from "@mui/material/Typography"
 import FormControlLabel from "@mui/material/FormControlLabel"
-import { useNavigate, useLocation } from "react-router-dom";
+import {
+    useNavigate,
+    useLocation
+} from "react-router-dom";
 import "../../assets/css/main.css"
 import FormControl from "@mui/material/FormControl"
 import InputLabel from "@mui/material/InputLabel"
@@ -12,7 +15,12 @@ import InputAdornment from "@mui/material/InputAdornment"
 import IconButton from "@mui/material/IconButton"
 import Visibility from "@mui/icons-material/Visibility"
 import VisibilityOff from "@mui/icons-material/VisibilityOff"
-import { useState, useEffect } from "react"
+import {
+    useState,
+    useEffect,
+    useCallback,
+    useMemo
+} from "react"
 import CMS from "../../API/CMS";
 import FormHelperText from "@mui/material/FormHelperText"
 import doctor from "../../assets/img/page-title-bg.jpg";
@@ -50,6 +58,25 @@ function DoctorLoginPortal() {
     }
 
     const navigate = useNavigate();
+
+    const handleInputChange = useCallback((e) => {
+        const { name, value } = e.target;
+        setDoctorsLoginFormData((prevState) => ({
+            ...prevState,
+            [name]: value,
+        }));
+
+        if(fieldErrors[name]) {
+            setFieldErrors((prevState) => ({
+                ...prevState,
+                [name]: "",
+            }));
+        }
+    }, [fieldErrors])
+
+    const memoizedClinicLoginFormData = useMemo(() => {
+        return doctorsLoginFormData;
+    }, [doctorsLoginFormData])
 
     const handleLoggedInPatient = async (e) => {
         try {
@@ -106,9 +133,11 @@ function DoctorLoginPortal() {
                             fullWidth
                             autoComplete="off"
                             helperText={fieldErrors.email ? fieldErrors.email : ""}
-                            value={doctorsLoginFormData.email}
+                            value={memoizedClinicLoginFormData.email}
+                            name="email"
+                            type="text"
+                            onChange={handleInputChange}
                             error={Boolean(fieldErrors.email)}
-                            onChange={(e) => setDoctorsLoginFormData({ ...doctorsLoginFormData, email: e.target.value })}
                         />
                     </div>
                     <div className="mb-4 flex flex-col gap-6">
@@ -117,8 +146,9 @@ function DoctorLoginPortal() {
                             <InputLabel htmlFor="outlined-adornment-password">Enter your password</InputLabel>
                             <OutlinedInput
                                 fullWidth
-                                onChange={(e) => setDoctorsLoginFormData({ ...doctorsLoginFormData, password: e.target.value })}
-                                value={doctorsLoginFormData.password}
+                                name="password"
+                                onChange={handleInputChange}
+                                value={memoizedClinicLoginFormData.password}
                                 autoComplete="off"
                                 type={showPassword ? "text" : "password"}
                                 endAdornment={

@@ -1,6 +1,5 @@
 import { body, validationResult } from 'express-validator';
 import { StatusCodes } from 'http-status-codes';
-import moment from 'moment';
 
 // validation for patients registration accounts
 const validateRegister = [

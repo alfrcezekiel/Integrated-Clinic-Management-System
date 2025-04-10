@@ -2,11 +2,20 @@ import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import "../../assets/css/main.css";
-import { Link, useLocation } from "react-router-dom";
+import {
+    Link,
+    useLocation,
+    useNavigate
+} from "react-router-dom";
 import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import DentistryPicture from "../../assets/img/dental clinic assets/bg4.jpg";
-import { useState, useEffect } from "react";
+import {
+    useState,
+    useEffect,
+    useCallback,
+    useMemo
+} from "react";
 import CMS from "../../API/CMS";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
@@ -86,6 +95,42 @@ const PatientsRegistrationPortal = () => {
         confirmPassword: ""
     });
 
+    const handleInputChange = useCallback(async (e) => {
+        const { name, value } = e.target;
+
+        setFormRegistrationPatientsData({
+            ...formRegistrationPatientsData,
+            [name]: value
+        })
+
+        if (fieldsErrors[name]) {
+            setFieldsErrors({
+                ...fieldsErrors,
+                [name]: ""
+            })
+        }
+    }, [fieldsErrors, formRegistrationPatientsData])
+
+    const navigate = useNavigate();
+
+    const handleDateChange = useCallback(async (newValue) => {
+        setFormRegistrationPatientsData({
+            ...formRegistrationPatientsData,
+            dateOfBirth: newValue && dayjs(newValue).isValid() ? dayjs(newValue.toISOString().split('T')[0]) : null
+        });
+
+        if (fieldsErrors.dateOfBirth) {
+            setFieldsErrors({
+                ...fieldsErrors,
+                dateOfBirth: ""
+            });
+        }
+    }, [fieldsErrors, formRegistrationPatientsData]);
+
+    const memoizedFormRegistrationPatientsData = useMemo(() => {
+        return formRegistrationPatientsData;
+    }, [formRegistrationPatientsData]);
+
     const handleRegistrationSubmit = async (e) => {
         try {
             e.preventDefault();
@@ -101,7 +146,7 @@ const PatientsRegistrationPortal = () => {
 
                 setFieldsErrors({})
                 if (response.data.message === "Patient account registered successfully") {
-                    window.location.href = "/patients-portal";
+                    navigate("/patients-portal");
                 }
             }
         } catch (error) {
@@ -135,8 +180,9 @@ const PatientsRegistrationPortal = () => {
                             label="Enter your First Name"
                             variant="outlined"
                             type="text"
-                            value={formRegistrationPatientsData.firstName}
-                            onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, firstName: e.target.value })}
+                            name="firstName"
+                            value={memoizedFormRegistrationPatientsData.firstName}
+                            onChange={handleInputChange}
                             helperText={fieldsErrors.firstName || ""}
                             error={Boolean(fieldsErrors.firstName)}
                         />
@@ -149,8 +195,9 @@ const PatientsRegistrationPortal = () => {
                             label="Enter your Last Name"
                             variant="outlined"
                             type="text"
-                            onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, lastName: e.target.value })}
-                            value={formRegistrationPatientsData.lastName}
+                            name="lastName"
+                            onChange={handleInputChange}
+                            value={memoizedFormRegistrationPatientsData.lastName}
                             helperText={fieldsErrors.lastName || ""}
                             error={Boolean(fieldsErrors.lastName)}
                         />
@@ -163,8 +210,9 @@ const PatientsRegistrationPortal = () => {
                             label="Enter your Email"
                             variant="outlined"
                             type="text"
-                            onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, email: e.target.value })}
-                            value={formRegistrationPatientsData.email}
+                            name="email"
+                            onChange={handleInputChange}
+                            value={memoizedFormRegistrationPatientsData.email}
                             helperText={fieldsErrors.email || ""}
                             error={Boolean(fieldsErrors.email)}
                         />
@@ -177,8 +225,9 @@ const PatientsRegistrationPortal = () => {
                             label="Enter your Address"
                             variant="outlined"
                             type="text"
-                            onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, address: e.target.value })}
-                            value={formRegistrationPatientsData.address}
+                            name="address"
+                            onChange={handleInputChange}
+                            value={memoizedFormRegistrationPatientsData.address}
                             helperText={fieldsErrors.address || ""}
                             error={Boolean(fieldsErrors.address)}
                         />
@@ -191,8 +240,10 @@ const PatientsRegistrationPortal = () => {
                             select
                             label="Select Civil status"
                             variant="outlined"
-                            onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, civilStatus: e.target.value })}
-                            value={formRegistrationPatientsData.civilStatus}
+                            name="civilStatus"
+                            type="text"
+                            onChange={handleInputChange}
+                            value={memoizedFormRegistrationPatientsData.civilStatus}
                             helperText={fieldsErrors.civilStatus || ""}
                             error={Boolean(fieldsErrors.civilStatus)}
                         >
@@ -212,8 +263,8 @@ const PatientsRegistrationPortal = () => {
                                     margin="dense"
                                     id="date-of-birth"
                                     name="dateOfBirth"
-                                    value={formRegistrationPatientsData.dateOfBirth}
-                                    onChange={(newValue) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, dateOfBirth: dayjs(newValue) })}
+                                    value={memoizedFormRegistrationPatientsData.dateOfBirth}
+                                    onChange={handleDateChange}
                                     label="Date of Birth"
                                     slotProps={{
                                         textField: {
@@ -236,8 +287,9 @@ const PatientsRegistrationPortal = () => {
                             label="Enter your Phone Number"
                             variant="outlined"
                             type="number"
-                            value={formRegistrationPatientsData.phoneNumber}
-                            onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, phoneNumber: e.target.value })}
+                            value={memoizedFormRegistrationPatientsData.phoneNumber}
+                            name="phoneNumber"
+                            onChange={handleInputChange}
                             helperText={fieldsErrors.phoneNumber || ""}
                             error={Boolean(fieldsErrors.phoneNumber)}
                         />
@@ -266,8 +318,9 @@ const PatientsRegistrationPortal = () => {
                                     </InputAdornment>
                                 }
                                 label="Enter Password"
-                                value={formRegistrationPatientsData.password}
-                                onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, password: e.target.value })}
+                                value={memoizedFormRegistrationPatientsData.password}
+                                name="password"
+                                onChange={handleInputChange}
                             />
                             {fieldsErrors.password && <FormHelperText error>{fieldsErrors.password}</FormHelperText>}
                         </FormControl>
@@ -296,8 +349,9 @@ const PatientsRegistrationPortal = () => {
                                     </InputAdornment>
                                 }
                                 label="Enter Confirm Password"
-                                value={formRegistrationPatientsData.confirmPassword}
-                                onChange={(e) => setFormRegistrationPatientsData({ ...formRegistrationPatientsData, confirmPassword: e.target.value })}
+                                value={memoizedFormRegistrationPatientsData.confirmPassword}
+                                name="confirmPassword"
+                                onChange={handleInputChange}
                             />
                             {fieldsErrors.confirmPassword && <FormHelperText error>{fieldsErrors.confirmPassword}</FormHelperText>}
                         </FormControl>

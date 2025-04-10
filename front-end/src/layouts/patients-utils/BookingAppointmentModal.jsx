@@ -14,7 +14,10 @@ import {
     CalendarMonth,
     AccessTime,
 } from '@mui/icons-material';
-import { useMemo } from 'react';
+import {
+    useMemo,
+    useCallback
+} from 'react';
 import PropTypes from 'prop-types';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -39,7 +42,7 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
     const memoizedPreferredTimeValue = useMemo(() => appointmentData.preferredTime, [appointmentData.preferredTime]);
     const memoizedPurposeOfAppointmentValue = useMemo(() => appointmentData.purposeOfAppointment, [appointmentData.purposeOfAppointment]);
 
-    const handleInputChange = (e) => {
+    const handleInputChange = useCallback(async (e) => {
         const { name, value } = e.target;
         setAppointmentData({
             ...appointmentData,
@@ -52,12 +55,12 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
                 [name]: ""
             });
         }
-    };
+    }, [appointmentData, fieldErrors, setAppointmentData, setFieldErrors]);
 
-    const handleDateChange = (newDate) => {
+    const handleDateChange = useCallback(async (newDate) => {
         setAppointmentData({
             ...appointmentData,
-            appointmentDate: newDate ? newDate.toISOString().split('T')[0] : ''
+            appointmentDate: newDate && dayjs(newDate).isValid() ? dayjs(newDate.toISOString().split('T')[0]) : ""
         });
 
         if (fieldErrors.appointmentDate) {
@@ -66,7 +69,7 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
                 appointmentDate: ""
             });
         }
-    };
+    }, [appointmentData, fieldErrors, setAppointmentData, setFieldErrors]);
 
     const gender = ["Male", "Female"];
     const purposeOfAppointment = ["Regular Checkup", "Consultation", "Follow-up", "Emergency", "Urgent Care", "Other"];
@@ -107,7 +110,7 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
                                 <CardMedia
                                     component="img"
                                     height="200"
-                                    image={selectedClinic.image}
+                                    image={selectedClinic.clinic_image}
                                     alt="Clinic"
                                     className="rounded-md h-48 object-cover"
                                 />
