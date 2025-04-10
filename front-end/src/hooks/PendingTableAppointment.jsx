@@ -29,6 +29,8 @@ const PendingStatusAppointmentTable = ({ retrievedAppointmentsData, appointmentT
                 return "text-black bg-red-200";
             case "Consulted":
                 return "text-black bg-blue-200";
+            case "Pending":
+                return "text-black bg-white"
             default:
                 return "text-black bg-white";
         }
@@ -50,7 +52,6 @@ const PendingStatusAppointmentTable = ({ retrievedAppointmentsData, appointmentT
     };
 
     const memoizedTableRows = useMemo(() => {
-        const statusMatch = ["Approved", "Declined", "Pending", "Consulted"];
 
         if (retrievedAppointmentsData && retrievedAppointmentsData.length > 0) {
             return retrievedAppointmentsData.map((appointment, i) => (
@@ -77,7 +78,7 @@ const PendingStatusAppointmentTable = ({ retrievedAppointmentsData, appointmentT
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
                         <Typography variant="body2" className="text-blue-gray-900">
-                            {statusMatch.includes(appointment.appointmentDate) ? formatDate(appointment.appointmentDate) : formatDate(appointment.appointmentDate)}
+                            {formatDate(appointment.appointmentDate)}
                         </Typography>
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
@@ -87,7 +88,7 @@ const PendingStatusAppointmentTable = ({ retrievedAppointmentsData, appointmentT
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
                         <Typography variant="body2" className="text-blue-gray-900">
-                            {formatTimeToAMPM(appointment.preferredTime) ? formatTimeToAMPM(appointment.preferredTime) : "N/A"}
+                            {formatTimeToAMPM(appointment.preferredTime)}
                         </Typography>
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">

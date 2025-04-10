@@ -29,6 +29,8 @@ const AppointmentsTable = ({ retrievedAppointmentsData }) => {
                 return "text-black bg-red-200";
             case "Consulted":
                 return "text-black bg-blue-200";
+            case "Pending":
+                return "text-black bg-white"
             default:
                 return "text-black bg-white";
         }

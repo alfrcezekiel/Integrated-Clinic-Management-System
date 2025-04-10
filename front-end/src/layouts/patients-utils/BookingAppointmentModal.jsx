@@ -60,7 +60,7 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
     const handleDateChange = useCallback(async (newDate) => {
         setAppointmentData({
             ...appointmentData,
-            appointmentDate: newDate && dayjs(newDate).isValid() ? dayjs(newDate.toISOString().split('T')[0]) : ""
+            appointmentDate: newDate && dayjs(newDate) ? newDate : ""
         });
 
         if (fieldErrors.appointmentDate) {

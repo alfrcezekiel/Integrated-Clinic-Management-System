@@ -26,9 +26,11 @@ const ApprovedAppointmentsTableValue = ({ retrievedAppointmentsData, appointment
             case "Approved":
                 return "text-black bg-green-200";
             case "Declined":
-                return "text-black bg-red-300";
+                return "text-black bg-red-200";
             case "Consulted":
-                return "text-black bg-blue-300";
+                return "text-black bg-blue-200";
+            case "Pending":
+                return "text-black bg-white"
             default:
                 return "text-black bg-white";
         }

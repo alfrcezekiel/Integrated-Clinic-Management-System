@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import "../main.js";
 import bcrypt from "bcrypt";
+import dayjs from "dayjs";
 dotenv.config();
 
 // controller logic for a global route
@@ -395,8 +396,9 @@ export const patientsBookedAppointments = async (req, res) => {
             clinicID
         } = req.body;
 
-        const clinic_id = String(clinicID);
-
+        const createdAt = new Date()
+        const clinic_id = parseInt(clinicID, 10);
+        const appointmentDateFormat  = dayjs(appointmentDate).format("YYYY-MM-DD HH:mm:ss");
         const query = `INSERT INTO patientsappointment (
             patientID,
             firstName,
@@ -407,20 +409,22 @@ export const patientsBookedAppointments = async (req, res) => {
             gender,
             preferredTime,
             purposeOfAppointment,
-            clinic_id
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
+            clinic_id,
+            createdAt
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
 
         const [result] = await conn.query(query, [
             patientID,
             firstName,
             lastName,
             email,
-            appointmentDate,
+            appointmentDateFormat,
             phoneNumber,
             gender,
             preferredTime,
             purposeOfAppointment,
-            clinic_id
+            clinic_id,
+            createdAt
         ]);
 
         if (result.affectedRows === 0) {
@@ -476,6 +480,7 @@ export const getPatientsAppointments = async (req, res) => {
             preferredTime,
             purposeOfAppointment
             FROM patientsappointment
+            ORDER BY appointmentDate ASC
         `;
 
         const [rows] = await conn.query(query);
