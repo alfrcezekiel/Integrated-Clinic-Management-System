@@ -38,6 +38,7 @@ const PendingAppointmentClinicTable = () => {
         lastName: "",
         email: "",
         appointmentDate: "",
+        preferredTime: "",
         phoneNumber: "",
         gender: "",
         status: "",
@@ -49,6 +50,7 @@ const PendingAppointmentClinicTable = () => {
         'Last Name',
         "Email",
         'Appointment Date',
+        "Appointment Time",
         "Phone Number",
         "Gender",
         'Status',
@@ -62,6 +64,7 @@ const PendingAppointmentClinicTable = () => {
         lastName: "",
         email: "",
         appointmentDate: "",
+        preferredTime: "",
         phoneNumber: "",
         gender: "",
         status: "",
@@ -76,6 +79,7 @@ const PendingAppointmentClinicTable = () => {
             lastName: "",
             email: "",
             appointmentDate: "",
+            preferredTime: "",
             phoneNumber: "",
             gender: "",
             doctor: "",
@@ -134,7 +138,22 @@ const PendingAppointmentClinicTable = () => {
             day: "numeric"
         })
     };
-    
+
+    const formatTimeToAMPM = (time) => {
+        if (!time) return "N/A";
+        if (time.includes("AM") || time.includes("PM")) return time;
+
+        try {
+            const [hours, minutes] = time.split(":");
+            let hour = parseInt(hours, 10);
+            const ampm = hour >= 12 ? "PM" : "AM";
+            hour = hour % 12 || 12;
+            return `${hour}:${minutes || "00"} ${ampm}`;
+        } catch {
+            return time;
+        }
+    };
+
     // this function is used to update the appointment details
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -169,6 +188,7 @@ const PendingAppointmentClinicTable = () => {
             lastName: appointment.lastName,
             email: appointment.email,
             appointmentDate: formatDate(appointment.appointmentDate),
+            preferredTime: appointment.preferredTime,
             phoneNumber: appointment.phoneNumber,
             gender: appointment.gender,
             status: appointment.status,
@@ -176,8 +196,6 @@ const PendingAppointmentClinicTable = () => {
         });
         setOpen(true);
     }
-    // this should match the status of the patients to render in appointment date
-    const statusMatch = ["Approved", "Declined", "Pending", "Consulted"];
 
     const handleCloseSuccessfullAppointmentModal = () => {
         setSuccessfullAppointmentModalOpen(false);
@@ -188,30 +206,15 @@ const PendingAppointmentClinicTable = () => {
     const getStatusColor = (status) => {
         switch (status) {
             case "Approved":
-                return "text-black bg-green-300";
+                return "text-black bg-green-200";
             case "Declined":
-                return "text-black bg-red-300";
+                return "text-black bg-red-200";
             case "Pending":
-                return "text-black bg-yellow-300";
+                return "text-black bg-white";
             case "Consulted":
-                return "text-black bg-blue-300";
+                return "text-black bg-blue-200";
             default:
-                return "text-gray-600 bg-gray-100";
-        }
-    }
-
-    const getAppointmentDateColor = (status) => {
-        switch (status) {
-            case "Approved":
-                return "text-black bg-green-300"
-            case "Declined":
-                return "bg-red-300 text-black"
-            case "Pending":
-                return "bg-yellow-300 text-black"
-            case "Consulted":
-                return "bg-blue-300 text-black"
-            default:
-                return "bg-gray-300 text-black"
+                return "text-gray-600 bg-white";
         }
     }
 
@@ -223,7 +226,7 @@ const PendingAppointmentClinicTable = () => {
                 <Card className="shadow-lg rounded-2xl w-full">
                     <CardHeader
                         title="Pending Appointments"
-                        className="bg-blue-500 mb-8 p-6"
+                        className="bg-blue-500 mb-2 p-6"
                         slotProps={{
                             title: {
                                 variant: 'h6',
@@ -231,9 +234,9 @@ const PendingAppointmentClinicTable = () => {
                             },
                         }}
                     />
-                    <CardContent className="overflow-x-scroll px-0 pt-0 pb-2">
-                        <Table className="w-full min-w-[640px] table-auto">
-                            <TableHead>
+                    <CardContent className="overflow-x-scroll pt-0 pb-2 rounded-xl shadow-sm bg-white">
+                        <Table className="w-full min-w-[100%] text-left text-gray-500">
+                            <TableHead className="bg-gray-100 text-sm sm:text-base text-gray-600 uppercase">
                                 <TableRow>
                                     {appointmentsTableColumn.map((header, i) => (
                                         <TableCell
@@ -254,53 +257,58 @@ const PendingAppointmentClinicTable = () => {
                             <TableBody>
                                 {appointmentsData && appointmentsData.length > 0 ? (
                                     appointmentsData.map((appointment, id) => (
-                                        <TableRow key={id}>
-                                            <TableCell align="center">
+                                        <TableRow key={id} className={`hover:bg-gray-200 transition duration-200 ease-in-out ${getStatusColor(appointment.status)}`}>
+                                            <TableCell align="center" className="border-b border-blue-gray-50 text-center">
                                                 <Typography variant="body2" className="text-blue-gray-900">
                                                     {appointment.clinic_name}
                                                 </Typography>
                                             </TableCell>
-                                            <TableCell align="center">
+                                            <TableCell align="center" className="border-b border-blue-gray-50 text-center">
                                                 <Typography variant="body2" className="text-blue-gray-900">
                                                     {appointment.firstName}
                                                 </Typography>
                                             </TableCell>
-                                            <TableCell align="center">
+                                            <TableCell align="center" className="border-b border-blue-gray-50 text-center">
                                                 <Typography variant="body2" className="text-blue-gray-900">
                                                     {appointment.lastName}
                                                 </Typography>
                                             </TableCell>
-                                            <TableCell align="center">
+                                            <TableCell align="center" className="border-b border-blue-gray-50 text-center">
                                                 <Typography variant="body2" className="text-blue-gray-900">
                                                     {appointment.email}
                                                 </Typography>
                                             </TableCell>
-                                            <TableCell align="center">
-                                                <Typography variant="body2" className={`rounded-lg p-2 ${getAppointmentDateColor(appointment.status)}`}>
-                                                    {statusMatch.includes(appointment.status) ? dateFormat(appointment.appointmentDate) : "N/A"}
+                                            <TableCell align="center" className="border-b border-blue-gray-50 text-center">
+                                                <Typography variant="body2" className="text-blue-gray-900">
+                                                    {dateFormat(appointment.appointmentDate)}
                                                 </Typography>
                                             </TableCell>
-                                            <TableCell align="center">
+                                            <TableCell align="center" className="border-b border-blue-gray-50 text-center">
+                                                <Typography variant="body2" className="text-blue-gray-900">
+                                                    {formatTimeToAMPM(appointment.preferredTime)}
+                                                </Typography>
+                                            </TableCell>
+                                            <TableCell align="center" className="border-b border-blue-gray-50 text-center">
                                                 <Typography variant="body2" className="text-blue-gray-900">
                                                     {appointment.phoneNumber}
                                                 </Typography>
                                             </TableCell>
-                                            <TableCell align="center">
+                                            <TableCell align="center" className="border-b border-blue-gray-50 text-center">
                                                 <Typography variant="body2" className="text-blue-gray-900">
                                                     {appointment.gender}
                                                 </Typography>
                                             </TableCell>
-                                            <TableCell align="center">
-                                                <Typography variant="body2" className={`rounded-lg p-2 ${getStatusColor(appointment.status)}`}>
-                                                    {appointment.status ? appointment.status : "N/A"}
+                                            <TableCell align="center" className="border-b border-blue-gray-50 text-center">
+                                                <Typography variant="body2" className="text-blue-gray-900">
+                                                    {appointment.status}
                                                 </Typography>
                                             </TableCell>
-                                            <TableCell align="center">
+                                            <TableCell align="center" className="border-b border-blue-gray-50 text-center">
                                                 <Typography variant="body2" className="text-blue-gray-900">
                                                     {appointment.purposeOfAppointment}
                                                 </Typography>
                                             </TableCell>
-                                            <TableCell align="center">
+                                            <TableCell align="center" className="border-b border-blue-gray-50 text-center">
                                                 <IconButton aria-label="edit" onClick={() => handleClickOpen(appointment)}>
                                                     <EditIcon />
                                                 </IconButton>
@@ -377,6 +385,16 @@ const PendingAppointmentClinicTable = () => {
                             }}
                             error={Boolean(fieldsError.appointmentDate)}
                             helperText={fieldsError.appointmentDate ? fieldsError.appointmentDate : ""}
+                        />
+                        <TextField
+                            margin="dense"
+                            label="Appointment Time"
+                            type="time"
+                            fullWidth
+                            value={formData.preferredTime}
+                            onChange={(e) => setFormData({ ...formData, preferredTime: e.target.value })}
+                            error={Boolean(fieldsError.preferredTime)}
+                            helperText={fieldsError.preferredTime ? fieldsError.preferredTime : ""}
                         />
                         <TextField
                             margin="dense"

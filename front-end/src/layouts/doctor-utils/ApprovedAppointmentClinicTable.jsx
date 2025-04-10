@@ -38,6 +38,7 @@ const ApprovedAppointmentClinicTable = () => {
         lastName: "",
         email: "",
         appointmentDate: "",
+        preferredTime: "",
         phoneNumber: "",
         gender: "",
         status: "",
@@ -49,6 +50,7 @@ const ApprovedAppointmentClinicTable = () => {
         'Last Name',
         "Email",
         'Appointment Date',
+        "Appointment Time",
         "Phone Number",
         "Gender",
         'Status',
@@ -62,6 +64,7 @@ const ApprovedAppointmentClinicTable = () => {
         lastName: "",
         email: "",
         appointmentDate: "",
+        preferredTime: "",
         phoneNumber: "",
         gender: "",
         status: "",
@@ -76,6 +79,7 @@ const ApprovedAppointmentClinicTable = () => {
             lastName: "",
             email: "",
             appointmentDate: "",
+            preferredTime: "",
             phoneNumber: "",
             gender: "",
             doctor: "",
@@ -85,6 +89,20 @@ const ApprovedAppointmentClinicTable = () => {
         setOpen(false);
     }
 
+    const formatTimeToAMPM = (time) => {
+        if (!time) return "N/A";
+        if (time.includes("AM") || time.includes("PM")) return time;
+
+        try {
+            const [hours, minutes] = time.split(":");
+            let hour = parseInt(hours, 10);
+            const ampm = hour >= 12 ? "PM" : "AM";
+            hour = hour % 12 || 12;
+            return `${hour}:${minutes || "00"} ${ampm}`;
+        } catch {
+            return time;
+        }
+    };
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -169,6 +187,7 @@ const ApprovedAppointmentClinicTable = () => {
             lastName: appointment.lastName,
             email: appointment.email,
             appointmentDate: formatDate(appointment.appointmentDate),
+            preferredTime: appointment.preferredTime,
             phoneNumber: appointment.phoneNumber,
             gender: appointment.gender,
             status: appointment.status,
@@ -176,46 +195,29 @@ const ApprovedAppointmentClinicTable = () => {
         });
         setOpen(true);
     }
-    // this should match the status of the patients to render in appointment date
-    const statusMatch = ["Approved", "Declined", "Pending", "Consulted"];
 
     const handleCloseSuccessfullAppointmentModal = () => {
         setSuccessfullAppointmentModalOpen(false);
         handleClose();
     }
 
+    const status = ["Approved", "Declined", "Pending", "Consulted"];
+    
     // this function determines the color of the status of the patients
     const getStatusColor = (status) => {
         switch (status) {
             case "Approved":
-                return "text-black bg-green-300";
+                return "text-black bg-green-200";
             case "Declined":
-                return "text-black bg-red-300";
+                return "text-black bg-red-200";
             case "Pending":
-                return "text-black bg-yellow-300";
+                return "text-black bg-white";
             case "Consulted":
-                return "text-black bg-blue-300";
+                return "text-black bg-blue-200";
             default:
-                return "text-gray-600 bg-gray-100";
+                return "text-black bg-white";
         }
     }
-
-    const getAppointmentDateColor = (status) => {
-        switch (status) {
-            case "Approved":
-                return "text-black bg-green-300"
-            case "Declined":
-                return "bg-red-300 text-black"
-            case "Pending":
-                return "bg-yellow-300 text-black"
-            case "Consulted":
-                return "bg-blue-300 text-black"
-            default:
-                return "bg-gray-300 text-black"
-        }
-    }
-
-    const status = ["Approved", "Declined", "Pending", "Consulted"];
 
     return (
         <>
@@ -223,7 +225,7 @@ const ApprovedAppointmentClinicTable = () => {
                 <Card className="shadow-lg rounded-2xl w-full">
                     <CardHeader
                         title="Approved Appointments"
-                        className="bg-blue-500 mb-8 p-6"
+                        className="bg-blue-500 mb-2 p-6"
                         slotProps={{
                             title: {
                                 variant: 'h6',
@@ -231,9 +233,9 @@ const ApprovedAppointmentClinicTable = () => {
                             },
                         }}
                     />
-                    <CardContent className="overflow-x-scroll px-0 pt-0 pb-2">
+                    <CardContent className="overflow-x-scroll pt-0 pb-2 rounded-xl shadow-sm bg-white">
                         <Table className="w-full min-w-[640px] table-auto">
-                            <TableHead>
+                            <TableHead className="bg-gray-100 text-sm sm:text-base text-gray-600 uppercase">
                                 <TableRow>
                                     {appointmentsTableColumn.map((header, i) => (
                                         <TableCell
@@ -254,7 +256,7 @@ const ApprovedAppointmentClinicTable = () => {
                             <TableBody>
                                 {appointmentsData && appointmentsData.length > 0 ? (
                                     appointmentsData.map((appointment, id) => (
-                                        <TableRow key={id}>
+                                        <TableRow key={id} className={`hover:bg-gray-200 transition duration-200 ease-in-out ${getStatusColor(appointment.status)}`}>
                                             <TableCell align="center">
                                                 <Typography variant="body2" className="text-blue-gray-900">
                                                     {appointment.clinic_name}
@@ -276,8 +278,13 @@ const ApprovedAppointmentClinicTable = () => {
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="center">
-                                                <Typography variant="body2" className={`rounded-lg p-2 ${getAppointmentDateColor(appointment.status)}`}>
-                                                    {statusMatch.includes(appointment.status) ? dateFormat(appointment.appointmentDate) : "N/A"}
+                                                <Typography variant="body2" className="text-blue-gray-900">
+                                                    {dateFormat(appointment.appointmentDate)}
+                                                </Typography>
+                                            </TableCell>
+                                            <TableCell align="center">
+                                                <Typography variant="body2" className="text-blue-gray-900">
+                                                    {formatTimeToAMPM(appointment.preferredTime)}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="center">
@@ -291,8 +298,8 @@ const ApprovedAppointmentClinicTable = () => {
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="center">
-                                                <Typography variant="body2" className={`rounded-lg p-2 ${getStatusColor(appointment.status)}`}>
-                                                    {appointment.status ? appointment.status : "N/A"}
+                                                <Typography variant="body2" >
+                                                    {appointment.status}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="center">

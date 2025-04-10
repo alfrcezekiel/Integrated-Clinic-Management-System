@@ -506,6 +506,7 @@ export const getBookedAppointmentsToDisplayInDoctorsDashboard = async (req, res)
             p.email,
             p.appointmentDate,
             p.gender,
+            p.preferredTime,
             p.phoneNumber,
             p.status,
             p.purposeOfAppointment
@@ -546,11 +547,14 @@ export const updatePatientsAppointments = async (req, res) => {
             phoneNumber,
             gender,
             status,
+            preferredTime,
             purposeOfAppointment
         } = req.body;
 
         // Debug log to check the received appointmentID and body
         console.log(`Received appointmentID: ${appointmentID}`);
+
+        const formattedAppointmentDate = dayjs(appointmentDate).format("YYYY-MM-DD HH:mm:ss");
 
         const query = `
             UPDATE patientsappointment
@@ -559,6 +563,7 @@ export const updatePatientsAppointments = async (req, res) => {
                 lastName = ?,
                 email = ?,
                 appointmentDate = ?,
+                preferredTime = ?,
                 phoneNumber = ?,
                 gender = ?,
                 status = ?,
@@ -571,7 +576,8 @@ export const updatePatientsAppointments = async (req, res) => {
             firstName,
             lastName,
             email,
-            appointmentDate,
+            formattedAppointmentDate,
+            preferredTime,
             phoneNumber,
             gender,
             status,
@@ -1237,6 +1243,7 @@ export const getPendingAppointmentStatus = async (req, res) => {
             p.lastName,
             p.email,
             p.appointmentDate,
+            p.preferredTime,
             p.gender,
             p.phoneNumber,
             p.status,
@@ -1287,6 +1294,7 @@ export const getApprovedAppointmentStatusInClinic = async (req, res) => {
             p.lastName,
             p.email,
             p.appointmentDate,
+            p.preferredTime,
             p.gender,
             p.phoneNumber,
             p.status,
