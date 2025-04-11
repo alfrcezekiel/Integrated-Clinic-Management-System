@@ -1501,10 +1501,10 @@ export const consultPatientInClinicDashboard = async (req, res) => {
             medicationDetails,
             smokes,
             smokeFrequency,
-            allergies,
+            hasAllergies,
             allergyDetails,
-            drinksAlchol,
-            alcoholDetails,
+            drinksAlcohol,
+            alcoholFrequency,
             diagnosis,
             symptoms,
             prescription,
@@ -1525,10 +1525,10 @@ export const consultPatientInClinicDashboard = async (req, res) => {
         const medication_details = String(medicationDetails);
         const smoking = String(smokes);
         const smoke_frequency = String(smokeFrequency);
-        const allergy = String(allergies);
+        const allergy = String(hasAllergies);
         const allergy_details = String(allergyDetails);
-        const drinks_alcohol = String(drinksAlchol);
-        const alcohol_details = String(alcoholDetails);
+        const drinks_alcohol = String(drinksAlcohol);
+        const alcohol_details = String(alcoholFrequency);
         const diagnosis_field = String(diagnosis);
         const symptoms_field = String(symptoms);
         const prescription_field = String(prescription);

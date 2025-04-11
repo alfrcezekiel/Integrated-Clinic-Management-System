@@ -48,9 +48,9 @@ const ConsultationFormModal = ({ open, onClose, onSubmit, consultationFormData, 
                             <TextField label="First Name" name="firstName" fullWidth value={consultationFormData.firstName} onChange={handleChange} />
                             <TextField label="Last Name" name="lastName" fullWidth value={consultationFormData.lastName} onChange={handleChange} />
                             <TextField label="Email" name="email" fullWidth type="email" value={consultationFormData.email} onChange={handleChange} />
-                            <TextField label="Phone Number" name="phone" fullWidth value={consultationFormData.phone} onChange={handleChange} />
-                            <TextField label="Appointment Date" name="date" type="date" slotProps={{ inputLabel: { shrink: true } }} value={consultationFormData.date} onChange={handleChange} fullWidth />
-                            <TextField label="Appointment Time" name="time" type="time" slotProps={{ inputLabel: { shrink: true } }} value={consultationFormData.time} onChange={handleChange} fullWidth />
+                            <TextField label="Phone Number" name="phoneNumber" fullWidth value={consultationFormData.phoneNumber} onChange={handleChange} />
+                            <TextField label="Appointment Date" name="appointmentDate" type="date" slotProps={{ inputLabel: { shrink: true } }} value={consultationFormData.appointmentDate} onChange={handleChange} fullWidth />
+                            <TextField label="Appointment Time" name="appointmentTime" type="time" slotProps={{ inputLabel: { shrink: true } }} value={consultationFormData.appointmentTime} onChange={handleChange} fullWidth />
                         </div>
                     </div>
 
@@ -127,7 +127,7 @@ const ConsultationFormModal = ({ open, onClose, onSubmit, consultationFormData, 
                                 <FormControlLabel value="Yes" control={<Radio />} label="Yes" />
                                 <FormControlLabel value="No" control={<Radio />} label="No" />
                             </RadioGroup>
-                            {consultationFormData.drinksAlcohol === "Yes" && (
+                            {consultationFormData.drinksAlcohol === "Yes" && (  
                                 <TextField
                                     label="If yes, how many drinks per week?"
                                     name="alcoholFrequency"
