@@ -10,40 +10,61 @@ import {
     TableCell,
     Typography,
     TableBody,
-    IconButton,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    TextField,
     Button,
-    FormControl,
-    InputLabel,
-    Select,
-    MenuItem,
-    FormHelperText
 } from "@mui/material"
 import { useState } from "react"
 import CMS from "../../API/CMS"
-import EditIcon from "@mui/icons-material/Edit"
-import { useNavigate } from "react-router-dom"
-import Lottie from "lottie-react"
-import successAnimation from "../../assets/animation/Main Scene.json"
+import ConsultationFormModal from "./ConsultationFormModal"
 
 const ApprovedAppointmentClinicTable = () => {
     const [appointmentsData, setAppointmentsData] = useState([])
-    // state for the fields error
+
+    const [consultationFormData, setConsultationFormData] = useState({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        date: "",
+        time: "",
+        hasMedicalConditions: "No",
+        medicalConditionDetails: "",
+        takingMedications: "No",
+        medicationDetails: "",
+        smokes: "No",
+        smokeFrequency: "",
+        hasAllergies: "No",
+        allergyDetails: "",
+        drinksAlcohol: "No",
+        alcoholFrequency: "",
+        diagnosis: "",
+        symptoms: "",
+        prescription: "",
+        consent: "Yes",
+    })
+
     const [fieldsError, setFieldsError] = useState({
         firstName: "",
         lastName: "",
         email: "",
-        appointmentDate: "",
-        preferredTime: "",
-        phoneNumber: "",
-        gender: "",
-        status: "",
-        purposeOfAppointment: "",
+        phone: "",
+        date: "",
+        time: "",
+        hasMedicalConditions: "No",
+        medicalConditionDetails: "",
+        takingMedications: "No",
+        medicationDetails: "",
+        smokes: "No",
+        smokeFrequency: "",
+        hasAllergies: "No",
+        allergyDetails: "",
+        drinksAlcohol: "No",
+        alcoholFrequency: "",
+        diagnosis: "",
+        symptoms: "",
+        prescription: "",
+        consent: "Yes",
     })
+
     const appointmentsTableColumn = [
         "Clinic Name",
         'First Name',
@@ -55,37 +76,35 @@ const ApprovedAppointmentClinicTable = () => {
         "Gender",
         'Status',
         'Purpose of Appointment',
-        "Edit"
+        "Consult Patient"
     ]
-    // form data for updating the appointment details
-    const [formData, setFormData] = useState({
-        appointmentID: "",
-        firstName: "",
-        lastName: "",
-        email: "",
-        appointmentDate: "",
-        preferredTime: "",
-        phoneNumber: "",
-        gender: "",
-        status: "",
-        purposeOfAppointment: "",
-    });
+
     const [open, setOpen] = useState(false);
-    const [successfullAppointmentModalOpen, setSuccessfullAppointmentModalOpen] = useState(false);
-    const handleClose = () => {
-        setFieldsError({})
-        setFormData({
-            firstName: "",
-            lastName: "",
-            email: "",
-            appointmentDate: "",
-            preferredTime: "",
-            phoneNumber: "",
-            gender: "",
-            doctor: "",
-            status: "",
-            purposeOfAppointment: "",
+
+    // this function is to formate the date to YYYY-MM-DD
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    const handleOpenConsulationForm = (appointment) => {
+        setConsultationFormData({
+            firstName: appointment.firstName,
+            lastName: appointment.lastName,
+            email: appointment.email,
+            phone: appointment.phoneNumber,
+            date: formatDate(appointment.appointmentDate),
+            time: appointment.preferredTime,
+            appointment_id: appointment.appointmentID,
+            clinic_name: appointment.clinic_name,
         })
+        setOpen(true)
+    }
+
+    const handleClose = () => {
         setOpen(false);
     }
 
@@ -104,7 +123,7 @@ const ApprovedAppointmentClinicTable = () => {
         }
     };
 
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
     const location = useLocation();
 
     useEffect(() => {
@@ -134,15 +153,6 @@ const ApprovedAppointmentClinicTable = () => {
     }, [location.pathname])
 
 
-    // this function is to formate the date to YYYY-MM-DD
-    const formatDate = (dateString) => {
-        const date = new Date(dateString);
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    };
-
     // function to format to MM/DD/YYYY to display in the table
     const dateFormat = (dateString) => {
         const date = new Date(dateString);
@@ -153,56 +163,29 @@ const ApprovedAppointmentClinicTable = () => {
         })
     };
 
-    // this function is used to update the appointment details
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    // this function is to submit the consultation form data
+    const handleSubmit = async () => {
         try {
-            if (formData.status === "Approved") {
-                formData.appointmentDate = new Date(formData.appointmentDate).toISOString().split("T")[0];
-            }
-
-            const response = await CMS.put(`/CMS/doctors-dashboard/updateAppointment/${formData.appointmentID}`, formData);
+            const response = await CMS.post("/CMS/clinic-dashboard/consultPatient", {
+                ...consultationFormData,
+                admin_id: localStorage.getItem("sid"),
+                clinic_name: consultationFormData.clinic_name,
+                appointment_id: consultationFormData.appointment_id
+            }, {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            })
 
             if (response.status === 200) {
-                setFieldsError({})
+                alert("Consulted Patient Successfully!");
                 setOpen(false);
-                setSuccessfullAppointmentModalOpen(true);
-                navigate("/doctor-portal/dashboard/pending-appointments");
-            } else {
-                throw new Error(`Unexpected error in status ${response.status}`)
             }
         } catch (error) {
-            if (error.response && error.response.status === 400) {
-                setFieldsError(error.response.data.errors);
-            } else {
-                console.error(`Code functionality error for updating the appointment: ${error}`);
-            }
+            console.error(`Code functionality error in consultation form: ${error}`);
         }
     }
-    // this function is used to open the modal for updating the appointment details
-    const handleClickOpen = (appointment) => {
-        setFormData({
-            appointmentID: appointment.appointmentID,
-            firstName: appointment.firstName,
-            lastName: appointment.lastName,
-            email: appointment.email,
-            appointmentDate: formatDate(appointment.appointmentDate),
-            preferredTime: appointment.preferredTime,
-            phoneNumber: appointment.phoneNumber,
-            gender: appointment.gender,
-            status: appointment.status,
-            purposeOfAppointment: appointment.purposeOfAppointment,
-        });
-        setOpen(true);
-    }
 
-    const handleCloseSuccessfullAppointmentModal = () => {
-        setSuccessfullAppointmentModalOpen(false);
-        handleClose();
-    }
-
-    const status = ["Approved", "Declined", "Pending", "Consulted"];
-    
     // this function determines the color of the status of the patients
     const getStatusColor = (status) => {
         switch (status) {
@@ -308,9 +291,17 @@ const ApprovedAppointmentClinicTable = () => {
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="center">
-                                                <IconButton aria-label="edit" onClick={() => handleClickOpen(appointment)}>
-                                                    <EditIcon />
-                                                </IconButton>
+                                                <Button
+                                                    variant="contained"
+                                                    onClick={() => handleOpenConsulationForm(appointment)}
+                                                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                                    <Typography
+                                                        variant="body2"
+                                                        className="text-white font-bold"
+                                                    >
+                                                        Consult Patient
+                                                    </Typography>
+                                                </Button>
                                             </TableCell>
                                         </TableRow>
                                     ))
@@ -328,149 +319,15 @@ const ApprovedAppointmentClinicTable = () => {
                     </CardContent>
                 </Card>
             </div>
-            <Dialog open={open} onClose={handleClose}>
-                <DialogTitle>Modify Booked Appointment</DialogTitle>
-                <DialogContent>
-                    <form onSubmit={handleSubmit}>
-                        <TextField
-                            autoFocus
-                            margin="dense"
-                            label="Enter Appointment ID"
-                            type="text"
-                            fullWidth
-                            hidden
-                            value={formData.appointmentID}
-                        />
-                        <TextField
-                            autoFocus
-                            margin="dense"
-                            label="First Name"
-                            type="text"
-                            fullWidth
-                            value={formData.firstName}
-                            onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                            error={Boolean(fieldsError.firstName)}
-                            helperText={fieldsError.firstName ? fieldsError.firstName : ""}
-                        />
-                        <TextField
-                            margin="dense"
-                            label="Last Name"
-                            type="text"
-                            fullWidth
-                            value={formData.lastName}
-                            onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                            error={Boolean(fieldsError.lastName)}
-                            helperText={fieldsError.lastName ? fieldsError.lastName : ""}
-                        />
-                        <TextField
-                            margin="dense"
-                            label="Enter Email"
-                            type="text"
-                            fullWidth
-                            value={formData.email}
-                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            error={Boolean(fieldsError.email)}
-                            helperText={fieldsError.email ? fieldsError.email : ""}
-                        />
-                        <TextField
-                            margin="dense"
-                            label="Appointment Date"
-                            type="date"
-                            fullWidth
-                            value={formData.appointmentDate}
-                            onChange={(e) => setFormData({ ...formData, appointmentDate: e.target.value })}
-                            InputLabelProps={{
-                                shrink: true,
-                            }}
-                            error={Boolean(fieldsError.appointmentDate)}
-                            helperText={fieldsError.appointmentDate ? fieldsError.appointmentDate : ""}
-                        />
-                        <TextField
-                            margin="dense"
-                            label="Enter Phone Number"
-                            type="number"
-                            fullWidth
-                            value={formData.phoneNumber}
-                            onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                            InputLabelProps={{
-                                shrink: true,
-                            }}
-                            error={Boolean(fieldsError.phoneNumber)}
-                            helperText={fieldsError.phoneNumber ? fieldsError.phoneNumber : ""}
-                        />
-                        <FormControl fullWidth margin="dense" error={Boolean(fieldsError.gender)}>
-                            <InputLabel>Gender</InputLabel>
-                            <Select
-                                value={formData.gender}
-                                onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-                                label="Gender"
-                            >
-                                <MenuItem value="Male">Male</MenuItem>
-                                <MenuItem value="Female">Female</MenuItem>
-                            </Select>
-                            {fieldsError.gender && <FormHelperText error>{fieldsError.gender}</FormHelperText>}
-                        </FormControl>
-                        <FormControl fullWidth margin="dense" error={Boolean(fieldsError.status)}>
-                            <InputLabel>Status</InputLabel>
-                            <Select
-                                value={formData.status}
-                                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                                label="Status"
-                            >
-                                {status.map((status, i) => (
-                                    <MenuItem key={i} value={status}>
-                                        {status}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                            {fieldsError.status && <FormHelperText error>{fieldsError.status}</FormHelperText>}
-                        </FormControl>
-                        <TextField
-                            margin="dense"
-                            label="Purpose of Appointment"
-                            type="text"
-                            fullWidth
-                            value={formData.purposeOfAppointment}
-                            onChange={(e) => setFormData({ ...formData, purposeOfAppointment: e.target.value })}
-                            error={Boolean(fieldsError.purposeOfAppointment)}
-                            helperText={fieldsError.purposeOfAppointment ? fieldsError.purposeOfAppointment : ""}
-                        />
-                        <DialogActions>
-                            <Button onClick={handleClose} color="primary" variant="outlined">
-                                Cancel
-                            </Button>
-                            <Button type="submit" color="primary" variant="contained">
-                                Update Patient Appointment
-                            </Button>
-                        </DialogActions>
-                    </form>
-                </DialogContent>
-            </Dialog>
-            <Dialog
-                open={successfullAppointmentModalOpen}
-                onClose={handleCloseSuccessfullAppointmentModal}
-                className="flex items-center justify-center fixed inset-0"
-            >
-                <div className="bg-white rounded-2xl p-6 w-[400px] text-center shadow-lg">
-                    <DialogTitle className="text-xl font-semibold">Success</DialogTitle>
-                    <DialogContent className="flex flex-col items-center">
-                        <Lottie animationData={successAnimation} className="w-24 h-24" loop={false} />
-                        <Typography variant="body1" className="mt-2">
-                            Patients Appointment has been successfully updated.
-                        </Typography>
-                    </DialogContent>
-                    <DialogActions className="flex justify-center mt-4 items-center flex-col">
-                        <Button
-                            onClick={handleCloseSuccessfullAppointmentModal}
-                            color="primary"
-                            variant="contained"
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md"
-                        >
-                            OK
-                        </Button>
-                    </DialogActions>
-                </div>
-            </Dialog>
+            <ConsultationFormModal
+                open={open}
+                onClose={handleClose}
+                onSubmit={handleSubmit}
+                consultationFormData={consultationFormData}
+                setConsultationFormData={setConsultationFormData}
+                fieldsError={fieldsError}
+                setFieldsError={setFieldsError}
+            />
         </>
     )
 }

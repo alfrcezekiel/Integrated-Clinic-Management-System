@@ -4,8 +4,7 @@ import Button from "@mui/material/Button";
 import "../../assets/css/main.css";
 import {
     Link,
-    useLocation,
-    useNavigate
+    useLocation
 } from "react-router-dom";
 import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
@@ -111,7 +110,6 @@ const PatientsRegistrationPortal = () => {
         }
     }, [fieldsErrors, formRegistrationPatientsData])
 
-    const navigate = useNavigate();
 
     const handleDateChange = useCallback(async (newValue) => {
         setFormRegistrationPatientsData({
@@ -145,8 +143,8 @@ const PatientsRegistrationPortal = () => {
                 alert(response.data.message);
 
                 setFieldsErrors({})
-                if (response.data.message === "Patient account registered successfully") {
-                    navigate("/patients-portal");
+                if (response.data.message === "Patient account registered successfully. Your Account is Pending. Please wait for the admin approval") {
+                    window.location.href = "/patients-portal";
                 }
             }
         } catch (error) {

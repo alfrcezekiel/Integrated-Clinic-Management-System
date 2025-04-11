@@ -93,7 +93,7 @@ export const registerPatientAccount = async (req, res) => {
 
         const token = jwt.sign({ id: patientID, email: email }, SECRET_KEY || "sadadsasdd", { expiresIn: "1hr" });
         return res.status(StatusCodes.OK).json({
-            message: "Patient account registered successfully",
+            message: "Patient account registered successfully. Your Account is Pending. Please wait for the admin approval",
             token
         })
     } catch (error) {
@@ -398,7 +398,7 @@ export const patientsBookedAppointments = async (req, res) => {
 
         const createdAt = new Date()
         const clinic_id = parseInt(clinicID, 10);
-        const appointmentDateFormat  = dayjs(appointmentDate).format("YYYY-MM-DD HH:mm:ss");
+        const appointmentDateFormat = dayjs(appointmentDate).format("YYYY-MM-DD HH:mm:ss");
         const query = `INSERT INTO patientsappointment (
             patientID,
             firstName,
@@ -1481,6 +1481,144 @@ export const updateRegisteredPatientsAccountInAdmin = async (req, res) => {
         console.error(`Failed to update registered patients account: ${error}`);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             message: "Failed to update registered patients account"
+        })
+    }
+}
+
+// controller logic for inserting a consult patient data
+export const consultPatientInClinicDashboard = async (req, res) => {
+    try {
+        const {
+            firstName,
+            lastName,
+            email,
+            phoneNumber,
+            appointmentDate,
+            appointmentTime,
+            hasMedicalConditions,
+            medicalConditionDetails,
+            takingMedications,
+            medicationDetails,
+            smokes,
+            smokeFrequency,
+            allergies,
+            allergyDetails,
+            drinksAlchol,
+            alcoholDetails,
+            diagnosis,
+            symptoms,
+            prescription,
+            clinic_name,
+            admin_id,
+            appointment_id
+        } = req.body;
+
+        const first_name = String(firstName);
+        const last_name = String(lastName);
+        const email_address = String(email);
+        const phone_number = String(phoneNumber);
+        const appointment_date = dayjs(appointmentDate).format("YYYY-MM-DD");;
+        const appointment_time = String(appointmentTime);
+        const has_medical_conditions = String(hasMedicalConditions);
+        const medical_condition_details = String(medicalConditionDetails);
+        const taking_medications = String(takingMedications);
+        const medication_details = String(medicationDetails);
+        const smoking = String(smokes);
+        const smoke_frequency = String(smokeFrequency);
+        const allergy = String(allergies);
+        const allergy_details = String(allergyDetails);
+        const drinks_alcohol = String(drinksAlchol);
+        const alcohol_details = String(alcoholDetails);
+        const diagnosis_field = String(diagnosis);
+        const symptoms_field = String(symptoms);
+        const prescription_field = String(prescription);
+        const clinic_name_field = String(clinic_name);
+        const admin_id_field = String(admin_id);
+
+        const appointmentID = parseInt(appointment_id, 10);
+
+        const consent = "Yes";
+
+        const values = [
+            appointmentID,
+            first_name,
+            last_name,
+            email_address,
+            phone_number,
+            appointment_date,
+            appointment_time,
+            has_medical_conditions,
+            medical_condition_details,
+            taking_medications,
+            medication_details,
+            smoking,
+            smoke_frequency,
+            allergy,
+            allergy_details,
+            drinks_alcohol,
+            alcohol_details,
+            diagnosis_field,
+            symptoms_field,
+            prescription_field,
+            clinic_name_field,
+            consent,
+            admin_id_field,
+        ]
+
+        const query = `INSERT INTO consultedpatients (
+            appointmentID,
+            patient_first_name,
+            patient_last_name,
+            patient_email,
+            phone_number,
+            appointment_date,
+            appointment_time,
+            has_medical_condition,
+            medical_condition_details,
+            taking_medication,
+            medication_details,
+            smokes,
+            smoke_frequency,
+            has_allergies,
+            allergies_details,
+            drinks_alcohol,
+            alcohol_details,
+            diagnosis,
+            symptoms,
+            prescription,
+            clinic_name,
+            consent,
+            created_by
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+        `
+
+        const [result1] = await conn.query(query, values);
+
+        if(result1.affectedRows === 0) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Failed to insert consult patient data"
+            })
+        }
+
+        const updateQuery = `UPDATE patientsappointment SET status = ? WHERE appointmentID = ?;`;
+        const status = "Consulted";
+
+        const [result2] = await conn.query(updateQuery, [status, appointmentID]);
+
+        if(result2.affectedRows === 0) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Failed to update appointment status"
+            })
+        }
+
+        return res.status(StatusCodes.OK).json({
+            message: "Patient Consulted Successfully"
+        })
+
+    } catch (error) {
+        console.error(`Failed to insert consult patient data: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to insert consult patient data"
         })
     }
 }
