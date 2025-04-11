@@ -17,10 +17,35 @@ import PropTypes from "prop-types";
 const ConsultationFormModal = ({ open, onClose, onSubmit, consultationFormData, setConsultationFormData }) => {
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        setConsultationFormData((prev) => ({
-            ...prev,
-            [name]: type === "checkbox" ? checked : value,
-        }));
+        setConsultationFormData((prev) => {
+            const updatedData = {
+                ...prev,
+                [name]: type === "checkbox" ? checked : value,
+            };
+
+            // Clear conditional fields when "No" is selected
+            if (name === "hasMedicalConditions" && value === "No") {
+                updatedData.medicalConditionDetails = "";
+            }
+
+            if (name === "takingMedications" && value === "No") {
+                updatedData.medicationDetails = "";
+            }
+
+            if (name === "smokes" && value === "No") {
+                updatedData.smokeFrequency = "";
+            }
+
+            if (name === "hasAllergies" && value === "No") {
+                updatedData.allergyDetails = "";
+            }
+
+            if (name === "drinksAlcohol" && value === "No") {
+                updatedData.alcoholFrequency = "";
+            }
+
+            return updatedData;
+        });
     };
 
     const handleFormSubmit = (e) => {
@@ -127,7 +152,7 @@ const ConsultationFormModal = ({ open, onClose, onSubmit, consultationFormData, 
                                 <FormControlLabel value="Yes" control={<Radio />} label="Yes" />
                                 <FormControlLabel value="No" control={<Radio />} label="No" />
                             </RadioGroup>
-                            {consultationFormData.drinksAlcohol === "Yes" && (  
+                            {consultationFormData.drinksAlcohol === "Yes" && (
                                 <TextField
                                     label="If yes, how many drinks per week?"
                                     name="alcoholFrequency"
