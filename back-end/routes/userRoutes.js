@@ -30,7 +30,8 @@ import {
     getDeclinedAppointmentStatusInClinic,
     getRegisteredPatientsAccountInAdmin,
     updateRegisteredPatientsAccountInAdmin,
-    consultPatientInClinicDashboard
+    consultPatientInClinicDashboard,
+    getAppointmentHistoryInClinic
 } from "../controllers/cms.js";
 import validateRegister from "../middleware/validation.js";
 import patientsLoginValidation from "../middleware/patientsLoginValidation.js";
@@ -144,5 +145,8 @@ router.put("/admin-dashboard/updateRegisteredPatientAccount/:patientID", updateR
 
 // router for inserting the patients consultation in the clinic dashboard then update the status in appointment table
 router.post("/clinic-dashboard/consultPatient", consultPatientInClinicDashboard);
+
+// router for getting the appointment history of the patients in clinic dashboard
+router.get("/clinic-dashboard/getAppointmentHistory/:clinicID", getAppointmentHistoryInClinic);
 
 export default router;

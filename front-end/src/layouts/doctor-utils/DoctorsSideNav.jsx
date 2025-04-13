@@ -29,10 +29,20 @@ const DoctorsSideNav = ({ brandName, routes }) => {
     const [open, setOpen] = useState(false);
     const isMobile = useMediaQuery("(max-width: 768px)");
     const [appointmentDropDownOpen, setAppointmentDropDownOpen] = useState(false);
+    const [appointmentHistoryDropDownOpen, setAppointmentHistoryDropDownOpen] = useState(false);
 
     const handleAppointmentDropDownClick = useCallback(() => {
         setAppointmentDropDownOpen(!appointmentDropDownOpen);
     }, [appointmentDropDownOpen])
+
+
+    const appointmentHistoryDropDown = (dropdown) => {
+        setAppointmentHistoryDropDownOpen(!dropdown);
+    }
+
+    const handleAppointmentHistoryDropDownClick = useCallback(() => {
+        appointmentHistoryDropDown(appointmentHistoryDropDownOpen);
+    }, [appointmentHistoryDropDownOpen])
 
     return (
         <Drawer
@@ -54,7 +64,7 @@ const DoctorsSideNav = ({ brandName, routes }) => {
                 {routes.map(({ layout, pages }, index) => (
                     <div key={layout || index} className="mb-4">
                         {pages
-                        .filter((page) => page.name !== "Appointments" && page.name !== "Pending Appointments" && page.name !== "Approved Appointments" && page.name !== "Declined Appointments")
+                        .filter((page) => page.name !== "Appointments" && page.name !== "Pending Appointments" && page.name !== "Approved Appointments" && page.name !== "Declined Appointments" && page.name !== "Appointment History")
                         .map(({ icon, name, path }) => (
                             <NavLink
                                 key={name}
@@ -84,9 +94,9 @@ const DoctorsSideNav = ({ brandName, routes }) => {
                                             className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-white" : "text-gray-700 hover:bg-gray-100"}`}
                                         >
                                             {icon}
-                                            <ListItem button="true">
+                                            <ListItemButton>
                                                 <ListItemText primary={name} className="text-black" />
-                                            </ListItem>
+                                            </ListItemButton>
                                         </NavLink>
                                     ))
                             ))}
@@ -137,6 +147,33 @@ const DoctorsSideNav = ({ brandName, routes }) => {
                             {routes.map(({ layout, pages }, index) => (
                                 pages
                                     .filter((page) => page.name === "Declined Appointments")
+                                    .map(({ icon, name, path }) => (
+                                        <NavLink
+                                            key={index}
+                                            to={`${layout}${path}`}
+                                            className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-white" : "text-gray-700 hover:bg-gray-100"}`}
+                                        >
+                                            {icon}
+                                            <ListItem button="true">
+                                                <ListItemText primary={name} className="text-black" />
+                                            </ListItem>
+                                        </NavLink>
+                                    ))
+                            ))}
+                        </List>
+                    </Collapse>
+                </List>
+                <div className="h-4"></div>
+                <List className="bg-white shadow-lg rounded-2xl mt-4">
+                    <ListItemButton onClick={handleAppointmentHistoryDropDownClick}>
+                        <ListItemText primary="Appointment History" />
+                        {appointmentHistoryDropDownOpen ? <ExpandLess /> : <ExpandMore />}
+                    </ListItemButton>
+                    <Collapse in={appointmentHistoryDropDownOpen} timeout="auto" unmountOnExit className="p-3">
+                        <List component="div" disablePadding>
+                            {routes.map(({ layout, pages }, index) => (
+                                pages
+                                    .filter((page) => page.name === "Appointment History")
                                     .map(({ icon, name, path }) => (
                                         <NavLink
                                             key={index}

@@ -51,7 +51,7 @@ const ConsultationFormModal = ({ open, onClose, onSubmit, consultationFormData, 
     const handleFormSubmit = (e) => {
         try {
             e.preventDefault();
-            if (consultationFormData && consultationFormData.consent) {
+            if (consultationFormData && consultationFormData.consent === "Yes") {
                 onSubmit(consultationFormData);
             } else {
                 alert("Please accept the consent and agreement.");

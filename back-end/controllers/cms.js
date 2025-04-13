@@ -5,6 +5,8 @@ import jwt from "jsonwebtoken";
 import "../main.js";
 import bcrypt from "bcrypt";
 import dayjs from "dayjs";
+import { getAppointmentHistory } from '../models/AppointmentHistory.Model.js';
+
 dotenv.config();
 
 // controller logic for a global route
@@ -1619,6 +1621,39 @@ export const consultPatientInClinicDashboard = async (req, res) => {
         console.error(`Failed to insert consult patient data: ${error}`);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             message: "Failed to insert consult patient data"
+        })
+    }
+}
+
+// controller logic for getting the appointment history in clinic dashboard
+export const getAppointmentHistoryInClinic = async (req, res) => {
+    try {
+        const { clinicID } = req.params;
+
+        if (!clinicID) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Please enter a valid clinic ID"
+            })
+        }
+
+        const clinic_id = parseInt(clinicID, 10);
+
+        const consulted_patient = await getAppointmentHistory(clinic_id);
+
+        if(!consulted_patient.length){
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No appointment history found"
+            })
+        }
+
+        return res.status(StatusCodes.OK).json({
+            appointmentHistory: consulted_patient
+        })
+
+    } catch (error) {
+        console.error(`Failed to get appointment history: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to retrieve appointment history"
         })
     }
 }

@@ -20,9 +20,11 @@ import DeclinedAppointmentStatusTable from "./layouts/patients-utils/DeclinedApp
 import PendingAppointmentClinicTable from "./layouts/doctor-utils/PendingAppointmentClinicTable";
 import ApprovedAppointmentClinicTable from "./layouts/doctor-utils/ApprovedAppointmentClinicTable";
 import DeclinedAppointmentStatusClinicTable from "./layouts/doctor-utils/DeclinedAppointmentStatusClinicTable";
+import AppointmentHistoryTable from "./layouts/doctor-utils/AppointmentHistoryTable";
 
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import RegisterPatientsAccountTable from "./layouts/adminUtils/RegisterPatientsAccountTable";
+import AssignmentTurnedIn from "@mui/icons-material/AssignmentTurnedIn";
 
 const iconStyle = {
     fontSize: 20,
@@ -53,19 +55,19 @@ const routes = [
                 name: "Appointments",
                 path: "View-Appointment",
                 element: <PatientsTable />
-            },{
+            }, {
                 id: 4,
                 icon: <Schedule style={iconStyle} />,
                 name: "Pending Appointments",
                 path: "Pending-Appointment",
                 element: <PendingAppointmentTable />
-            },{
+            }, {
                 id: 5,
                 icon: <Schedule style={iconStyle} />,
                 name: "Approved Appointments",
                 path: "Approved-Appointment",
                 element: <ApprovedAppointmentsTable />
-            },{
+            }, {
                 id: 6,
                 icon: <Schedule style={iconStyle} />,
                 name: "Declined Appointments",
@@ -114,6 +116,13 @@ export const doctorRoutes = [
                 name: "Declined Appointments",
                 path: "/declined-appointments",
                 element: <DeclinedAppointmentStatusClinicTable />
+            },
+            {
+                id: 6,
+                icon: <AssignmentTurnedIn style={iconStyle} />,
+                name: "Appointment History",
+                path: "/appointment-history",
+                element: <AppointmentHistoryTable />
             }
         ]
     }
