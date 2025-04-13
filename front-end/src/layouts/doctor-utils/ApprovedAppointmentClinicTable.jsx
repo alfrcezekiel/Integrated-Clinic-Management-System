@@ -1,5 +1,8 @@
 import { useEffect } from "react"
-import { useLocation } from "react-router-dom"
+import {
+    useLocation,
+    useNavigate
+} from "react-router-dom"
 import {
     Card,
     CardContent,
@@ -164,6 +167,8 @@ const ApprovedAppointmentClinicTable = () => {
         })
     };
 
+    const navigate = useNavigate();
+
     // this function is to submit the consultation form data
     const handleSubmit = async () => {
         try {
@@ -180,6 +185,7 @@ const ApprovedAppointmentClinicTable = () => {
 
             if (response.status === 200) {
                 alert("Consulted Patient Successfully!");
+                navigate("/doctor-portal/dashboard/appointment-history")
                 setOpen(false);
             }
         } catch (error) {

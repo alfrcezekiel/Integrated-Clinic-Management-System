@@ -1,4 +1,5 @@
 import {
+    useCallback,
     useEffect,
     useState
 } from "react"
@@ -13,12 +14,16 @@ import {
     TableCell,
     Typography,
     TableBody,
-    Button,
+    IconButton,
+    Dialog,
+    DialogTitle,
+    DialogContent,
 } from "@mui/material"
 import CMS from "../../API/CMS"
+import HistoryIcon from '@mui/icons-material/History';
+import CloseIcon from "@mui/icons-material/Close";
 
 const AppointmentHistoryTable = () => {
-
     const appointmentsTableColumn = [
         "Clinic Name",
         'First Name',
@@ -46,6 +51,7 @@ const AppointmentHistoryTable = () => {
             return time;
         }
     };
+
     // function to format to MM/DD/YYYY to display in the table
     const dateFormat = (dateString) => {
         const date = new Date(dateString);
@@ -58,6 +64,27 @@ const AppointmentHistoryTable = () => {
 
     const location = useLocation();
     const [appointmentHistoryData, setAppointmentHistoryData] = useState([])
+
+    const [open, setOpen] = useState(false);
+    const [selectedPatient, setSelectedPatient] = useState(null);
+
+    const handleOpenPatientResults = (patient) => {
+        setSelectedPatient(patient);
+        setOpen(true);
+    }
+
+    const handleClosePatientsResults = () => {
+        setSelectedPatient(null);
+        setOpen(false);
+    }
+
+    const handleOpen = useCallback((patient) => {
+        handleOpenPatientResults(patient)
+    }, [])
+
+    const handleClose = useCallback(() => {
+        handleClosePatientsResults()
+    }, [])
 
     useEffect(() => {
         const titleHeader = () => {
@@ -185,17 +212,12 @@ const AppointmentHistoryTable = () => {
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="center">
-                                                <Button
-                                                    variant="contained"
-                                                    onClick={() => handleOpenConsulationForm(appointment)}
-                                                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                                                    <Typography
-                                                        variant="body2"
-                                                        className="text-white font-bold"
-                                                    >
-                                                        Consult Patient
-                                                    </Typography>
-                                                </Button>
+                                                <IconButton
+                                                    className="bg-blue-500 text-white hover:bg-blue-600"
+                                                    onClick={() => handleOpen(appointment)}
+                                                >
+                                                    <HistoryIcon color="primary" />
+                                                </IconButton>
                                             </TableCell>
                                         </TableRow>
                                     ))
@@ -212,6 +234,90 @@ const AppointmentHistoryTable = () => {
                         </Table>
                     </CardContent>
                 </Card>
+
+                {/* Modal for Patients Results */}
+                <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md" className="rounded-4xl">
+                    <DialogTitle className="flex justify-between items-center bg-blue-500">
+                        <span className="text-lg font-semibold text-black">Patient Consultation</span>
+                        <IconButton onClick={handleClose} className="text-white">
+                            <CloseIcon />
+                        </IconButton>
+                    </DialogTitle>
+                    <DialogContent className="bg-gray-50">
+                        {selectedPatient && (
+                            <div className="space-y-6 p-2">
+                                {/* Patient Information */}
+                                <section className="bg-white p-4 rounded-xl shadow-lg mt-3">
+                                    <h3 className="text-lg font-semibold text-blue-700 mb-2">Patient Information</h3>
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm text-gray-700">
+                                        <div>
+                                            <strong>First Name:</strong>
+                                            {selectedPatient.firstName}
+                                        </div>
+                                        <div>
+                                            <strong>Last Name:</strong>
+                                            {selectedPatient.lastName}
+                                        </div>
+                                        <div>
+                                            <strong>Email:</strong>
+                                            {selectedPatient.email}
+                                        </div>
+                                        <div>
+                                            <strong>Phone:</strong>
+                                            {selectedPatient.phoneNumber}
+                                        </div>
+                                        <div>
+                                            <strong>Appointment Date:</strong>
+                                            {dateFormat(selectedPatient.appointmentDate)}
+                                        </div>
+                                        <div>
+                                            <strong>Appointment Time:</strong>
+                                            {formatTimeToAMPM(selectedPatient.preferredTime)}
+                                        </div>
+                                    </div>
+                                </section>
+
+                                {/* Medical History */}
+                                <section className="bg-white p-4 rounded-xl shadow-lg">
+                                    <h3 className="text-lg font-semibold text-blue-700 mb-2">Medical History</h3>
+                                    <div className="grid grid-cols-2 gap-4 text-sm text-gray-700">
+                                        <div>
+                                            <strong>Has Existing History:</strong>
+                                            {selectedPatient.has_medical_condition || selectedPatient.medical_condition_details ?
+                                                selectedPatient.has_medical_condition : selectedPatient.medical_condition_details
+                                            }
+                                        </div>
+                                        <div>
+                                            <strong>Taking Medication:</strong>
+                                            {selectedPatient.taking_medication || selectedPatient.medication_details ?
+                                                selectedPatient.taking_medication : selectedPatient.medication_details
+                                            }
+                                        </div>
+                                    </div>
+                                </section>
+
+                                {/* Lifestyle Info */}
+                                <section className="bg-white p-4 rounded-xl shadow-lg">
+                                    <h3 className="text-lg font-semibold text-blue-700 mb-2">Lifestyle Information</h3>
+                                    <div className="space-y-2 text-sm text-gray-700">
+                                        <div>
+                                            <strong>Diagnosis:</strong>
+                                            {selectedPatient.diagnosis}
+                                        </div>
+                                        <div>
+                                            <strong>Symptoms:</strong>
+                                            {selectedPatient.symptoms}
+                                        </div>
+                                        <div>
+                                            <strong>Prescription:</strong>
+                                            {selectedPatient.prescription}
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+                        )}
+                    </DialogContent>
+                </Dialog>
             </div>
         </>
     )
