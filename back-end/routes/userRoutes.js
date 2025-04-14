@@ -12,7 +12,8 @@ import {
     loginDoctorsAccount,
     updatePatientsAppointments,
     getBookedAppointmentsToDisplayInDoctorsDashboard,
-    verifyToken,
+    getLoggedInUser,
+    requireLogin,
     loginAdminAccount,
     addDoctor,
     getDoctorsLists,
@@ -148,5 +149,8 @@ router.post("/clinic-dashboard/consultPatient", consultPatientInClinicDashboard)
 
 // router for getting the appointment history of the patients in clinic dashboard
 router.get("/clinic-dashboard/getAppointmentHistory/:clinicID", getAppointmentHistoryInClinic);
+
+// router for session verification
+router.get("/verifyToken", requireLogin, getLoggedInUser);
 
 export default router;

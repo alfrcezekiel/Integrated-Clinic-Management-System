@@ -129,6 +129,23 @@ const ApprovedAppointmentClinicTable = () => {
 
     // const navigate = useNavigate();
     const location = useLocation();
+    
+    const retrieveAppoinmentApprovedStatus = async () => {
+        const clinicID = localStorage.getItem("sid")
+        try {
+            const response = await CMS.get(`/CMS/doctors-dashboard/getPatientApprovedStatus/${clinicID}`);
+
+            if (!response.data) {
+                throw new Error("No retrieved approved status for appointments");
+            }
+
+            if (response.status === 200) {
+                setAppointmentsData(response.data.patientsApprovedStatus);
+            }
+        } catch (error) {
+            console.error(`Code functionality error for fetching approved status data: ${error}`);
+        }
+    }
 
     useEffect(() => {
         const titleHeader = () => {
@@ -136,23 +153,6 @@ const ApprovedAppointmentClinicTable = () => {
         }
         titleHeader();
 
-        const clinicID = localStorage.getItem("sid")
-
-        const retrieveAppoinmentApprovedStatus = async () => {
-            try {
-                const response = await CMS.get(`/CMS/doctors-dashboard/getPatientApprovedStatus/${clinicID}`);
-
-                if (!response.data) {
-                    throw new Error("No retrieved approved status for appointments");
-                }
-
-                if (response.status === 200) {
-                    setAppointmentsData(response.data.patientsApprovedStatus);
-                }
-            } catch (error) {
-                console.error(`Code functionality error for fetching approved status data: ${error}`);
-            }
-        }
         retrieveAppoinmentApprovedStatus();
     }, [location.pathname])
 
@@ -187,6 +187,7 @@ const ApprovedAppointmentClinicTable = () => {
                 alert("Consulted Patient Successfully!");
                 navigate("/doctor-portal/dashboard/appointment-history")
                 setOpen(false);
+                retrieveAppoinmentApprovedStatus();
             }
         } catch (error) {
             console.error(`Code functionality error in consultation form: ${error}`);

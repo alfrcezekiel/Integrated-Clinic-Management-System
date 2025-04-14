@@ -405,7 +405,7 @@ export const patientsBookedAppointments = async (req, res) => {
         const createdAt = new Date()
         const clinic_id = parseInt(clinicID, 10);
         const appointmentDateFormat = dayjs(appointmentDate).format("YYYY-MM-DD");
-        
+
         const query = `INSERT INTO patientsappointment (
             patientID,
             firstName,

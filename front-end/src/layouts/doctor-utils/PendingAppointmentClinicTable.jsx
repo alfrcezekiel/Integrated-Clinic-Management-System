@@ -93,29 +93,30 @@ const PendingAppointmentClinicTable = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
+    const retrievedAppointmentPendingStatus = async () => {
+        try {
+            const clinicID = localStorage.getItem("sid")
+
+            const response = await CMS.get(`/CMS/doctors-dashboard/getPatientPendingStatus/${clinicID}`);
+
+            if (!response.data) {
+                throw new Error("No retrieved data for appointments");
+            }
+
+            if (response.status === 200) {
+                setAppointmentsData(response.data.patientsPendingStatus);
+            }
+        } catch (error) {
+            console.error(`Code functionality error for fetching appointments data: ${error}`);
+        }
+    }
+
     useEffect(() => {
         const titleHeader = () => {
             document.title = "Clinic's Dashboard | Patient's Appointment | CMS"
         }
         titleHeader();
 
-        const clinicID = localStorage.getItem("sid")
-
-        const retrievedAppointmentPendingStatus = async () => {
-            try {
-                const response = await CMS.get(`/CMS/doctors-dashboard/getPatientPendingStatus/${clinicID}`);
-
-                if (!response.data) {
-                    throw new Error("No retrieved data for appointments");
-                }
-
-                if (response.status === 200) {
-                    setAppointmentsData(response.data.patientsPendingStatus);
-                }
-            } catch (error) {
-                console.error(`Code functionality error for fetching appointments data: ${error}`);
-            }
-        }
         retrievedAppointmentPendingStatus();
     }, [location.pathname])
 
@@ -169,6 +170,7 @@ const PendingAppointmentClinicTable = () => {
                 setOpen(false);
                 setSuccessfullAppointmentModalOpen(true);
                 navigate("/doctor-portal/dashboard/approved-appointments");
+                retrievedAppointmentPendingStatus();
             } else {
                 throw new Error(`Unexpected error in status ${response.status}`)
             }

@@ -55,7 +55,7 @@ const RegisterPatientsAccountTable = () => {
         setOpenModal(true);
     }
 
-    const handleCloseModal = useCallback(() =>{
+    const handleCloseModal = useCallback(() => {
         setSelectedPatient(null);
         setOpenModal(false);
         retrievedPatientsAccountData();
@@ -125,7 +125,7 @@ const RegisterPatientsAccountTable = () => {
             <Card className="shadow-lg rounded-2xl w-full">
                 <CardHeader
                     title="Registered Patients Account"
-                    className="bg-blue-500 mb-8 p-6 rounded-2xl"
+                    className="bg-blue-500 mb-2 p-6 rounded-2xl"
                     slotProps={{
                         title: {
                             variant: 'h6',
@@ -133,9 +133,9 @@ const RegisterPatientsAccountTable = () => {
                         },
                     }}
                 />
-                <CardContent className="overflow-x-scroll px-0 pt-0 pb-2">
+                <CardContent className="overflow-x-scroll pt-0 pb-2 rounded-xl shadow-sm bg-white">
                     <Table className="w-full min-w-[640px] table-auto">
-                        <TableHead>
+                        <TableHead className="bg-gray-100 text-sm sm:text-base text-gray-600 uppercase">
                             <TableRow>
                                 {registerPatientColums.map((header, i) => (
                                     <TableCell
