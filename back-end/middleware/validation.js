@@ -1,6 +1,6 @@
 import { body, validationResult } from 'express-validator';
 import { StatusCodes } from 'http-status-codes';
-import { isEmailTaken } from '../models/registeraccount.model.js';
+import Clinic from '../models/Clinic.Model.js';
 
 // validation for patients registration accounts
 const validateRegister = [
@@ -19,7 +19,7 @@ const validateRegister = [
         .isEmail()
         .withMessage("Invalid Email Format")
         .custom(async (email) => {
-            const isEmailExist = await isEmailTaken(email);
+            const isEmailExist =  await new Clinic().isEmailTaken(email);
 
             if (isEmailExist) {
                 throw new Error("Email is already in use");

@@ -1,5 +1,5 @@
 import PropTypes from "prop-types"
-import "../../assets/css/main.css";
+import "../../App.css";
 import {
     Drawer,
     Typography,
@@ -94,7 +94,7 @@ const SideNav = ({ brandName, routes }) => {
                         </List>
                     </Collapse>
                 </List>
-                <div className="h-2"></div>
+                <div className="h-4"></div>
                 <List className="bg-white shadow-lg rounded-2xl">
                     <ListItemButton onClick={handleDropdownAppointmentClick}>
                         <ListItemText primary="Appointment Management" />

@@ -5,8 +5,7 @@ import jwt from "jsonwebtoken";
 import "../main.js";
 import bcrypt from "bcrypt";
 import dayjs from "dayjs";
-import { getAppointmentHistory } from '../models/AppointmentHistory.Model.js';
-
+import Clinic from '../models/Clinic.Model.js';
 dotenv.config();
 
 // controller logic for a global route
@@ -55,6 +54,11 @@ export const registerPatientAccount = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, saltRounds);
         const hashedConfirmPassword = await bcrypt.hash(confirmPassword, saltRounds);
+
+        const formattedDate = new Date(date_of_birth).toISOString().split('T')[0]; // '2003-02-20'
+
+        // Use formattedDate in your query or insert
+
         // 1st table of patients register account
         const query1 = `INSERT INTO patientsregisteraccount1 (
         firstName,
@@ -81,7 +85,7 @@ export const registerPatientAccount = async (req, res) => {
             email,
             address_field,
             civil_status,
-            date_of_birth
+            formattedDate
         ]);
         const patientID = result.insertId;
 
@@ -400,7 +404,8 @@ export const patientsBookedAppointments = async (req, res) => {
 
         const createdAt = new Date()
         const clinic_id = parseInt(clinicID, 10);
-        const appointmentDateFormat = dayjs(appointmentDate).format("YYYY-MM-DD HH:mm:ss");
+        const appointmentDateFormat = dayjs(appointmentDate).format("YYYY-MM-DD");
+        
         const query = `INSERT INTO patientsappointment (
             patientID,
             firstName,
@@ -1455,13 +1460,14 @@ export const updateRegisteredPatientsAccountInAdmin = async (req, res) => {
             WHERE p1.patientID = ?;
         `
 
+        const formattedDate = new Date(date_of_birth).toISOString().split('T')[0];
         const values = [
             first_name,
             last_name,
             email_address,
             patient_address,
             civil_status,
-            date_of_birth,
+            formattedDate,
             phone_number,
             patient_status,
             patientID
@@ -1596,7 +1602,7 @@ export const consultPatientInClinicDashboard = async (req, res) => {
 
         const [result1] = await conn.query(query, values);
 
-        if(result1.affectedRows === 0) {
+        if (result1.affectedRows === 0) {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 message: "Failed to insert consult patient data"
             })
@@ -1607,7 +1613,7 @@ export const consultPatientInClinicDashboard = async (req, res) => {
 
         const [result2] = await conn.query(updateQuery, [status, appointmentID]);
 
-        if(result2.affectedRows === 0) {
+        if (result2.affectedRows === 0) {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 message: "Failed to update appointment status"
             })
@@ -1638,9 +1644,9 @@ export const getAppointmentHistoryInClinic = async (req, res) => {
 
         const clinic_id = parseInt(clinicID, 10);
 
-        const consulted_patient = await getAppointmentHistory(clinic_id);
+        const consulted_patient = await new Clinic().getAppointmentHistory(clinic_id);
 
-        if(!consulted_patient.length){
+        if (!consulted_patient.length) {
             return res.status(StatusCodes.NOT_FOUND).json({
                 message: "No appointment history found"
             })
