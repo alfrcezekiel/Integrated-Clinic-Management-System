@@ -1,4 +1,3 @@
-import "../../assets/css/main.css"
 import PropTypes from 'prop-types';
 import statisticsCardsData from "../../data/statistics-cards-data";
 import projectsTableData from "../../data/projects-table-data";

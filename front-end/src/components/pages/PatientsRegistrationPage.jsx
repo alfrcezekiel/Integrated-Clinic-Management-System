@@ -30,6 +30,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import dayjs from "dayjs";
+import { useNavigate } from "react-router-dom";
 
 const PatientsRegistrationPortal = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -94,6 +95,8 @@ const PatientsRegistrationPortal = () => {
         confirmPassword: ""
     });
 
+    const navigate = useNavigate();
+
     const handleInputChange = useCallback(async (e) => {
         const { name, value } = e.target;
 
@@ -144,7 +147,7 @@ const PatientsRegistrationPortal = () => {
 
                 setFieldsErrors({})
                 if (response.data.message === "Patient account registered successfully. Your Account is Pending. Please wait for the admin approval") {
-                    window.location.href = "/patients-portal";
+                    navigate("/cms")
                 }
             }
         } catch (error) {

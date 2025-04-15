@@ -47,7 +47,7 @@ export const registerPatientAccount = async (req, res) => {
         const civil_status = String(civilStatus);
         const date_of_birth = String(dateOfBirth);
 
-        const SECRET_KEY = process.env.JWT_SECRET || "authenmimangjuan";
+        const SECRET_KEY = process.env.JWT_SECRET;
 
         const saltRounds = 10;
         const status = "Pending"
@@ -156,7 +156,7 @@ export const loginPatientsAccount = async (req, res) => {
             });
         }
         const patients = rows[0];
-        const SECRET_KEY = process.env.JWT_SECRET || "authenmimangjuan";
+        const SECRET_KEY = process.env.JWT_SECRET;
         const isPasswordValid = await bcrypt.compare(password, patients.password);
 
         if (!isPasswordValid) {
@@ -166,7 +166,7 @@ export const loginPatientsAccount = async (req, res) => {
         }
 
         if (patients.status === "Pending") {
-            return res.status(StatusCodes.UNAUTHORIZED).json({
+            return res.status(StatusCodes.OK).json({
                 messageStatus: "Account is still pending for wait for the admin approval!"
             })
         }
@@ -225,7 +225,7 @@ export const loginDoctorsAccount = async (req, res) => {
             })
         }
 
-        const SECRET_KEY = process.env.JWT_SECRET || "authenniraul"
+        const SECRET_KEY = process.env.JWT_SECRET
         if (!SECRET_KEY) {
             return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
                 message: "Failed to login doctor account"
@@ -266,7 +266,7 @@ export const loginAdminAccount = async (req, res) => {
 
         const adminUsers = rows[0];
 
-        const SECRET_KEY = process.env.JWT_SECRET || "authenmimangjuan";
+        const SECRET_KEY = process.env.JWT_SECRET
         if (!SECRET_KEY) {
             return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
                 message: "Failed to login admin account"
@@ -462,7 +462,7 @@ export const verifyToken = (req, res, next) => {
     }
 
     try {
-        const SECRET_KEY = process.env.JWT_SECRET || "authenmimangjuan";
+        const SECRET_KEY = process.env.JWT_SECRET
         const decoded = jwt.verify(token, SECRET_KEY);
         req.user = decoded;
         next();
@@ -1089,7 +1089,7 @@ export const loggedInClinicAccount = async (req, res) => {
 
         const clinicUsers = rows[0];
 
-        const SECRET_KEY = process.env.JWT_SECRET || "authenmimangjuan";
+        const SECRET_KEY = process.env.JWT_SECRET;
         if (!SECRET_KEY) {
             return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
                 message: "Failed to login clinic account"

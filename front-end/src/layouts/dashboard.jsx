@@ -1,4 +1,3 @@
-import "../assets/css/main.css";
 import routes from "../routes";
 import SideNav from "../widgets/layout/sidenav";
 import DashboardNavbar from "../widgets/layout/dashboard.navbar";

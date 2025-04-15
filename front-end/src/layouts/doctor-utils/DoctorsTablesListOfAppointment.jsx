@@ -29,7 +29,6 @@ import EditIcon from "@mui/icons-material/Edit"
 import { useNavigate } from "react-router-dom"
 import Lottie from "lottie-react"
 import successAnimation from "../../assets/animation/Main Scene.json"
-import "../../App.css"
 
 const DoctorsTablesListOfAppointments = () => {
     const [appointmentsData, setAppointmentsData] = useState([])

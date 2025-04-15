@@ -43,15 +43,11 @@ function PatientsLoginPortal() {
     const [accountStatus, setAccountStatus] = useState("");
 
     const handleAccountStatus = useCallback(async (response) => {
-        if (response.data.status === "Pending") {
+        if (response.data.messageStatus === "Account is still pending for wait for the admin approval!") {
             setAccountStatus("Your account is pending approval. Please wait for the admin to approve your account.");
             setOpenModal(true)
-        } else {
-            setAccountStatus("Your account is active. You can proceed to login.");
-            setOpenModal(false);
         }
     }, [])
-
 
     const location = useLocation();
 
@@ -108,10 +104,14 @@ function PatientsLoginPortal() {
                     "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
                 },
             });
-            
+
             if (response.data && response.status === 200) {
                 setFieldErrors({})
-                handleAccountStatus(response);
+
+                if (response.data.messageStatus === "Account is still pending for wait for the admin approval!") {
+                    handleAccountStatus(response);
+                }
+
                 if (response.data.token && response.data.sid) {
                     localStorage.setItem("authToken", response.data.token);
                     localStorage.setItem("sid", response.data.sid.patientID);
@@ -122,17 +122,10 @@ function PatientsLoginPortal() {
                 } else {
                     console.error("No token found in response data");
                 }
-            } else if (response.data && response.data.errors) {
-                setFieldErrors(response.data.errors);
-            } else if (response.data && response.data.messageStatus) {
-                alert(response.data.messageStatus);
-                return;
-            }
-            else {
+            } else {
                 console.error(`Error in logging in patient: ${response.status}`);
                 alert("Error in logging in patient")
             }
-
         } catch (error) {
             if (error.response && error.response.status === 400) {
                 setFieldErrors(error.response.data.errors);
@@ -141,9 +134,6 @@ function PatientsLoginPortal() {
                     email: error.response.data.emailMessage,
                     password: error.response.data.passwordMessage
                 });
-            } else if (error.response.data && error.response.data.messageStatus) {
-                handleAccountStatus(error.response.data.messageStatus);
-                alert(error.response.data.messageStatus);
             } else {
                 console.error(`Error in logging in patient: ${error}`);
             }
@@ -267,17 +257,19 @@ function PatientsLoginPortal() {
                     <img src="img/pattern.png" className="h-full w-full object-cover rounded-3xl" alt="Pattern" />
                 </div>
             </section>
-            <Dialog open={openModal} onClose={handleCloseModal}>
-                <DialogTitle>Account Status</DialogTitle>
-                <DialogContent>
+            <Dialog open={openModal} onClose={handleCloseModal} className="flex items-center justify-center">
+                <DialogTitle className="text-center">Account Status</DialogTitle>
+                <DialogContent className="flex flex-col items-center justify-center">
                     <Typography variant="body2" color="textSecondary">
                         {accountStatus}
                     </Typography>
                 </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleCloseModal} color="primary">
-                        Close
-                    </Button>
+                <DialogActions className="flex justify-center">
+                    <div className="flex justify-center w-full">
+                        <Button onClick={handleCloseModal} color="primary" variant="contained" className="w-1/5">
+                            OK
+                        </Button>
+                    </div>
                 </DialogActions>
             </Dialog>
         </>

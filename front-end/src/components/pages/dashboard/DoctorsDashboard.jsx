@@ -1,5 +1,4 @@
 import {useEffect} from "react";
-import "../../../assets/css/main.css";
 import DoctorsDashboardNavbar from "../../../layouts/doctor-utils/doctor.navbar";
 import {Outlet, useLocation, Routes, Route} from "react-router-dom";
 import DoctorsSideNav from "../../../layouts/doctor-utils/DoctorsSideNav";

@@ -4,7 +4,6 @@ import {
     PersonAdd as UserPlusIcon,
     BarChart as ChartBarIcon,
 } from "@mui/icons-material";
-import "../../../App.css";
 import Card from "@mui/material/Card";
 import CardHeader from "@mui/material/CardHeader";
 import IconButton from "@mui/material/IconButton";

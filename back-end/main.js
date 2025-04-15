@@ -20,7 +20,7 @@ app.set("baseURL", process.env.SERVER_BASE_URL)
 
 // session configuration
 app.use(session({
-    secret: process.env.SESSION_SECRET || "authennivayne",
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie:{
