@@ -87,10 +87,10 @@ const LandingPageHeader = () => {
                             </a>
                             <ul>
                                 <li>
-                                    <Link to={"/doctor-portal/login"}>Clinic&apos;s Login Portal</Link>
+                                    <Link to={"/patients-login"}>Patients Login Portal</Link>
                                 </li>
                                 <li>
-                                    <Link to={"/patients-login"}>CMS Login Portal</Link>
+                                    <Link to={"/doctor-portal/login"}>Clinic Login Portal</Link>
                                 </li>
                                 <li>
                                     <Link to={"/cms/login-admin"}>CMS Admin Portal</Link>

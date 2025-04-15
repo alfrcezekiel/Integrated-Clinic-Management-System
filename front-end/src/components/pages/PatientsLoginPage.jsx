@@ -8,7 +8,7 @@ import {
     useNavigate,
     useLocation
 } from "react-router-dom";
-import "../../assets/css/main.css"
+import "../../App.css";
 import FormControl from "@mui/material/FormControl"
 import InputLabel from "@mui/material/InputLabel"
 import OutlinedInput from "@mui/material/OutlinedInput"

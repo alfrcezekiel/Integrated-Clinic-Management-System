@@ -42,23 +42,22 @@ const validatePatientBookAppointment = [
         .withMessage("Preferred time is required")
         .custom(async (value, { req }) => {
             try {
-                const { email, appointmentDate } = req.body;
+                const { appointmentDate } = req.body;
 
-                const emailAddress = String(email);
                 const appointmentDateValue = dayjs(appointmentDate).format("YYYY-MM-DD");
 
-                if (!emailAddress || !appointmentDateValue) {
-                    throw new Error("Email and appointment date are required for preferred time validation");
+                if (!appointmentDateValue) {
+                    throw new Error("Appointment date is required for preferred time validation");
                 }
+                
+                const status = ["Pending", "Approved"]
 
-                const status = "Approved"
                 const query = `SELECT
                     preferredTime,
-                    email,
                     appointmentDate,
                     status
                     FROM patientsappointment
-                    WHERE email = ? AND appointmentDate = ? AND preferredTime = ? AND status = ?
+                    WHERE appointmentDate = ? AND preferredTime = ? AND status IN (${status.map(() => '?').join(',')})
                 `;
 
                 const normalizeTime = (timeStr) => {
@@ -71,16 +70,28 @@ const validatePatientBookAppointment = [
                     return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
                 };
 
+                const formatTo12Hour = (timeStr) => {
+                    let [hours, minutes] = timeStr.split(":").map(Number);
+                    const ampm = hours >= 12 ? "PM" : "AM";
+                
+                    hours = hours % 12;
+                    hours = hours ? hours : 12; // hour '0' should be '12'
+                
+                    return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")} ${ampm}`;
+                };
+                
                 const normalizedTime = normalizeTime(value);
+
+                const formatDate = (dateStr) => dayjs(dateStr).format("M/D/YYYY");
+
                 const [rows] = await conn.execute(query, [
-                    emailAddress,
                     appointmentDateValue,
                     normalizedTime,
-                    status
+                    ...status
                 ]);
 
                 if (rows.length > 0) {
-                    throw new Error("You already have a booked appointment at this time date and time");
+                    throw new Error(`Preferred time ${formatTo12Hour(normalizedTime)} is already booked on ${formatDate(appointmentDateValue)}`);
                 }
             } catch (error) {
                 throw new Error(error.message || "An error occurred during preferred time validation");

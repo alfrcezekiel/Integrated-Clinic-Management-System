@@ -169,8 +169,9 @@ const PendingAppointmentClinicTable = () => {
                 setFieldsError({})
                 setOpen(false);
                 setSuccessfullAppointmentModalOpen(true);
-                navigate("/doctor-portal/dashboard/approved-appointments");
+                alert("Appointment approved successfully")
                 retrievedAppointmentPendingStatus();
+                navigate("/doctor-portal/dashboard/approved-appointments");
             } else {
                 throw new Error(`Unexpected error in status ${response.status}`)
             }

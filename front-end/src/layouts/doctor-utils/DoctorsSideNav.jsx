@@ -64,17 +64,17 @@ const DoctorsSideNav = ({ brandName, routes }) => {
                 {routes.map(({ layout, pages }, index) => (
                     <div key={layout || index} className="mb-4">
                         {pages
-                        .filter((page) => page.name !== "Appointments" && page.name !== "Pending Appointments" && page.name !== "Approved Appointments" && page.name !== "Declined Appointments" && page.name !== "Appointment History")
-                        .map(({ icon, name, path }) => (
-                            <NavLink
-                                key={name}
-                                to={`${layout}${path}`}
-                                className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-white" : "text-gray-700 hover:bg-gray-100"}`}
-                            >
-                                {icon}
-                                <Typography sx={{ ml: 2 }}>{name}</Typography>
-                            </NavLink>
-                        ))}
+                            .filter((page) => page.name !== "Appointments" && page.name !== "Pending Appointments" && page.name !== "Approved Appointments" && page.name !== "Declined Appointments" && page.name !== "Appointment History")
+                            .map(({ icon, name, path }) => (
+                                <NavLink
+                                    key={name}
+                                    to={`${layout}${path}`}
+                                    className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-white" : "text-gray-700 hover:bg-gray-100"}`}
+                                >
+                                    {icon}
+                                    <Typography sx={{ ml: 2 }}>{name}</Typography>
+                                </NavLink>
+                            ))}
                     </div>
                 ))}
                 <List className="bg-white shadow-lg rounded-2xl">

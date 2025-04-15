@@ -171,11 +171,6 @@ const ClinicCards = () => {
         } catch (error) {
             if (error.response || error.response.data.status === 400) {
                 setFieldErrors(error.response.data.errors);
-
-                // const backendError = error.response.data.errors.preferredTime;
-                // if (backendError === "You already have a booked appointment at this time date and time") {
-                //     alert("You already have a booked appointment at this date and time.")
-                // }
             } else if (error.response || error.response.data.status === 500) {
                 setFieldErrors(error.response.data.errors.preferredTime);
             } else {

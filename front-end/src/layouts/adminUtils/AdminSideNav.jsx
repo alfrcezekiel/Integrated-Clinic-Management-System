@@ -1,5 +1,4 @@
 import PropTypes from "prop-types"
-import "../../assets/css/main.css";
 import {
     Drawer,
     Typography,
