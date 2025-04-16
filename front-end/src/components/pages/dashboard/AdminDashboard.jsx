@@ -1,4 +1,3 @@
-import "../../../assets/css/main.css";
 import {useEffect} from "react";
 import {useLocation, Outlet, Route, Routes} from "react-router-dom";
 import AdminDashboardNavbar from "../../../layouts/adminUtils/adminNavBar";

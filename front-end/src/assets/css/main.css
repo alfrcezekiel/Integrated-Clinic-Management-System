@@ -79,13 +79,13 @@ body {
 
 a {
   color: var(--accent-color);
-  text-decoration: none;
+  text-decoration: none !important;
   transition: 0.3s;
 }
 
 a:hover {
   color: color-mix(in srgb, var(--accent-color), transparent 25%);
-  text-decoration: none;
+  text-decoration: none !important;
 }
 
 h1,

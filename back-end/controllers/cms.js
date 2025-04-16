@@ -561,7 +561,7 @@ export const updatePatientsAppointments = async (req, res) => {
         // Debug log to check the received appointmentID and body
         console.log(`Received appointmentID: ${appointmentID}`);
 
-        const formattedAppointmentDate = dayjs(appointmentDate).format("YYYY-MM-DD HH:mm:ss");
+        const formattedAppointmentDate = dayjs(appointmentDate).format("YYYY-MM-DD");
 
         const query = `
             UPDATE patientsappointment

@@ -39,22 +39,6 @@ import dayjs from 'dayjs';
 
 const ClinicRegistrationModal = ({ open, onClose, fieldErrors, setFieldErrors, formData, setFormData }) => {
     const [fileName, setFileName] = useState('');
-    // const [formData, setFormData] = useState({
-    //     clinicName: "",
-    //     clinicAddress: "",
-    //     clinicEmail: "",
-    //     clinicImage: null,
-    //     clinicPhoneNumber: "",
-    //     openingDays: "",
-    //     closingDays: "",
-    //     openingHours: null,
-    //     closingHours: null,
-    //     consultationFee: "",
-    //     clinicType: "",
-    //     clinicId: "",
-    //     password: "",
-    //     confirmPassword: ""
-    // })
 
     const memoizedFieldErrorsValue = useMemo(() => fieldErrors, [fieldErrors]);
 

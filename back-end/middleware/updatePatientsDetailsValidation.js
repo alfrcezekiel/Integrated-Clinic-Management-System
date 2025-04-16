@@ -1,6 +1,6 @@
 import { body, validationResult } from 'express-validator';
 import { StatusCodes } from "http-status-codes"
-
+import dayjs from "dayjs"
 // validation for patient book appointment
 const validatePatientsDetails = [
     body("firstName")
@@ -17,12 +17,16 @@ const validatePatientsDetails = [
     body("appointmentDate")
         .notEmpty()
         .withMessage("Appointment date is required")
-        .custom((value, { req }) => {
-            const appointmentDate = new Date(value);
-            const currentDate = new Date();
+        .custom((value) => {
+            const appointmentDate = dayjs(value).format("YYYY-MM-DD")
+            const currentDate = dayjs()
 
-            if (appointmentDate < currentDate) {
-                throw new Error("Appointment date must be not earlier than the current date");
+            if (!dayjs(appointmentDate).isValid()) {
+                throw new Error("Invalid appointment date format.")
+            }
+
+            if (dayjs(appointmentDate).isBefore(currentDate, "day")) {
+                throw new Error("Appointment date must not be earlier than the current date");
             }
             return true;
         }),
