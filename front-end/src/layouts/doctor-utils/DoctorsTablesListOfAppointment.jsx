@@ -102,7 +102,13 @@ const DoctorsTablesListOfAppointments = () => {
     const location = useLocation();
 
     const memoizedFormDataValue = useMemo(() => formData, [formData], []);
-    const memoizedAppointmentDate = useMemo(() => dayjs(formData.appointmentDate), [formData.appointmentDate]);
+    const memoizedAppointmentDate = useMemo(() => {
+        formData.appointmentDate ? dayjs(formData.appointmentDate) : null
+    }, [formData.appointmentDate]);
+
+    const memoizedAppointmentTime = useMemo(() => {
+        formData.preferredTime ? dayjs(formData.preferredTime) : null;
+    }, [formData.preferredTime]);
 
     useEffect(() => {
         const titleHeader = () => {
@@ -146,9 +152,17 @@ const DoctorsTablesListOfAppointments = () => {
     };
 
     const handleAppointmentDateChange = async (newValue) => {
-        setFormData({
-            ...formData, appointmentDate: newValue
-        });
+        if (newValue && dayjs(newValue).isValid()) {
+            setFormData((prev) => ({
+                ...prev,
+                appointmentDate: dayjs(newValue)
+            }));
+        } else {
+            setFormData((prev) => ({
+                ...prev,
+                appointmentDate: ""
+            }));
+        }
 
         if (fieldsError.appointmentDate) {
             setFieldsError({
@@ -166,10 +180,19 @@ const DoctorsTablesListOfAppointments = () => {
                 [name]: value
             }));
         } else if (field) {
+            const formattedValue = dayjs(e).isValid() ? dayjs(e).format("HH:mm:ss") : "";
+
             setFormData((prev) => ({
                 ...prev,
-                [field]: e
+                [field]: formattedValue
             }));
+
+            if (fieldsError[field]) {
+                setFieldsError((prev) => ({
+                    ...prev,
+                    [field]: ""
+                }));
+            }
         }
 
         const { name } = e.target;
@@ -229,8 +252,8 @@ const DoctorsTablesListOfAppointments = () => {
             firstName: appointment.firstName,
             lastName: appointment.lastName,
             email: appointment.email,
-            appointmentDate: dayjs(appointment.appointmentDate).format("YYYY-MM-DD"),
-            preferredTime: appointment.preferredTime,
+            appointmentDate: dayjs(appointment.appointmentDate),
+            preferredTime: dayjs(appointment.preferredTime),
             phoneNumber: appointment.phoneNumber,
             gender: appointment.gender,
             status: appointment.status,
@@ -425,9 +448,8 @@ const DoctorsTablesListOfAppointments = () => {
                                     className="w-full"
                                     margin="dense"
                                     label="Appointment Date"
-                                    type="date"
                                     fullWidth
-                                    onChange={dayjs(handleAppointmentDateChange)}
+                                    onChange={handleAppointmentDateChange}
                                     name="appointmentDate"
                                     slotProps={{
                                         textField: {
@@ -435,7 +457,7 @@ const DoctorsTablesListOfAppointments = () => {
                                             variant: "outlined",
                                             fullWidth: true,
                                             error: Boolean(fieldsError.appointmentDate),
-                                            helperText: fieldsError.appointmentDate ? fieldsError.appointmentDate : ""
+                                            helperText: fieldsError.appointmentDate ? fieldsError.appointmentDate : "",
                                         },
                                     }}
                                     value={memoizedAppointmentDate}
@@ -447,11 +469,29 @@ const DoctorsTablesListOfAppointments = () => {
                                 <TimePicker
                                     margin="dense"
                                     label="Appoinment Time"
-                                    type="time"
                                     fullWidth
                                     name="preferredTime"
+                                    onChange={(value) => handleChangeInput(value, "preferredTime")}
                                     className="w-full"
-                                    value={dayjs(memoizedFormDataValue.preferredTime)}
+                                    renderinput={
+                                        (params) => (
+                                            <TextField
+                                                {...params}
+                                                error={Boolean(fieldsError.preferredTime)}
+                                                helperText={fieldsError.preferredTime ? fieldsError.preferredTime : ""}
+                                            />
+                                        )
+                                    }
+                                    slotProps={{
+                                        textField: {
+                                            className: "w-full",
+                                            variant: "outlined",
+                                            fullWidth: true,
+                                            error: Boolean(fieldsError.preferredTime),
+                                            helperText: fieldsError.preferredTime ? fieldsError.preferredTime : "",
+                                        },
+                                    }}
+                                    value={memoizedAppointmentTime}
                                 />
                             </DemoContainer>
                         </LocalizationProvider>

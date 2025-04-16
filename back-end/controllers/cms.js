@@ -546,6 +546,13 @@ export const getBookedAppointmentsToDisplayInDoctorsDashboard = async (req, res)
 export const updatePatientsAppointments = async (req, res) => {
     try {
         const { appointmentID } = req.params;
+
+        if (!appointmentID) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Please enter a valid appointment ID"
+            });
+        }
+
         const {
             firstName,
             lastName,
@@ -562,6 +569,7 @@ export const updatePatientsAppointments = async (req, res) => {
         console.log(`Received appointmentID: ${appointmentID}`);
 
         const formattedAppointmentDate = dayjs(appointmentDate).format("YYYY-MM-DD");
+        const formattedTime = dayjs(preferredTime).format("HH:mm:ss");
 
         const query = `
             UPDATE patientsappointment
@@ -584,7 +592,7 @@ export const updatePatientsAppointments = async (req, res) => {
             lastName,
             email,
             formattedAppointmentDate,
-            preferredTime,
+            formattedTime,
             phoneNumber,
             gender,
             status,

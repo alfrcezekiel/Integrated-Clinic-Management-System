@@ -18,14 +18,14 @@ const validatePatientsDetails = [
         .notEmpty()
         .withMessage("Appointment date is required")
         .custom((value) => {
-            const appointmentDate = dayjs(value).format("YYYY-MM-DD")
+            const appointmentDate = dayjs(value)
             const currentDate = dayjs()
 
             if (!dayjs(appointmentDate).isValid()) {
                 throw new Error("Invalid appointment date format.")
             }
 
-            if (dayjs(appointmentDate).isBefore(currentDate, "day")) {
+            if (appointmentDate.isBefore(currentDate, "day")) {
                 throw new Error("Appointment date must not be earlier than the current date");
             }
             return true;
