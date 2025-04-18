@@ -16,11 +16,7 @@ import {
     DialogTitle,
     TextField,
     Button,
-    FormControl,
-    InputLabel,
-    Select,
-    MenuItem,
-    FormHelperText
+    MenuItem
 } from "@mui/material"
 import {
     useState,
@@ -168,10 +164,10 @@ const DoctorsTablesListOfAppointments = () => {
             }))
 
             if (fieldsError[name]) {
-                setFieldsError({
-                    ...fieldsError,
+                setFieldsError((prev) => ({
+                    ...prev,
                     [name]: ""
-                })
+                }))
             }
         }
     }, [fieldsError])
@@ -394,6 +390,7 @@ const DoctorsTablesListOfAppointments = () => {
                             label="Enter Appointment ID"
                             type="text"
                             fullWidth
+                            autoComplete="off"
                             hidden
                             name="appointmentID"
                             value={memoizedFormDataValue.appointmentID}
@@ -404,6 +401,7 @@ const DoctorsTablesListOfAppointments = () => {
                             label="First Name"
                             type="text"
                             fullWidth
+                            autoComplete="off"
                             name="firstName"
                             value={memoizedFormDataValue.firstName}
                             onChange={handleChangeInput}
@@ -416,6 +414,7 @@ const DoctorsTablesListOfAppointments = () => {
                             type="text"
                             name="lastName"
                             fullWidth
+                            autoComplete="off"
                             value={memoizedFormDataValue.lastName}
                             onChange={handleChangeInput}
                             error={Boolean(fieldsError.lastName)}
@@ -425,6 +424,7 @@ const DoctorsTablesListOfAppointments = () => {
                             margin="dense"
                             label="Enter Email"
                             type="text"
+                            autoComplete="off"
                             fullWidth
                             name="email"
                             onChange={handleChangeInput}
@@ -438,6 +438,7 @@ const DoctorsTablesListOfAppointments = () => {
                                     label="Appointment Date"
                                     onChange={handleAppointmentDateChange}
                                     name="appointmentDate"
+                                    autoComplete="off"
                                     slotProps={{
                                         textField: {
                                             variant: "outlined",
@@ -460,6 +461,7 @@ const DoctorsTablesListOfAppointments = () => {
                                     name="appointmentTime"
                                     onChange={(newValue) => handleTimePickerChange(newValue)}
                                     className="w-full"
+                                    autoComplete="off"
                                     slotProps={{
                                         textField: {
                                             className: "w-full",
@@ -479,6 +481,7 @@ const DoctorsTablesListOfAppointments = () => {
                             label="Enter Phone Number"
                             type="number"
                             fullWidth
+                            autoComplete="off"
                             value={memoizedFormDataValue.phoneNumber}
                             name="phoneNumber"
                             onChange={handleChangeInput}
@@ -490,40 +493,50 @@ const DoctorsTablesListOfAppointments = () => {
                             error={Boolean(fieldsError.phoneNumber)}
                             helperText={fieldsError.phoneNumber ? fieldsError.phoneNumber : ""}
                         />
-                        <FormControl fullWidth margin="dense" error={Boolean(fieldsError.gender)}>
-                            <InputLabel>Gender</InputLabel>
-                            <Select
-                                value={memoizedFormDataValue.gender}
-                                onChange={handleChangeInput}
-                                label="Gender"
-                                name="gender"
-                            >
-                                {gender.map((gender, i) => (
-                                    <MenuItem key={i} value={gender}>{gender}</MenuItem>
-                                ))}
-                            </Select>
-                            {fieldsError.gender && <FormHelperText error>{fieldsError.gender}</FormHelperText>}
-                        </FormControl>
-                        <FormControl fullWidth margin="dense" error={Boolean(fieldsError.status)}>
-                            <InputLabel>Status</InputLabel>
-                            <Select
-                                value={memoizedFormDataValue.status}
-                                onChange={handleChangeInput}
-                                name="status"
-                                label="Status"
-                            >
-                                {status.map((status, i) => (
-                                    <MenuItem key={i} value={status}>
-                                        {status}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                            {fieldsError.status && <FormHelperText error>{fieldsError.status}</FormHelperText>}
-                        </FormControl>
+                        <TextField
+                            margin="dense"
+                            autoComplete="off"
+                            value={memoizedFormDataValue.gender}
+                            onChange={handleChangeInput}
+                            label="Select Gender"
+                            placeholder="Select Status"
+                            name="gender"
+                            fullWidth
+                            select
+                            error={Boolean(fieldsError.gender)}
+                            helperText={fieldsError.gender ? fieldsError.gender : ""}
+                        >
+                            {gender.map((gender, i) => (
+                                <MenuItem key={i} value={gender}>
+                                    {gender}
+                                </MenuItem>
+                            ))}
+                        </TextField>
+                        <TextField
+                            margin="dense"
+                            label="Select Status"
+                            placeholder="Select Status"
+                            select
+                            name="status"
+                            autoComplete="off"
+                            fullWidth
+                            value={memoizedFormDataValue.status}
+                            onChange={handleChangeInput}
+                            error={Boolean(fieldsError.status)}
+                            helperText={fieldsError.status ? fieldsError.status : ""}
+                        >
+                            {status.map((status, i) => (
+                                <MenuItem key={i} value={status}>
+                                    {status}
+                                </MenuItem>
+                            ))}
+                        </TextField>
                         <TextField
                             margin="dense"
                             label="Purpose of Appointment"
                             type="text"
+                            autoComplete="off"
+                            placeholder="Enter Purpose of Appointment"
                             name="purposeOfAppointment"
                             fullWidth
                             onChange={handleChangeInput}

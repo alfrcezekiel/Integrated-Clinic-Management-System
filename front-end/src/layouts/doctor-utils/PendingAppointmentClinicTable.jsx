@@ -1,4 +1,3 @@
-import { useEffect } from "react"
 import { useLocation } from "react-router-dom"
 import {
     Card,
@@ -17,18 +16,25 @@ import {
     DialogTitle,
     TextField,
     Button,
-    FormControl,
-    InputLabel,
-    Select,
-    MenuItem,
-    FormHelperText
+    MenuItem
 } from "@mui/material"
-import { useState } from "react"
+import {
+    useState,
+    useEffect,
+    useMemo,
+    useCallback
+} from "react"
 import CMS from "../../API/CMS"
 import EditIcon from "@mui/icons-material/Edit"
 import { useNavigate } from "react-router-dom"
 import Lottie from "lottie-react"
 import successAnimation from "../../assets/animation/Main Scene.json"
+import dayjs from "dayjs"
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 
 const PendingAppointmentClinicTable = () => {
     const [appointmentsData, setAppointmentsData] = useState([])
@@ -37,8 +43,8 @@ const PendingAppointmentClinicTable = () => {
         firstName: "",
         lastName: "",
         email: "",
-        appointmentDate: "",
-        preferredTime: "",
+        appointmentDate: null,
+        preferredTime: null,
         phoneNumber: "",
         gender: "",
         status: "",
@@ -63,8 +69,8 @@ const PendingAppointmentClinicTable = () => {
         firstName: "",
         lastName: "",
         email: "",
-        appointmentDate: "",
-        preferredTime: "",
+        appointmentDate: null,
+        preferredTime: null,
         phoneNumber: "",
         gender: "",
         status: "",
@@ -78,8 +84,8 @@ const PendingAppointmentClinicTable = () => {
             firstName: "",
             lastName: "",
             email: "",
-            appointmentDate: "",
-            preferredTime: "",
+            appointmentDate: null,
+            preferredTime: null,
             phoneNumber: "",
             gender: "",
             doctor: "",
@@ -89,9 +95,10 @@ const PendingAppointmentClinicTable = () => {
         setOpen(false);
     }
 
-
     const navigate = useNavigate();
     const location = useLocation();
+
+    const memoizedFormDataValue = useMemo(() => formData, [formData]);
 
     const retrievedAppointmentPendingStatus = async () => {
         try {
@@ -119,16 +126,6 @@ const PendingAppointmentClinicTable = () => {
 
         retrievedAppointmentPendingStatus();
     }, [location.pathname])
-
-
-    // this function is to formate the date to YYYY-MM-DD
-    const formatDate = (dateString) => {
-        const date = new Date(dateString);
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    };
 
     // function to format to MM/DD/YYYY to display in the table
     const dateFormat = (dateString) => {
@@ -159,11 +156,19 @@ const PendingAppointmentClinicTable = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            if (formData.status === "Approved") {
-                formData.appointmentDate = new Date(formData.appointmentDate).toISOString().split("T")[0];
-            }
+            const updatedData = {
+                ...memoizedFormDataValue,
+                appointmentDate: memoizedFormDataValue.status === "Approved"
+                    ? dayjs(memoizedFormDataValue.appointmentDate)
+                    : memoizedFormDataValue.appointmentDate,
+                preferredTime: memoizedFormDataValue.preferredTime ? memoizedFormDataValue.preferredTime.format("HH:mm") : null
+            };
 
-            const response = await CMS.put(`/CMS/doctors-dashboard/updateAppointment/${formData.appointmentID}`, formData);
+            const response = await CMS.put(`/CMS/doctors-dashboard/updateAppointment/${formData.appointmentID}`, updatedData, {
+                headers: {
+                    "Content-Type": "application/json",
+                }
+            });
 
             if (response.status === 200) {
                 setFieldsError({})
@@ -190,8 +195,8 @@ const PendingAppointmentClinicTable = () => {
             firstName: appointment.firstName,
             lastName: appointment.lastName,
             email: appointment.email,
-            appointmentDate: formatDate(appointment.appointmentDate),
-            preferredTime: appointment.preferredTime,
+            appointmentDate: dayjs(appointment.appointmentDate),
+            preferredTime: appointment.preferredTime ? dayjs(appointment.preferredTime, "HH:mm") : null,
             phoneNumber: appointment.phoneNumber,
             gender: appointment.gender,
             status: appointment.status,
@@ -204,6 +209,42 @@ const PendingAppointmentClinicTable = () => {
         setSuccessfullAppointmentModalOpen(false);
         handleClose();
     }
+
+
+    const handleCallbackChangeInput = useCallback(async (e) => {
+        const handleChangeInput = (e) => {
+            const { name, value } = e.target;
+            setFormData((prevFormData) => ({
+                ...prevFormData,
+                [name]: value,
+            }));
+
+            if (fieldsError[name]) {
+                setFieldsError((prevFieldsError) => ({
+                    ...prevFieldsError,
+                    [name]: "",
+                }));
+            }
+        }
+        handleChangeInput(e)
+    }, [fieldsError])
+
+    const handleAppointmentDateChange = useCallback(async (newValue) => {
+        const handleChangeInput = (newValue) => {
+            setFormData((prev) => ({
+                ...prev,
+                appointmentDate: newValue && dayjs(newValue) ? newValue : ""
+            }));
+
+            if (fieldsError.appointmentDate) {
+                setFieldsError({
+                    ...fieldsError,
+                    appointmentDate: ""
+                });
+            }
+        }
+        handleChangeInput(newValue)
+    }, [fieldsError])
 
     // this function determines the color of the status of the patients
     const getStatusColor = (status) => {
@@ -221,7 +262,26 @@ const PendingAppointmentClinicTable = () => {
         }
     }
 
+    const handleCallbackTimePickerChange = useCallback(async (newValue) => {
+        const handleTimePickerChange = async (newValue) => {
+            setFormData((prev) => ({
+                ...prev,
+                preferredTime: newValue
+            }))
+
+            if (fieldsError.preferredTime) {
+                setFieldsError({
+                    ...fieldsError,
+                    preferredTime: ""
+                })
+            }
+        }
+        handleTimePickerChange(newValue)
+    }, [fieldsError])
+
+
     const status = ["Approved", "Declined", "Pending", "Consulted"];
+    const gender = ["Male", "Female"]
 
     return (
         <>
@@ -342,110 +402,146 @@ const PendingAppointmentClinicTable = () => {
                             label="Enter Appointment ID"
                             type="text"
                             fullWidth
+                            autoComplete="off"
                             hidden
-                            value={formData.appointmentID}
+                            value={memoizedFormDataValue.appointmentID}
                         />
                         <TextField
-                            autoFocus
                             margin="dense"
                             label="First Name"
                             type="text"
+                            autoComplete="off"
                             fullWidth
-                            value={formData.firstName}
-                            onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                            name="firstName"
+                            value={memoizedFormDataValue.firstName}
+                            onChange={handleCallbackChangeInput}
                             error={Boolean(fieldsError.firstName)}
                             helperText={fieldsError.firstName ? fieldsError.firstName : ""}
                         />
                         <TextField
                             margin="dense"
                             label="Last Name"
+                            autoComplete="off"
+                            name="lastName"
                             type="text"
                             fullWidth
-                            value={formData.lastName}
-                            onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                            value={memoizedFormDataValue.lastName}
+                            onChange={handleCallbackChangeInput}
                             error={Boolean(fieldsError.lastName)}
                             helperText={fieldsError.lastName ? fieldsError.lastName : ""}
                         />
                         <TextField
                             margin="dense"
                             label="Enter Email"
+                            autoComplete="off"
+                            onChange={handleCallbackChangeInput}
+                            name="email"
                             type="text"
                             fullWidth
-                            value={formData.email}
-                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                            value={memoizedFormDataValue.email}
                             error={Boolean(fieldsError.email)}
                             helperText={fieldsError.email ? fieldsError.email : ""}
                         />
-                        <TextField
-                            margin="dense"
-                            label="Appointment Date"
-                            type="date"
-                            fullWidth
-                            value={formData.appointmentDate}
-                            onChange={(e) => setFormData({ ...formData, appointmentDate: e.target.value })}
-                            InputLabelProps={{
-                                shrink: true,
-                            }}
-                            error={Boolean(fieldsError.appointmentDate)}
-                            helperText={fieldsError.appointmentDate ? fieldsError.appointmentDate : ""}
-                        />
-                        <TextField
-                            margin="dense"
-                            label="Appointment Time"
-                            type="time"
-                            fullWidth
-                            value={formData.preferredTime}
-                            onChange={(e) => setFormData({ ...formData, preferredTime: e.target.value })}
-                            error={Boolean(fieldsError.preferredTime)}
-                            helperText={fieldsError.preferredTime ? fieldsError.preferredTime : ""}
-                        />
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                            <DemoContainer components={['DatePicker']}>
+                                <DatePicker
+                                    autoComplete="off"
+                                    name="appointmentDate"
+                                    label="Appointment Date"
+                                    slotProps={{
+                                        textField: {
+                                            fullWidth: true,
+                                            margin: "dense",
+                                            variant: "outlined",
+                                            error: Boolean(fieldsError.appointmentDate),
+                                            helperText: fieldsError.appointmentDate ? fieldsError.appointmentDate : null,
+                                        },
+                                    }}
+                                    value={memoizedFormDataValue.appointmentDate ? dayjs(memoizedFormDataValue.appointmentDate) : null}
+                                    onChange={handleAppointmentDateChange}
+                                />
+                            </DemoContainer>
+                        </LocalizationProvider>
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                            <DemoContainer components={['TimePicker']}>
+                                <TimePicker
+                                    label="Appointment Time"
+                                    autoComplete="off"
+                                    name="appointmentTime"
+                                    slotProps={{
+                                        textField: {
+                                            fullWidth: true,
+                                            margin: "dense",
+                                            variant: "outlined",
+                                            error: Boolean(fieldsError.preferredTime),
+                                            helperText: fieldsError.preferredTime ? fieldsError.preferredTime : null,
+                                        },
+                                    }}
+                                    value={memoizedFormDataValue.preferredTime ? dayjs(memoizedFormDataValue.preferredTime) : null}
+                                    onChange={(newValue) => handleCallbackTimePickerChange(newValue)}
+                                    format="hh:mm A"
+                                />
+                            </DemoContainer>
+                        </LocalizationProvider>
                         <TextField
                             margin="dense"
                             label="Enter Phone Number"
                             type="number"
+                            autoComplete="off"
+                            name="phoneNumber"
                             fullWidth
-                            value={formData.phoneNumber}
-                            onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                            InputLabelProps={{
-                                shrink: true,
-                            }}
+                            value={memoizedFormDataValue.phoneNumber}
+                            onChange={handleCallbackChangeInput}
                             error={Boolean(fieldsError.phoneNumber)}
                             helperText={fieldsError.phoneNumber ? fieldsError.phoneNumber : ""}
                         />
-                        <FormControl fullWidth margin="dense" error={Boolean(fieldsError.gender)}>
-                            <InputLabel>Gender</InputLabel>
-                            <Select
-                                value={formData.gender}
-                                onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-                                label="Gender"
-                            >
-                                <MenuItem value="Male">Male</MenuItem>
-                                <MenuItem value="Female">Female</MenuItem>
-                            </Select>
-                            {fieldsError.gender && <FormHelperText error>{fieldsError.gender}</FormHelperText>}
-                        </FormControl>
-                        <FormControl fullWidth margin="dense" error={Boolean(fieldsError.status)}>
-                            <InputLabel>Status</InputLabel>
-                            <Select
-                                value={formData.status}
-                                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                                label="Status"
-                            >
-                                {status.map((status, i) => (
-                                    <MenuItem key={i} value={status}>
-                                        {status}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                            {fieldsError.status && <FormHelperText error>{fieldsError.status}</FormHelperText>}
-                        </FormControl>
+                        <TextField
+                            autoComplete="off"
+                            name="gender"
+                            value={memoizedFormDataValue.gender}
+                            onChange={handleCallbackChangeInput}
+                            label="Select Gender"
+                            placeholder="Select Gender"
+                            select
+                            fullWidth
+                            margin="dense"
+                            error={Boolean(fieldsError.gender)}
+                            helperText={fieldsError.gender ? fieldsError.gender : ""}
+                        >
+                            {gender.map((gender, i) => (
+                                <MenuItem key={i} value={gender}>
+                                    {gender}
+                                </MenuItem>
+                            ))}
+                        </TextField>
+                        <TextField
+                            autoComplete="off"
+                            name="status"
+                            value={memoizedFormDataValue.status}
+                            onChange={handleCallbackChangeInput}
+                            label="Select Status"
+                            placeholder="Select Status"
+                            select
+                            fullWidth
+                            margin="dense"
+                            error={Boolean(fieldsError.status)}
+                            helperText={fieldsError.status ? fieldsError.status : ""}
+                        >
+                            {status.map((status, i) => (
+                                <MenuItem key={i} value={status}>
+                                    {status}
+                                </MenuItem>
+                            ))}
+                        </TextField>
                         <TextField
                             margin="dense"
                             label="Purpose of Appointment"
                             type="text"
+                            autoComplete="off"
+                            name="purposeOfAppointment"
                             fullWidth
-                            value={formData.purposeOfAppointment}
-                            onChange={(e) => setFormData({ ...formData, purposeOfAppointment: e.target.value })}
+                            value={memoizedFormDataValue.purposeOfAppointment}
+                            onChange={handleCallbackChangeInput}
                             error={Boolean(fieldsError.purposeOfAppointment)}
                             helperText={fieldsError.purposeOfAppointment ? fieldsError.purposeOfAppointment : ""}
                         />
