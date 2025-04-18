@@ -170,16 +170,20 @@ const PendingAppointmentClinicTable = () => {
                 }
             });
 
-            if (response.status === 200) {
+            if (response.status === 200 && memoizedFormDataValue.status === "Pending") {
                 setFieldsError({})
                 setOpen(false);
                 setSuccessfullAppointmentModalOpen(true);
-                alert("Appointment approved successfully")
-                retrievedAppointmentPendingStatus();
+                navigate("/doctor-portal/dashboard/pending-appointments");
+            } else if (response.status === 200 && memoizedFormDataValue.status === "Approved") {
+                setFieldsError({})
+                setOpen(false);
+                setSuccessfullAppointmentModalOpen(true);
                 navigate("/doctor-portal/dashboard/approved-appointments");
             } else {
                 throw new Error(`Unexpected error in status ${response.status}`)
             }
+            
         } catch (error) {
             if (error.response && error.response.status === 400) {
                 setFieldsError(error.response.data.errors);
