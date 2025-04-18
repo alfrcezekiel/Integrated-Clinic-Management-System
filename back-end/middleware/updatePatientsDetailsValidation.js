@@ -30,6 +30,9 @@ const validatePatientsDetails = [
             }
             return true;
         }),
+    body("preferredTime")
+        .notEmpty()
+        .withMessage("Appointment time is required"),
     body("phoneNumber")
         .notEmpty()
         .withMessage("Phone number is required")

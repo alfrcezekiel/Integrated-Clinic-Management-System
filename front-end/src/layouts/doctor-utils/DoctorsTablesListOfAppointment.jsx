@@ -1,4 +1,3 @@
-import { useEffect } from "react"
 import { useLocation } from "react-router-dom"
 import {
     Card,
@@ -25,7 +24,9 @@ import {
 } from "@mui/material"
 import {
     useState,
-    useMemo
+    useEffect,
+    useMemo,
+    useCallback
 } from "react"
 import CMS from "../../API/CMS"
 import EditIcon from "@mui/icons-material/Edit"
@@ -46,8 +47,8 @@ const DoctorsTablesListOfAppointments = () => {
         firstName: "",
         lastName: "",
         email: "",
-        appointmentDate: "",
-        preferredTime: "",
+        appointmentDate: null,
+        preferredTime: null,
         phoneNumber: "",
         gender: "",
         status: "",
@@ -72,9 +73,9 @@ const DoctorsTablesListOfAppointments = () => {
         firstName: "",
         lastName: "",
         email: "",
-        appointmentDate: "",
+        appointmentDate: null,
+        preferredTime: null,
         phoneNumber: "",
-        preferredTime: "",
         gender: "",
         status: "",
         purposeOfAppointment: ""
@@ -87,9 +88,9 @@ const DoctorsTablesListOfAppointments = () => {
             firstName: "",
             lastName: "",
             email: "",
-            appointmentDate: "",
+            appointmentDate: null,
+            preferredTime: null,
             phoneNumber: "",
-            preferredTime: "",
             gender: "",
             doctor: "",
             status: "",
@@ -101,14 +102,7 @@ const DoctorsTablesListOfAppointments = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const memoizedFormDataValue = useMemo(() => formData, [formData], []);
-    const memoizedAppointmentDate = useMemo(() => {
-        formData.appointmentDate ? dayjs(formData.appointmentDate) : null
-    }, [formData.appointmentDate]);
-
-    const memoizedAppointmentTime = useMemo(() => {
-        formData.preferredTime ? dayjs(formData.preferredTime) : null;
-    }, [formData.preferredTime]);
+    const memoizedFormDataValue = useMemo(() => formData, [formData]);
 
     useEffect(() => {
         const titleHeader = () => {
@@ -152,17 +146,10 @@ const DoctorsTablesListOfAppointments = () => {
     };
 
     const handleAppointmentDateChange = async (newValue) => {
-        if (newValue && dayjs(newValue).isValid()) {
-            setFormData((prev) => ({
-                ...prev,
-                appointmentDate: dayjs(newValue)
-            }));
-        } else {
-            setFormData((prev) => ({
-                ...prev,
-                appointmentDate: ""
-            }));
-        }
+        setFormData((prev) => ({
+            ...prev,
+            appointmentDate: newValue && dayjs(newValue) ? newValue : ""
+        }));
 
         if (fieldsError.appointmentDate) {
             setFieldsError({
@@ -172,37 +159,22 @@ const DoctorsTablesListOfAppointments = () => {
         }
     }
 
-    const handleChangeInput = async (e, field) => {
+    const handleChangeInput = useCallback((e) => {
         if (typeof e === "object" && e !== null && e.target) {
             const { name, value } = e.target;
             setFormData((prev) => ({
                 ...prev,
                 [name]: value
-            }));
-        } else if (field) {
-            const formattedValue = dayjs(e).isValid() ? dayjs(e).format("HH:mm:ss") : "";
+            }))
 
-            setFormData((prev) => ({
-                ...prev,
-                [field]: formattedValue
-            }));
-
-            if (fieldsError[field]) {
-                setFieldsError((prev) => ({
-                    ...prev,
-                    [field]: ""
-                }));
+            if (fieldsError[name]) {
+                setFieldsError({
+                    ...fieldsError,
+                    [name]: ""
+                })
             }
         }
-
-        const { name } = e.target;
-        if (fieldsError[name]) {
-            setFieldsError({
-                ...fieldsError,
-                [name]: ""
-            })
-        }
-    }
+    }, [fieldsError])
 
     const dateFormat = (dateString) => {
         const date = new Date(dateString);
@@ -213,15 +185,33 @@ const DoctorsTablesListOfAppointments = () => {
         })
     };
 
+    const handleTimePickerChange = async (newValue) => {
+        setFormData((prev) => ({
+            ...prev,
+            preferredTime: newValue
+        }))
+
+        if (fieldsError.preferredTime) {
+            setFieldsError({
+                ...fieldsError,
+                preferredTime: ""
+            })
+        }
+    }
+
     // this function is used to update the appointment details
     const handleSubmit = async (e) => {
+        e.preventDefault();
         try {
-            e.preventDefault();
-            if (memoizedFormDataValue.status === "Approved") {
-                memoizedFormDataValue.appointmentDate = new Date(memoizedFormDataValue.appointmentDate).toISOString().split("T")[0];
-            }
+            const updatedData = {
+                ...memoizedFormDataValue,
+                appointmentDate: memoizedFormDataValue.status === "Approved"
+                    ? dayjs(memoizedFormDataValue.appointmentDate)
+                    : memoizedFormDataValue.appointmentDate,
+                preferredTime: memoizedFormDataValue.preferredTime ? memoizedFormDataValue.preferredTime.format("HH:mm") : null
+            };
 
-            const response = await CMS.put(`/CMS/doctors-dashboard/updateAppointment/${memoizedFormDataValue.appointmentID}`, memoizedFormDataValue);
+            const response = await CMS.put(`/CMS/doctors-dashboard/updateAppointment/${memoizedFormDataValue.appointmentID}`, updatedData);
 
             if (response.status === 200 && memoizedFormDataValue.status === "Pending") {
                 setFieldsError({})
@@ -253,7 +243,7 @@ const DoctorsTablesListOfAppointments = () => {
             lastName: appointment.lastName,
             email: appointment.email,
             appointmentDate: dayjs(appointment.appointmentDate),
-            preferredTime: dayjs(appointment.preferredTime),
+            preferredTime: appointment.preferredTime ? dayjs(appointment.preferredTime, "HH:mm") : null,
             phoneNumber: appointment.phoneNumber,
             gender: appointment.gender,
             status: appointment.status,
@@ -445,22 +435,19 @@ const DoctorsTablesListOfAppointments = () => {
                         <LocalizationProvider dateAdapter={AdapterDayjs}>
                             <DemoContainer components={['DatePicker']}>
                                 <DatePicker
-                                    className="w-full"
-                                    margin="dense"
                                     label="Appointment Date"
-                                    fullWidth
                                     onChange={handleAppointmentDateChange}
                                     name="appointmentDate"
                                     slotProps={{
                                         textField: {
-                                            className: "w-full",
                                             variant: "outlined",
+                                            margin: "dense",
                                             fullWidth: true,
                                             error: Boolean(fieldsError.appointmentDate),
-                                            helperText: fieldsError.appointmentDate ? fieldsError.appointmentDate : "",
+                                            helperText: fieldsError.appointmentDate ? fieldsError.appointmentDate : null,
                                         },
                                     }}
-                                    value={memoizedAppointmentDate}
+                                    value={memoizedFormDataValue.appointmentDate ? dayjs(memoizedFormDataValue.appointmentDate) : null}
                                 />
                             </DemoContainer>
                         </LocalizationProvider>
@@ -468,30 +455,22 @@ const DoctorsTablesListOfAppointments = () => {
                             <DemoContainer components={['TimePicker']}>
                                 <TimePicker
                                     margin="dense"
-                                    label="Appoinment Time"
+                                    label="Appointment Time"
                                     fullWidth
-                                    name="preferredTime"
-                                    onChange={(value) => handleChangeInput(value, "preferredTime")}
+                                    name="appointmentTime"
+                                    onChange={(newValue) => handleTimePickerChange(newValue)}
                                     className="w-full"
-                                    renderinput={
-                                        (params) => (
-                                            <TextField
-                                                {...params}
-                                                error={Boolean(fieldsError.preferredTime)}
-                                                helperText={fieldsError.preferredTime ? fieldsError.preferredTime : ""}
-                                            />
-                                        )
-                                    }
                                     slotProps={{
                                         textField: {
                                             className: "w-full",
                                             variant: "outlined",
                                             fullWidth: true,
                                             error: Boolean(fieldsError.preferredTime),
-                                            helperText: fieldsError.preferredTime ? fieldsError.preferredTime : "",
+                                            helperText: fieldsError.preferredTime ? fieldsError.preferredTime : null,
                                         },
                                     }}
-                                    value={memoizedAppointmentTime}
+                                    value={memoizedFormDataValue ? dayjs(memoizedFormDataValue.preferredTime) : null}
+                                    format="hh:mm A"
                                 />
                             </DemoContainer>
                         </LocalizationProvider>
@@ -503,8 +482,10 @@ const DoctorsTablesListOfAppointments = () => {
                             value={memoizedFormDataValue.phoneNumber}
                             name="phoneNumber"
                             onChange={handleChangeInput}
-                            InputLabelProps={{
-                                shrink: true,
+                            slotProps={{
+                                inputLabel: {
+                                    shrink: true,
+                                },
                             }}
                             error={Boolean(fieldsError.phoneNumber)}
                             helperText={fieldsError.phoneNumber ? fieldsError.phoneNumber : ""}

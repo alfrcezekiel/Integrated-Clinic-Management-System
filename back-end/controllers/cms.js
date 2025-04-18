@@ -530,7 +530,7 @@ export const getBookedAppointmentsToDisplayInDoctorsDashboard = async (req, res)
                 message: "No appointments found for the specified clinic"
             })
         }
-
+        
         return res.status(StatusCodes.OK).json({
             patientsAppointments: rows
         });
@@ -568,8 +568,8 @@ export const updatePatientsAppointments = async (req, res) => {
         // Debug log to check the received appointmentID and body
         console.log(`Received appointmentID: ${appointmentID}`);
 
-        const formattedAppointmentDate = dayjs(appointmentDate).format("YYYY-MM-DD");
-        const formattedTime = dayjs(preferredTime).format("HH:mm:ss");
+        const formattedAppointmentDate = new Date(appointmentDate).toISOString().slice(0, 19).replace('T', ' ');
+        const formattedPreferredTime = preferredTime ? preferredTime.slice(0, 5) : null;
 
         const query = `
             UPDATE patientsappointment
@@ -592,7 +592,7 @@ export const updatePatientsAppointments = async (req, res) => {
             lastName,
             email,
             formattedAppointmentDate,
-            formattedTime,
+            formattedPreferredTime,
             phoneNumber,
             gender,
             status,
