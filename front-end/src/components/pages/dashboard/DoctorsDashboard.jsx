@@ -1,7 +1,7 @@
 import {useEffect} from "react";
-import DoctorsDashboardNavbar from "../../../layouts/doctor-utils/doctor.navbar";
+import DoctorsDashboardNavbar from "../../../layouts/ClinicUtils/doctor.navbar";
 import {Outlet, useLocation, Routes, Route} from "react-router-dom";
-import DoctorsSideNav from "../../../layouts/doctor-utils/DoctorsSideNav";
+import DoctorsSideNav from "../../../layouts/ClinicUtils/DoctorsSideNav";
 import { doctorRoutes } from "../../../routes";
 
 const DoctorsDashboard = () => {

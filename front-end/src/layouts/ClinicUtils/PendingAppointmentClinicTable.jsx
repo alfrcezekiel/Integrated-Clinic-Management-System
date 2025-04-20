@@ -174,7 +174,7 @@ const PendingAppointmentClinicTable = () => {
                 setFieldsError({})
                 setOpen(false);
                 setSuccessfullAppointmentModalOpen(true);
-                navigate("/doctor-portal/dashboard/pending-appointments");
+                navigate("/doctor-portal/dashboard/patients-appointments");
             } else if (response.status === 200 && memoizedFormDataValue.status === "Approved") {
                 setFieldsError({})
                 setOpen(false);

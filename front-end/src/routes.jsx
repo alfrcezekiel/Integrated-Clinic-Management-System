@@ -3,7 +3,7 @@ import DashboardHome from "./widgets/layout/DashboardHome";
 import Schedule from "@mui/icons-material/Schedule";
 import PatientsTable from "./layouts/patients-utils/patients-table";
 import DoctorsDashboardHome from "./widgets/layout/doctors-dashboard/DoctorsDashboardHome";
-import DoctorsTablesListOfAppointments from "./layouts/doctor-utils/DoctorsTablesListOfAppointment";
+import DoctorsTablesListOfAppointments from "./layouts/ClinicUtils/DoctorsTablesListOfAppointment";
 import AddIcon from "@mui/icons-material/Add";
 import AddDoctor from "./layouts/adminUtils/Doctors";
 import AdminDashboardHome from "./layouts/adminUtils/AdminHome";
@@ -17,10 +17,10 @@ import ApprovedAppointmentsTable from "./layouts/patients-utils/ApprovedAppointm
     modules of clinics dashboard
 */
 import DeclinedAppointmentStatusTable from "./layouts/patients-utils/DeclinedAppointmentTable";
-import PendingAppointmentClinicTable from "./layouts/doctor-utils/PendingAppointmentClinicTable";
-import ApprovedAppointmentClinicTable from "./layouts/doctor-utils/ApprovedAppointmentClinicTable";
-import DeclinedAppointmentStatusClinicTable from "./layouts/doctor-utils/DeclinedAppointmentStatusClinicTable";
-import AppointmentHistoryTable from "./layouts/doctor-utils/AppointmentHistoryTable";
+import PendingAppointmentClinicTable from "./layouts/ClinicUtils/PendingAppointmentClinicTable";
+import ApprovedAppointmentClinicTable from "./layouts/ClinicUtils/ApprovedAppointmentClinicTable";
+import DeclinedAppointmentStatusClinicTable from "./layouts/ClinicUtils/DeclinedAppointmentStatusClinicTable";
+import AppointmentHistoryTable from "./layouts/ClinicUtils/AppointmentHistoryTable";
 
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import RegisterPatientsAccountTable from "./layouts/adminUtils/RegisterPatientsAccountTable";

@@ -263,7 +263,7 @@ const AppointmentHistoryTable = () => {
                                             {selectedPatient.email}
                                         </div>
                                         <div>
-                                            <strong>Phone:</strong>
+                                            <strong>Phone Number:</strong>
                                             {selectedPatient.phoneNumber}
                                         </div>
                                         <div>
@@ -283,7 +283,7 @@ const AppointmentHistoryTable = () => {
                                     <div className="grid grid-cols-2 gap-4 text-sm text-gray-700">
                                         <div>
                                             <strong>Has Existing History:</strong>
-                                            {selectedPatient.has_medical_condition || selectedPatient.medical_condition_details ?
+                                            {selectedPatient.has_medical_condition === "Yes" || selectedPatient.has_medical_condition === "No" && selectedPatient.medical_condition_details ?
                                                 selectedPatient.has_medical_condition : selectedPatient.medical_condition_details
                                             }
                                         </div>

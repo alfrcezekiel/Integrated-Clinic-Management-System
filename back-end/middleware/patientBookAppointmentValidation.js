@@ -2,6 +2,7 @@ import { body, validationResult } from 'express-validator';
 import { StatusCodes } from "http-status-codes"
 import conn from "../db/mysql/conn.js"
 import dayjs from 'dayjs';
+
 // validation for patient book appointment
 const validatePatientBookAppointment = [
     body("firstName")
@@ -91,10 +92,10 @@ const validatePatientBookAppointment = [
                 ]);
 
                 if (rows.length > 0) {
-                    throw new Error(`Preferred time ${formatTo12Hour(normalizedTime)} is already booked on ${formatDate(appointmentDateValue)}`);
+                    throw new Error(`Appointment time ${formatTo12Hour(normalizedTime)} is already booked on ${formatDate(appointmentDateValue)}`);
                 }
             } catch (error) {
-                throw new Error(error.message || "An error occurred during preferred time validation");
+                throw new Error(error.message || "An error occurred during appointment time validation");
             }
         }),
     body("purposeOfAppointment")

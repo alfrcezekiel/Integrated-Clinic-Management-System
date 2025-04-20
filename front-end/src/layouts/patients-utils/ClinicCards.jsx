@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
     Card,
     CardContent,
@@ -21,13 +21,15 @@ import {
 } from 'lucide-react';
 import BookingAppointmentModal from "./BookingAppointmentModal";
 import {
-    useNavigate,
     useLocation
 } from "react-router-dom";
+import ConfirmAppointmentModal from "./ConfirmBookedAppointment";
+import dayjs from "dayjs";
 
 const ClinicCards = () => {
     const [clinics, setClinics] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [showConfirmedBookAppointmentModal, setShowConfirmedBookAppointmentModal] = useState(false);
     const [selectedClinic, setSelectedClinic] = useState(null);
     const [appointmentData, setAppointmentData] = useState({
         firstName: "",
@@ -74,7 +76,6 @@ const ClinicCards = () => {
     }
 
     const location = useLocation();
-    const navigate = useNavigate();
 
     const formatTimeToAMPM = (time) => {
         if (!time) return "N/A";
@@ -135,6 +136,29 @@ const ClinicCards = () => {
         setFieldErrors({})
     };
 
+    const patientsAndClinicsData = selectedClinic ? {
+        patient: {
+            firstName: appointmentData.firstName,
+            lastName: appointmentData.lastName,
+            email: appointmentData.email,
+            phoneNumber: appointmentData.phoneNumber,
+            appointmentDate: appointmentData.appointmentDate ? dayjs(appointmentData.appointmentDate).format("YYYY-MM-DD") : null,
+            preferredTime: appointmentData.preferredTime
+        },
+        clinic: {
+            clinic_name: selectedClinic.clinic_name,
+            clinic_address: selectedClinic.clinic_address,
+            email: selectedClinic.email,
+            phoneNumber: selectedClinic.phoneNumber,
+            clinic_date_open: selectedClinic.clinic_date_open,
+            clinic_close_date: selectedClinic.clinic_close_date,
+            clinic_time: selectedClinic.clinic_time,
+            clinic_close_time: selectedClinic.clinic_close_time,
+            consultation_fee: selectedClinic.consultation_fee,
+            clinic_type: selectedClinic.clinic_type
+        }
+    } : null
+
     const handleBooking = async (e) => {
         try {
             e.preventDefault();
@@ -146,12 +170,9 @@ const ClinicCards = () => {
 
             const response = await CMS.post("/CMS/patientsDashboard/patientsBookedAppointments", payload);
 
-            if (!response.data) {
-                alert("Appointment booking failed. Please try again later");
-            }
-
             if (response.status === 200) {
-                alert("Appointment booked successfully");
+                setSelectedClinic(patientsAndClinicsData)
+                alert("Confirmed Booked Appointment!");
                 setFieldErrors({})
                 setAppointmentData({
                     firstName: "",
@@ -164,7 +185,7 @@ const ClinicCards = () => {
                     purposeOfAppointment: ""
                 });
                 handleCloseModal();
-                navigate("/patients-dashboard/Pending-Appointment")
+                setShowConfirmedBookAppointmentModal(true); // show the confirmed booked appointment modal
             } else {
                 console.error(`Error in rendering the status code: ${response.status}`);
             }
@@ -172,13 +193,21 @@ const ClinicCards = () => {
             if (error.response || error.response.data.status === 400) {
                 setFieldErrors(error.response.data.errors);
             } else if (error.response || error.response.data.status === 500) {
-                setFieldErrors(error.response.data.errors.preferredTime);
+                setFieldErrors({ preferredTime: error.response.data.errors.preferredTime });
             } else {
                 console.error(`Failed to book appointment: ${error}`);
             }
         }
     };
 
+    const handleCallbackCloseConfirmedBookedAppointmentModal = useCallback(async () => {
+        const handleCloseConfirmedBookedAppointmentModal = async () => {
+            setShowConfirmedBookAppointmentModal(false);
+        }
+        handleCloseConfirmedBookedAppointmentModal()
+    }, []);
+
+    
     return (
         <div className="flex flex-row flex-wrap justify-center gap-6 p-6 from-blue-50 to-blue-100">
             {loading ? (
@@ -274,6 +303,14 @@ const ClinicCards = () => {
                     fieldErrors={fieldErrors}
                     setFieldErrors={setFieldErrors}
                     appointmentID={appointmentID}
+                />
+            )}
+
+            {showConfirmedBookAppointmentModal && selectedClinic && (
+                <ConfirmAppointmentModal
+                    open={showConfirmedBookAppointmentModal}
+                    onClose={handleCallbackCloseConfirmedBookedAppointmentModal}
+                    patientsData={patientsAndClinicsData}
                 />
             )}
         </div>
