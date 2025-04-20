@@ -12,7 +12,6 @@ import CloseIcon from "@mui/icons-material/Close";
 import PropTypes from "prop-types";
 
 const ConfirmAppointmentModal = ({ open, onClose, patientsData }) => {
-
     const renderItem = (label, value) => (
         <Grid item xs={12}>
             <div className="flex flex-col text-left">
@@ -46,12 +45,12 @@ const ConfirmAppointmentModal = ({ open, onClose, patientsData }) => {
                         </Typography>
                         <section className="border p-4 rounded-lg shadow-sm w-full">
                             <Grid container spacing={2} direction="column">
-                                {renderItem("First Name", patientsData.patient.firstName)}
-                                {renderItem("Last Name", patientsData.patient.lastName)}
-                                {renderItem("Email", patientsData.patient.email)}
-                                {renderItem("Phone Number", patientsData.patient.phoneNumber)}
-                                {renderItem("Appointment Date", patientsData.patient.appointmentDate)}
-                                {renderItem("Appointment Time", patientsData.patient.preferredTime)}
+                                {renderItem("First Name", patientsData?.patient?.firstName)}
+                                {renderItem("Last Name", patientsData?.patient?.lastName)}
+                                {renderItem("Email", patientsData?.patient?.email)}
+                                {renderItem("Phone Number", patientsData?.patient?.phoneNumber)}
+                                {renderItem("Appointment Date", patientsData?.patient?.appointmentDate)}
+                                {renderItem("Appointment Time", patientsData?.patient?.preferredTime)}
                             </Grid>
                         </section>
 
@@ -61,21 +60,21 @@ const ConfirmAppointmentModal = ({ open, onClose, patientsData }) => {
                         </Typography>
                         <section className="border p-4 rounded-lg shadow-sm w-full">
                             <Grid container spacing={2} direction="column">
-                                {renderItem("Clinic Name", patientsData.clinic.clinic_name)}
-                                {renderItem("Clinic Address", patientsData.clinic.clinic_address)}
-                                {renderItem("Clinic Email Address", patientsData.clinic.email)}
-                                {renderItem("Phone Number", patientsData.clinic.phoneNumber)}
-                                {renderItem("Consultation Fee", patientsData.clinic.consultation_fee)}
-                                {renderItem("Clinic Type", patientsData.clinic.clinic_type)}
-                                {renderItem("Date Open", patientsData.clinic.clinic_date_open && patientsData.clinic.clinic_close_date ? `${patientsData.clinic.clinic_date_open} - ${patientsData.clinic.clinic_close_date}` : "N/A")}
-                                {renderItem("Clinic Closed Time", patientsData.clinic.clinic_time && patientsData.clinic.clinic_close_time ? `${patientsData.clinic.clinic_time} - ${patientsData.clinic.clinic_close_time}` : "N/A")}
+                                {renderItem("Clinic Name", patientsData?.clinic?.clinic_name)}
+                                {renderItem("Clinic Address", patientsData?.clinic?.clinic_address)}
+                                {renderItem("Clinic Email Address", patientsData?.clinic?.email)}
+                                {renderItem("Phone Number", patientsData?.clinic?.phoneNumber)}
+                                {renderItem("Consultation Fee", patientsData?.clinic?.consultation_fee)}
+                                {renderItem("Clinic Type", patientsData?.clinic?.clinic_type)}
+                                {renderItem("Date Open", patientsData?.clinic?.clinic_date_open && patientsData?.clinic?.clinic_close_date ? `${patientsData.clinic.clinic_date_open} - ${patientsData.clinic.clinic_close_date}` : "N/A")}
+                                {renderItem("Clinic Closed Time", patientsData?.clinic?.clinic_time && patientsData?.clinic?.clinic_close_time ? `${patientsData.clinic.clinic_time} - ${patientsData.clinic.clinic_close_time}` : "N/A")}
                             </Grid>
                         </section>
                     </DialogContent>
 
                     <DialogActions className="p-4 flex justify-between">
                         <Button variant="outlined" color="secondary" onClick={onClose}>
-                            Cancel
+                            Back
                         </Button>
                         <Button variant="contained" color="primary" onClick={handleNext}>
                             Next

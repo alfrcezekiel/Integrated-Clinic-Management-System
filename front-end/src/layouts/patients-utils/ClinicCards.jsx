@@ -1,4 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
+import {
+    useCallback,
+    useEffect,
+    useState
+} from "react";
 import {
     Card,
     CardContent,
@@ -21,7 +25,8 @@ import {
 } from 'lucide-react';
 import BookingAppointmentModal from "./BookingAppointmentModal";
 import {
-    useLocation
+    useLocation,
+    useNavigate
 } from "react-router-dom";
 import ConfirmAppointmentModal from "./ConfirmBookedAppointment";
 import dayjs from "dayjs";
@@ -52,6 +57,7 @@ const ClinicCards = () => {
         preferredTime: "",
         purposeOfAppointment: ""
     });
+    const navigate = useNavigate();
 
     const retrievePatientData = async (patientID) => {
         try {
@@ -124,7 +130,14 @@ const ClinicCards = () => {
             retrievePatientData(retrievePatientId);
         }
 
-    }, [appointmentID, location.pathname]);
+        if(!showConfirmedBookAppointmentModal){
+            const timer =  setTimeout(() => {
+                navigate("/patients-dashboard/View-Clinics");
+            }, 3000)
+
+            return () => clearTimeout(timer);
+        }
+    }, [appointmentID, location.pathname, navigate, showConfirmedBookAppointmentModal]);
 
     const handleOpenModal = (clinic) => {
         setSelectedClinic(clinic);
@@ -207,7 +220,7 @@ const ClinicCards = () => {
         handleCloseConfirmedBookedAppointmentModal()
     }, []);
 
-    
+
     return (
         <div className="flex flex-row flex-wrap justify-center gap-6 p-6 from-blue-50 to-blue-100">
             {loading ? (
@@ -306,7 +319,7 @@ const ClinicCards = () => {
                 />
             )}
 
-            {showConfirmedBookAppointmentModal && selectedClinic && (
+            {showConfirmedBookAppointmentModal && patientsAndClinicsData && (
                 <ConfirmAppointmentModal
                     open={showConfirmedBookAppointmentModal}
                     onClose={handleCallbackCloseConfirmedBookedAppointmentModal}
