@@ -23,7 +23,7 @@ const ConfirmAppointmentModal = ({ open, onClose, patientsData, onNextStep }) =>
     );
 
     return (
-        <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
+        <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
             <DialogTitle className="flex justify-between items-center">
                 Confirm Booked Appointment
             </DialogTitle>

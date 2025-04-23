@@ -5,10 +5,7 @@ import {
     DialogActions,
     Button,
     TextField,
-    InputLabel,
     MenuItem,
-    Select,
-    FormControl
 } from "@mui/material";
 import { useState } from "react";
 import PropTypes from "prop-types";
@@ -16,28 +13,30 @@ import PropTypes from "prop-types";
 const PaymentInformation = ({ open, onBack }) => {
     const [paymentMode, setPaymentMode] = useState("");
     const [amount, setAmount] = useState("");
+    const modeOfPayment = ["Cash", "Card", "GCash"]
 
     return (
         <Dialog open={open} fullWidth maxWidth="sm">
-            <DialogTitle>Payment Information</DialogTitle>
+            <DialogTitle className="text-black text-center font-semibold">Payment Information</DialogTitle>
             <DialogContent>
                 <div className="flex flex-col gap-4 mt-2">
                     {/* Payment Mode */}
-                    <div>
-                        <FormControl fullWidth>
-                            <InputLabel>Choose Mode of Payment</InputLabel>
-                            <Select
-                                value={paymentMode}
-                                label="Choose Mode of Payment"
-                                onChange={(e) => setPaymentMode(e.target.value)}
-                            >
-                                <MenuItem value="">Select Payment</MenuItem>
-                                <MenuItem value="cash">Cash</MenuItem>
-                                <MenuItem value="card">Card</MenuItem>
-                                <MenuItem value="upi">UPI</MenuItem>
-                                <MenuItem value="netbanking">Net Banking</MenuItem>
-                            </Select>
-                        </FormControl>
+                    <div className="w-full">
+                        <TextField
+                            fullWidth
+                            select
+                            label="Choose Mode of Payment"
+                            value={paymentMode}
+                            onChange={(e) => setPaymentMode(e.target.value)}
+                            variant="outlined"
+                            className="text-black"
+                        >
+                            {modeOfPayment.map((mode) => (
+                                <MenuItem key={mode} value={mode}>
+                                    {mode}
+                                </MenuItem>
+                            ))}
+                        </TextField>
                     </div>
 
                     {/* Amount */}
@@ -52,7 +51,7 @@ const PaymentInformation = ({ open, onBack }) => {
                     </div>
 
                     {/* Conditional Fields for Card */}
-                    {paymentMode === "card" && (
+                    {paymentMode === "Card" && (
                         <div className="flex flex-col gap-4">
                             <div className="w-full">
                                 <TextField fullWidth label="Card Number" placeholder="1234 5678 9012 3456" />
@@ -77,12 +76,15 @@ const PaymentInformation = ({ open, onBack }) => {
                     )}
 
                     {/* Conditional Fields for Cash */}
-                    {paymentMode === "cash" && (
-                        <div className="flex flex-col md:flex-row gap-4">
-                            <div className="w-full md:w-1/2">
-                                <TextField fullWidth label="Full Name" placeholder="John Doe" />
+                    {paymentMode === "Cash" && (
+                        <div className="flex flex-col md:flex-col gap-4">
+                            <div className="w-full md:w-1/1">
+                                <TextField fullWidth label="First Name" placeholder="John" />
                             </div>
-                            <div className="w-full md:w-1/2">
+                            <div className="w-full md:w-1/1">
+                                <TextField fullWidth label="Last Name" placeholder="Doe" />
+                            </div>
+                            <div className="w-full md:w-1/1">
                                 <TextField fullWidth label="Email" placeholder="example@email.com" type="email" />
                             </div>
                         </div>
