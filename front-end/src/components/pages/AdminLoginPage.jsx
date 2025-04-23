@@ -205,15 +205,6 @@ function AdminLoginPage() {
                         >
                             Sign in With Google
                         </Button>
-                        <Button
-                            variant="contained"
-                            color="inherit"
-                            startIcon={<img src="/img/twitter-logo.svg" height={24} width={24} alt="Twitter" />}
-                            fullWidth
-                            sx={{ boxShadow: 2, borderRadius: "2rem" }}
-                        >
-                            Sign in With Twitter
-                        </Button>
                     </div>
                 </form>
             </div>

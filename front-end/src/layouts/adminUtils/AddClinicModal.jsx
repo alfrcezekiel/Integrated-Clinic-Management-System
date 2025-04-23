@@ -48,45 +48,51 @@ const ClinicRegistrationModal = ({ open, onClose, fieldErrors, setFieldErrors, f
         )
     }, [formData]);
 
-    const handleFormDataChange = useCallback((e, field) => {
-        if (typeof e === "object" && e !== null && e.target) {
-            const { name, value } = e.target;
-            setFormData((prev) => ({
-                ...prev,
-                [name]: value
-            }));
-        } else if (field) {
-            setFormData((prev) => ({
-                ...prev,
-                [field]: e
-            }));
+    const handleFormDataChange = useCallback(async (e, field) => {
+        const handleCBFormDataChange = async (e, field) => {
+            if (typeof e === "object" && e !== null && e.target) {
+                const { name, value } = e.target;
+                setFormData((prev) => ({
+                    ...prev,
+                    [name]: value
+                }));
+            } else if (field) {
+                setFormData((prev) => ({
+                    ...prev,
+                    [field]: e
+                }));
+            }
+    
+            const { name } = e.target;
+            if (fieldErrors[name]) {
+                setFieldErrors((prev) => ({
+                    ...prev,
+                    [name]: null
+                }));
+            }
         }
-
-        const { name } = e.target;
-        if (fieldErrors[name]) {
-            setFieldErrors((prev) => ({
-                ...prev,
-                [name]: null
-            }));
-        }
+        handleCBFormDataChange(e, field);
     }, [fieldErrors, setFieldErrors, setFormData]);
 
     const handleFileChange = useCallback((event) => {
-        const file = event.target.files[0];
-        if (file) {
-            setFileName(file.name);
-            setFormData((prev) => ({
-                ...prev,
-                clinicImage: file,
-            }));
+        const handleFileChangeCB = async (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                setFileName(file.name);
+                setFormData((prev) => ({
+                    ...prev,
+                    clinicImage: file,
+                }));
+            }
+    
+            if (memoizedFieldErrorsValue.clinicImage) {
+                setFieldErrors((prev) => ({
+                    ...prev,
+                    clinicImage: ""
+                }));
+            }
         }
-
-        if (memoizedFieldErrorsValue.clinicImage) {
-            setFieldErrors((prev) => ({
-                ...prev,
-                clinicImage: ""
-            }));
-        }
+        handleFileChangeCB(event);
     }, [memoizedFieldErrorsValue.clinicImage, setFieldErrors, setFormData]);
 
     const [showPassword, setShowPassword] = useState(false);

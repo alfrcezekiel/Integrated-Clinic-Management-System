@@ -30,11 +30,13 @@ import {
 } from "react-router-dom";
 import ConfirmAppointmentModal from "./ConfirmBookedAppointment";
 import dayjs from "dayjs";
+import PaymentInformation from "./PaymentIntegration/PaymentInformation";
 
 const ClinicCards = () => {
     const [clinics, setClinics] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showConfirmedBookAppointmentModal, setShowConfirmedBookAppointmentModal] = useState(false);
+    const [showPaymentInformationDialogBox, setShowPaymentInformationDialogBox] = useState(false);
     const [selectedClinic, setSelectedClinic] = useState(null);
     const [appointmentData, setAppointmentData] = useState({
         firstName: "",
@@ -143,11 +145,13 @@ const ClinicCards = () => {
         confirmedBookedAppointment()
     }, [appointmentID, location.pathname, navigate, showConfirmedBookAppointmentModal]);
 
+    // function to open a booking appointment dialog
     const handleOpenModal = (clinic) => {
         setSelectedClinic(clinic);
         setAppointmentID(appointmentID)
     };
 
+    // function to close a booking appointment dialog
     const handleCloseModal = () => {
         setSelectedClinic(null);
         setFieldErrors({})
@@ -162,6 +166,7 @@ const ClinicCards = () => {
         })
     };
 
+    // function to get the confirmed booked appointment data
     const getConfirmedBookedAppointment = () => {
         if (!selectedClinic) return null;
 
@@ -189,6 +194,7 @@ const ClinicCards = () => {
         }
     }
 
+    // function to handle the booking appointment
     const handleBooking = async (e) => {
         try {
             e.preventDefault();
@@ -236,6 +242,19 @@ const ClinicCards = () => {
         }
         handleCloseConfirmedBookedAppointmentModal()
     }, []);
+
+    const handleCallBackProceedToPaymentDialog = useCallback(async () => {
+        const handleProceedToPaymentDialog = async () => {
+            setShowPaymentInformationDialogBox(true);
+            setShowConfirmedBookAppointmentModal(false);
+        }
+        handleProceedToPaymentDialog()
+    }, [])
+
+    const handleBackToConfirmedBookedAppointmentDialog = async () => {
+        setShowPaymentInformationDialogBox(false);
+        setShowConfirmedBookAppointmentModal(true);
+    }
 
     return (
         <div className="flex flex-row flex-wrap justify-center gap-6 p-6 from-blue-50 to-blue-100">
@@ -340,6 +359,14 @@ const ClinicCards = () => {
                     open={showConfirmedBookAppointmentModal}
                     onClose={handleCallbackCloseConfirmedBookedAppointmentModal}
                     patientsData={confirmedAppointmentData}
+                    onNextStep={handleCallBackProceedToPaymentDialog}
+                />
+            )}
+
+            {showPaymentInformationDialogBox && (
+                <PaymentInformation
+                    open={showPaymentInformationDialogBox}
+                    onBack={handleBackToConfirmedBookedAppointmentDialog}
                 />
             )}
         </div>

@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import PropTypes from "prop-types";
 
-const ConfirmAppointmentModal = ({ open, onClose, patientsData }) => {
+const ConfirmAppointmentModal = ({ open, onClose, patientsData, onNextStep }) => {
     const renderItem = (label, value) => (
         <Grid item xs={12}>
             <div className="flex flex-col text-left">
@@ -21,10 +21,6 @@ const ConfirmAppointmentModal = ({ open, onClose, patientsData }) => {
             </div>
         </Grid>
     );
-
-    const handleNext = () => {
-        console.log("Proceeding to next step...");
-    };
 
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
@@ -79,8 +75,8 @@ const ConfirmAppointmentModal = ({ open, onClose, patientsData }) => {
                 <Button variant="outlined" color="secondary" onClick={onClose}>
                     Back
                 </Button>
-                <Button variant="contained" color="primary" onClick={handleNext}>
-                    Next
+                <Button variant="contained" color="primary" onClick={onNextStep}>
+                    Proceed To Payment
                 </Button>
             </DialogActions>
         </Dialog>
@@ -112,6 +108,7 @@ ConfirmAppointmentModal.propTypes = {
             clinic_close_time: PropTypes.string,
         }).isRequired,
     }).isRequired,
+    onNextStep: PropTypes.func.isRequired,
 }
 
 export default ConfirmAppointmentModal;
