@@ -152,6 +152,15 @@ const ClinicCards = () => {
         setSelectedClinic(null);
         setFieldErrors({})
     };
+    
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+        })
+    };
 
     const getConfirmedBookedAppointment = () => {
         if (!selectedClinic) return null;
@@ -162,7 +171,7 @@ const ClinicCards = () => {
                 lastName: appointmentData.lastName,
                 email: appointmentData.email,
                 phoneNumber: appointmentData.phoneNumber,
-                appointmentDate: appointmentData.appointmentDate ? dayjs(appointmentData.appointmentDate).format("YYYY-MM-DD") : null,
+                appointmentDate: formatDate(appointmentData.appointmentDate),
                 preferredTime: appointmentData.preferredTime ? formatTimeToAMPM(dayjs(appointmentData.preferredTime).format("HH:mm")) : null,
             },
             clinic: {
