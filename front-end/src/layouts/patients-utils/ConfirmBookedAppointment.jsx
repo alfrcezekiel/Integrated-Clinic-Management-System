@@ -4,11 +4,10 @@ import {
     DialogContent,
     DialogActions,
     Button,
-    Grid,
-    IconButton,
-    Typography
+    Grid2 as Grid,
+    Typography,
+    CircularProgress
 } from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
 import PropTypes from "prop-types";
 
 const ConfirmAppointmentModal = ({ open, onClose, patientsData }) => {
@@ -31,12 +30,14 @@ const ConfirmAppointmentModal = ({ open, onClose, patientsData }) => {
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
             <DialogTitle className="flex justify-between items-center">
                 Confirm Booked Appointment
-                <IconButton onClick={onClose}>
-                    <CloseIcon />
-                </IconButton>
             </DialogTitle>
 
-            {patientsData && (
+
+            {!patientsData ? (
+                <DialogContent className="space-y-6 flex flex-col gap-6 justify-center items-center">
+                    <CircularProgress />
+                </DialogContent>
+            ) : (
                 <>
                     <DialogContent className="space-y-6 flex flex-col gap-6">
                         {/* Patient Section Title */}
@@ -71,17 +72,17 @@ const ConfirmAppointmentModal = ({ open, onClose, patientsData }) => {
                             </Grid>
                         </section>
                     </DialogContent>
-
-                    <DialogActions className="p-4 flex justify-between">
-                        <Button variant="outlined" color="secondary" onClick={onClose}>
-                            Back
-                        </Button>
-                        <Button variant="contained" color="primary" onClick={handleNext}>
-                            Next
-                        </Button>
-                    </DialogActions>
                 </>
             )}
+
+            <DialogActions className="p-4 flex justify-between">
+                <Button variant="outlined" color="secondary" onClick={onClose}>
+                    Back
+                </Button>
+                <Button variant="contained" color="primary" onClick={handleNext}>
+                    Next
+                </Button>
+            </DialogActions>
         </Dialog>
     );
 }
