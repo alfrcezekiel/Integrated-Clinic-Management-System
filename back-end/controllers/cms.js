@@ -1671,3 +1671,73 @@ export const getAppointmentHistoryInClinic = async (req, res) => {
         })
     }
 }
+
+// controller logic for inserting a payment information in patient side
+export const addPatientPaymentInformation = async (req, res) => {
+    try {
+        const {
+            appointmentID,
+            modeOfPayment,
+            amount,
+            firstName,
+            lastName,
+            email,
+            cardNumber,
+            cardHolderName,
+            expiryDate,
+            cvv
+        } = req.body;
+
+        const date = new Date();
+        const current_date = date.toISOString().split('T')[0];
+
+        const paymentStatus = "Paid"
+
+        const payment_mode = String(modeOfPayment);
+        const payment_amount = parseFloat(amount);
+        const first_name = String(firstName);
+        const last_name = String(lastName);
+        const email_address = String(email);
+        const card_number = String(cardNumber);
+        const card_holder_name = String(cardHolderName);
+        const expiry_date = String(expiryDate);
+        const cvv_number = String(cvv);
+        const appointment_id = parseInt(appointmentID, 10);
+
+        const paymentData =  {
+            appointment_id: appointment_id,
+            payment_mode: payment_mode,
+            payment_amount: payment_amount,
+            first_name: first_name,
+            last_name: last_name,
+            email_address: email_address,
+            payment_date: current_date,
+            payment_status: paymentStatus
+        }
+
+        if(payment_mode === "Card"){
+            paymentData.card_number = card_number;
+            paymentData.card_holder_name = card_holder_name;
+            paymentData.expiry_date = expiry_date;
+            paymentData.cvv_number = cvv_number;
+            paymentData.payment_status = paymentStatus;
+        }
+
+        const result = await new Clinic().addPatientPaymentInformation(paymentData)
+
+        if(!result.affectedRows) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Failed to insert payment information"
+            })
+        }
+
+        return res.status(StatusCodes.OK).json({
+            message: "Payment successful"
+        })
+    } catch (error) {
+        console.error(`Failed to insert payment information: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to insert payment information"
+        })
+    }
+}

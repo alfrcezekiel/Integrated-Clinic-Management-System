@@ -29,7 +29,6 @@ import {
     useNavigate
 } from "react-router-dom";
 import ConfirmAppointmentModal from "./ConfirmBookedAppointment";
-import dayjs from "dayjs";
 import PaymentInformation from "./PaymentIntegration/PaymentInformation";
 
 const ClinicCards = () => {
@@ -176,8 +175,8 @@ const ClinicCards = () => {
                 lastName: appointmentData.lastName,
                 email: appointmentData.email,
                 phoneNumber: appointmentData.phoneNumber,
-                appointmentDate: formatDate(appointmentData.appointmentDate),
-                preferredTime: appointmentData.preferredTime ? formatTimeToAMPM(dayjs(appointmentData.preferredTime).format("HH:mm")) : null,
+                appointmentDate: appointmentData.appointmentDate ? formatDate(appointmentData.appointmentDate) : null,
+                preferredTime: appointmentData.preferredTime ? formatTimeToAMPM(appointmentData.preferredTime) : null,
             },
             clinic: {
                 clinic_name: selectedClinic.clinic_name,

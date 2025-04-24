@@ -32,7 +32,8 @@ import {
     getRegisteredPatientsAccountInAdmin,
     updateRegisteredPatientsAccountInAdmin,
     consultPatientInClinicDashboard,
-    getAppointmentHistoryInClinic
+    getAppointmentHistoryInClinic,
+    addPatientPaymentInformation
 } from "../controllers/cms.js";
 import validateRegister from "../middleware/validation.js";
 import patientsLoginValidation from "../middleware/patientsLoginValidation.js";
@@ -152,5 +153,8 @@ router.get("/clinic-dashboard/getAppointmentHistory/:clinicID", getAppointmentHi
 
 // router for session verification
 router.get("/verifyToken", requireLogin, getLoggedInUser);
+
+// router for adding the payment information of the patients in patients dashboard
+router.post("/patients-dashboard/payment", addPatientPaymentInformation);
 
 export default router;
