@@ -1720,7 +1720,6 @@ export const addPatientPaymentInformation = async (req, res) => {
             paymentData.card_holder_name = card_holder_name;
             paymentData.expiry_date = expiry_date;
             paymentData.cvv_number = cvv_number;
-            paymentData.payment_status = paymentStatus;
         }
 
         const result = await new Clinic().addPatientPaymentInformation(paymentData)
