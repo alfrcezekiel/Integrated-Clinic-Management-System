@@ -10,9 +10,8 @@ import {
 import { useState } from "react";
 import PropTypes from "prop-types";
 import CMS from "../../../API/CMS";
-import { useNavigate } from "react-router-dom";
 
-const PaymentInformation = ({ open, onBack }) => {
+const PaymentInformationDialog = ({ open, onBack, onNextStep }) => {
     const modeOfPayment = ["Cash", "Card", "GCash"]
 
     const [paymentFormData, setPaymentFormData] = useState({
@@ -57,10 +56,6 @@ const PaymentInformation = ({ open, onBack }) => {
             }))
         }
     }
-
-    const navigate = useNavigate();
-
-    const navigateToViewClinic = () => navigate("/patients-dashboard/View-Clinics")
 
     const handlePaymentSubmit = async (e) => {
         try {
@@ -107,7 +102,7 @@ const PaymentInformation = ({ open, onBack }) => {
                     expiryDate: "",
                     cvv: ""
                 })
-                navigateToViewClinic()
+                onNextStep();
             }
 
         } catch (error) {
@@ -278,8 +273,9 @@ const PaymentInformation = ({ open, onBack }) => {
     );
 };
 
-PaymentInformation.propTypes = {
+PaymentInformationDialog.propTypes = {
     open: PropTypes.bool.isRequired,
     onBack: PropTypes.func.isRequired,
+    onNextStep: PropTypes.func.isRequired
 }
-export default PaymentInformation;
+export default PaymentInformationDialog;

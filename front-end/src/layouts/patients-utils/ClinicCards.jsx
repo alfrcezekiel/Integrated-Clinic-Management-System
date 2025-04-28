@@ -29,13 +29,15 @@ import {
     useNavigate
 } from "react-router-dom";
 import ConfirmAppointmentModal from "./ConfirmBookedAppointment";
-import PaymentInformation from "./PaymentIntegration/PaymentInformation";
+import PaymentInformationDialog from "./PaymentIntegration/PaymentInformation";
+import ConfirmPaymentDialogBox from "./PaymentIntegration/PaymentConfirmationDialog";
 
 const ClinicCards = () => {
     const [clinics, setClinics] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showConfirmedBookAppointmentModal, setShowConfirmedBookAppointmentModal] = useState(false);
     const [showPaymentInformationDialogBox, setShowPaymentInformationDialogBox] = useState(false);
+    const [showPaymentConfimationDialogBox, setShowPaymentConfirmationDialogBox] = useState(false);
     const [selectedClinic, setSelectedClinic] = useState(null);
     const [appointmentData, setAppointmentData] = useState({
         firstName: "",
@@ -255,6 +257,15 @@ const ClinicCards = () => {
         setShowConfirmedBookAppointmentModal(true);
     }
 
+    const proceedToConfirmationDialogBox = async () => {
+        setShowPaymentConfirmationDialogBox(true);
+        setShowPaymentInformationDialogBox(false);
+    }
+
+    const handleCloseThePaymentConfirmationDialogBox = async () => {
+        setShowPaymentConfirmationDialogBox(false);
+    }
+
     return (
         <div className="flex flex-row flex-wrap justify-center gap-6 p-6 from-blue-50 to-blue-100">
             {loading ? (
@@ -363,9 +374,17 @@ const ClinicCards = () => {
             )}
 
             {showPaymentInformationDialogBox && (
-                <PaymentInformation
+                <PaymentInformationDialog
                     open={showPaymentInformationDialogBox}
                     onBack={handleBackToConfirmedBookedAppointmentDialog}
+                    onNextStep={proceedToConfirmationDialogBox}
+                />
+            )}
+
+            {showPaymentConfimationDialogBox && (
+                <ConfirmPaymentDialogBox
+                    open={showPaymentConfimationDialogBox}
+                    onClose={handleCloseThePaymentConfirmationDialogBox}
                 />
             )}
         </div>

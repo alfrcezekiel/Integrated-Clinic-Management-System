@@ -530,7 +530,7 @@ export const getBookedAppointmentsToDisplayInDoctorsDashboard = async (req, res)
                 message: "No appointments found for the specified clinic"
             })
         }
-        
+
         return res.status(StatusCodes.OK).json({
             patientsAppointments: rows
         });
@@ -820,45 +820,24 @@ export const createClinic = async (req, res) => {
             adminID
         } = req.body;
 
-        const formatTimeToAMPM = (time) => {
+        const formatTimeTo24HR = (time) => {
             if (!time) return null;
 
-            // Check if time is already in AM/PM format
-            if (time.includes("AM") || time.includes("PM")) {
-                // Ensure consistent format (e.g., "2:30 PM" instead of "2:30PM")
-                const [timePart, meridian] = time.includes(" ") ?
-                    [time.split(" ")[0], time.split(" ")[1]] :
-                    [time.replace(/[APM]/g, ""), time.match(/[APM]{2}/)[0]];
+            const [hours, minutes] = time.split(":");
+            let hour = parseInt(hours, 10);
+            const ampm = time.includes("PM") ? "PM" : "AM"; // Determine AM/PM if present
 
-                // Ensure minutes are present
-                const [hours, minutes] = timePart.includes(":") ?
-                    timePart.split(":") :
-                    [timePart, "00"];
+            // Convert 12-hour to 24-hour format
+            if (ampm === "PM" && hour < 12) hour += 12; // PM times, add 12 to hour (except for 12 PM)
+            if (ampm === "AM" && hour === 12) hour = 0; // 12 AM is midnight (00:00)
 
-                return `${hours}:${minutes} ${meridian.toUpperCase()}`;
-            }
-
-            // Handle 24-hour format (e.g., "14:30")
-            try {
-                const [hours, minutes] = time.split(":");
-                let hour = parseInt(hours, 10);
-                const ampm = hour >= 12 ? "PM" : "AM";
-
-                // Convert to 12-hour format
-                hour = hour % 12;
-                hour = hour ? hour : 12; // Convert 0 to 12
-
-                return `${hour}:${minutes || "00"} ${ampm}`;
-            } catch (error) {
-                console.error("Error formatting time:", error);
-                return time; // Return original if parsing fails
-            }
+            return `${String(hour).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`; // Return in HH:MM:SS format
         };
 
         const clinic_name = String(clinicName);
         const clinic_address = String(clinicAddress);
         const clinic_date_open = String(openingDays);
-        const clinic_time_open = formatTimeToAMPM(String(openingHours));
+        const clinic_time_open = formatTimeTo24HR(openingHours);
         const consultation_fee = String(consultationFee);
         const clinic_PhoneNumber = String(clinicPhoneNumber);
         const email_address = String(clinicEmail);
@@ -866,7 +845,7 @@ export const createClinic = async (req, res) => {
         const clinic_confirm_password = String(confirmPassword);
         const clinic_type = String(clinicType);
         const clinic_close_date = String(closingDays);
-        const clinic_close_time = formatTimeToAMPM(String(closingHours));
+        const clinic_close_time = formatTimeTo24HR(closingHours);
         const clinic_id_field = String(clinicId);
         const admin_id = String(adminID);
 
@@ -1704,7 +1683,7 @@ export const addPatientPaymentInformation = async (req, res) => {
         const cvv_number = String(cvv);
         const appointment_id = parseInt(appointmentID, 10);
 
-        const paymentData =  {
+        const paymentData = {
             appointmentID: appointment_id,
             modeOfPayment: payment_mode,
             amount: payment_amount,
@@ -1715,7 +1694,7 @@ export const addPatientPaymentInformation = async (req, res) => {
             payment_status: paymentStatus
         }
 
-        if(payment_mode === "Card"){
+        if (payment_mode === "Card") {
             paymentData.cardNumber = card_number;
             paymentData.cardHolderName = card_holder_name;
             paymentData.expiryDate = expiry_date;
