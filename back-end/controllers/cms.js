@@ -1705,36 +1705,30 @@ export const addPatientPaymentInformation = async (req, res) => {
         const appointment_id = parseInt(appointmentID, 10);
 
         const paymentData =  {
-            appointment_id: appointment_id,
-            payment_mode: payment_mode,
-            payment_amount: payment_amount,
-            first_name: first_name,
-            last_name: last_name,
-            email_address: email_address,
+            appointmentID: appointment_id,
+            modeOfPayment: payment_mode,
+            amount: payment_amount,
+            firstName: first_name,
+            lastName: last_name,
+            email: email_address,
             payment_date: current_date,
             payment_status: paymentStatus
         }
 
         if(payment_mode === "Card"){
-            paymentData.card_number = card_number;
-            paymentData.card_holder_name = card_holder_name;
-            paymentData.expiry_date = expiry_date;
-            paymentData.cvv_number = cvv_number;
+            paymentData.cardNumber = card_number;
+            paymentData.cardHolderName = card_holder_name;
+            paymentData.expiryDate = expiry_date;
+            paymentData.cvv = cvv_number;
         }
 
-        const result = await new Clinic().addPatientPaymentInformation(paymentData)
-
-        if(!result.affectedRows) {
-            return res.status(StatusCodes.BAD_REQUEST).json({
-                message: "Failed to insert payment information"
-            })
-        }
+        await new Clinic().addPatientPaymentInformation(paymentData)
 
         return res.status(StatusCodes.OK).json({
             message: "Payment successful"
         })
     } catch (error) {
-        console.error(`Failed to insert payment information: ${error}`);
+        console.error(`Failed to insert payment information in controller function: ${error}`);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             message: "Failed to insert payment information"
         })

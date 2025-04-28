@@ -118,17 +118,22 @@ class Clinic {
             }
 
             const query = `
-                INSERT INTO patientpayment (
+                INSERT INTO patientspayment (
                     ${fields.join(", ")}
                 ) VALUES (
                     ${placeholder}
                 )
             `;
 
-            const [result] = await conn.query(query, values)
+            const [result] = await conn.query(query, values);
+
+            if (result.affectedRows === 0) {
+                throw new Error("Failed to insert payment information");
+            }
+            
             return result;
         } catch (error) {
-            console.error(`Failed to add payment: ${error}`)
+            console.error(`Failed to insert payment in model: ${error}`)
             throw error;
         }
     }

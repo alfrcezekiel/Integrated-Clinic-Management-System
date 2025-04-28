@@ -9,13 +9,16 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import PropTypes from "prop-types";
+import CMS from "../../../API/CMS";
+import { useNavigate } from "react-router-dom";
 
 const PaymentInformation = ({ open, onBack }) => {
     const modeOfPayment = ["Cash", "Card", "GCash"]
 
     const [paymentFormData, setPaymentFormData] = useState({
-        paymentMode: "",
+        modeOfPayment: "",
         amount: "",
+        appointmentID: "",
         firstName: "",
         lastName: "",
         email: "",
@@ -25,19 +28,97 @@ const PaymentInformation = ({ open, onBack }) => {
         cvv: ""
     })
 
+    const clearFieldsByModeOfPayment = {
+        Card: ["firstName", "lastName", "email", "amount"],
+        Cash: ["amount", "email", "cardNumber", "cardHolderName", "expiryDate", "cvv"]
+    }
+
     const handlePaymentChange = async (e) => {
         const { name, value } = e.target;
 
-        setPaymentFormData((prevData) => ({
-            ...prevData,
-            [name]: value,
-        }))
+        if (name === "modeOfPayment") {
+            setPaymentFormData((prevData) => {
+                const fieldsToClear = clearFieldsByModeOfPayment[value] || [];
+                const clearedData = {...prevData };
+
+                fieldsToClear.forEach((field) => {
+                    clearedData[field] = ""; // Clear the specified fields
+                })
+
+                return {
+                    ...clearedData,
+                    modeOfPayment: value
+                }
+            })
+        } else {
+            setPaymentFormData((prevData) => ({
+                ...prevData,
+                [name]: value,
+            }))
+        }
+    }
+
+    const navigate = useNavigate();
+
+    const navigateToViewClinic = () => navigate("/patients-dashboard/View-Clinics")
+
+    const handlePaymentSubmit = async (e) => {
+        try {
+            e.preventDefault();
+            const appointmentID = localStorage.getItem("sid");
+            if (!appointmentID) {
+                throw new Error("Appointment ID is missing or invalid.");
+            }
+
+            const payload = {
+                amount: paymentFormData.amount,
+                appointmentID: appointmentID,
+                firstName: paymentFormData.firstName,
+                lastName: paymentFormData.lastName,
+                email: paymentFormData.email,
+                modeOfPayment: paymentFormData.modeOfPayment,
+            };
+
+            if (paymentFormData.modeOfPayment === "Card") {
+                Object.assign(payload, {
+                    cardNumber: paymentFormData.cardNumber,
+                    cardHolderName: paymentFormData.cardHolderName,
+                    expiryDate: paymentFormData.expiryDate,
+                    cvv: paymentFormData.cvv,
+                });
+            }
+
+            const response = await CMS.post(`CMS/patients-dashboard/payment`, payload, {
+                headers: {
+                    "Content-Type": "application/json",
+                }
+            })
+
+            if (response.status === 200) {
+                alert("Payment Successful")
+                setPaymentFormData({
+                    amount: "",
+                    firstName: "",
+                    lastName: "",
+                    email: "",
+                    modeOfPayment: "",
+                    cardNumber: "",
+                    cardHolderName: "",
+                    expiryDate: "",
+                    cvv: ""
+                })
+                navigateToViewClinic()
+            }
+
+        } catch (error) {
+            console.error(`Error submitting payment: ${error}`);
+        }
     }
 
     return (
         <Dialog open={open} fullWidth maxWidth="sm">
             <DialogTitle className="text-black text-center font-semibold">Payment Information</DialogTitle>
-            <form>
+            <form onSubmit={handlePaymentSubmit} id="payment-form" className="flex flex-col gap-4">
                 <DialogContent>
                     <div className="flex flex-col gap-4 mt-2">
                         {/* Payment Mode */}
@@ -46,8 +127,8 @@ const PaymentInformation = ({ open, onBack }) => {
                                 fullWidth
                                 select
                                 label="Choose Mode of Payment"
-                                name="paymentMode"
-                                value={paymentFormData.paymentMode}
+                                name="modeOfPayment"
+                                value={paymentFormData.modeOfPayment}
                                 onChange={handlePaymentChange}
                                 variant="outlined"
                                 className="text-black"
@@ -75,7 +156,7 @@ const PaymentInformation = ({ open, onBack }) => {
                         </div>
 
                         {/* Conditional Fields for Card */}
-                        {paymentFormData.paymentMode === "Card" && (
+                        {paymentFormData.modeOfPayment === "Card" && (
                             <div className="flex flex-col gap-4">
                                 <div className="w-full">
                                     <TextField
@@ -140,7 +221,7 @@ const PaymentInformation = ({ open, onBack }) => {
                         )}
 
                         {/* Conditional Fields for Cash */}
-                        {paymentFormData.paymentMode === "Cash" && (
+                        {paymentFormData.modeOfPayment === "Cash" && (
                             <div className="flex flex-col md:flex-col gap-4">
                                 <div className="w-full md:w-1/1">
                                     <TextField
@@ -183,7 +264,12 @@ const PaymentInformation = ({ open, onBack }) => {
                     <Button variant="outlined" color="secondary" onClick={onBack}>
                         Back
                     </Button>
-                    <Button variant="contained" color="primary" disabled={!paymentFormData.paymentMode || !paymentFormData.amount}>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        disabled={!paymentFormData.modeOfPayment || !paymentFormData.amount}
+                        type="submit"
+                    >
                         Submit Payment
                     </Button>
                 </DialogActions>
