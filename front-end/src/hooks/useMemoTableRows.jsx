@@ -51,8 +51,6 @@ const AppointmentsTable = ({ retrievedAppointmentsData }) => {
         }
     };
     const memoizedTableRows = useMemo(() => {
-        const statusMatch = ["Approved", "Declined", "Pending", "Consulted"];
-
         if (retrievedAppointmentsData && retrievedAppointmentsData.length > 0) {
             return retrievedAppointmentsData.map((appointment, i) => (
                 <TableRow key={i} className={`hover:bg-gray-200 transition duration-200 ease-in-out ${getStatusColor(appointment.status)}`}>
@@ -73,7 +71,7 @@ const AppointmentsTable = ({ retrievedAppointmentsData }) => {
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
                         <Typography variant="body2" className="text-blue-gray-900">
-                            {statusMatch.includes(appointment.appointmentDate) ? "" : formatDate(appointment.appointmentDate)}
+                            {formatDate(appointment.appointmentDate)}
                         </Typography>
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">

@@ -1713,3 +1713,65 @@ export const addPatientPaymentInformation = async (req, res) => {
         })
     }
 }
+
+// controller logic for getting the patient appointment details to populate the fields in the payment dialog box
+export const retrievePatientDetailsInPaymentDialog = async (req, res) => {
+    try {
+        const { patientID } = req.params;
+
+        if (!patientID) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Please enter a valid patient ID"
+            })
+        }
+
+        const result = await new Clinic().retrievePatientsDetailsToRenderInPaymentDialog(patientID);
+
+        if (!result.length) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No patient details found to render in payment dialog box"
+            })
+        }
+
+        return res.status(StatusCodes.OK).json({
+            patientDetails: result[0]
+        })
+    } catch (error) {
+        console.error(`Failed to retrieve patient details in payment dialog by retrievePatientDetailsInPaymentDialog controller: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to retrieve patient details in payment dialog"
+        })
+    }
+}
+
+// controller logic for retrieving the payment confirmation details in the payment dialog box
+export const retrievedPaymentConfirmedDetails = async (req, res) => {
+    try {
+        const { patientID } = req.params;
+
+        if (!patientID) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Please enter a valid patient ID"
+            })
+        }
+
+        const patient_id = parseInt(patientID, 10);
+
+        const result = await new Clinic().retrievedConfirmedPaymentDetails(patient_id);
+
+        if (!result.length) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No payment confirmation details found"
+            })
+        }
+
+        return res.status(StatusCodes.OK).json({
+            paymentConfirmationDetails: result[0]
+        })
+    } catch (error) {
+        console.error(`Failed to retrieve payment confirmation details function controller: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to retrieve payment confirmation details"
+        })
+    }
+}

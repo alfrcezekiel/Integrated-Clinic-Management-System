@@ -33,7 +33,9 @@ import {
     updateRegisteredPatientsAccountInAdmin,
     consultPatientInClinicDashboard,
     getAppointmentHistoryInClinic,
-    addPatientPaymentInformation
+    addPatientPaymentInformation,
+    retrievePatientDetailsInPaymentDialog,
+    retrievedPaymentConfirmedDetails
 } from "../controllers/cms.js";
 import validateRegister from "../middleware/validation.js";
 import patientsLoginValidation from "../middleware/patientsLoginValidation.js";
@@ -156,5 +158,11 @@ router.get("/verifyToken", requireLogin, getLoggedInUser);
 
 // router for adding the payment information of the patients in patients dashboard
 router.post("/patients-dashboard/payment", addPatientPaymentInformation);
+
+// router for retrieving the patients details to populate the payment dialog box
+router.get("/patients-dashboard/retrievedPatientDetails/:patientID", retrievePatientDetailsInPaymentDialog);
+
+// router for getting the patients payment information to display in the confirmed payment dialog box
+router.get("/patients-dashboard/retrievedConfirmedPaymentDetails/:patientID", retrievedPaymentConfirmedDetails);
 
 export default router;

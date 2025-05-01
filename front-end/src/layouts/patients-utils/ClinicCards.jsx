@@ -61,6 +61,7 @@ const ClinicCards = () => {
         purposeOfAppointment: ""
     });
     const [confirmedAppointmentData, setConfirmedAppointmentData] = useState(null)
+    const [submittedPaymentData, setSubmittedPaymentData] = useState(null);
     const navigate = useNavigate();
 
     const retrievePatientData = async (patientID) => {
@@ -135,8 +136,8 @@ const ClinicCards = () => {
         }
 
         const confirmedBookedAppointment = () => {
-            if (!showConfirmedBookAppointmentModal) {
-                let timer = setTimeout(() => {
+            if (showConfirmedBookAppointmentModal) {
+                const timer = setTimeout(() => {
                     navigate("/patients-dashboard/View-Clinics");
                 }, 3000)
 
@@ -257,7 +258,8 @@ const ClinicCards = () => {
         setShowConfirmedBookAppointmentModal(true);
     }
 
-    const proceedToConfirmationDialogBox = async () => {
+    const proceedToPaymentConfirmationDialogBox = async (paymentData) => {
+        setSubmittedPaymentData(paymentData);
         setShowPaymentConfirmationDialogBox(true);
         setShowPaymentInformationDialogBox(false);
     }
@@ -377,7 +379,7 @@ const ClinicCards = () => {
                 <PaymentInformationDialog
                     open={showPaymentInformationDialogBox}
                     onBack={handleBackToConfirmedBookedAppointmentDialog}
-                    onNextStep={proceedToConfirmationDialogBox}
+                    onNextStep={() => proceedToPaymentConfirmationDialogBox(submittedPaymentData)}
                 />
             )}
 

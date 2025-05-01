@@ -1,3 +1,4 @@
+import { CONFLICT } from "http-status-codes";
 import conn from "../db/mysql/conn.js";
 
 // created a new instance of class Clinic Models
@@ -89,7 +90,7 @@ class Clinic {
             // this is the field for cash fields payment
             let fields = [
                 "amount",
-                "appointment_id",
+                "patient_id",
                 "first_name",
                 "last_name",
                 "email",
@@ -109,9 +110,9 @@ class Clinic {
                 paymentStatus
             ]
             let placeholder = "?, ?, ?, ?, ?, ?, ?, ?"
-            
+
             // this is the field for card fields payment
-            if(modeOfPayment === "Card") {
+            if (modeOfPayment === "Card") {
                 fields.push("card_number", "cardholder_name", "expiry_date", "cvv")
                 values.push(cardNumber, cardHolderName, expiryDate, cvv)
                 placeholder += ", ?, ?, ?, ?"
@@ -130,10 +131,65 @@ class Clinic {
             if (result.affectedRows === 0) {
                 throw new Error("Failed to insert payment information");
             }
-            
+
             return result;
         } catch (error) {
             console.error(`Failed to insert payment in model: ${error}`)
+            throw error;
+        }
+    }
+
+    // model for retrieving the patients details to populate the payment dialog box
+    retrievePatientsDetailsToRenderInPaymentDialog = async (patientID) => {
+        try {
+            const query = `
+                SELECT
+                pa.firstName,
+                pa.lastName,
+                pa.email
+                FROM patientsappointment AS pa
+                WHERE pa.patientID = ?;
+            `
+
+            const value = [
+                patientID
+            ]
+
+            const [rows] = await conn.query(query, value);
+
+            return rows;
+        } catch (error) {
+            console.error("Error retrieving patients details in retrievePatientDetailsToRenderInPaymentDialog model function:", error);
+        }
+    }
+
+    // model for retrieving the patients details payment to render in confirmed payment dialog box
+    retrievedConfirmedPaymentDetails = async (patientID) => {
+        try {
+            const query = `
+                SELECT
+                pp.amount,
+                pp.first_name,
+                pp.last_name,
+                pp.email,
+                pp.mode_of_payment,
+                pp.payment_date,
+                pp.payment_status,
+                pp.card_number,
+                pp.cardholder_name
+                FROM patientspayment AS pp
+                WHERE pp.patient_id = ?
+            `
+
+            const value = [
+                patientID
+            ]
+
+            const [rows] = await conn.query(query, value);
+
+            return rows;
+        } catch (error) {
+            console.error("Error retrieving patients details in retrievedConfirmedPaymentDetails model function:", error);
             throw error;
         }
     }

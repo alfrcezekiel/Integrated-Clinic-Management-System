@@ -237,10 +237,10 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
                                     {/* Gender Selection */}
                                     <TextField
                                         select
-                                        placeholder="Enter a Gender"
+                                        placeholder="Select a Gender"
                                         fullWidth
                                         margin="dense"
-                                        label="Gender"
+                                        label="Select a Gender"
                                         autoComplete="off"
                                         name="gender"
                                         variant="outlined"
@@ -260,7 +260,9 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
                                             <DatePicker
                                                 className="w-full"
                                                 margin="dense"
-                                                label="Date of Appointment"
+                                                label="Select Date of Appointment"
+                                                placeholder="Select date of appointment"
+                                                name="appointmentDate"
                                                 onChange={handleDateChange}
                                                 value={memoizedAppointmentDateValue}
                                                 slotProps={{

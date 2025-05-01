@@ -7,7 +7,10 @@ import {
     TextField,
     MenuItem,
 } from "@mui/material";
-import { useState } from "react";
+import {
+    useState,
+    useEffect
+} from "react";
 import PropTypes from "prop-types";
 import CMS from "../../../API/CMS";
 
@@ -27,52 +30,67 @@ const PaymentInformationDialog = ({ open, onBack, onNextStep }) => {
         cvv: ""
     })
 
-    const clearFieldsByModeOfPayment = {
-        Card: ["firstName", "lastName", "email", "amount"],
-        Cash: ["amount", "email", "cardNumber", "cardHolderName", "expiryDate", "cvv"]
-    }
+    useEffect(() => {
+        // this function is used to retrieve the patient details to render in the payment information dialog box input fields
+        const retrievePatientDetailsToRenderInPaymentInformationDialogBox = async () => {
+            try {
+                const retrievePatientID = localStorage.getItem("sid")
+
+                if (!retrievePatientID) return;
+
+                const response = await CMS.get(`/CMS/patients-dashboard/retrievedPatientDetails/${retrievePatientID}`, {
+                    headers: {
+                        "Content-Type": "application/json",
+                    }
+                })
+
+                if (response.status === 200) {
+                    const patientDetails = response.data.patientDetails;
+
+                    setPaymentFormData((prevData) => ({
+                        ...prevData,
+                        firstName: patientDetails.firstName,
+                        lastName: patientDetails.lastName,
+                        email: patientDetails.email,
+                    }))
+                }
+            } catch (error) {
+                console.error(`Error retrieving patient details in retrieving patients details in payment informatin dialog component: ${error}`);
+            }
+        }
+        
+        if (open) {
+            retrievePatientDetailsToRenderInPaymentInformationDialogBox();
+        }
+    }, [open])
 
     const handlePaymentChange = async (e) => {
         const { name, value } = e.target;
 
-        if (name === "modeOfPayment") {
-            setPaymentFormData((prevData) => {
-                const fieldsToClear = clearFieldsByModeOfPayment[value] || [];
-                const clearedData = {...prevData };
-
-                fieldsToClear.forEach((field) => {
-                    clearedData[field] = ""; // Clear the specified fields
-                })
-
-                return {
-                    ...clearedData,
-                    modeOfPayment: value
-                }
-            })
-        } else {
             setPaymentFormData((prevData) => ({
                 ...prevData,
                 [name]: value,
             }))
-        }
     }
 
     const handlePaymentSubmit = async (e) => {
+        e.preventDefault();
         try {
-            e.preventDefault();
             const appointmentID = localStorage.getItem("sid");
             if (!appointmentID) {
                 throw new Error("Appointment ID is missing or invalid.");
             }
 
-            const payload = {
+            const basePayload = {
                 amount: paymentFormData.amount,
                 appointmentID: appointmentID,
-                firstName: paymentFormData.firstName,
-                lastName: paymentFormData.lastName,
-                email: paymentFormData.email,
                 modeOfPayment: paymentFormData.modeOfPayment,
-            };
+                email: paymentFormData.email,
+            }
+        
+            let payload = {
+                ...basePayload,
+            }
 
             if (paymentFormData.modeOfPayment === "Card") {
                 Object.assign(payload, {
@@ -80,6 +98,11 @@ const PaymentInformationDialog = ({ open, onBack, onNextStep }) => {
                     cardHolderName: paymentFormData.cardHolderName,
                     expiryDate: paymentFormData.expiryDate,
                     cvv: paymentFormData.cvv,
+                });
+            } else if (paymentFormData.modeOfPayment === "Cash") {
+                Object.assign(payload, {
+                    firstName: paymentFormData.firstName,
+                    lastName: paymentFormData.lastName,
                 });
             }
 
@@ -102,7 +125,7 @@ const PaymentInformationDialog = ({ open, onBack, onNextStep }) => {
                     expiryDate: "",
                     cvv: ""
                 })
-                onNextStep();
+                onNextStep(paymentFormData);
             }
 
         } catch (error) {
