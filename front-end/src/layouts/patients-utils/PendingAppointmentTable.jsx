@@ -41,11 +41,11 @@ const PendingAppointmentTable = () => {
                 if (response.status === 200) {
                     setRetrievedAppointmentsData(response.data.patientsPendingStatus);
                 } else {
-                    console.log(`Failed to retrieve pending appointment status in server: ${response.status}`);
+                    console.error(`Failed to retrieve pending appointment status in server: ${response.status}`);
                 }
 
             } catch (error) {
-                console.log(`Failed to retrieve pending appointment status: ${error}`);
+                console.error(`Failed to retrieve pending appointment status: ${error}`);
             }
         }
         retrievePendingStatus();

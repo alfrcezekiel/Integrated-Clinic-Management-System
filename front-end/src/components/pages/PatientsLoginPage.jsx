@@ -197,7 +197,7 @@ function PatientsLoginPortal() {
                             control={<Checkbox />}
                             label={
                                 <>
-                                    <Typography variant="body2" color="textSecondary">
+                                    <Typography variant="body2" color="textSecondary" className="text-black">
                                         Remember me
                                     </Typography>
                                 </>
@@ -209,8 +209,8 @@ function PatientsLoginPortal() {
                             </Button>
                         </div>
                         <div className="flex items-center justify-between gap-2 mt-6">
-                            <Typography variant="body2" className="text-gray-900">
-                                <a href="#">Forgot Password</a>
+                            <Typography variant="body2" className="text-black">
+                                <a href="#" className="no-underline text-black">Forgot Password</a>
                             </Typography>
                         </div>
                         <div className="mt-[1rem] flex flex-col gap-4">
@@ -240,7 +240,7 @@ function PatientsLoginPortal() {
                         </div>
                         <div className="text-center text-gray-500 font-medium mt-4">
                             Not registered?
-                            <Link to="/patients-portal" className="text-gray-900 ml-1">Create account</Link>
+                            <Link to="/patients-portal" className="text-black ml-1">Create account</Link>
                         </div>
                     </form>
                 </div>

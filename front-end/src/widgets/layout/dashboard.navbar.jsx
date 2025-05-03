@@ -119,13 +119,13 @@ const DashboardNavbar = () => {
                         <MenuIcon />
                     </IconButton>
                     <Breadcrumbs className="text-gray-600">
-                        <Link to={`/${layout}/${path}`} className="text-blue-500">
+                        <Link to={`/${layout}/${path}`} className="text-black">
                             <Typography variant="body1">{name}</Typography>
                         </Link>
                     </Breadcrumbs>
                     <Outlet />
-                    <Typography variant="body2" className="text-gray-600">/</Typography>
-                    <Typography variant="body1" className="text-gray-600">
+                    <Typography variant="body2" className="text-black">/</Typography>
+                    <Typography variant="body1" className="text-black">
                         {page}
                     </Typography>
                 </div>

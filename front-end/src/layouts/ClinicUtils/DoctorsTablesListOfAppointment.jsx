@@ -219,7 +219,12 @@ const DoctorsTablesListOfAppointments = () => {
                 setOpen(false);
                 setSuccessfullAppointmentModalOpen(true);
                 navigate("/doctor-portal/dashboard/approved-appointments");
-            } else {
+            } else if( response.status === 200 && memoizedFormDataValue.status === "Declined") {
+                setFieldsError({})
+                setOpen(false);
+                setSuccessfullAppointmentModalOpen(true);
+                navigate("/doctor-portal/dashboard/declined-appointments");
+            }else {
                 throw new Error(`Unexpected error in status ${response.status}`)
             }
         } catch (error) {

@@ -25,7 +25,7 @@ import CMS from "../../API/CMS";
 import FormHelperText from "@mui/material/FormHelperText"
 import doctor from "../../assets/img/page-title-bg.jpg";
 
-function DoctorLoginPortal() {
+function ClinicLoginPortal() {
     const [showPassword, setShowPassword] = useState(false);
     const [doctorsLoginFormData, setDoctorsLoginFormData] = useState({
         email: "",
@@ -109,8 +109,8 @@ function DoctorLoginPortal() {
                 setFieldErrors(error.response.data.errors);
             } else if (error.response && error.response.status === 401) {
                 setFieldErrors({
-                    email: error.response.data.messageEmail,
-                    password: error.response.data.messagePassword
+                    email: error.response.data.emailMessage,
+                    password: error.response.data.passwordMessage
                 });
             } else {
                 console.error(`Error in logging in patient: ${error}`);
@@ -224,4 +224,4 @@ function DoctorLoginPortal() {
         </section>
     );
 }
-export default DoctorLoginPortal;
+export default ClinicLoginPortal;

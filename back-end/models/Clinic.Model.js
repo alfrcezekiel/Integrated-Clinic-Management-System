@@ -146,11 +146,16 @@ class Clinic {
                 SELECT
                 pa.firstName,
                 pa.lastName,
-                pa.email
+                pa.email,
+                c.consultation_fee
                 FROM patientsappointment AS pa
-                WHERE pa.patientID = ?;
+                LEFT JOIN clinic AS c
+                ON pa.clinic_id = c.clinic_id
+                WHERE pa.patientID = ?
+                ORDER BY pa.createdAt DESC
+                LIMIT 1;
             `
-
+            
             const value = [
                 patientID
             ]
@@ -166,6 +171,10 @@ class Clinic {
     // model for retrieving the patients details payment to render in confirmed payment dialog box
     retrievedConfirmedPaymentDetails = async (patientID) => {
         try {
+            const paymentStatus = "Paid";
+            const methodOfPayment = ["Cash", "Card"];
+
+            const mode_placeholders = methodOfPayment.map(() => "?").join(", ")
             const query = `
                 SELECT
                 pp.amount,
@@ -176,14 +185,25 @@ class Clinic {
                 pp.payment_date,
                 pp.payment_status,
                 pp.card_number,
-                pp.cardholder_name
+                pp.cardholder_name,
+                pp.expiry_date
                 FROM patientspayment AS pp
                 WHERE pp.patient_id = ?
+                AND pp.payment_status = ?
+                AND pp.mode_of_payment IN (${mode_placeholders})
+                ORDER BY pp.payment_date DESC
+                LIMIT 1;
             `
 
             const value = [
-                patientID
+                patientID,
+                paymentStatus,
+                ...methodOfPayment
             ]
+
+            if(query.match(/\?/g).length !== value.length){
+                throw new Error("Number of placeholders and values do not match")
+            }
 
             const [rows] = await conn.query(query, value);
 

@@ -3,7 +3,8 @@ import {
     DialogActions,
     DialogContent,
     DialogTitle,
-    Button
+    Button,
+    CircularProgress
 } from '@mui/material';
 import PropTypes from 'prop-types';
 import {
@@ -12,63 +13,78 @@ import {
 } from 'react';
 import CMS from "../../../API/CMS";
 
-const ConfirmPaymentDialogBox = ({ open, onClose }) => {
+const ConfirmPaymentDialogBox = ({ open, onClose, onNextStep }) => {
     const [paymentData, setPaymentData] = useState({
-        amount: "",
+        mode_of_payment: "",
+        payment_status: "",
+        payment_date: "",
+        cardholder_name: "",
         first_name: "",
         last_name: "",
         email: "",
-        mode_of_payment: "",
-        payment_date: "",
-        payment_status: "",
-        cardholder_name: ""
-    });
+        amount: 0,
+        card_number: "",
+        expiry_date: ""
+    })
+    const [loading, setLoading] = useState(false);
 
-    const retrievedConfirmedPaymentDetails = async () => {
-        try {
-            const patientID = localStorage.getItem("sid")
+    const isPaidCash = paymentData?.mode_of_payment === 'Cash' && paymentData?.payment_status === "Paid";
+    const isPaidCard = paymentData?.mode_of_payment === 'Card' && paymentData?.payment_status === "Paid";
 
-            if (!patientID) {
-                console.error("Patient ID is missing. Unable to retrieve payment details.");
-                return;
-            }
-
-            const response = await CMS.get(`/CMS/patients-dashboard/retrievedConfirmedPaymentDetails/${patientID}`, {
-                headers: {
-                    "Content-Type": "application/json",
-                }
-            });
-
-            if (response.status === 200 && response.data) {
-                const paymentDetails = response.data.paymentConfirmationDetails;
-                const data = Array.isArray(paymentDetails) ? paymentDetails : paymentDetails;
-
-                if(data){
-                    setPaymentData((prevData) => ({
-                        ...prevData,
-                        amount: data.amount,
-                        first_name: data.first_name,
-                        last_name: data.last_name,
-                        email: data.email,
-                        mode_of_payment: data.mode_of_payment,
-                        payment_date: data.payment_date,
-                        payment_status: data.payment_status,
-                        cardholder_name: data.cardholder_name
-                    }));
-                }
-            }
-        } catch (error) {
-            console.error("Error retrieving patients details in retrievedConfirmedPaymentDetails component:", error);
-        }
-    }
+    const dateFormat = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+        })
+    };
 
     useEffect(() => {
-        const fetchPaymentData = async () => {
-            await retrievedConfirmedPaymentDetails();
-        };
+        const retrievedConfirmedPaymentDetails = async () => {
+            try {
+                setLoading(true);
+                const patientID = localStorage.getItem("sid")
+    
+                if (!patientID) {
+                    console.error("Patient ID is missing. Unable to retrieve payment details.");
+                    return;
+                }
+    
+                const response = await CMS.get(`/CMS/patients-dashboard/retrievedConfirmedPaymentDetails/${patientID}`, {
+                    headers: {
+                        "Content-Type": "application/json",
+                    }
+                });
+    
+                if (response.status === 200) {
+                    const paymentDetails = response.data.paymentConfirmationDetails;
+    
+                    setPaymentData((prev) => ({
+                        ...prev,
+                        amount: paymentDetails.at(-1)?.amount,
+                        first_name: paymentDetails.at(-1)?.first_name,
+                        last_name: paymentDetails.at(-1)?.last_name,
+                        email: paymentDetails.at(-1)?.email,
+                        mode_of_payment: paymentDetails.at(-1)?.mode_of_payment,
+                        payment_status: paymentDetails.at(-1)?.payment_status,
+                        payment_date: paymentDetails.at(-1)?.payment_date,
+                        cardholder_name: paymentDetails.at(-1)?.cardholder_name,
+                        card_number: paymentDetails.at(-1)?.card_number,
+                        expiry_date: paymentDetails.at(-1)?.expiry_date
+                    })); // Assuming you want the first payment detail
+                }
+            } catch (error) {
+                console.error("Error retrieving patients details in retrievedConfirmedPaymentDetails component:", error);
+            } finally {
+                setLoading(false);
+            }
+        }
 
-        fetchPaymentData();
-    }, []);
+        if (open) {
+            retrievedConfirmedPaymentDetails();
+        }
+    }, [open, onNextStep]);
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -78,47 +94,26 @@ const ConfirmPaymentDialogBox = ({ open, onClose }) => {
                 </DialogTitle>
 
                 <DialogContent>
-                    {paymentData?.mode_of_payment === 'Card' && paymentData?.payment_status === "Paid" ? (
-                        <div className="border rounded-lg p-6 mb-6">
-                            <h3 className="text-lg font-bold mb-4">Details</h3>
-                            <div className="space-y-4">
-                                <div className="flex justify-between">
-                                    <span className="font-medium">Date:</span>
-                                    <span className="text-gray-700">{paymentData?.payment_date}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="font-medium">Payment Status:</span>
-                                    <span className="text-gray-700">{paymentData?.payment_status}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="font-medium">Payment Method:</span>
-                                    <span className="text-gray-700">{paymentData?.mode_of_payment}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="font-medium">Name:</span>
-                                    <span className="text-gray-700">{paymentData?.cardholder_name}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="font-medium">Email:</span>
-                                    <span className="text-gray-700">{paymentData?.email}</span>
-                                </div>
-                            </div>
+                    {loading ? (
+                        <div className="flex justify-center items-center h-32">
+                            <CircularProgress size={24} className="text-purple-500" />
+                            <p className="text-white">Loading payment details</p>
                         </div>
-                    ) : paymentData?.mode_of_payment === 'Cash' && paymentData?.payment_status === "Paid" ? (
+                    ) : isPaidCash ? (
                         <div className="border rounded-lg p-6 mb-6">
                             <h3 className="text-lg font-bold mb-4">Details</h3>
                             <div className="space-y-4">
                                 <div className="flex justify-between">
-                                    <span className="font-medium">Date:</span>
-                                    <span className="text-gray-700">{paymentData?.payment_date}</span>
+                                    <span className="font-medium"> Payment Date:</span>
+                                    <span className="text-gray-700">{dateFormat(paymentData.payment_date)}</span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="font-medium">Payment Status:</span>
-                                    <span className="text-gray-700">{paymentData?.payment_status}</span>
+                                    <span className="text-gray-700">{paymentData.payment_status}</span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="font-medium">Payment Method:</span>
-                                    <span className="text-gray-700">{paymentData?.mode_of_payment}</span>
+                                    <span className="text-gray-700">{paymentData.mode_of_payment}</span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="font-medium">Name:</span>
@@ -126,7 +121,43 @@ const ConfirmPaymentDialogBox = ({ open, onClose }) => {
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="font-medium">Email:</span>
-                                    <span className="text-gray-700">{paymentData?.email}</span>
+                                    <span className="text-gray-700">{paymentData.email}</span>
+                                </div>
+                            </div>
+                        </div>
+                    ) : isPaidCard ? (
+                        <div className="border rounded-lg p-6 mb-6">
+                            <h3 className="text-lg font-bold mb-4">Details</h3>
+                            <div className="space-y-4">
+                                <div className="flex justify-between">
+                                    <span className="font-medium">Payment Date:</span>
+                                    <span className="text-gray-700">{dateFormat(paymentData.payment_date)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="font-medium">Payment Status:</span>
+                                    <span className="text-gray-700">{paymentData.payment_status}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="font-medium">Payment Method:</span>
+                                    <span className="text-gray-700">{paymentData.mode_of_payment}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="font-medium">Card Holder Name:</span>
+                                    <span className="text-gray-700">{paymentData.cardholder_name}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="font-medium">Email:</span>
+                                    <span className="text-gray-700">{paymentData.email}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="font-medium">Card Number:</span>
+                                    <span className="text-gray-700">
+                                        **** **** **** {paymentData.card_number?.slice(-4)}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="font-medium">Expiry Date:</span>
+                                    <span className="text-gray-700">{paymentData.expiry_date}</span>
                                 </div>
                             </div>
                         </div>
@@ -136,10 +167,12 @@ const ConfirmPaymentDialogBox = ({ open, onClose }) => {
                         </div>
                     )}
 
-                    <div className="flex justify-between items-center mb-6">
-                        <span className="text-lg font-semibold">Total Amount:</span>
-                        <span className="text-xl font-bold text-green-600">${paymentData.amount}</span>
-                    </div>
+                    {paymentData?.amount && (
+                        <div className="flex justify-between items-center mb-6">
+                            <span className="text-lg font-semibold">Total Amount:</span>
+                            <span className="text-xl font-bold text-green-600">₱{paymentData.amount.toFixed(2)}</span>
+                        </div>
+                    )}
                 </DialogContent>
 
                 <DialogActions className="flex justify-end space-x-4 mb-4">
@@ -152,9 +185,9 @@ const ConfirmPaymentDialogBox = ({ open, onClose }) => {
                         Cancel Payment
                     </Button>
                     <Button
-                        onClick={onClose}
                         variant="contained"
                         color="primary"
+                        onClick={onNextStep}
                         className="px-6 py-2 text-white font-semibold"
                     >
                         Confirm Payment
@@ -168,6 +201,7 @@ const ConfirmPaymentDialogBox = ({ open, onClose }) => {
 ConfirmPaymentDialogBox.propTypes = {
     open: PropTypes.bool.isRequired,
     onClose: PropTypes.func.isRequired,
+    onNextStep: PropTypes.func.isRequired
 };
 
 export default ConfirmPaymentDialogBox;

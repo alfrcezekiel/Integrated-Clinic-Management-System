@@ -46,8 +46,8 @@ const SideNav = ({ brandName, routes }) => {
             classes={{ paper: isMobile ? "bg-white w-72 shadow-md" : "w-72 bg-white shadow-md" }}
         >
             <div className="relative p-6">
-                <Link to={"/patients-dashboard/home"}>
-                    <Typography variant="h5" className="text-gray-900">
+                <Link to={"/patients-dashboard/home"} className="text-black">
+                    <Typography variant="h5" className="text-black">
                         {brandName}
                     </Typography>
                 </Link>
@@ -63,7 +63,7 @@ const SideNav = ({ brandName, routes }) => {
                                 className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-white" : "text-gray-700 hover:bg-gray-100"}`}
                             >
                                 {icon}
-                                <Typography sx={{ ml: 2 }} className="text-black">{name}</Typography>
+                                <Typography className="text-black mx-2">{name}</Typography>
                             </NavLink>
                         ))}
                     </div>

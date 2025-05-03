@@ -22,6 +22,7 @@ const DeclinedAppointmentStatusClinicTable = () => {
         'Last Name',
         "Email",
         'Appointment Date',
+        "Appointment Time",
         "Phone Number",
         "Gender",
         'Status',
@@ -80,6 +81,21 @@ const DeclinedAppointmentStatusClinicTable = () => {
                 return "text-gray-600 bg-gray-200";
         }
     }
+
+    const formatTimeToAMPM = (time) => {
+        if (!time) return "N/A";
+        if (time.includes("AM") || time.includes("PM")) return time;
+
+        try {
+            const [hours, minutes] = time.split(":");
+            let hour = parseInt(hours, 10);
+            const ampm = hour >= 12 ? "PM" : "AM";
+            hour = hour % 12 || 12;
+            return `${hour}:${minutes || "00"} ${ampm}`;
+        } catch {
+            return time;
+        }
+    };
 
     return (
         <>
@@ -142,6 +158,11 @@ const DeclinedAppointmentStatusClinicTable = () => {
                                             <TableCell align="center">
                                                 <Typography variant="body2" className="text-blue-gray-900">
                                                     {dateFormat(appointment.appointmentDate)}
+                                                </Typography>
+                                            </TableCell>
+                                            <TableCell align="center">
+                                                <Typography variant="body2" className="text-blue-gray-900">
+                                                    {formatTimeToAMPM(appointment.preferredTime)}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="center">

@@ -31,6 +31,7 @@ import {
 import ConfirmAppointmentModal from "./ConfirmBookedAppointment";
 import PaymentInformationDialog from "./PaymentIntegration/PaymentInformation";
 import ConfirmPaymentDialogBox from "./PaymentIntegration/PaymentConfirmationDialog";
+import PaymentSuccessDialogBox from "./PaymentIntegration/PaymentSuccessDialogBox";
 
 const ClinicCards = () => {
     const [clinics, setClinics] = useState([]);
@@ -62,6 +63,8 @@ const ClinicCards = () => {
     });
     const [confirmedAppointmentData, setConfirmedAppointmentData] = useState(null)
     const [submittedPaymentData, setSubmittedPaymentData] = useState(null);
+    const [showSucessfulPaymentDialogBox, setShowSuccessfulPaymentDialogBox] = useState(false);
+
     const navigate = useNavigate();
 
     const retrievePatientData = async (patientID) => {
@@ -268,6 +271,15 @@ const ClinicCards = () => {
         setShowPaymentConfirmationDialogBox(false);
     }
 
+    const handleCloseThePaymentSuccessDialogBox = async () => {
+        setShowSuccessfulPaymentDialogBox(false);
+    }
+
+    const proceedToPaymentSuccessDialogBox = async () => {
+        setShowPaymentConfirmationDialogBox(false);
+        setShowSuccessfulPaymentDialogBox(true);
+    }
+
     return (
         <div className="flex flex-row flex-wrap justify-center gap-6 p-6 from-blue-50 to-blue-100">
             {loading ? (
@@ -387,6 +399,15 @@ const ClinicCards = () => {
                 <ConfirmPaymentDialogBox
                     open={showPaymentConfimationDialogBox}
                     onClose={handleCloseThePaymentConfirmationDialogBox}
+                    paymentData={submittedPaymentData}
+                    onNextStep={proceedToPaymentSuccessDialogBox}
+                />
+            )}
+
+            {showSucessfulPaymentDialogBox && (
+                <PaymentSuccessDialogBox
+                    open={showSucessfulPaymentDialogBox}
+                    onClose={handleCloseThePaymentSuccessDialogBox}
                 />
             )}
         </div>

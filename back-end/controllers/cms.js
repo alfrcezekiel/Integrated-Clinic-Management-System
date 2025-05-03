@@ -152,7 +152,7 @@ export const loginPatientsAccount = async (req, res) => {
 
         if (rows.length === 0) {
             return res.status(StatusCodes.UNAUTHORIZED).json({
-                emailMessage: "Invalid Email Address"
+                emailMessage: "Incorrect Email Address"
             });
         }
         const patients = rows[0];
@@ -161,7 +161,7 @@ export const loginPatientsAccount = async (req, res) => {
 
         if (!isPasswordValid) {
             return res.status(StatusCodes.UNAUTHORIZED).json({
-                passwordMessage: "Invalid Password"
+                passwordMessage: "Incorrect Password"
             })
         }
 
@@ -258,12 +258,18 @@ export const loginAdminAccount = async (req, res) => {
 
         const [rows] = await conn.query(query, [email, password]);
 
-        if (!rows.find((row) => row.email === email && row.password === password)) {
+        if (!rows.find((row) => row.email === email)) {
             return res.status(StatusCodes.UNAUTHORIZED).json({
-                message: "Invalid email and password"
+                emailMessage: "Invalid Email"
             })
         }
 
+        if(!rows.find((row) => row.password === password)){
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                passwordMessage: "Invalid Password"
+            })
+        }
+        
         const adminUsers = rows[0];
 
         const SECRET_KEY = process.env.JWT_SECRET
@@ -1070,7 +1076,7 @@ export const loggedInClinicAccount = async (req, res) => {
 
         if (rows.length === 0) {
             return res.status(StatusCodes.UNAUTHORIZED).json({
-                message: "Invalid email"
+                emailMessage: "Incorrect email"
             })
         }
 
@@ -1086,7 +1092,7 @@ export const loggedInClinicAccount = async (req, res) => {
         const isPasswordValid = await bcrypt.compare(password, clinicUsers.password);
         if (!isPasswordValid) {
             return res.status(StatusCodes.UNAUTHORIZED).json({
-                message: "Invalid Password"
+                passwordMessage: "Incorrect Password"
             })
         }
 
@@ -1338,6 +1344,7 @@ export const getDeclinedAppointmentStatusInClinic = async (req, res) => {
             p.lastName,
             p.email,
             p.appointmentDate,
+            p.preferredTime,
             p.gender,
             p.phoneNumber,
             p.status,
@@ -1734,7 +1741,7 @@ export const retrievePatientDetailsInPaymentDialog = async (req, res) => {
         }
 
         return res.status(StatusCodes.OK).json({
-            patientDetails: result[0]
+            patientDetails: result
         })
     } catch (error) {
         console.error(`Failed to retrieve patient details in payment dialog by retrievePatientDetailsInPaymentDialog controller: ${error}`);
@@ -1757,16 +1764,22 @@ export const retrievedPaymentConfirmedDetails = async (req, res) => {
 
         const patient_id = parseInt(patientID, 10);
 
+        if(isNaN(patient_id)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid patient ID format"
+            })
+        }
+        
         const result = await new Clinic().retrievedConfirmedPaymentDetails(patient_id);
 
-        if (!result.length) {
+        if (result.length === 0) {
             return res.status(StatusCodes.NOT_FOUND).json({
                 message: "No payment confirmation details found"
-            })
+            });
         }
 
         return res.status(StatusCodes.OK).json({
-            paymentConfirmationDetails: result[0]
+            paymentConfirmationDetails: result
         })
     } catch (error) {
         console.error(`Failed to retrieve payment confirmation details function controller: ${error}`);

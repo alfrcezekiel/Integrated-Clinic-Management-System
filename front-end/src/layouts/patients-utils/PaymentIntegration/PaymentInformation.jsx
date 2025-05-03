@@ -49,9 +49,10 @@ const PaymentInformationDialog = ({ open, onBack, onNextStep }) => {
 
                     setPaymentFormData((prevData) => ({
                         ...prevData,
-                        firstName: patientDetails.firstName,
-                        lastName: patientDetails.lastName,
-                        email: patientDetails.email,
+                        firstName: patientDetails.at(-1)?.firstName,
+                        lastName: patientDetails.at(-1)?.lastName,
+                        email: patientDetails.at(-1)?.email,
+                        amount: patientDetails.at(-1)?.consultation_fee
                     }))
                 }
             } catch (error) {
@@ -67,10 +68,19 @@ const PaymentInformationDialog = ({ open, onBack, onNextStep }) => {
     const handlePaymentChange = async (e) => {
         const { name, value } = e.target;
 
-            setPaymentFormData((prevData) => ({
-                ...prevData,
-                [name]: value,
-            }))
+        let updatedValue = value;
+
+        if(name === "cardNumber"){
+            const rawValue = value.replace(/\D/g, "")
+
+            updatedValue = rawValue.match(/.{1,4}/g)?.join(" ").slice(0, 19);
+            
+        }
+        
+        setPaymentFormData((prevData) => ({
+            ...prevData,
+            [name]: updatedValue,
+        }))
     }
 
     const handlePaymentSubmit = async (e) => {
@@ -94,7 +104,7 @@ const PaymentInformationDialog = ({ open, onBack, onNextStep }) => {
 
             if (paymentFormData.modeOfPayment === "Card") {
                 Object.assign(payload, {
-                    cardNumber: paymentFormData.cardNumber,
+                    cardNumber: paymentFormData.cardNumber.replace(/\s/g, ""),
                     cardHolderName: paymentFormData.cardHolderName,
                     expiryDate: paymentFormData.expiryDate,
                     cvv: paymentFormData.cvv,
@@ -170,6 +180,22 @@ const PaymentInformationDialog = ({ open, onBack, onNextStep }) => {
                                 value={paymentFormData.amount}
                                 variant="outlined"
                                 onChange={handlePaymentChange}
+                                disabled
+                                slotProps={{
+                                    input: {
+                                        style: { color: "gray" },
+                                    },
+                                    root: {
+                                        sx: {
+                                            "& .MuiInputLabel-root": {
+                                                color: "gray",
+                                            },
+                                            "& .Mui-disabled": {
+                                                WebkitTextFillColor: "black !important",
+                                            },
+                                        }
+                                    }
+                                }}
                             />
                         </div>
 
@@ -181,10 +207,15 @@ const PaymentInformationDialog = ({ open, onBack, onNextStep }) => {
                                         fullWidth
                                         label="Enter Card Number"
                                         placeholder="1234 5678 9012 3456"
-                                        type="number"
+                                        type="text"
                                         name="cardNumber"
                                         value={paymentFormData.cardNumber}
                                         onChange={handlePaymentChange}
+                                        slotProps={{
+                                            input: {
+                                                maxLength: 19
+                                            }
+                                        }}
                                     />
                                 </div>
                                 <div className="flex flex-col md:flex-row gap-4">
@@ -255,7 +286,7 @@ const PaymentInformationDialog = ({ open, onBack, onNextStep }) => {
                                 <div className="w-full md:w-1/1">
                                     <TextField
                                         fullWidth
-                                        label="Enetr Last Name"
+                                        label="Enter Last Name"
                                         type="text"
                                         placeholder="Enter Last Name"
                                         name="lastName"
@@ -279,7 +310,11 @@ const PaymentInformationDialog = ({ open, onBack, onNextStep }) => {
                     </div>
                 </DialogContent>
                 <DialogActions>
-                    <Button variant="outlined" color="secondary" onClick={onBack}>
+                    <Button 
+                        variant="outlined"
+                        onClick={onBack}
+                        className="text-black"
+                    >
                         Back
                     </Button>
                     <Button
