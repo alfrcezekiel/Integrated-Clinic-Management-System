@@ -268,7 +268,28 @@ const ClinicCards = () => {
     }
 
     const handleCloseThePaymentConfirmationDialogBox = async () => {
-        setShowPaymentConfirmationDialogBox(false);
+        try {
+            const patientID = localStorage.getItem("sid");
+
+            if(!patientID) {
+                console.error("Payment ID is not available.");
+                return;
+            }
+
+            const response = await CMS.put(`/CMS/patients-dashboard/cancelPaymentDetails/${patientID}`, {patientID}, {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if(response.status === 200){
+                alert("Payment Details Cancelled Successfully!");
+            }
+        } catch (error) {
+            console.error(`Failed to close the payment confirmation dialog box: ${error}`);
+        } finally {
+            setShowPaymentConfirmationDialogBox(false);
+        }
     }
 
     const handleCloseThePaymentSuccessDialogBox = async () => {

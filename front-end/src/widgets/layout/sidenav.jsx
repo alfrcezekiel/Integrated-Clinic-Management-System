@@ -36,6 +36,10 @@ const SideNav = ({ brandName, routes }) => {
     const handleClinicClick = () => {
         setClinicOpen(!clinicOpen);
     }
+    const [appointmentHistoryOpen, setAppointmentHistoryOpen] = useState(false);
+    const handleAppointmentHistoryClick = async () => {
+        setAppointmentHistoryOpen(!appointmentHistoryOpen);
+    }
 
     return (
         <Drawer
@@ -63,7 +67,7 @@ const SideNav = ({ brandName, routes }) => {
                                 className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-white" : "text-gray-700 hover:bg-gray-100"}`}
                             >
                                 {icon}
-                                <Typography className="text-black mx-2">{name}</Typography>
+                                <Typography sx={{marginLeft: 1}} className="text-black">{name}</Typography>
                             </NavLink>
                         ))}
                     </div>
@@ -179,6 +183,13 @@ const SideNav = ({ brandName, routes }) => {
                             ))}
                         </List>
                     </Collapse>
+                </List>
+                <div className="h-4"></div>
+                <List className="bg-white shadow-lg rounded-2xl">
+                    <ListItemButton onClick={handleAppointmentHistoryClick}>
+                        <ListItemText primary="Appointment History" />
+                        {appointmentHistoryOpen ? <ExpandLess /> : <ExpandMore />}
+                    </ListItemButton>
                 </List>
             </nav>
         </Drawer>

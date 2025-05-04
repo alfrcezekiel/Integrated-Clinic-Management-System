@@ -27,7 +27,8 @@ app.use(session({
         secure:false,
         httpOnly:true,
         maxAge: 1000 * 60 * 60 * 24
-    }
+    },
+    sameSite: "lax"
 }))
 app.use(express.json());
 app.use(bodyParser.json());
@@ -40,7 +41,7 @@ const clinicImagesPath = path.join(__dirname, "uploads");
 app.use(express.static(clinicImagesPath));
 app.use(cors({
     origin: "http://localhost:5173",
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
 }))
 // route for CMS

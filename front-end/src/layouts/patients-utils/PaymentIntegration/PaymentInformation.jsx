@@ -29,7 +29,19 @@ const PaymentInformationDialog = ({ open, onBack, onNextStep }) => {
         expiryDate: "",
         cvv: ""
     })
-
+    const [errorPayment, setErrorPayment] = useState({
+        modeOfPayment: "",
+        amount: "",
+        appointmentID: "",
+        firstName: "",
+        lastName: "",
+        email: "",
+        cardNumber: "",
+        cardHolderName: "",
+        expiryDate: "",
+        cvv: ""
+    })
+    
     useEffect(() => {
         // this function is used to retrieve the patient details to render in the payment information dialog box input fields
         const retrievePatientDetailsToRenderInPaymentInformationDialogBox = async () => {
@@ -62,25 +74,37 @@ const PaymentInformationDialog = ({ open, onBack, onNextStep }) => {
         
         if (open) {
             retrievePatientDetailsToRenderInPaymentInformationDialogBox();
+            setErrorPayment({});
         }
     }, [open])
 
     const handlePaymentChange = async (e) => {
         const { name, value } = e.target;
 
-        let updatedValue = value;
+        let formattedValue = value;
 
-        if(name === "cardNumber"){
-            const rawValue = value.replace(/\D/g, "")
+        if (name === "cardNumber") {
+            // Remove all non-digit characters
+            const digitsOnly = value.replace(/\D/g, "");
 
-            updatedValue = rawValue.match(/.{1,4}/g)?.join(" ").slice(0, 19);
-            
+            // Limit to max 16 digits
+            const trimmed = digitsOnly.substring(0, 16);
+
+            // Add space every 4 digits (e.g., 1234 5678 9012 3456)
+            formattedValue = trimmed.replace(/(.{4})/g, "$1 ").trim();
         }
-        
+
         setPaymentFormData((prevData) => ({
             ...prevData,
-            [name]: updatedValue,
+            [name]: formattedValue,
         }))
+
+        if(errorPayment[name]) {
+            setErrorPayment((prevError) => ({
+                ...prevError,
+                [name]: "",
+            }))
+        }
     }
 
     const handlePaymentSubmit = async (e) => {
@@ -139,7 +163,11 @@ const PaymentInformationDialog = ({ open, onBack, onNextStep }) => {
             }
 
         } catch (error) {
-            console.error(`Error submitting payment: ${error}`);
+            if(error.response && error.response.status === 400) {
+                setErrorPayment(error.response.data.errors)
+            } else {
+                console.error(`Error submitting payment: ${error}`);
+            }
         }
     }
 
@@ -154,12 +182,15 @@ const PaymentInformationDialog = ({ open, onBack, onNextStep }) => {
                             <TextField
                                 fullWidth
                                 select
-                                label="Choose Mode of Payment"
+                                label="Select Mode of Payment"
                                 name="modeOfPayment"
+                                placeholder="Select Mode of Payment"
                                 value={paymentFormData.modeOfPayment}
                                 onChange={handlePaymentChange}
                                 variant="outlined"
                                 className="text-black"
+                                error={!!errorPayment.modeOfPayment}
+                                helperText={errorPayment.modeOfPayment}
                             >
                                 {modeOfPayment.map((mode) => (
                                     <MenuItem key={mode} value={mode}>
@@ -181,6 +212,8 @@ const PaymentInformationDialog = ({ open, onBack, onNextStep }) => {
                                 variant="outlined"
                                 onChange={handlePaymentChange}
                                 disabled
+                                error={!!errorPayment.amount}
+                                helperText={errorPayment.amount}
                                 slotProps={{
                                     input: {
                                         style: { color: "gray" },
@@ -211,6 +244,8 @@ const PaymentInformationDialog = ({ open, onBack, onNextStep }) => {
                                         name="cardNumber"
                                         value={paymentFormData.cardNumber}
                                         onChange={handlePaymentChange}
+                                        error={!!errorPayment.cardNumber}
+                                        helperText={errorPayment.cardNumber}
                                         slotProps={{
                                             input: {
                                                 maxLength: 19
@@ -228,6 +263,8 @@ const PaymentInformationDialog = ({ open, onBack, onNextStep }) => {
                                             name="cardHolderName"
                                             value={paymentFormData.cardHolderName}
                                             onChange={handlePaymentChange}
+                                            error={!!errorPayment.cardHolderName}
+                                            helperText={errorPayment.cardHolderName}
                                         />
                                     </div>
                                     <div className="w-full md:w-1/2">
@@ -236,6 +273,8 @@ const PaymentInformationDialog = ({ open, onBack, onNextStep }) => {
                                             label="Enter Email"
                                             placeholder="example@email.com"
                                             type="text"
+                                            error={!!errorPayment.email}
+                                            helperText={errorPayment.email}
                                             name="email"
                                             value={paymentFormData.email}
                                             onChange={handlePaymentChange}
@@ -246,9 +285,11 @@ const PaymentInformationDialog = ({ open, onBack, onNextStep }) => {
                                     <div className="w-full md:w-1/2">
                                         <TextField
                                             fullWidth
-                                            label="Expiry Date"
+                                            label="Enter Expiry Date"
                                             placeholder="MM/YY"
                                             type="text"
+                                            error={!!errorPayment.expiryDate}
+                                            helperText={errorPayment.expiryDate}
                                             name="expiryDate"
                                             value={paymentFormData.expiryDate}
                                             onChange={handlePaymentChange}
@@ -259,6 +300,8 @@ const PaymentInformationDialog = ({ open, onBack, onNextStep }) => {
                                             fullWidth
                                             label="Enter CVV"
                                             placeholder="123"
+                                            error={!!errorPayment.cvv}
+                                            helperText={errorPayment.cvv}
                                             type="number"
                                             name="cvv"
                                             value={paymentFormData.cvv}
@@ -278,6 +321,8 @@ const PaymentInformationDialog = ({ open, onBack, onNextStep }) => {
                                         label="Enter First Name"
                                         placeholder="Enter First Name"
                                         name="firstName"
+                                        error={!!errorPayment.firstName}
+                                        helperText={errorPayment.firstName}
                                         type="text"
                                         value={paymentFormData.firstName}
                                         onChange={handlePaymentChange}
@@ -287,6 +332,8 @@ const PaymentInformationDialog = ({ open, onBack, onNextStep }) => {
                                     <TextField
                                         fullWidth
                                         label="Enter Last Name"
+                                        error={!!errorPayment.lastName}
+                                        helperText={errorPayment.lastName}
                                         type="text"
                                         placeholder="Enter Last Name"
                                         name="lastName"
@@ -299,6 +346,8 @@ const PaymentInformationDialog = ({ open, onBack, onNextStep }) => {
                                         fullWidth
                                         label="Enter Email"
                                         placeholder="Enter Email"
+                                        error={!!errorPayment.email}
+                                        helperText={errorPayment.email}
                                         type="text"
                                         name="email"
                                         value={paymentFormData.email}

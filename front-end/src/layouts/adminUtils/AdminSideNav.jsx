@@ -43,8 +43,8 @@ const AdminSideNav = ({ brandName, routes }) => {
             classes={{ paper: isMobile ? "bg-white w-72 shadow-md" : "w-72 bg-white shadow-md" }}
         >
             <div className="relative p-6">
-                <Link to={"/admin-dashboard/home"}>
-                    <Typography variant="h6" className="text-gray-500">
+                <Link to={"/admin-dashboard/home"} className="text-black">
+                    <Typography variant="h6">
                         {brandName}
                     </Typography>
                 </Link>
@@ -62,7 +62,7 @@ const AdminSideNav = ({ brandName, routes }) => {
                                     className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-white" : "text-gray-700 hover:bg-gray-100"}`}
                                 >
                                     {icon}
-                                    <Typography sx={{ ml: 2 }}>{name}</Typography>
+                                    <Typography sx={{ ml: 2 }} className="text-black">{name}</Typography>
                                 </NavLink>
                             ))}
                     </div>

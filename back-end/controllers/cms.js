@@ -97,7 +97,7 @@ export const registerPatientAccount = async (req, res) => {
             status
         ]);
 
-        const token = jwt.sign({ id: patientID, email: email }, SECRET_KEY || "sadadsasdd", { expiresIn: "1hr" });
+        const token = jwt.sign({ id: patientID, email: email }, SECRET_KEY, { expiresIn: "1hr" });
         return res.status(StatusCodes.OK).json({
             message: "Patient account registered successfully. Your Account is Pending. Please wait for the admin approval",
             token
@@ -144,7 +144,7 @@ export const loginPatientsAccount = async (req, res) => {
             patientsregisteraccount2.status
             FROM patientsregisteraccount1
             INNER JOIN patientsregisteraccount2
-            ON patientsregisteraccount1.patientID = patientsregisteraccount2.registerPatientID
+            ON patientsregisteraccount1.patientID = patientsregisteraccount2.patientID
             WHERE patientsregisteraccount1.email = ?;
         `;
 
@@ -174,7 +174,7 @@ export const loginPatientsAccount = async (req, res) => {
         const token = jwt.sign({ id: patients.patientID }, SECRET_KEY, { expiresIn: "1hr" });
 
         // session token
-        const s = req.session.user = {
+        req.session.user = {
             patientID: patients.patientID,
             sfn: patients.firstName,
             sln: patients.lastName,
@@ -184,7 +184,7 @@ export const loginPatientsAccount = async (req, res) => {
         return res.status(StatusCodes.OK).json({
             message: "Login successful",
             token: token,
-            sid: s
+            sid: req.session.user,
         })
     } catch (error) {
         console.error(`Failed to login patient account: ${error}`);
@@ -304,10 +304,11 @@ export const getLoggedInUser = (req, res) => {
 
     return res.status(StatusCodes.OK).json({
         message: "User session retrieved successfully",
-        user: req.session.user
+        sid: req.session.user
     });
 };
 
+// controller logic for checking if the user is authenticated
 export const requireLogin = (req, res, next) => {
     if (!req.session.user) {
         return res.status(StatusCodes.UNAUTHORIZED).json({
@@ -1785,6 +1786,38 @@ export const retrievedPaymentConfirmedDetails = async (req, res) => {
         console.error(`Failed to retrieve payment confirmation details function controller: ${error}`);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             message: "Failed to retrieve payment confirmation details"
+        })
+    }
+}
+
+// controller logic to delete the payment details when the patient clicked the cancel payment
+export const cancelledPaymentDetails = async (req, res) => {
+    try {
+        const { paymentID } = req.params;
+
+        const payment_id = parseInt(paymentID, 10);
+
+        if (isNaN(payment_id)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid payment ID format"
+            })
+        }
+
+        const result = new Clinic().cancelledPaymentDetailsInConfirmedPaymentDialog(payment_id);
+
+        if (result.affectedRows === 0) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No payment details found has been cancelled"
+            })
+        }
+
+        return res.status(StatusCodes.OK).json({
+            message: "Payment details cancelled successfully"
+        })
+    } catch (error){
+        console.error(`Failed to cancelled payment details in controller function: ${error}`)
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to cancelled payment details"
         })
     }
 }

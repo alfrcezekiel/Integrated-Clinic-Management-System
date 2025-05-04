@@ -34,13 +34,13 @@ export default function Loader() {
             <div className="flex items-center justify-center h-screen bg-purple-400">
                 {loading ? (
                     <div className="flex flex-col items-center">
-                        <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent border-solid rounded-full animate-spin"></div>
-                        <p className="mt-2 text-purple-500">Loading</p>
+                        <div className="w-12 h-12 border-4 border-purple-600 border-t-transparent border-solid rounded-full animate-spin"></div>
+                        <p className="mt-2 text-white">Loading</p>
                     </div>
                 ) : (
                     <div className="flex flex-col items-center">
                         <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent border-solid rounded-full"></div>
-                        <p className="mt-2 text-white-200">Loading</p>
+                        <p className="mt-2 text-white">Loading</p>
                     </div>
                 )}
             </div>

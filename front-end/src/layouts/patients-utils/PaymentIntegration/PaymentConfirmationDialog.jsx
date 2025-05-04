@@ -15,6 +15,7 @@ import CMS from "../../../API/CMS";
 
 const ConfirmPaymentDialogBox = ({ open, onClose, onNextStep }) => {
     const [paymentData, setPaymentData] = useState({
+        id: "",
         mode_of_payment: "",
         payment_status: "",
         payment_date: "",
@@ -62,6 +63,7 @@ const ConfirmPaymentDialogBox = ({ open, onClose, onNextStep }) => {
     
                     setPaymentData((prev) => ({
                         ...prev,
+                        id: paymentDetails.at(-1)?.id,
                         amount: paymentDetails.at(-1)?.amount,
                         first_name: paymentDetails.at(-1)?.first_name,
                         last_name: paymentDetails.at(-1)?.last_name,
@@ -87,7 +89,18 @@ const ConfirmPaymentDialogBox = ({ open, onClose, onNextStep }) => {
     }, [open, onNextStep]);
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+        <Dialog
+            open={open}
+            onClose={(e, reason) => {
+                e.preventDefault();
+                if (reason !== "backdropClick" && reason !== "escapeKeyDown") {
+                    onClose();
+                }
+            }}
+            disableEscapeKeyDown
+            maxWidth="sm"
+            fullWidth
+        >
             <div className="bg-white rounded-xl shadow-lg w-full">
                 <DialogTitle className="text-2xl font-semibold text-center">
                     Confirmed Your Payment
@@ -168,10 +181,21 @@ const ConfirmPaymentDialogBox = ({ open, onClose, onNextStep }) => {
                     )}
 
                     {paymentData?.amount && (
-                        <div className="flex justify-between items-center mb-6">
-                            <span className="text-lg font-semibold">Total Amount:</span>
-                            <span className="text-xl font-bold text-green-600">₱{paymentData.amount.toFixed(2)}</span>
-                        </div>
+                        <>
+                            <div className="flex justify-between items-center mb-6">
+                                <span className="text-lg font-semibold">Total Amount:</span>
+                                <span className="text-xl font-bold text-green-600">₱{paymentData.amount.toFixed(2)}</span>
+                            </div>
+
+                            <div className="text-center text-black mt-4 space-y-2">
+                                <p className="font-medium">
+                                    Your payment has been successfully processed. Please keep a copy of your payment confirmation for reference.
+                                </p>
+                                <p className="font-medium">
+                                    We kindly ask that you arrive at the clinic 15 - 30 minutes early on the day of your appointment to allow for check-in and any necessary preparations.
+                                </p>
+                            </div>
+                        </>
                     )}
                 </DialogContent>
 

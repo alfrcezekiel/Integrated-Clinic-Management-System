@@ -177,6 +177,7 @@ class Clinic {
             const mode_placeholders = methodOfPayment.map(() => "?").join(", ")
             const query = `
                 SELECT
+                pp.id,
                 pp.amount,
                 pp.first_name,
                 pp.last_name,
@@ -210,6 +211,29 @@ class Clinic {
             return rows;
         } catch (error) {
             console.error("Error retrieving patients details in retrievedConfirmedPaymentDetails model function:", error);
+            throw error;
+        }
+    }
+
+    cancelledPaymentDetailsInConfirmedPaymentDialog = async (paymentID) => {
+        try {
+            const paymentStatus = "Non Paid"
+            const query = `
+                UPDATE patientspayment
+                SET payment_status = ?
+                WHERE patient_id = ?;
+            `
+
+            const value = [
+                paymentStatus,
+                paymentID
+            ]
+
+            const [result] = await conn.query(query, value);
+
+            return result;
+        } catch (error) {
+            console.error("Error cancelling patients details in retrievedConfirmedPaymentDetails model function:", error);
             throw error;
         }
     }

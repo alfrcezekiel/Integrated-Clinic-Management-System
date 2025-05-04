@@ -6,13 +6,13 @@ const Footer = ({ brandName, brandLink }) => {
 
     return (
         <footer className='p-2 relative'>
-            <div className='flex w-full flex-wrap items-center justify-center gap-6 px-2 md:justify-center'>
+            <div className='flex flex-wrap items-center justify-center gap-6 px-2 md:justify-center'>
                 <Typography variant="paragraph" className="text-inherit text-center">
                     <Link
                         href={brandLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="hover:text-blue-500 font-bold text-center"
+                        className="hover:text-blue-500 font-bold text-center no-underline"
                     >
                         {brandName} &copy;  <span className="text-black"> {year} | All Rights Reserved</span>
                     </Link>
