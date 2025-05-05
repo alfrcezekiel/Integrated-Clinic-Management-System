@@ -484,7 +484,7 @@ export const verifyToken = (req, res, next) => {
 // controller logic for getting patients appointments to display in table rows
 export const getPatientsAppointments = async (req, res) => {
     try {
-        const query = `SELECT 
+        const query = `SELECT
             firstName,
             lastName,
             email,
@@ -1071,7 +1071,15 @@ export const getPatientPendingStatus = async (req, res) => {
 export const loggedInClinicAccount = async (req, res) => {
     const { email, password } = req.body;
     try {
-        const query = `SELECT clinic_id, clinic_name, email, password FROM clinic WHERE email = ?;`;
+        const query = `
+            SELECT 
+            clinic_id,
+            clinic_name,
+            email,
+            password
+            FROM
+            clinic
+            WHERE email = ?;`;
 
         const [rows] = await conn.query(query, [email]);
 

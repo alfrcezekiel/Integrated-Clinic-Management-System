@@ -54,7 +54,7 @@ const DoctorsSideNav = ({ brandName, routes }) => {
         >
             <div className="relative p-6">
                 <Link to={"/doctor-portal/dashboard/home"}>
-                    <Typography variant="h5" className="text-gray-900 text-center">
+                    <Typography variant="h5" className="text-black text-center">
                         {brandName}
                     </Typography>
                 </Link>
@@ -72,7 +72,7 @@ const DoctorsSideNav = ({ brandName, routes }) => {
                                     className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-white" : "text-gray-700 hover:bg-gray-100"}`}
                                 >
                                     {icon}
-                                    <Typography sx={{ ml: 2 }}>{name}</Typography>
+                                    <Typography sx={{ ml: 2 }} className="text-black">{name}</Typography>
                                 </NavLink>
                             ))}
                     </div>

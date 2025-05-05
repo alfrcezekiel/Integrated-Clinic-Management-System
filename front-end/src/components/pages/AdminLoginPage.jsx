@@ -83,6 +83,7 @@ function AdminLoginPage() {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
                 },
+                withCredentials: true,
             });
 
             if (response.data && response.status === 200) {
