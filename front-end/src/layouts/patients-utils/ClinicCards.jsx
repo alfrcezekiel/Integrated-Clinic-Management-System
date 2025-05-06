@@ -11,7 +11,12 @@ import {
     Button,
     CardMedia,
     ImageList,
-    ImageListItem
+    ImageListItem,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+
 } from "@mui/material";
 import CMS from "../../API/CMS";
 import LocationOn from "@mui/icons-material/LocationOn";
@@ -29,16 +34,12 @@ import {
     useNavigate
 } from "react-router-dom";
 import ConfirmAppointmentModal from "./ConfirmBookedAppointment";
-import PaymentInformationDialog from "./PaymentIntegration/PaymentInformation";
-import ConfirmPaymentDialogBox from "./PaymentIntegration/PaymentConfirmationDialog";
-import PaymentSuccessDialogBox from "./PaymentIntegration/PaymentSuccessDialogBox";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 
 const ClinicCards = () => {
     const [clinics, setClinics] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showConfirmedBookAppointmentModal, setShowConfirmedBookAppointmentModal] = useState(false);
-    const [showPaymentInformationDialogBox, setShowPaymentInformationDialogBox] = useState(false);
-    const [showPaymentConfimationDialogBox, setShowPaymentConfirmationDialogBox] = useState(false);
     const [selectedClinic, setSelectedClinic] = useState(null);
     const [appointmentData, setAppointmentData] = useState({
         firstName: "",
@@ -62,8 +63,7 @@ const ClinicCards = () => {
         purposeOfAppointment: ""
     });
     const [confirmedAppointmentData, setConfirmedAppointmentData] = useState(null)
-    const [submittedPaymentData, setSubmittedPaymentData] = useState(null);
-    const [showSucessfulPaymentDialogBox, setShowSuccessfulPaymentDialogBox] = useState(false);
+    const [showSuccessConfirmedBookedAppointmentDialogBox, setShowSuccessConfirmedBookedAppointmentDialogBox] = useState(false);
 
     const navigate = useNavigate();
 
@@ -161,7 +161,7 @@ const ClinicCards = () => {
         setSelectedClinic(null);
         setFieldErrors({})
     };
-    
+
     const formatDate = (dateString) => {
         const date = new Date(dateString);
         return date.toLocaleDateString("en-US", {
@@ -248,57 +248,13 @@ const ClinicCards = () => {
         handleCloseConfirmedBookedAppointmentModal()
     }, []);
 
-    const handleCallBackProceedToPaymentDialog = useCallback(async () => {
-        const handleProceedToPaymentDialog = async () => {
-            setShowPaymentInformationDialogBox(true);
-            setShowConfirmedBookAppointmentModal(false);
-        }
-        handleProceedToPaymentDialog()
-    }, [])
-
-    const handleBackToConfirmedBookedAppointmentDialog = async () => {
-        setShowPaymentInformationDialogBox(false);
-        setShowConfirmedBookAppointmentModal(true);
+    const handleCloseConfirmedBookedAppointmentSuccessDialogBox = async () => {
+        setShowSuccessConfirmedBookedAppointmentDialogBox(false);
     }
 
-    const proceedToPaymentConfirmationDialogBox = async (paymentData) => {
-        setSubmittedPaymentData(paymentData);
-        setShowPaymentConfirmationDialogBox(true);
-        setShowPaymentInformationDialogBox(false);
-    }
-
-    const handleCloseThePaymentConfirmationDialogBox = async () => {
-        try {
-            const patientID = localStorage.getItem("sid");
-
-            if(!patientID) {
-                console.error("Payment ID is not available.");
-                return;
-            }
-
-            const response = await CMS.put(`/CMS/patients-dashboard/cancelPaymentDetails/${patientID}`, {patientID}, {
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            });
-
-            if(response.status === 200){
-                alert("Payment Details Cancelled Successfully!");
-            }
-        } catch (error) {
-            console.error(`Failed to close the payment confirmation dialog box: ${error}`);
-        } finally {
-            setShowPaymentConfirmationDialogBox(false);
-        }
-    }
-
-    const handleCloseThePaymentSuccessDialogBox = async () => {
-        setShowSuccessfulPaymentDialogBox(false);
-    }
-
-    const proceedToPaymentSuccessDialogBox = async () => {
-        setShowPaymentConfirmationDialogBox(false);
-        setShowSuccessfulPaymentDialogBox(true);
+    const proceedToConfirmedBookedAppointmentSuccessDialogBox = async () => {
+        setShowConfirmedBookAppointmentModal(false);
+        setShowSuccessConfirmedBookedAppointmentDialogBox(true);
     }
 
     return (
@@ -403,33 +359,37 @@ const ClinicCards = () => {
                 <ConfirmAppointmentModal
                     open={showConfirmedBookAppointmentModal}
                     onClose={handleCallbackCloseConfirmedBookedAppointmentModal}
+                    onNextStep={proceedToConfirmedBookedAppointmentSuccessDialogBox}
                     patientsData={confirmedAppointmentData}
-                    onNextStep={handleCallBackProceedToPaymentDialog}
                 />
             )}
 
-            {showPaymentInformationDialogBox && (
-                <PaymentInformationDialog
-                    open={showPaymentInformationDialogBox}
-                    onBack={handleBackToConfirmedBookedAppointmentDialog}
-                    onNextStep={() => proceedToPaymentConfirmationDialogBox(submittedPaymentData)}
-                />
-            )}
-
-            {showPaymentConfimationDialogBox && (
-                <ConfirmPaymentDialogBox
-                    open={showPaymentConfimationDialogBox}
-                    onClose={handleCloseThePaymentConfirmationDialogBox}
-                    paymentData={submittedPaymentData}
-                    onNextStep={proceedToPaymentSuccessDialogBox}
-                />
-            )}
-
-            {showSucessfulPaymentDialogBox && (
-                <PaymentSuccessDialogBox
-                    open={showSucessfulPaymentDialogBox}
-                    onClose={handleCloseThePaymentSuccessDialogBox}
-                />
+            {showSuccessConfirmedBookedAppointmentDialogBox && (
+                <Dialog open={showSuccessConfirmedBookedAppointmentDialogBox} onClose={handleCloseConfirmedBookedAppointmentSuccessDialogBox} maxWidth="xs" fullWidth>
+                    <div className="relative p-4">
+                        <div className="flex flex-col items-center text-center p-6">
+                            <CheckCircleOutlineIcon className="text-green-500 text-2xl" />
+                            <DialogTitle className="text-lg font-semibold text-black">
+                                Confirmed Booked Appointment Successful!
+                            </DialogTitle>
+                            <DialogContent className="px-2">
+                                <Typography className="text-gray-600">
+                                    Thank you! Your appointment  was processed successfully.
+                                </Typography>
+                            </DialogContent>
+                            <DialogActions className="mt-1">
+                                <Button
+                                    onClick={handleCloseConfirmedBookedAppointmentSuccessDialogBox}
+                                    variant="contained"
+                                    color="success"
+                                    className="w-full"
+                                >
+                                    Okay
+                                </Button>
+                            </DialogActions>
+                        </div>
+                    </div>
+                </Dialog>
             )}
         </div>
     );

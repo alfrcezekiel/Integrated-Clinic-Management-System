@@ -71,13 +71,13 @@ const DoctorsDashboardNavbar = () => {
                     <IconButton onClick={() => setOpenSideNav(dispatch, !openSideNav)}>
                         <MenuIcon />
                     </IconButton>
-                    <Breadcrumbs className="text-gray-600">
-                        <Link to={`/${layout}/dashboard/${path}`} className="text-blue-500 no-underline">
+                    <Breadcrumbs className="text-black">
+                        <Link to={`/${layout}/dashboard/${path}`} className="text-black no-underline">
                             <Typography variant="body1">{layout} / {page}</Typography>
                         </Link>
                     </Breadcrumbs>
                     <Outlet />
-                    <Typography variant="body2" className="text-gray-600">
+                    <Typography variant="body2" className="text-black">
                         / {path}
                     </Typography>
                 </div>

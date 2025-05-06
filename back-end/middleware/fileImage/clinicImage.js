@@ -14,7 +14,7 @@ const storage = multer.diskStorage({
 
 const fileFilter = (_req, file, cb) => {
     if(file.mimetype.startsWith('image/')){
-        cb(null, true);
+        cb(null, true)
     } else {
         cb(new multer.MulterError("LIMIT_UNEXPECTED_FILE", "Please upload an image file"), false);
     }

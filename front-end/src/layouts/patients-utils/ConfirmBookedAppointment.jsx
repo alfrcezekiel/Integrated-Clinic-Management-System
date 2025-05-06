@@ -76,7 +76,7 @@ const ConfirmAppointmentModal = ({ open, onClose, patientsData, onNextStep }) =>
                     Back
                 </Button>
                 <Button variant="contained" color="primary" onClick={onNextStep}>
-                    Proceed To Payment
+                    Confirmed Booked Appointment
                 </Button>
             </DialogActions>
         </Dialog>

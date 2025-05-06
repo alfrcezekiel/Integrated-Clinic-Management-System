@@ -141,19 +141,19 @@ const DoctorsTablesListOfAppointments = () => {
         }
     };
 
-    const handleAppointmentDateChange = async (newValue) => {
+    const handleCallbackAppointmentDateChange = useCallback((newValue) => {
         setFormData((prev) => ({
             ...prev,
-            appointmentDate: newValue && dayjs(newValue) ? newValue : ""
+            appointmentDate: newValue ?? null
         }));
 
         if (fieldsError.appointmentDate) {
-            setFieldsError({
-                ...fieldsError,
+            setFieldsError((prev) => ({
+                ...prev,
                 appointmentDate: ""
-            });
+            }));
         }
-    }
+    }, [fieldsError]);
 
     const handleChangeInput = useCallback((e) => {
         if (typeof e === "object" && e !== null && e.target) {
@@ -181,10 +181,10 @@ const DoctorsTablesListOfAppointments = () => {
         })
     };
 
-    const handleTimePickerChange = async (newValue) => {
+    const handleCallbackTimePickerChange = useCallback(async (newValue) => {
         setFormData((prev) => ({
             ...prev,
-            preferredTime: newValue
+            preferredTime: newValue ?? null
         }))
 
         if (fieldsError.preferredTime) {
@@ -193,7 +193,8 @@ const DoctorsTablesListOfAppointments = () => {
                 preferredTime: ""
             })
         }
-    }
+    }, [fieldsError])
+
 
     // this function is used to update the appointment details
     const handleSubmit = async (e) => {
@@ -219,12 +220,12 @@ const DoctorsTablesListOfAppointments = () => {
                 setOpen(false);
                 setSuccessfullAppointmentModalOpen(true);
                 navigate("/doctor-portal/dashboard/approved-appointments");
-            } else if( response.status === 200 && memoizedFormDataValue.status === "Declined") {
+            } else if (response.status === 200 && memoizedFormDataValue.status === "Declined") {
                 setFieldsError({})
                 setOpen(false);
                 setSuccessfullAppointmentModalOpen(true);
                 navigate("/doctor-portal/dashboard/declined-appointments");
-            }else {
+            } else {
                 throw new Error(`Unexpected error in status ${response.status}`)
             }
         } catch (error) {
@@ -441,7 +442,7 @@ const DoctorsTablesListOfAppointments = () => {
                             <DemoContainer components={['DatePicker']}>
                                 <DatePicker
                                     label="Appointment Date"
-                                    onChange={handleAppointmentDateChange}
+                                    onChange={(newValue) => handleCallbackAppointmentDateChange(newValue)}
                                     name="appointmentDate"
                                     autoComplete="off"
                                     slotProps={{
@@ -453,7 +454,7 @@ const DoctorsTablesListOfAppointments = () => {
                                             helperText: fieldsError.appointmentDate ? fieldsError.appointmentDate : null,
                                         },
                                     }}
-                                    value={memoizedFormDataValue.appointmentDate ? dayjs(memoizedFormDataValue.appointmentDate) : null}
+                                    value={memoizedFormDataValue?.appointmentDate !== null ? dayjs(memoizedFormDataValue.appointmentDate) : null}
                                 />
                             </DemoContainer>
                         </LocalizationProvider>
@@ -464,7 +465,7 @@ const DoctorsTablesListOfAppointments = () => {
                                     label="Appointment Time"
                                     fullWidth
                                     name="appointmentTime"
-                                    onChange={(newValue) => handleTimePickerChange(newValue)}
+                                    onChange={(newValue) => handleCallbackTimePickerChange(newValue)}
                                     className="w-full"
                                     autoComplete="off"
                                     slotProps={{
@@ -476,8 +477,7 @@ const DoctorsTablesListOfAppointments = () => {
                                             helperText: fieldsError.preferredTime ? fieldsError.preferredTime : null,
                                         },
                                     }}
-                                    value={memoizedFormDataValue ? dayjs(memoizedFormDataValue.preferredTime) : null}
-                                    format="hh:mm A"
+                                    value={memoizedFormDataValue?.preferredTime !== null ? dayjs(memoizedFormDataValue.preferredTime) : null}
                                 />
                             </DemoContainer>
                         </LocalizationProvider>

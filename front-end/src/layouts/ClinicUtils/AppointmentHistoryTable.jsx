@@ -248,30 +248,30 @@ const AppointmentHistoryTable = () => {
                             <div className="space-y-6 p-2">
                                 {/* Patient Information */}
                                 <section className="bg-white p-4 rounded-xl shadow-lg mt-3">
-                                    <h3 className="text-lg font-semibold text-blue-700 mb-2">Patient Information</h3>
+                                    <h3 className="text-lg font-semibold text-black mb-3">Patient Information</h3>
                                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm text-gray-700">
-                                        <div>
-                                            <strong>First Name:</strong>
+                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                            <strong>First Name: </strong>
                                             {selectedPatient.firstName}
                                         </div>
-                                        <div>
-                                            <strong>Last Name:</strong>
+                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                            <strong>Last Name: </strong>
                                             {selectedPatient.lastName}
                                         </div>
-                                        <div>
-                                            <strong>Email:</strong>
+                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                            <strong>Email: </strong>
                                             {selectedPatient.email}
                                         </div>
-                                        <div>
-                                            <strong>Phone Number:</strong>
+                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                            <strong>Phone Number: </strong>
                                             {selectedPatient.phoneNumber}
                                         </div>
-                                        <div>
-                                            <strong>Appointment Date:</strong>
+                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                            <strong>Appointment Date: </strong>
                                             {dateFormat(selectedPatient.appointmentDate)}
                                         </div>
-                                        <div>
-                                            <strong>Appointment Time:</strong>
+                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                            <strong>Appointment Time: </strong>
                                             {formatTimeToAMPM(selectedPatient.preferredTime)}
                                         </div>
                                     </div>
@@ -279,37 +279,67 @@ const AppointmentHistoryTable = () => {
 
                                 {/* Medical History */}
                                 <section className="bg-white p-4 rounded-xl shadow-lg">
-                                    <h3 className="text-lg font-semibold text-blue-700 mb-2">Medical History</h3>
+                                    <h3 className="text-lg font-semibold text-black mb-3">Medical History</h3>
                                     <div className="grid grid-cols-2 gap-4 text-sm text-gray-700">
-                                        <div>
-                                            <strong>Has Existing History:</strong>
-                                            {selectedPatient.has_medical_condition === "Yes" || selectedPatient.has_medical_condition === "No" && selectedPatient.medical_condition_details ?
+                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                            <strong>Has Medical Condition: </strong>
+                                            {selectedPatient.has_medical_condition || selectedPatient.medical_condition_details ?
                                                 selectedPatient.has_medical_condition : selectedPatient.medical_condition_details
                                             }
                                         </div>
-                                        <div>
-                                            <strong>Taking Medication:</strong>
-                                            {selectedPatient.taking_medication || selectedPatient.medication_details ?
-                                                selectedPatient.taking_medication : selectedPatient.medication_details
-                                            }
+                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                            <strong>Medical Condition Details: </strong>
+                                            {selectedPatient.has_medical_condition === "Yes" ? selectedPatient.medical_condition_details : "N/A"}
+                                        </div>
+                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                            <strong>Has Taking Medication: </strong>
+                                            {selectedPatient.taking_medication || selectedPatient.medication_details ? selectedPatient.taking_medication : selectedPatient.medication_details}
+                                        </div>
+                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                            <strong>Taking Medication Details: </strong>
+                                            {selectedPatient.taking_medication === "Yes" ? selectedPatient.medication_details : "N/A"}
+                                        </div>
+                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                            <strong>Does Smoke: </strong>
+                                            {selectedPatient.smokes || selectedPatient.smoke_frequency ? selectedPatient.smokes : selectedPatient.smoke_frequency}
+                                        </div>
+                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                            <strong>Smoke Frequency Details: </strong>
+                                            {selectedPatient.smokes === "Yes" ? selectedPatient.smoke_frequency : "N/A"}
+                                        </div>
+                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                            <strong>Has Allergies: </strong>
+                                            {selectedPatient.has_allergies || selectedPatient.allergies_details ? selectedPatient.has_allergies : selectedPatient.allergies_details}
+                                        </div>
+                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                            <strong>Allergies Details: </strong>
+                                            {selectedPatient.has_allergies === "Yes" ? selectedPatient.allergies_details : "N/A"}
+                                        </div>
+                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                            <strong>Does Drinks Alcohol: </strong>
+                                            {selectedPatient.drinks_alcohol || selectedPatient.alcohol_details ? selectedPatient.drinks_alcohol : selectedPatient.alcohol_details}
+                                        </div>
+                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                            <strong>Drinks Frequency Details: </strong>
+                                            {selectedPatient.drinks_alcohol === "Yes" ? selectedPatient.alcohol_details : "N/A"}
                                         </div>
                                     </div>
                                 </section>
 
                                 {/* Lifestyle Info */}
                                 <section className="bg-white p-4 rounded-xl shadow-lg">
-                                    <h3 className="text-lg font-semibold text-blue-700 mb-2">Lifestyle Information</h3>
+                                    <h3 className="text-lg font-semibold text-black mb-3">Lifestyle Information</h3>
                                     <div className="space-y-2 text-sm text-gray-700">
-                                        <div>
-                                            <strong>Diagnosis:</strong>
+                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                            <strong>Diagnosis: </strong>
                                             {selectedPatient.diagnosis}
                                         </div>
-                                        <div>
-                                            <strong>Symptoms:</strong>
+                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                            <strong>Symptoms: </strong>
                                             {selectedPatient.symptoms}
                                         </div>
-                                        <div>
-                                            <strong>Prescription:</strong>
+                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                            <strong>Prescription: </strong>
                                             {selectedPatient.prescription}
                                         </div>
                                     </div>

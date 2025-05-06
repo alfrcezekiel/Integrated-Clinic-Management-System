@@ -51,6 +51,7 @@ import validatePatientsDetails from "../middleware/updatePatientsDetailsValidati
 import validateCreateClinicDetails from "../middleware/ValidateCreateClinicDetails.js";
 import upload from "../middleware/fileImage/clinicImage.js";
 import validatePaymentFields from "../middleware/PaymentValidation/PaymentFieldValidation.js";
+import validatePatientConsultation from "../middleware/ValidatePatientConsulation.js";
 
 const router = express.Router();
 
@@ -150,7 +151,7 @@ router.get("/admin-dashboard/registeredPatientAccount", getRegisteredPatientsAcc
 router.put("/admin-dashboard/updateRegisteredPatientAccount/:patientID", updateRegisteredPatientsAccountInAdmin);
 
 // router for inserting the patients consultation in the clinic dashboard then update the status in appointment table
-router.post("/clinic-dashboard/consultPatient", consultPatientInClinicDashboard);
+router.post("/clinic-dashboard/consultPatient", validatePatientConsultation, consultPatientInClinicDashboard);
 
 // router for getting the appointment history of the patients in clinic dashboard
 router.get("/clinic-dashboard/getAppointmentHistory/:clinicID", getAppointmentHistoryInClinic);

@@ -21,7 +21,6 @@ import ConsultationFormModal from "./ConsultationFormModal"
 
 const ApprovedAppointmentClinicTable = () => {
     const [appointmentsData, setAppointmentsData] = useState([])
-
     const [consultationFormData, setConsultationFormData] = useState({
         firstName: "",
         lastName: "",
@@ -29,20 +28,20 @@ const ApprovedAppointmentClinicTable = () => {
         phoneNumber: "",
         appoimtmentdate: "",
         appointmentTime: "",
-        hasMedicalConditions: "No",
+        hasMedicalConditions: "",
         medicalConditionDetails: "",
-        takingMedications: "No",
+        takingMedications: "",
         medicationDetails: "",
-        smokes: "No",
-        smokeFrequency: "",
-        hasAllergies: "No",
+        smokes: "",
+        smokesFrequency: "",
+        hasAllergies: "",
         allergyDetails: "",
-        drinksAlcohol: "No",
+        drinksAlcohol: "",
         alcoholFrequency: "",
         diagnosis: "",
         symptoms: "",
         prescription: "",
-        consent: "Yes",
+        consent: "",
         appointment_id: "",
     })
 
@@ -53,20 +52,20 @@ const ApprovedAppointmentClinicTable = () => {
         phoneNumber: "",
         appointmentDate: "",
         appointmentTime: "",
-        hasMedicalConditions: "No",
+        hasMedicalConditions: "",
         medicalConditionDetails: "",
-        takingMedications: "No",
+        takingMedications: "",
         medicationDetails: "",
-        smokes: "No",
-        smokeFrequency: "",
-        hasAllergies: "No",
+        smokes: "",
+        smokesFrequency: "",
+        hasAllergies: "",
         allergyDetails: "",
-        drinksAlcohol: "No",
+        drinksAlcohol: "",
         alcoholFrequency: "",
         diagnosis: "",
         symptoms: "",
         prescription: "",
-        consent: "Yes",
+        consent: "",
     })
 
     const appointmentsTableColumn = [
@@ -109,6 +108,7 @@ const ApprovedAppointmentClinicTable = () => {
     }
 
     const handleClose = () => {
+        setFieldsError({});
         setOpen(false);
     }
 
@@ -129,7 +129,7 @@ const ApprovedAppointmentClinicTable = () => {
 
     // const navigate = useNavigate();
     const location = useLocation();
-    
+
     const retrieveAppoinmentApprovedStatus = async () => {
         const clinicID = localStorage.getItem("sid")
         try {
@@ -184,13 +184,19 @@ const ApprovedAppointmentClinicTable = () => {
             })
 
             if (response.status === 200) {
+                setFieldsError({});
                 alert("Consulted Patient Successfully!");
                 navigate("/doctor-portal/dashboard/appointment-history")
                 setOpen(false);
                 retrieveAppoinmentApprovedStatus();
             }
         } catch (error) {
-            console.error(`Code functionality error in consultation form: ${error}`);
+            if(error.response && error.response?.status === 400) {
+                const fieldErrors = error.response.data.errors;
+                setFieldsError(fieldErrors);
+            } else {
+                console.error(`Code functionality error in consultation form: ${error}`);
+            }
         }
     }
 
@@ -216,7 +222,7 @@ const ApprovedAppointmentClinicTable = () => {
                 <Card className="shadow-lg rounded-2xl w-full">
                     <CardHeader
                         title="Approved Appointments"
-                        className="bg-blue-500 mb-2 p-6"
+                        className="bg-blue-600 mb-2 p-6"
                         slotProps={{
                             title: {
                                 variant: 'h6',
@@ -249,52 +255,52 @@ const ApprovedAppointmentClinicTable = () => {
                                     appointmentsData.map((appointment, id) => (
                                         <TableRow key={id} className={`hover:bg-gray-200 transition duration-200 ease-in-out ${getStatusColor(appointment.status)}`}>
                                             <TableCell align="center">
-                                                <Typography variant="body2" className="text-blue-gray-900">
+                                                <Typography variant="body2" className="text-black">
                                                     {appointment.clinic_name}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="center">
-                                                <Typography variant="body2" className="text-blue-gray-900">
+                                                <Typography variant="body2" className="text-black">
                                                     {appointment.firstName}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="center">
-                                                <Typography variant="body2" className="text-blue-gray-900">
+                                                <Typography variant="body2" className="text-black">
                                                     {appointment.lastName}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="center">
-                                                <Typography variant="body2" className="text-blue-gray-900">
+                                                <Typography variant="body2" className="text-black">
                                                     {appointment.email}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="center">
-                                                <Typography variant="body2" className="text-blue-gray-900">
+                                                <Typography variant="body2" className="text-blac">
                                                     {dateFormat(appointment.appointmentDate)}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="center">
-                                                <Typography variant="body2" className="text-blue-gray-900">
+                                                <Typography variant="body2" className="text-black">
                                                     {formatTimeToAMPM(appointment.preferredTime)}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="center">
-                                                <Typography variant="body2" className="text-blue-gray-900">
+                                                <Typography variant="body2" className="text-black">
                                                     {appointment.phoneNumber}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="center">
-                                                <Typography variant="body2" className="text-blue-gray-900">
+                                                <Typography variant="body2" className="text-black">
                                                     {appointment.gender}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="center">
-                                                <Typography variant="body2" >
+                                                <Typography variant="body2" className="text-black">
                                                     {appointment.status}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="center">
-                                                <Typography variant="body2" className="text-blue-gray-900">
+                                                <Typography variant="body2" className="text-black">
                                                     {appointment.purposeOfAppointment}
                                                 </Typography>
                                             </TableCell>
