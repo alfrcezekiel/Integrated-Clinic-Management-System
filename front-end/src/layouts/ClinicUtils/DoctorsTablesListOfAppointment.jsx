@@ -142,15 +142,23 @@ const DoctorsTablesListOfAppointments = () => {
     };
 
     const handleCallbackAppointmentDateChange = useCallback((newValue) => {
-        setFormData((prev) => ({
-            ...prev,
-            appointmentDate: newValue ?? null
-        }));
+        if (newValue) {
+            const selectedDate = dayjs(newValue).format("YYYY-MM-DD");
+            setFormData((prev) => ({
+                ...prev,
+                appointmentDate: dayjs(selectedDate)
+            }));
+        } else {
+            setFormData((prev) => ({
+                ...prev,
+                appointmentDate: null
+            }));
+        }
 
         if (fieldsError.appointmentDate) {
             setFieldsError((prev) => ({
                 ...prev,
-                appointmentDate: ""
+                appointmentDate: null
             }));
         }
     }, [fieldsError]);
@@ -173,12 +181,8 @@ const DoctorsTablesListOfAppointments = () => {
     }, [fieldsError])
 
     const dateFormat = (dateString) => {
-        const date = new Date(dateString);
-        return date.toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric"
-        })
+        if (!dateString) return "N/A";
+        return dayjs(dateString).format("MMMM D, YYYY");
     };
 
     const handleCallbackTimePickerChange = useCallback(async (newValue) => {

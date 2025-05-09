@@ -21,6 +21,7 @@ import PendingAppointmentClinicTable from "./layouts/ClinicUtils/PendingAppointm
 import ApprovedAppointmentClinicTable from "./layouts/ClinicUtils/ApprovedAppointmentClinicTable";
 import DeclinedAppointmentStatusClinicTable from "./layouts/ClinicUtils/DeclinedAppointmentStatusClinicTable";
 import AppointmentHistoryTable from "./layouts/ClinicUtils/AppointmentHistoryTable";
+import ConsultPatientPage from "./layouts/ClinicUtils/ConsultationPage/ConsultPatientPage";
 
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import RegisterPatientsAccountTable from "./layouts/adminUtils/RegisterPatientsAccountTable";
@@ -123,6 +124,13 @@ export const doctorRoutes = [
                 name: "Appointment History",
                 path: "/appointment-history",
                 element: <AppointmentHistoryTable />
+            },
+            {
+                id: 7,
+                icon: <AssignmentTurnedIn style={iconStyle} />,
+                name: "Consult Patient",
+                path: "/consult-patient",
+                element: <ConsultPatientPage />
             }
         ]
     }

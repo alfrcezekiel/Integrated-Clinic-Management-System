@@ -18,9 +18,9 @@ const StatisticsCard = ({ color, icon, title, value, footer }) => {
             {icon}
           </div>
         }
-        className="p-0 flex items-center justify-between"
+        className="pt-4 flex items-center justify-between"
       />
-      <CardContent className="p-0">
+      <CardContent className="pt-1">
         <Typography variant="h5" className="text-blue-gray-600">
           {title}
         </Typography>

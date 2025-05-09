@@ -276,7 +276,7 @@ const ClinicCards = () => {
                                 <ImageList sx={{ width: '100%', height: 450 }} cols={3} rowHeight={164}>
                                     <ImageListItem>
                                         <img
-                                            src={clinics.clinic_image}
+                                            src={`CMS/patients-dashboard/uploads/${clinic.clinic_image}`}
                                             alt="Clinic Image"
                                             loading="lazy"
                                         />

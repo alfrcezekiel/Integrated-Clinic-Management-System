@@ -274,6 +274,18 @@ const AppointmentHistoryTable = () => {
                                             <strong>Appointment Time: </strong>
                                             {formatTimeToAMPM(selectedPatient.preferredTime)}
                                         </div>
+                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                            <strong>Status: </strong>
+                                            {selectedPatient.status}
+                                        </div>
+                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                            <strong>Gender: </strong>
+                                            {selectedPatient.gender}
+                                        </div>
+                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                            <strong>Purpose Of Appointment: </strong>
+                                            {selectedPatient.purposeOfAppointment}
+                                        </div>
                                     </div>
                                 </section>
 
@@ -282,46 +294,28 @@ const AppointmentHistoryTable = () => {
                                     <h3 className="text-lg font-semibold text-black mb-3">Medical History</h3>
                                     <div className="grid grid-cols-2 gap-4 text-sm text-gray-700">
                                         <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                            <strong>Has Medical Condition: </strong>
-                                            {selectedPatient.has_medical_condition || selectedPatient.medical_condition_details ?
-                                                selectedPatient.has_medical_condition : selectedPatient.medical_condition_details
-                                            }
-                                        </div>
-                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
                                             <strong>Medical Condition Details: </strong>
-                                            {selectedPatient.has_medical_condition === "Yes" ? selectedPatient.medical_condition_details : "N/A"}
-                                        </div>
-                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                            <strong>Has Taking Medication: </strong>
-                                            {selectedPatient.taking_medication || selectedPatient.medication_details ? selectedPatient.taking_medication : selectedPatient.medication_details}
+                                            {selectedPatient.medical_condition_details ? selectedPatient.medical_condition_details : "N/A"}
                                         </div>
                                         <div className="col-span-2 md:col-span-1 sm:col-span-2">
                                             <strong>Taking Medication Details: </strong>
-                                            {selectedPatient.taking_medication === "Yes" ? selectedPatient.medication_details : "N/A"}
-                                        </div>
-                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                            <strong>Does Smoke: </strong>
-                                            {selectedPatient.smokes || selectedPatient.smoke_frequency ? selectedPatient.smokes : selectedPatient.smoke_frequency}
+                                            {selectedPatient.medication_details ? selectedPatient.medication_details : "N/A"}
                                         </div>
                                         <div className="col-span-2 md:col-span-1 sm:col-span-2">
                                             <strong>Smoke Frequency Details: </strong>
-                                            {selectedPatient.smokes === "Yes" ? selectedPatient.smoke_frequency : "N/A"}
-                                        </div>
-                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                            <strong>Has Allergies: </strong>
-                                            {selectedPatient.has_allergies || selectedPatient.allergies_details ? selectedPatient.has_allergies : selectedPatient.allergies_details}
+                                            {selectedPatient.smoke_frequency ? selectedPatient.smoke_frequency : "N/A"}
                                         </div>
                                         <div className="col-span-2 md:col-span-1 sm:col-span-2">
                                             <strong>Allergies Details: </strong>
-                                            {selectedPatient.has_allergies === "Yes" ? selectedPatient.allergies_details : "N/A"}
-                                        </div>
-                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                            <strong>Does Drinks Alcohol: </strong>
-                                            {selectedPatient.drinks_alcohol || selectedPatient.alcohol_details ? selectedPatient.drinks_alcohol : selectedPatient.alcohol_details}
+                                            {selectedPatient.allergies_details ? selectedPatient.allergies_details : "N/A"}
                                         </div>
                                         <div className="col-span-2 md:col-span-1 sm:col-span-2">
                                             <strong>Drinks Frequency Details: </strong>
-                                            {selectedPatient.drinks_alcohol === "Yes" ? selectedPatient.alcohol_details : "N/A"}
+                                            {selectedPatient.alcohol_details ? selectedPatient.alcohol_details : "N/A"}
+                                        </div>
+                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                            <strong>High Blood Pressure or Cardiovascular Details:  </strong>
+                                            {selectedPatient.high_blood_details ? selectedPatient.high_blood_details : "N/A"}
                                         </div>
                                     </div>
                                 </section>
@@ -341,6 +335,14 @@ const AppointmentHistoryTable = () => {
                                         <div className="col-span-2 md:col-span-1 sm:col-span-2">
                                             <strong>Prescription: </strong>
                                             {selectedPatient.prescription}
+                                        </div>
+                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                            <strong>Treatment Plan: </strong>
+                                            {selectedPatient.treatment_plan}
+                                        </div>
+                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                            <strong>Does Exercise: </strong>
+                                            {selectedPatient.exercise_frequency_details}
                                         </div>
                                     </div>
                                 </section>

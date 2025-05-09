@@ -6,23 +6,12 @@ import {
   TextField,
   FormControl,
   FormLabel,
-  RadioGroup,
   FormControlLabel,
-  Radio,
   Checkbox,
-  FormHelperText
 } from "@mui/material";
 import PropTypes from "prop-types";
 
-const ConsultationFormModal = ({
-  open,
-  onClose,
-  onSubmit,
-  consultationFormData,
-  setConsultationFormData,
-  fieldsError,
-  setFieldsError
-}) => {
+const ConsultationFormModal = ({open, onClose, onSubmit, consultationFormData, setConsultationFormData, fieldsError, setFieldsError}) => {
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setConsultationFormData((prev) => {
@@ -30,28 +19,6 @@ const ConsultationFormModal = ({
         ...prev,
         [name]: type === "checkbox" ? checked : value,
       };
-
-      // Clear conditional fields when "No" is selected
-      if (name === "hasMedicalConditions" && value === "No") {
-        updatedData.medicalConditionDetails = "";
-      }
-
-      if (name === "takingMedications" && value === "No") {
-        updatedData.medicationDetails = "";
-      }
-
-      if (name === "smokes" && value === "No") {
-        updatedData.smokeFrequency = "";
-      }
-
-      if (name === "hasAllergies" && value === "No") {
-        updatedData.allergyDetails = "";
-      }
-
-      if (name === "drinksAlcohol" && value === "No") {
-        updatedData.alcoholFrequency = "";
-      }
-
       return updatedData;
     });
 
@@ -68,16 +35,49 @@ const ConsultationFormModal = ({
     try {
       setFieldsError((prev) => ({
         ...prev,
+        firstName: "",
+        lastName: "",
+        email: "",
+        phoneNumber: "",
+        appointmentDate: "",
+        appointmentTime: "",
+        medicalConditionDetails: "",
+        medicationDetails: "",
+        smokeFrequency: "",
+        allergyDetails: "",
+        alcoholFrequency: "",
+        diagnosis: "",
+        symptoms: "",
+        prescription: "",
         consent: ""
       }))
 
-      if (consultationFormData?.consent) {
-        onSubmit(consultationFormData);
-      } else {
+      const isValidEmail = (email) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+      };
+
+      if (!consultationFormData?.consent) {
         setFieldsError((prev) => ({
           ...prev,
-          consent: "You must agree to the terms and privacy policy.",
-        }));
+          firstName: !consultationFormData.firstName ? "First Name is required" : "",
+          lastName: !consultationFormData.lastName ? "Last name is required" : "",
+          email: !consultationFormData.email ? "Email is required" : isValidEmail(consultationFormData.email) ? "" : "Invalid email address",
+          phoneNumber: !consultationFormData.phoneNumber ? "Phone number is required" : "",
+          appointmentDate: !consultationFormData.appointmentDate ? "Appointment date is required" : "",
+          appointmentTime: !consultationFormData.appointmentTime ? "Appointment time is required" : "",
+          medicalConditionDetails: !consultationFormData.medicalConditionDetails ? "Medical condition details are required" : "",
+          medicationDetails: !consultationFormData.medicationDetails ? "Medication details are required" : "",
+          smokeFrequency: !consultationFormData.smokeFrequency ? "Smoking frequency is required" : "",
+          allergyDetails: !consultationFormData.allergyDetails ? "Allergy details are required" : "",
+          alcoholFrequency: !consultationFormData.alcoholFrequency ? "Alcohol frequency is required" : "",
+          diagnosis: !consultationFormData.diagnosis ? "Diagnosis is required" : "",
+          symptoms: !consultationFormData.symptoms ? "Symptoms are required" : "",
+          prescription: !consultationFormData.prescription ? "Prescription is required" : "",
+          consent: !consultationFormData.consent ? "You must agree to the terms and privacy policy." : ""
+        }))
+      } else {
+        onSubmit(consultationFormData);
       }
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -100,6 +100,7 @@ const ConsultationFormModal = ({
                 label="First Name"
                 name="firstName"
                 fullWidth
+                placeholder="Enter First Name"
                 value={consultationFormData.firstName}
                 onChange={handleChange}
                 autoComplete="off"
@@ -110,6 +111,7 @@ const ConsultationFormModal = ({
               <TextField
                 label="Last Name"
                 name="lastName"
+                placeholder=""
                 fullWidth
                 margin="dense"
                 value={consultationFormData.lastName}
@@ -121,6 +123,7 @@ const ConsultationFormModal = ({
               <TextField
                 label="Email"
                 name="email"
+                placeholder="Enter Email"
                 autoComplete="off"
                 margin="dense"
                 error={!!fieldsError.email}
@@ -133,6 +136,7 @@ const ConsultationFormModal = ({
               <TextField
                 label="Phone Number"
                 name="phoneNumber"
+                placeholder="Enter Phone Number"
                 margin="dense"
                 fullWidth
                 value={consultationFormData.phoneNumber}
@@ -146,6 +150,7 @@ const ConsultationFormModal = ({
                 margin="dense"
                 name="appointmentDate"
                 type="date"
+                placeholder="Enter Appointment Date"
                 slotProps={{ inputLabel: { shrink: true } }}
                 value={consultationFormData.appointmentDate}
                 onChange={handleChange}
@@ -158,6 +163,7 @@ const ConsultationFormModal = ({
                 label="Appointment Time"
                 name="appointmentTime"
                 type="time"
+                placeholder="Enter Appointment Time"
                 margin="dense"
                 slotProps={{ inputLabel: { shrink: true } }}
                 value={consultationFormData.appointmentTime}
@@ -177,61 +183,35 @@ const ConsultationFormModal = ({
               <FormLabel>
                 Does the patient have any existing medical conditions?
               </FormLabel>
-              <RadioGroup
-                row
-                name="hasMedicalConditions"
-                value={consultationFormData.hasMedicalConditions}
+              <TextField
+                helperText={fieldsError.medicalConditionDetails ? fieldsError.medicalConditionDetails : ""}
+                error={!!fieldsError.medicalConditionDetails}
+                autoComplete="off"
+                label="Enter Medical Condition Details"
+                name="medicalConditionDetails"
+                fullWidth
+                margin="dense"
+                placeholder="Enter Medical Condition Details"
+                value={consultationFormData.medicalConditionDetails}
                 onChange={handleChange}
-              >
-                <FormControlLabel value="Yes" control={<Radio />} label="Yes" />
-                <FormControlLabel value="No" control={<Radio />} label="No" />
-              </RadioGroup>
-              <FormHelperText error sx={{ textAlign: "left", marginLeft: 0 }}>
-                {fieldsError.hasMedicalConditions}
-              </FormHelperText>
-              {consultationFormData.hasMedicalConditions === "Yes" && (
-                <TextField
-                  helperText={fieldsError.medicalConditionDetails ? fieldsError.medicalConditionDetails : ""}
-                  error={!!fieldsError.medicalConditionDetails}
-                  autoComplete="off"
-                  label="If yes, specify"
-                  name="medicalConditionDetails"
-                  fullWidth
-                  margin="dense"
-                  value={consultationFormData.medicalConditionDetails}
-                  onChange={handleChange}
-                />
-              )}
+              />
             </FormControl>
             <FormControl component="fieldset" className="w-full pt-4">
               <FormLabel>
                 Is the patient currently taking any medications?
               </FormLabel>
-              <RadioGroup
-                row
-                name="takingMedications"
-                value={consultationFormData.takingMedications}
+              <TextField
+                label="If yes, specify"
+                name="medicationDetails"
+                fullWidth
+                margin="dense"
+                placeholder="Enter Medication Details"
+                value={consultationFormData.medicationDetails}
                 onChange={handleChange}
-              >
-                <FormControlLabel value="Yes" control={<Radio />} label="Yes" />
-                <FormControlLabel value="No" control={<Radio />} label="No" />
-              </RadioGroup>
-              <FormHelperText error sx={{ textAlign: "left", marginLeft: 0 }}>
-                {fieldsError.takingMedications}
-              </FormHelperText>
-              {consultationFormData.takingMedications === "Yes" && (
-                <TextField
-                  label="If yes, specify"
-                  name="medicationDetails"
-                  fullWidth
-                  margin="dense"
-                  value={consultationFormData.medicationDetails}
-                  onChange={handleChange}
-                  error={!!fieldsError.medicationDetails}
-                  helperText={fieldsError.medicationDetails ? fieldsError.medicationDetails : ""}
-                  autoComplete="off"
-                />
-              )}
+                error={!!fieldsError.medicationDetails}
+                helperText={fieldsError.medicationDetails ? fieldsError.medicationDetails : ""}
+                autoComplete="off"
+              />
             </FormControl>
           </div>
 
@@ -241,91 +221,52 @@ const ConsultationFormModal = ({
             {/* Smoking */}
             <FormControl component="fieldset" className="w-full pt-2">
               <FormLabel>Does the patient smoke?</FormLabel>
-              <RadioGroup
-                row
-                name="smokes"
-                value={consultationFormData.smokes}
+              <TextField
+                margin="dense"
+                label="If yes, how many per day?"
+                name="smokeFrequency"
+                fullWidth
+                placeholder="Enter Smoking Frequency Details"
+                value={consultationFormData.smokeFrequency}
                 onChange={handleChange}
-              >
-                <FormControlLabel value="Yes" control={<Radio />} label="Yes" />
-                <FormControlLabel value="No" control={<Radio />} label="No" />
-              </RadioGroup>
-              <FormHelperText error sx={{ textAlign: "left", marginLeft: 0 }}>
-                {fieldsError.smokes}
-              </FormHelperText>
-              {consultationFormData.smokes === "Yes" && (
-                <TextField
-                  margin="dense"
-                  label="If yes, how many per day?"
-                  name="smokeFrequency"
-                  fullWidth
-                  value={consultationFormData.smokesFrequency}
-                  onChange={handleChange}
-                  error={!!fieldsError.smokesFrequency}
-                  helperText={fieldsError.smokesFrequency ? fieldsError.smokesFrequency : ""}
-                  autoComplete="off"
-                />
-              )}
+                error={!!fieldsError.smokeFrequency}
+                helperText={fieldsError.smokesFrequency ? fieldsError.smokesFrequency : ""}
+                autoComplete="off"
+              />
             </FormControl>
 
             {/* Allergies */}
             <FormControl component="fieldset" className="w-full pt-2">
               <FormLabel>Does the patient have any allergies?</FormLabel>
-              <RadioGroup
-                row
-                name="hasAllergies"
-                value={consultationFormData.hasAllergies}
+              <TextField
+                label="If yes, specify"
+                name="allergyDetails"
+                fullWidth
+                placeholder="Enter Allergies Details"
+                margin="dense"
+                value={consultationFormData.allergyDetails}
+                error={!!fieldsError.allergyDetails}
+                helperText={fieldsError.allergyDetails ? fieldsError.allergyDetails : ""}
                 onChange={handleChange}
-              >
-                <FormControlLabel value="Yes" control={<Radio />} label="Yes" />
-                <FormControlLabel value="No" control={<Radio />} label="No" />
-              </RadioGroup>
-              <FormHelperText error sx={{ textAlign: "left", marginLeft: 0 }}>
-                {fieldsError.hasAllergies}
-              </FormHelperText>
-              {consultationFormData.hasAllergies === "Yes" && (
-                <TextField
-                  label="If yes, specify"
-                  name="allergyDetails"
-                  fullWidth
-                  margin="dense"
-                  value={consultationFormData.allergyDetails}
-                  error={!!fieldsError.allergyDetails}
-                  helperText={fieldsError.allergyDetails ? fieldsError.allergyDetails : ""}
-                  onChange={handleChange}
-                  autoComplete="off"
-                />
-              )}
+                autoComplete="off"
+              />
             </FormControl>
 
             {/* Alcohol */}
             <FormControl component="fieldset" className="w-full pt-2">
               <FormLabel>Does the patient consume alcohol?</FormLabel>
-              <RadioGroup
-                row
-                name="drinksAlcohol"
-                value={consultationFormData.drinksAlcohol}
+              <TextField
+                label="If yes, how many drinks per week?"
+                name="alcoholFrequency"
+                placeholder="Enter Alcohol Frequency Details"
+                fullWidth
+                value={consultationFormData.alcoholFrequency}
+                margin="dense"
                 onChange={handleChange}
-              >
-                <FormControlLabel value="Yes" control={<Radio />} label="Yes" />
-                <FormControlLabel value="No" control={<Radio />} label="No" />
-              </RadioGroup>
-              <FormHelperText error sx={{ textAlign: "left", marginLeft: 0 }}>
-                {fieldsError.drinksAlcohol}
-              </FormHelperText>
-              {consultationFormData.drinksAlcohol === "Yes" && (
-                <TextField
-                  label="If yes, how many drinks per week?"
-                  name="alcoholFrequency"
-                  fullWidth
-                  value={consultationFormData.alcoholFrequency}
-                  margin="dense"
-                  onChange={handleChange}
-                  error={!!fieldsError.alcoholFrequency}
-                  helperText={fieldsError.alcoholFrequency ? fieldsError.alcoholFrequency : ""}
-                  autoComplete="off"
-                /> 
-              )}
+                error={!!fieldsError.alcoholFrequency}
+                helperText={fieldsError.alcoholFrequency ? fieldsError.alcoholFrequency : ""}
+                autoComplete="off"
+              />
             </FormControl>
           </div>
 
@@ -336,6 +277,7 @@ const ConsultationFormModal = ({
               <TextField
                 label="Diagnosis"
                 name="diagnosis"
+                placeholder="Enter Diagnosis Details"
                 fullWidth
                 margin="dense"
                 value={consultationFormData.diagnosis}
@@ -347,6 +289,7 @@ const ConsultationFormModal = ({
               <TextField
                 label="Symptoms"
                 name="symptoms"
+                placeholder="Enter Symptoms Details"
                 fullWidth
                 margin="dense"
                 value={consultationFormData.symptoms}
@@ -358,6 +301,7 @@ const ConsultationFormModal = ({
               <TextField
                 label="Prescription"
                 name="prescription"
+                placeholder="Enter Prescription Details"
                 fullWidth
                 margin="dense"
                 value={consultationFormData.prescription}
@@ -391,7 +335,7 @@ const ConsultationFormModal = ({
               Cancel
             </Button>
             <Button type="submit" color="primary" variant="contained">
-              Consult Patient
+              Submit
             </Button>
           </div>
         </form>

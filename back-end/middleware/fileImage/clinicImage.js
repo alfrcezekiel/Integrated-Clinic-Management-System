@@ -1,31 +1,30 @@
 import multer from "multer";
-import path from "path"
-import { StatusCodes } from "http-status-codes";
 
 const storage = multer.diskStorage({
     destination: (_req, _file, cb) => {
-        cb(null, "uploads/clinic_images/")
+        cb(null, "uploads/")
     },
     filename: (_req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+        const dateSuffix = Date.now();
+        cb(null, `${dateSuffix}-${file.originalname}`);
     }
 })
 
 const fileFilter = (_req, file, cb) => {
-    if(file.mimetype.startsWith('image/')){
-        cb(null, true)
+    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (allowedMimeTypes.includes(file.mimetype)) {
+        cb(null, true);
     } else {
-        cb(new multer.MulterError("LIMIT_UNEXPECTED_FILE", "Please upload an image file"), false);
+        cb(new Error("Please upload an image file (jpeg, png, or webp)"), false);
     }
 }
 
 const upload = multer({
-    storage: storage,
-    fileFilter: fileFilter,
+    storage,
+    fileFilter,
     limits: {
         fileSize: 1024 * 1024 * 5 // 5MB
     },
-})
+}).single('clinicImage');
 
 export default upload;

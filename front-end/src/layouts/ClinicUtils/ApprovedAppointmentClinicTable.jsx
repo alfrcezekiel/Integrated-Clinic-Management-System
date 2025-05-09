@@ -28,21 +28,16 @@ const ApprovedAppointmentClinicTable = () => {
         phoneNumber: "",
         appoimtmentdate: "",
         appointmentTime: "",
-        hasMedicalConditions: "",
         medicalConditionDetails: "",
-        takingMedications: "",
         medicationDetails: "",
-        smokes: "",
-        smokesFrequency: "",
-        hasAllergies: "",
+        smokeFrequency: "",
         allergyDetails: "",
-        drinksAlcohol: "",
         alcoholFrequency: "",
         diagnosis: "",
         symptoms: "",
         prescription: "",
         consent: "",
-        appointment_id: "",
+        appointmentID: "",
     })
 
     const [fieldsError, setFieldsError] = useState({
@@ -52,15 +47,10 @@ const ApprovedAppointmentClinicTable = () => {
         phoneNumber: "",
         appointmentDate: "",
         appointmentTime: "",
-        hasMedicalConditions: "",
         medicalConditionDetails: "",
-        takingMedications: "",
         medicationDetails: "",
-        smokes: "",
-        smokesFrequency: "",
-        hasAllergies: "",
+        smokeFrequency: "",
         allergyDetails: "",
-        drinksAlcohol: "",
         alcoholFrequency: "",
         diagnosis: "",
         symptoms: "",
@@ -93,18 +83,22 @@ const ApprovedAppointmentClinicTable = () => {
         return `${year}-${month}-${day}`;
     };
 
+
     const handleOpenConsulationForm = (appointment) => {
-        setConsultationFormData({
-            firstName: appointment.firstName,
-            lastName: appointment.lastName,
-            email: appointment.email,
-            phoneNumber: appointment.phoneNumber,
-            appointmentDate: formatDate(appointment.appointmentDate),
-            appointmentTime: appointment.preferredTime,
-            appointment_id: appointment.appointmentID,
-            clinic_name: appointment.clinic_name,
+        navigate("/doctor-portal/dashboard/consult-patient", {
+            state: {
+                appointmentData: {
+                    firstName: appointment.firstName,
+                    lastName: appointment.lastName,
+                    email: appointment.email,
+                    phoneNumber: appointment.phoneNumber,
+                    appointmentDate: formatDate(appointment.appointmentDate),
+                    preferredTime: appointment.preferredTime,
+                    appointmentID: appointment.appointmentID,
+                    clinic_name: appointment.clinic_name,
+                }
+            }
         })
-        setOpen(true)
     }
 
     const handleClose = () => {
@@ -176,10 +170,11 @@ const ApprovedAppointmentClinicTable = () => {
                 ...consultationFormData,
                 admin_id: localStorage.getItem("sid"),
                 clinic_name: consultationFormData.clinic_name,
-                appointment_id: consultationFormData.appointment_id
+                appointment_id: consultationFormData.appointmentID
             }, {
                 headers: {
                     "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
                 },
             })
 

@@ -40,7 +40,7 @@ const ConfirmAppointmentModal = ({ open, onClose, patientsData, onNextStep }) =>
                         <Typography variant="h6" gutterBottom className="text-left">
                             Patient Information
                         </Typography>
-                        <section className="border p-4 rounded-lg shadow-sm w-full">
+                        <section className="p-4 rounded-3xl shadow-2xl w-full">
                             <Grid container spacing={2} direction="column">
                                 {renderItem("First Name", patientsData?.patient?.firstName)}
                                 {renderItem("Last Name", patientsData?.patient?.lastName)}
@@ -55,7 +55,7 @@ const ConfirmAppointmentModal = ({ open, onClose, patientsData, onNextStep }) =>
                         <Typography variant="h6" gutterBottom className="text-left">
                             Clinic Information
                         </Typography>
-                        <section className="border p-4 rounded-lg shadow-sm w-full">
+                        <section className="p-4 rounded-3xl shadow-2xl w-full">
                             <Grid container spacing={2} direction="column">
                                 {renderItem("Clinic Name", patientsData?.clinic?.clinic_name)}
                                 {renderItem("Clinic Address", patientsData?.clinic?.clinic_address)}

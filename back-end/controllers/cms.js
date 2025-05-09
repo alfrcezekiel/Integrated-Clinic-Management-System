@@ -6,25 +6,26 @@ import "../main.js";
 import bcrypt from "bcrypt";
 import dayjs from "dayjs";
 import Clinic from '../models/Clinic.Model.js';
+import validatePatientConsultation from '../middleware/ValidatePatientConsulation.js';
 dotenv.config();
 
 // controller logic for a global route
 export const CMS = async (req, res) => {
     return res.status(StatusCodes.OK).json({
         title: "Clinic Management System",
-        description: "CMS streamlines the operational workflow of a dental clinic that automates the medical health records (EHR), appointment scheduling, payment integration and inventory of clinical products.",
+        description: "CMS streamlines the operational workflow of a clinic that automates the medical health records (EHR), appointment scheduling, payment integration and inventory of clinical products.",
         ehrText: "Electronic Health Records",
         paymentIntegrationText: "Payment Integration",
         appointmentSchedulingText: "Appointment Scheduling",
         featuresTitle: "Features",
         inventoryText: "Inventory Management of Clinical Products",
-        whatWeServeTitle: "What We Serve",
+        whatWeServeTitle: "Services We Provide",
         healthQuotes: "Your health is an investment, not an expense.",
         firstDescription: "Comprehensive healthcare services for the whole family.",
         secondDescription: "Advanced medical technology for accurate diagnoses and treatments.",
         thirdDescription: "Experienced and compassionate healthcare professionals.",
         fourthDescription: "Personalized care plans tailored to your unique needs.",
-        emergencyServices: "Emergency Dental Services avaiable 24/7."
+        emergencyServices: "Emergency Services avaiable 24/7."
     })
 }
 
@@ -264,12 +265,12 @@ export const loginAdminAccount = async (req, res) => {
             })
         }
 
-        if(!rows.find((row) => row.password === password)){
+        if (!rows.find((row) => row.password === password)) {
             return res.status(StatusCodes.UNAUTHORIZED).json({
                 passwordMessage: "Invalid Password"
             })
         }
-        
+
         const adminUsers = rows[0];
 
         const SECRET_KEY = process.env.JWT_SECRET
@@ -575,7 +576,7 @@ export const updatePatientsAppointments = async (req, res) => {
         // Debug log to check the received appointmentID and body
         console.log(`Received appointmentID: ${appointmentID}`);
 
-        const formattedAppointmentDate = new Date(appointmentDate).toISOString().slice(0, 19).replace('T', ' ');
+        const formattedAppointmentDate = dayjs(appointmentDate).format("YYYY-MM-DD");
         const formattedPreferredTime = preferredTime ? preferredTime.slice(0, 5) : null;
 
         const query = `
@@ -830,15 +831,21 @@ export const createClinic = async (req, res) => {
         const formatTimeTo24HR = (time) => {
             if (!time) return null;
 
-            const [hours, minutes] = time.split(":");
-            let hour = parseInt(hours, 10);
-            const ampm = time.includes("PM") ? "PM" : "AM"; // Determine AM/PM if present
+            // Match HH:MM and optional AM/PM (case-insensitive)
+            const match = time.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+            if (!match) return null;
 
-            // Convert 12-hour to 24-hour format
-            if (ampm === "PM" && hour < 12) hour += 12; // PM times, add 12 to hour (except for 12 PM)
-            if (ampm === "AM" && hour === 12) hour = 0; // 12 AM is midnight (00:00)
+            let [_, hourStr, minuteStr, ampm] = match;
+            let hour = parseInt(hourStr, 10);
+            const minute = parseInt(minuteStr, 10);
 
-            return `${String(hour).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`; // Return in HH:MM:SS format
+            if (ampm) {
+                ampm = ampm.toUpperCase();
+                if (ampm === 'PM' && hour < 12) hour += 12;
+                if (ampm === 'AM' && hour === 12) hour = 0;
+            }
+
+            return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:00`;
         };
 
         const clinic_name = String(clinicName);
@@ -853,7 +860,7 @@ export const createClinic = async (req, res) => {
         const clinic_type = String(clinicType);
         const clinic_close_date = String(closingDays);
         const clinic_close_time = formatTimeTo24HR(closingHours);
-        const clinic_id_field = String(clinicId);
+        const clinic_id_field = Number(clinicId);
         const admin_id = String(adminID);
 
         const saltRound = 10;
@@ -861,7 +868,7 @@ export const createClinic = async (req, res) => {
         const hashedConfirmPassword = await bcrypt.hash(clinic_confirm_password, saltRound);
 
         if (!req.file) {
-            return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Please upload a clinic image' });
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Please upload a valid clinic image' });
         }
         const clinic_image = req.file.path;
 
@@ -1296,6 +1303,7 @@ export const getApprovedAppointmentStatusInClinic = async (req, res) => {
 
         const status = "Approved";
 
+        // query of two tables clinic and patients appointment
         const query = `SELECT
             c.clinic_name,
             p.appointmentID,
@@ -1505,48 +1513,58 @@ export const consultPatientInClinicDashboard = async (req, res) => {
             email,
             phoneNumber,
             appointmentDate,
-            appointmentTime,
-            hasMedicalConditions,
+            preferredTime,
             medicalConditionDetails,
-            takingMedications,
             medicationDetails,
-            smokes,
+            cardioVascularDetails,
             smokeFrequency,
-            hasAllergies,
             allergyDetails,
-            drinksAlcohol,
             alcoholFrequency,
+            exerciseFrequency,
             diagnosis,
             symptoms,
             prescription,
+            treatmentPlan,
             clinic_name,
             admin_id,
-            appointment_id
+            appointmentID
         } = req.body;
 
-        const first_name = String(firstName);
-        const last_name = String(lastName);
-        const email_address = String(email);
-        const phone_number = String(phoneNumber);
-        const appointment_date = dayjs(appointmentDate).format("YYYY-MM-DD");;
-        const appointment_time = String(appointmentTime);
-        const has_medical_conditions = String(hasMedicalConditions);
-        const medical_condition_details = String(medicalConditionDetails);
-        const taking_medications = String(takingMedications);
-        const medication_details = String(medicationDetails);
-        const smoking = String(smokes);
-        const smoke_frequency = String(smokeFrequency);
-        const allergy = String(hasAllergies);
-        const allergy_details = String(allergyDetails);
-        const drinks_alcohol = String(drinksAlcohol);
-        const alcohol_details = String(alcoholFrequency);
-        const diagnosis_field = String(diagnosis);
-        const symptoms_field = String(symptoms);
-        const prescription_field = String(prescription);
-        const clinic_name_field = String(clinic_name);
-        const admin_id_field = String(admin_id);
 
-        const appointmentID = parseInt(appointment_id, 10);
+        // Format and validate fields
+        const first_name = String(firstName)
+        const last_name = String(lastName)
+        const email_address = String(email);
+        const phone_number = String(phoneNumber)
+        const appointment_date = dayjs(appointmentDate).format("YYYY-MM-DD")
+        const appointment_time = dayjs(preferredTime).format("hh:mm")
+        const medical_condition_details = String(medicalConditionDetails)
+        const medication_details = String(medicationDetails)
+        const cardiovascular_details = String(cardioVascularDetails);
+        const smoke_frequency = String(smokeFrequency)
+        const allergy_details = String(allergyDetails)
+        const alcohol_details = String(alcoholFrequency)
+        const exercise_frequency_details = String(exerciseFrequency)
+        const diagnosis_field = String(diagnosis)
+        const symptoms_field = String(symptoms)
+        const prescription_field = String(prescription)
+        const treatment_plan = String(treatmentPlan)
+        const clinic_name_field = String(clinic_name);
+
+        // Parse IDs with validation
+        const admin_id_field = parseInt(admin_id, 10);
+        if (isNaN(admin_id_field)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid admin_id var format"
+            });
+        }
+
+        const appointment_id = parseInt(appointmentID, 10);
+        if (isNaN(appointmentID)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid appointment_id var format"
+            });
+        }
 
         const consent = "Yes";
 
@@ -1558,19 +1576,17 @@ export const consultPatientInClinicDashboard = async (req, res) => {
             phone_number,
             appointment_date,
             appointment_time,
-            has_medical_conditions,
             medical_condition_details,
-            taking_medications,
             medication_details,
-            smoking,
+            cardiovascular_details,
             smoke_frequency,
-            allergy,
             allergy_details,
-            drinks_alcohol,
             alcohol_details,
+            exercise_frequency_details,
             diagnosis_field,
             symptoms_field,
             prescription_field,
+            treatment_plan,
             clinic_name_field,
             consent,
             admin_id_field,
@@ -1584,23 +1600,21 @@ export const consultPatientInClinicDashboard = async (req, res) => {
             phone_number,
             appointment_date,
             appointment_time,
-            has_medical_condition,
             medical_condition_details,
-            taking_medication,
             medication_details,
-            smokes,
+            high_blood_details,    
             smoke_frequency,
-            has_allergies,
             allergies_details,
-            drinks_alcohol,
             alcohol_details,
+            exercise_frequency_details,
             diagnosis,
             symptoms,
             prescription,
+            treatment_plan,
             clinic_name,
             consent,
             created_by
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
         `
 
         const [result1] = await conn.query(query, values);
@@ -1614,7 +1628,7 @@ export const consultPatientInClinicDashboard = async (req, res) => {
         const updateQuery = `UPDATE patientsappointment SET status = ? WHERE appointmentID = ?;`;
         const status = "Consulted";
 
-        const [result2] = await conn.query(updateQuery, [status, appointmentID]);
+        const [result2] = await conn.query(updateQuery, [status, appointment_id]);
 
         if (result2.affectedRows === 0) {
             return res.status(StatusCodes.BAD_REQUEST).json({
@@ -1647,6 +1661,7 @@ export const getAppointmentHistoryInClinic = async (req, res) => {
 
         const clinic_id = parseInt(clinicID, 10);
 
+        // instance of clinic model with a method to retrieved all appointment history
         const consulted_patient = await new Clinic().getAppointmentHistory(clinic_id);
 
         if (!consulted_patient.length) {
@@ -1773,12 +1788,13 @@ export const retrievedPaymentConfirmedDetails = async (req, res) => {
 
         const patient_id = parseInt(patientID, 10);
 
-        if(isNaN(patient_id)) {
+        if (isNaN(patient_id)) {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 message: "Invalid patient ID format"
             })
         }
-        
+
+        // instance of model clinic with a method to reterieved the confirmed payment details
         const result = await new Clinic().retrievedConfirmedPaymentDetails(patient_id);
 
         if (result.length === 0) {
@@ -1801,6 +1817,7 @@ export const retrievedPaymentConfirmedDetails = async (req, res) => {
 // controller logic to delete the payment details when the patient clicked the cancel payment
 export const cancelledPaymentDetails = async (req, res) => {
     try {
+        // @param 
         const { paymentID } = req.params;
 
         const payment_id = parseInt(paymentID, 10);
@@ -1811,6 +1828,7 @@ export const cancelledPaymentDetails = async (req, res) => {
             })
         }
 
+        // instance of clinic model and the method of cancelled payment details confirmed payment
         const result = new Clinic().cancelledPaymentDetailsInConfirmedPaymentDialog(payment_id);
 
         if (result.affectedRows === 0) {
@@ -1822,10 +1840,44 @@ export const cancelledPaymentDetails = async (req, res) => {
         return res.status(StatusCodes.OK).json({
             message: "Payment details cancelled successfully"
         })
-    } catch (error){
+    } catch (error) {
         console.error(`Failed to cancelled payment details in controller function: ${error}`)
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             message: "Failed to cancelled payment details"
         })
     }
 }
+
+// controller logic for validating the stepper component in clinic side
+export const validateStep = async (req, res, next) => {
+    try {
+        const { step } = req.params;
+
+        if (isNaN(step) || step < 0 || step > 4) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Please enter a valid step"
+            });
+        }
+
+        const validationMiddleWare = validatePatientConsultation(step);
+
+        // Execute each middleware sequentially
+        for (const middleware of validationMiddleWare) {
+            await new Promise((resolve, reject) => {
+                middleware(req, res, (err) => {
+                    if (err) reject(err);
+                    else resolve();
+                });
+            });
+        }
+
+        return res.status(StatusCodes.OK).json({
+            message: "Step validated successfully"
+        });
+    } catch (error) {
+        console.error(`Error in validateStep controller: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to validate step"
+        });
+    }
+};

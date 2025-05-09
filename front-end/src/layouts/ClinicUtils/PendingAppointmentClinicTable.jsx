@@ -129,12 +129,8 @@ const PendingAppointmentClinicTable = () => {
 
     // function to format to MM/DD/YYYY to display in the table
     const dateFormat = (dateString) => {
-        const date = new Date(dateString);
-        return date.toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric"
-        })
+        if (!dateString) return "N/A";
+        return dayjs(dateString).format("MMMM D, YYYY");
     };
 
     const formatTimeToAMPM = (time) => {
@@ -220,6 +216,7 @@ const PendingAppointmentClinicTable = () => {
     }
 
 
+    // function for handling the change of the input fields
     const handleCallbackChangeInput = useCallback(async (e) => {
         const handleChangeInput = (e) => {
             const { name, value } = e.target;
@@ -238,17 +235,26 @@ const PendingAppointmentClinicTable = () => {
         handleChangeInput(e)
     }, [fieldsError])
 
+    // this function is used to handle the change of the appointment date
     const handleAppointmentDateChange = useCallback(async (newValue) => {
         const handleChangeInput = (newValue) => {
-            setFormData((prev) => ({
-                ...prev,
-                appointmentDate: newValue && dayjs(newValue) ? newValue : ""
-            }));
+            if(newValue){
+                const selectedDate = dayjs(newValue).format("YYYY-MM-DD");
+                setFormData((prev) => ({
+                    ...prev,
+                    appointmentDate: dayjs(selectedDate)
+                }))
+            } else {
+                setFormData((prev) => ({
+                    ...prev,
+                    appointmentDate: null
+                }))
+            }
 
             if (fieldsError.appointmentDate) {
                 setFieldsError({
                     ...fieldsError,
-                    appointmentDate: ""
+                    appointmentDate: null
                 });
             }
         }
@@ -271,6 +277,7 @@ const PendingAppointmentClinicTable = () => {
         }
     }
 
+    // function for handling the change of the appointment time
     const handleCallbackTimePickerChange = useCallback(async (newValue) => {
         const handleTimePickerChange = async (newValue) => {
             setFormData((prev) => ({
@@ -488,7 +495,6 @@ const PendingAppointmentClinicTable = () => {
                                     }}
                                     value={memoizedFormDataValue.preferredTime ? dayjs(memoizedFormDataValue.preferredTime) : null}
                                     onChange={(newValue) => handleCallbackTimePickerChange(newValue)}
-                                    format="hh:mm A"
                                 />
                             </DemoContainer>
                         </LocalizationProvider>

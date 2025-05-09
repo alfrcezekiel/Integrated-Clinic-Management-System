@@ -1,8 +1,9 @@
-import { CONFLICT } from "http-status-codes";
 import conn from "../db/mysql/conn.js";
 
 // created a new instance of class Clinic Models
 class Clinic {
+
+    // method of retrieving all appointment history to render in appointment history in clinic side
     getAppointmentHistory = async (clinicID) => {
         try {
             const status = "Consulted";
@@ -14,16 +15,14 @@ class Clinic {
                 pa.lastName,
                 pa.email,
                 cp.created_by,
-                cp.has_medical_condition,
                 cp.appointmentID,
                 cp.medical_condition_details,
-                cp.taking_medication,
                 cp.medication_details,
-                cp.smokes,
                 cp.smoke_frequency,
-                cp.has_allergies,
+                cp.high_blood_details,
+                cp.exercise_frequency_details,
+                cp.treatment_plan,
                 cp.allergies_details,
-                cp.drinks_alcohol,
                 cp.alcohol_details,
                 cp.diagnosis,
                 cp.symptoms,
@@ -32,7 +31,8 @@ class Clinic {
                 pa.preferredTime,
                 pa.phoneNumber,
                 pa.gender,
-                pa.status
+                pa.status,
+                pa.purposeOfAppointment
                 FROM patientsappointment AS pa
                 INNER JOIN clinic AS c
                 ON pa.clinic_id = c.clinic_id

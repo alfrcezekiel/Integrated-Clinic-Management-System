@@ -28,7 +28,6 @@ app.use(session({
         httpOnly:true,
         maxAge: 1000 * 60 * 60 * 24
     },
-    sameSite: "lax"
 }))
 app.use(express.json());
 app.use(bodyParser.json());
@@ -38,7 +37,7 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // Ensure the directory exists before serving it as static content
 const clinicImagesPath = path.join(__dirname, "uploads");
-app.use(express.static(clinicImagesPath));
+app.use("uploads/", express.static(clinicImagesPath));
 app.use(cors({
     origin: "http://localhost:5173",
     methods: ["GET", "POST", "PUT", "DELETE"],

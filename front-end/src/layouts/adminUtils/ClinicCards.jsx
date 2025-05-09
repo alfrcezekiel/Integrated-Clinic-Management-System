@@ -15,8 +15,7 @@ const ClinicCard = ({ clinic, onViewDetails, onEditClinic }) => {
         const colors = {
             "General Practice": "#4caf50",
             "Dental Clinic": "#2196f3",
-            "Pediatric": "#ff9800",
-            "Orthopedic": "#9c27b0",
+            "Orthopedic Clinic": "#9c27b0",
             "Dermatology": "#e91e63",
             "Ophthalmology": "#00bcd4",
             "Mental Health": "#8bc34a",
@@ -26,7 +25,11 @@ const ClinicCard = ({ clinic, onViewDetails, onEditClinic }) => {
             "General Clinic" :  "#607d8b",
             "Specialist Clinic": "#3f51b5",
             "Dermatology Clinic": "#9c27b0",
+            "Optometry Clinic": "#00bcd4",
+            "Pediatric Clinic": "#ff9800",
+            "Gynecology Clinic": "#ff5722",
             "Psychiatry Clinic": "#f44336",
+            "Physiotherapy Clinic": "#8bc34a",
         };
         return colors[type] || "#757575";
     };

@@ -37,6 +37,7 @@ import {
     retrievePatientDetailsInPaymentDialog,
     retrievedPaymentConfirmedDetails,
     cancelledPaymentDetails,
+    validateStep
 } from "../controllers/cms.js";
 import validateRegister from "../middleware/validation.js";
 import patientsLoginValidation from "../middleware/patientsLoginValidation.js";
@@ -88,7 +89,7 @@ router.post("/loginDoctorsAccount", [doctorsLoginValidation], loginDoctorsAccoun
 // router for destroying the session of the doctors account
 router.get("/doctors-dashboard/logout", logout);
 
-// router for updating the patients appointments
+// router for updating the patients appointments in clinic side
 router.put("/doctors-dashboard/updateAppointment/:appointmentID", [validatePatientsDetails], updatePatientsAppointments);
 
 // router for retrieving the clinic name and patient id to display in doctors dashboard
@@ -113,7 +114,7 @@ router.put("/admin-dashboard/updateDoctor/:doctorsID", [validateUpdatingDoctor],
 router.delete("/admin-dashboard/deleteDoctor/:doctorsID", deleteDoctorsDetails);
 
 // router for creating a clinic in admin dashboard
-router.post("/admin-dashboard/create-clinic", upload.single("clinicImage"), [validateCreateClinicDetails], createClinic);
+router.post("/admin-dashboard/create-clinic", upload, [validateCreateClinicDetails], createClinic);
 
 // router for getting the clinic details in admin dashboard
 router.get("/admin-dashboard/clinics", getClinics);
@@ -151,7 +152,7 @@ router.get("/admin-dashboard/registeredPatientAccount", getRegisteredPatientsAcc
 router.put("/admin-dashboard/updateRegisteredPatientAccount/:patientID", updateRegisteredPatientsAccountInAdmin);
 
 // router for inserting the patients consultation in the clinic dashboard then update the status in appointment table
-router.post("/clinic-dashboard/consultPatient", validatePatientConsultation, consultPatientInClinicDashboard);
+router.post("/clinic-dashboard/consultPatient", consultPatientInClinicDashboard);
 
 // router for getting the appointment history of the patients in clinic dashboard
 router.get("/clinic-dashboard/getAppointmentHistory/:clinicID", getAppointmentHistoryInClinic);
@@ -170,5 +171,7 @@ router.get("/patients-dashboard/retrievedConfirmedPaymentDetails/:patientID", re
 
 // router for cancelling the payment information if the patientts cancel their payment
 router.put("/patients-dashboard/cancelPaymentDetails/:paymentID", cancelledPaymentDetails);
+
+router.post("/clinic-dashboard/validatePatientConsultation/:step", validateStep);
 
 export default router;

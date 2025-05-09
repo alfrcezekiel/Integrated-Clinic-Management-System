@@ -1,7 +1,8 @@
 import { StatusCodes } from "http-status-codes";
 import { body, validationResult } from "express-validator";
 
-const validatePatientConsultation = [
+// Step 1: Patient Information
+const step1Validation = [
     body("firstName")
         .notEmpty()
         .withMessage("First name is required"),
@@ -21,63 +22,106 @@ const validatePatientConsultation = [
     body("appointmentDate")
         .notEmpty()
         .withMessage("Appointment date is required"),
-    body("appointmentTime")
+    body("preferredTime")
         .notEmpty()
         .withMessage("Appointment time is required"),
-    body("hasMedicalConditions")
-        .isIn(["Yes", "No"])
-        .withMessage("Medical Condition Status is required"),
+];
+
+// Step 2: Medical History
+const step2Validation = [
     body("medicalConditionDetails")
-        .if(body("hasMedicalConditions").equals("Yes"))
         .notEmpty()
         .withMessage("Medical Condition Details are required"),
-    body("takingMedications")
-        .isIn(["Yes", "No"])
-        .withMessage("Taking Medication Status is required"),
     body("medicationDetails")
-        .if(body("takingMedications").equals("Yes"))
         .notEmpty()
         .withMessage("Medication Details are required"),
-    body("smokes")
-        .isIn(["Yes", "No"])
-        .withMessage("Smoking Status is required"),
+    body("cardioVascularDetails")
+        .notEmpty()
+        .withMessage("High Blood Details or Cardiovascular Details is required"),
+];
+
+// Step 3: Lifestyle Information
+const step3Validation = [
     body("smokeFrequency")
-        .if(body("smokes").equals("Yes"))
         .notEmpty()
         .withMessage("Smoking Frequency details required"),
-    body("hasAllergies")
-        .isIn(["Yes", "No"])
-        .withMessage("Allergy Status is required"),
     body("allergyDetails")
-        .if(body("hasAllergies").equals("Yes"))
         .notEmpty()
         .withMessage("Allergy Details are required"),
-    body("drinksAlcohol")
-        .isIn(["Yes", "No"])
-        .withMessage("Alcohol Consumption Status is required"),
     body("alcoholFrequency")
-        .if(body("drinksAlcohol").equals("Yes"))
         .notEmpty()
         .withMessage("Alcohol Consumption Frequency is required"),
+    body("exerciseFrequency")
+        .notEmpty()
+        .withMessage("Exercise Frequency Details is required"),
+];
+
+// Step 4: Clinic Assessments
+const step4Validation = [
     body("diagnosis")
         .notEmpty()
-        .withMessage("Diagnosis Details is  required"),
+        .withMessage("Diagnosis Details is required"),
     body("symptoms")
         .notEmpty()
         .withMessage("Symptoms Details is required"),
     body("prescription")
         .notEmpty()
         .withMessage("Prescription Details is required"),
-    (req, res, next) => {
-        const errors = validationResult(req);
+    body("treatmentPlan")
+        .notEmpty()
+        .withMessage("Treatment Plan Details is required"),
+];
 
-        if (!errors.isEmpty()) {
-            return res.status(StatusCodes.BAD_REQUEST).json({
-                errors: errors.formatWith((error) => error.msg).mapped()
-            });
-        }
-        next();
+// Step 5: Consent and Agreement
+const step5Validation = [
+    body("consent")
+        .notEmpty()
+        .withMessage("Consent is required. You must agree to the terms and privacy policy."),
+];
+
+// Combine validations dynamically
+const validatePatientConsultation = (step) => {
+    let validations = [];
+    // parse the step parameter to an integet
+    switch (parseInt(step, 10)) { 
+        case 0:
+            validations = step1Validation;
+            break;
+        case 1:
+            validations = step2Validation;
+            break;
+        case 2:
+            validations = step3Validation;
+            break;
+        case 3:
+            validations = step4Validation;
+            break;
+        case 4:
+            validations = step5Validation;
+            break;
+        default:
+            return [
+                (req, res) => {
+                    return res.status(StatusCodes.BAD_REQUEST).json({
+                        errors: { step: "Invalid step provided." },
+                    });
+                },
+            ];
     }
-]
+
+    return [
+        ...validations,
+        (req, res, next) => {
+            const errors = validationResult(req);
+
+            if (!errors.isEmpty()) {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    errors: errors.formatWith((error) => error.msg).mapped(),
+                });
+            }
+            next();
+        },
+    ];
+};
 
 export default validatePatientConsultation;
