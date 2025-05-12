@@ -35,6 +35,7 @@ const ApprovedAppointmentsTable = () => {
                 const response = await CMS.get(`/CMS/patients-dashboard/getPatientApprovedStatus/${patientEmail}`, {
                     headers: {
                         "Content-Type": "application/json",
+                        "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
                     },
                 });
 

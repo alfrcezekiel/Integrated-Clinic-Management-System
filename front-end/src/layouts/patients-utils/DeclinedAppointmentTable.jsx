@@ -36,6 +36,7 @@ const DeclinedAppointmentStatusTable = () => {
                 const response = await CMS.get(`/CMS/patients-dashboard/getPatientDeclinedStatus/${patientEmail}`, {
                     headers: {
                         "Content-Type": "application/json",
+                        "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
                     },
                 });
 

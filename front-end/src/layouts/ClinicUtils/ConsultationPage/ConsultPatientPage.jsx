@@ -3,17 +3,14 @@ import {
     useCallback,
     useEffect
 } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
 import {
-    Box,
-    Container,
-    Paper,
-    Stepper,
+    useLocation,
+    useNavigate
+} from "react-router-dom";
+import {
     Step,
     StepLabel,
-    Button,
-    Typography,
-    Divider,
+    Stepper
 } from "@mui/material";
 import PatientInformationStepper from "./PatientInformationPage";
 import MedicalHistoryStepper from "./MedicalHistory";
@@ -22,6 +19,7 @@ import ClinicAssessmentStepper from "./ClinicAssessmentStepper";
 import ConsentAndAgreementStepper from "./ConsentAndAgreementStepper";
 import dayjs from "dayjs";
 import CMS from "../../../API/CMS";
+import AppointmentDataNotFoundDialog from "../../../utils/AppoimtmentDataNotFound";
 
 const ConsultationPatientPage = () => {
     const navigate = useNavigate();
@@ -33,19 +31,31 @@ const ConsultationPatientPage = () => {
         phoneNumber: "",
         appointmentDate: null,
         preferredTime: null,
+        whatBringsYouHereDetails: "",
+        symptomsDetails: "",
         medicalConditionDetails: "",
+        symptomsStartDetails: "",
         medicationDetails: "",
-        cardioVascularDetails: "",
+        surgeryDetails: "",
+        experienceIssueDetails: "",
+        vaccinationDetails: "",
         smokeFrequency: "",
         allergyDetails: "",
         alcoholFrequency: "",
         exerciseFrequency: "",
+        sleepHours: "",
+        stressFrequency: "",
+        dietarySupplements: "",
+        waterIntake: "",
         diagnosis: "",
         symptoms: "",
         prescription: "",
         treatmentPlan: "",
-        consent: "",
+        bloodPressure: "",
+        heartRate: "",
+        consent: ""
     });
+
     const [patientFormData, setPatientFormData] = useState({
         firstName: "",
         lastName: "",
@@ -53,22 +63,34 @@ const ConsultationPatientPage = () => {
         phoneNumber: "",
         appointmentDate: null,
         preferredTime: null,
+        whatBringsYouHereDetails: "",
+        symptomsDetails: "",
         medicalConditionDetails: "",
+        symptomsStartDetails: "",
         medicationDetails: "",
-        cardioVascularDetails: "",
+        surgeryDetails: "",
+        experienceIssueDetails: "",
+        vaccinationDetails: "",
         smokeFrequency: "",
         allergyDetails: "",
         alcoholFrequency: "",
         exerciseFrequency: "",
+        sleepHours: "",
+        stressFrequency: "",
+        dietarySupplements: "",
+        waterIntake: "",
         diagnosis: "",
         symptoms: "",
         prescription: "",
         treatmentPlan: "",
+        bloodPressure: "",
+        heartRate: "",
         consent: "",
         appointmentID: "",
         clinic_name: "",
-        admin_id: "",
-    })
+        admin_id: ""
+    });
+    const [openAppointmentDataNotFoundDialog, setOpenAppointmentDataNotFoundDialog] = useState(false);
 
     const steps = [
         "Patient Information",
@@ -79,92 +101,87 @@ const ConsultationPatientPage = () => {
     ];
 
     const location = useLocation();
+    const appointmentData = location.state?.appointmentData;
 
-    const { appointmentData } = location.state;
-
-
+    // retrieving the patient form data from the approved appointment table component
     useEffect(() => {
-        const retrievedAppointmentData = async () => {
-            if (appointmentData) {
-                setPatientFormData((prev) => ({
-                    ...prev,
-                    firstName: appointmentData.firstName,
-                    lastName: appointmentData.lastName,
-                    email: appointmentData.email,
-                    phoneNumber: appointmentData.phoneNumber,
-                    appointmentDate: appointmentData.appointmentDate,
-                    preferredTime: appointmentData.preferredTime ? dayjs(appointmentData.preferredTime, "HH:mm") : null,
-                    appointmentID: appointmentData.appointmentID,
-                    clinic_name: appointmentData.clinic_name,
-                }))
-            }
+        if (!appointmentData || !appointmentData.appointmentID) {
+            setOpenAppointmentDataNotFoundDialog(true);
+            return;
         }
-        retrievedAppointmentData();
-    }, [appointmentData])
+        
+        setPatientFormData((prev) => ({
+            ...prev,
+            firstName: appointmentData.firstName,
+            lastName: appointmentData.lastName,
+            email: appointmentData.email,
+            phoneNumber: appointmentData.phoneNumber,
+            appointmentDate: appointmentData.appointmentDate,
+            preferredTime: appointmentData.preferredTime ? dayjs(appointmentData.preferredTime, "HH:mm") : null,
+            appointmentID: appointmentData.appointmentID,
+            clinic_name: appointmentData.clinic_name,
+        }));
+    }, [appointmentData, navigate]);
 
+    const handleCloseTheAppointmentDataNotFoundDialog = async () => {
+        setOpenAppointmentDataNotFoundDialog(false);
+        navigate("/doctor-portal/dashboard/approved-appointments", {
+            replace: true
+        });
+    }
+    // function for handling the input during changing
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        setPatientFormData(prev => ({
+        setPatientFormData((prev) => ({
             ...prev,
             [name]: type === "checkbox" ? checked : value,
         }));
-
         if (fieldErrors[name]) {
-            setFieldErrors(prev => ({
+            setFieldErrors((prev) => ({
                 ...prev,
                 [name]: "",
             }));
         }
-    }
+    };
 
-    const handleAppointmentDateChange = useCallback(async (newValue) => {
-        const handleChangeInput = (newValue) => {
-            setPatientFormData((prev) => ({
+    // function for handling the appointment date change
+    const handleAppointmentDateChange = useCallback((newValue) => {
+        setPatientFormData((prev) => ({
+            ...prev,
+            appointmentDate: newValue && dayjs(newValue) ? newValue : ""
+        }));
+        if (fieldErrors.appointmentDate) {
+            setFieldErrors((prev) => ({
                 ...prev,
-                appointmentDate: newValue && dayjs(newValue) ? newValue : ""
+                appointmentDate: ""
             }));
-
-            if (fieldErrors.appointmentDate) {
-                setFieldErrors({
-                    ...fieldErrors,
-                    appointmentDate: ""
-                });
-            }
         }
-        handleChangeInput(newValue)
-    }, [fieldErrors])
+    }, [fieldErrors]);
 
-    const handleCallBackTimePickerChange = useCallback(async (newValue) => {
-        const handleChangeInput = (newValue) => {
-            setPatientFormData((prev) => ({
+    const handleCallBackTimePickerChange = useCallback((newValue) => {
+        setPatientFormData((prev) => ({
+            ...prev,
+            preferredTime: newValue && dayjs(newValue) ? newValue : ""
+        }));
+        if (fieldErrors.preferredTime) {
+            setFieldErrors((prev) => ({
                 ...prev,
-                preferredTime: newValue && dayjs(newValue) ? newValue : ""
+                preferredTime: ""
             }));
-
-            if (fieldErrors.preferredTime) {
-                setFieldErrors({
-                    ...fieldErrors,
-                    preferredTime: ""
-                });
-            }
         }
-        handleChangeInput(newValue)
-    }, [fieldErrors])
+    }, [fieldErrors]);
 
-    // Function to consult the patient information
     const handleSubmit = async (e) => {
         e.preventDefault();
-        try {
-            // Ensure consent is provided before submission
-            if (patientFormData.consent !== "Yes") {
-                setFieldErrors((prev) => ({
-                    ...prev,
-                    consent: !patientFormData.consent ? "Consent is required. You must agree to the terms and privacy policy.." : ""
-                }));
-                return;
-            }
+        if (patientFormData.consent !== "Yes") {
+            setFieldErrors((prev) => ({
+                ...prev,
+                consent: "Consent is required. You must agree to the terms and privacy policy.."
+            }));
+            return;
+        }
 
-            // API endpoint to submit the consultation form
+        try {
             const response = await CMS.post("/CMS/clinic-dashboard/consultPatient", {
                 ...patientFormData,
                 admin_id: localStorage.getItem("sid"),
@@ -173,7 +190,7 @@ const ConsultationPatientPage = () => {
             }, {
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorage.getItem("authToken")}` // Ensure token is included
+                    "Authorization": `Bearer ${localStorage.getItem("authToken")}`
                 },
             });
 
@@ -183,84 +200,64 @@ const ConsultationPatientPage = () => {
                 navigate("/doctor-portal/dashboard/appointment-history");
             }
         } catch (error) {
-            if (error?.response && error.response?.status === 400) {
-                const fieldErrors = error.response.data.errors;
+            if (error?.response?.status === 400) {
                 setFieldErrors((prev) => ({
                     ...prev,
-                    ...fieldErrors
+                    ...error.response.data.errors
                 }));
             }
-            console.error(`Code functionality error in consultation form: ${error}`);
+            console.error("Error in consultation form:", error);
         }
-    }
-    
-    // function for proceeding to the next step
+    };
+
+    // function to handle next steps in patient consultation
     const handleNext = async () => {
+        // display the error message in the relevant field
+        const stepFields = [
+            ["firstName", "lastName", "email", "phoneNumber", "appointmentDate", "preferredTime"],
+            ["whatBringsYouHereDetails", "symptomsDetails", "medicalConditionDetails", "symptomsStartDetails", "medicationDetails", "surgeryDetails", "experienceIssueDetails", "vaccinationDetails"],
+            ["smokeFrequency", "allergyDetails", "alcoholFrequency", "exerciseFrequency", "sleepHours", "stressFrequency", "dietarySupplements", "waterIntake"],
+            ["diagnosis", "symptoms", "prescription", "treatmentPlan", "bloodPressure", "heartRate"],
+            ["consent"]
+        ];
+
+        const currentFields = stepFields[activeStep];
+        const currentData = currentFields.reduce((data, field) => {
+            data[field] = patientFormData[field];
+            return data;
+        }, {});
+
         try {
-            const stepFields = [
-                ["firstName", "lastName", "email", "phoneNumber", "appointmentDate", "preferredTime"],
-                ["medicalConditionDetails", "medicationDetails", "cardioVascularDetails"],
-                ["smokeFrequency", "allergyDetails", "alcoholFrequency", "exerciseFrequency"],
-                ["diagnosis", "symptoms", "prescription", "treatmentPlan"],
-                ["consent"]
-            ];
-
-            // Ensure the activeStep is within bounds
-            if (activeStep < 0 || activeStep >= stepFields.length) {
-                console.error("Invalid step index");
-                return;
-            }
-
-            // Get the fields for the current step
-            const currentStepFields = stepFields[activeStep];
-            const currentStepData = currentStepFields.reduce((data, field) => {
-                data[field] = patientFormData[field];
-                return data;
-            }, {});
-
-            // Send the current step's data to the backend for validation
-            const response = await CMS.post(
-                `/CMS/clinic-dashboard/validatePatientConsultation/${activeStep}`,
-                currentStepData,
-                {
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${localStorage.getItem("authToken")}` // Ensure token is included
-                    },
+            const response = await CMS.post(`/CMS/clinic-dashboard/validatePatientConsultation/${activeStep}`, currentData, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("authToken")}`
                 }
-            );
-            
-            // If validation is successful, clear errors and move to the next step
+            });
+
             if (response.status === 200) {
-                const currentStepFields = stepFields[activeStep];
                 setFieldErrors((prev) => {
-                    const updatedErrors = { ...prev };
-                    currentStepFields.forEach((field) => {
-                        delete updatedErrors[field];
-                    });
-                    return updatedErrors;
+                    const updated = { ...prev };
+                    currentFields.forEach((field) => delete updated[field]);
+                    return updated;
                 });
                 setActiveStep((prev) => prev + 1);
             }
         } catch (error) {
-            // Handle backend validation errors
-            if (error?.response && error.response?.status === 400) {
-                const fieldErrors = error.response.data.errors;
-                
-                // Map backend validation errors to the frontend state
+            if (error?.response?.status === 400) {
                 setFieldErrors((prev) => ({
                     ...prev,
-                    ...fieldErrors,
+                    ...error.response.data.errors
                 }));
             } else {
-                console.error(`Code functionality error in validation step component: ${error}`);
+                console.error("Validation steo error in function handle next:", error);
             }
         }
     };
 
     const handleBack = () => {
-        setActiveStep(prev => prev - 1);
-    }
+        setActiveStep((prev) => prev - 1);
+    };
 
     const renderStepContent = (step) => {
         switch (step) {
@@ -273,7 +270,7 @@ const ConsultationPatientPage = () => {
                         handleAppointmentDateChange={handleAppointmentDateChange}
                         handleCallBackTimePickerChange={handleCallBackTimePickerChange}
                     />
-                )
+                );
             case 1:
                 return (
                     <MedicalHistoryStepper
@@ -311,68 +308,68 @@ const ConsultationPatientPage = () => {
         }
     };
 
-
     return (
-        <Container className="py-10 flex justify-center items-center mt-28">
-            <Paper className="p-10 shadow-2xs rounded-4xl flex-col flex items-center justify-center max-w-full">
-                <Typography variant="h5" className="text-center mb-8 font-bold">
-                    Patient Consultation Steps
-                </Typography>
+        <div className="flex justify-center items-center min-h-[90vh] px-4 sm:px-6 lg:px-8">
+            <div className="p-6 sm:p-8 lg:p-10 shadow-2xl rounded-3xl w-full max-w-[50vw] min-h-[50vh]">
+                <div className="flex justify-center items-center mb-6 flex-col mx-auto py-10 px-4 sm:px-6 lg:px-8">
+                    <h2 className="text-2xl font-semibold text-center mb-6">
+                        Patient Consultation Steps
+                    </h2>
+                    <Stepper activeStep={activeStep} className="mb-4 mt-4" alternativeLabel>
+                        {steps.map((label, index) => (
+                            <Step key={index}>
+                                <StepLabel>{label}</StepLabel>
+                            </Step>
+                        ))}
+                    </Stepper>
+                    <form
+                        onSubmit={handleSubmit}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter") e.preventDefault();
+                        }}
+                    >
+                        <div className="mb-6 sm:mb-8">
+                            {renderStepContent(activeStep)}
+                        </div>
 
-                <Stepper activeStep={activeStep} className="mb-4 mt-4">
-                    {steps.map((label, index) => (
-                        <Step key={index}>
-                            <StepLabel>{label}</StepLabel>
-                        </Step>
-                    ))}
-                </Stepper>
+                        <div className="flex flex-col sm:flex-row justify-between space-y-2 sm:space-y-0 sm:space-x-4 mt-4 gap-4">
+                            <button
+                                disabled={activeStep === 0}
+                                onClick={handleBack}
+                                color="primary"
+                                className="text-sm sm:text-base bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500 disabled:opacity-50"
+                            >
+                                Back
+                            </button>
+                            {activeStep === steps.length - 1 ? (
+                                <button
+                                    type="submit"
+                                    color="primary"
+                                    className="text-sm sm:text-base bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+                                >
+                                    Submit
+                                </button>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={handleNext}
+                                    color="primary"
+                                    className="text-sm sm:text-base bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+                                >
+                                    Next
+                                </button>
+                            )}
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <AppointmentDataNotFoundDialog
+                isOpen={openAppointmentDataNotFoundDialog}
+                onClose={handleCloseTheAppointmentDataNotFoundDialog}
+            />
+        </div>
 
-                <form
-                    className="space-y-6"
-                    onSubmit={(e) => handleSubmit(e)}
-                    onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                            e.preventDefault();
-                        }
-                    }}
-                >
-                    <Box className="mb-8">
-                        {renderStepContent(activeStep)}
-                    </Box>
-                    <Divider className="my-6" />
-                    <Box className="flex justify-end gap-4 mt-4">
-                        <Button
-                            disabled={activeStep === 0}
-                            onClick={handleBack}
-                            variant="outlined"
-                            className="mr-4"
-                            color="primary"
-                        >
-                            Back
-                        </Button>
-                        {activeStep === steps.length - 1 ? (
-                            <Button
-                                type="submit"
-                                variant="contained"
-                                color="primary"
-                            >
-                                Submit
-                            </Button>
-                        ) : (
-                            <Button
-                                type="button"
-                                onClick={handleNext}
-                                variant="contained"
-                                color="primary"
-                            >
-                                Next
-                            </Button>
-                        )}
-                    </Box>
-                </form>
-            </Paper>
-        </Container>
-    )
-}
+    );
+};
 
 export default ConsultationPatientPage;

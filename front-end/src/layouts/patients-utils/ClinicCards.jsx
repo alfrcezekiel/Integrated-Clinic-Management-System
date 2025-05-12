@@ -72,6 +72,7 @@ const ClinicCards = () => {
             const response = await CMS.get(`/CMS/patientsDashboard/getBookedAppointments/${patientID}`, {
                 headers: {
                     "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("authToken")}`
                 },
             });
 
@@ -119,7 +120,12 @@ const ClinicCards = () => {
     useEffect(() => {
         const fetchClinics = async () => {
             try {
-                const response = await CMS.get("/CMS/admin-dashboard/clinics");
+                const response = await CMS.get("/CMS/admin-dashboard/clinics", {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${localStorage.getItem("authToken")}`
+                    }
+                });
 
                 if (response.status === 200) {
                     setClinics(response.data.clinics);
@@ -209,7 +215,12 @@ const ClinicCards = () => {
                 clinicID: selectedClinic.clinic_id,
             }
 
-            const response = await CMS.post("/CMS/patientsDashboard/patientsBookedAppointments", payload);
+            const response = await CMS.post("/CMS/patientsDashboard/patientsBookedAppointments", payload, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("authToken")}`
+                }
+            });
 
             if (response.status === 200) {
                 alert("Confirmed Booked Appointment!");

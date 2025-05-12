@@ -1,103 +1,86 @@
-import "../assets/css/main.css"
-import "../assets/vendor/bootstrap/css/bootstrap.min.css"
-import "../assets/vendor/bootstrap-icons/bootstrap-icons.css"
-import "../assets/vendor/aos/aos.css"
-import "../assets/vendor/glightbox/css/glightbox.min.css"
-import "../assets/vendor/swiper/swiper-bundle.min.css"
-import "../assets/js/main.js";
-import "../assets/vendor/bootstrap/js/bootstrap.bundle.min.js";
-import "../assets/vendor/glightbox/js/glightbox.min.js"
-import "../assets/vendor/imagesloaded/imagesloaded.pkgd.min.js"
-import "../assets/vendor/isotope-layout/isotope.pkgd.min.js"
-import AOS from "aos"
-import { useEffect } from "react"
+import AOS from "aos";
+import "aos/dist/aos.css";
+import { useEffect, useState } from "react";
+
 
 const LandingPageFAQ = () => {
+    const faqs = [
+        {
+            question: "How can I book an appointment?",
+            answer: "You can book an appointment by calling our clinic or visiting our website.  Walk-ins are also welcome, but we recommend scheduling in advance to ensure availability",
+        },
+        {
+            question: "How can I access my medical records?",
+            answer: "You can access your medical records through our secure patient portal. If you need assistance, our staff will be happy to help.",
+        },
+        {
+            question: "What should I bring to my first appointment?",
+            answer: "Please bring a valid ID, your insurance card, a list of current medications, and any relevant medical records. If you have any specific forms or documents, bring those as well.",
+        },
+        {
+            question: "Do you accept walk-in patients?",
+            answer: "Yes, we accept walk-in patients. However, we recommend booking an appointment to minimize waiting times.",
+        },
+        {
+            question: "Do you offer vaccinations?",
+            answer: "Yes, we provide a range of vaccinations, including flu shots, travel vaccines, and routine immunizations.",
+        },
+        {
+            question: "What should I do in case of a medical emergency?",
+            answer: "In case of a medical emergency, please call 911 or visit the nearest emergency room. Our clinic is equipped to handle non-emergency medical issues.",
+        },
+    ];
+
+    const [activeIndex, setActiveIndex] = useState(null);
+
     useEffect(() => {
-        const aos = () => {
-            AOS.init({
-                duration: 600,
-                once: true
-            })
-        }
-        aos();
-        return () => {
-            AOS.refresh();
-        };
-    }, [])
+        AOS.init({ duration: 600, once: true });
+    }, []);
+
+    const toggleFAQ = (index) => {
+        setActiveIndex((prevIndex) => (prevIndex === index ? null : index));
+    };
 
     return (
-        <>
-            {/* <!-- Faq Section --> */}
-            <section id="faq" className="faq section">
-                {/* <!-- Section Title --> */}
-                <div className="container section-title" data-aos="fade-up">
-                    <h2>Frequently Asked Questions</h2>
-                    <p>Everything you need to know about your Dental Care</p>
-                </div>
-                {/* <!-- End Section Title --> */}
-                <div className="container">
-                    <div className="row justify-content-center">
-                        <div className="col-lg-10" data-aos="fade-up" data-aos-delay="100">
-                            <div className="faq-container">
-                                <div className="faq-item faq-active">
-                                    <h3>Non consectetur a erat nam at lectus urna duis?</h3>
-                                    <div className="faq-content">
-                                        <p>Feugiat pretium nibh ipsum consequat. Tempus iaculis urna id volutpat lacus laoreet non curabitur gravida. Venenatis lectus magna fringilla urna porttitor rhoncus dolor purus non.</p>
-                                    </div>
-                                    <i className="faq-toggle bi bi-chevron-right"></i>
-                                </div>
-                                {/* <!-- End Faq item--> */}
-                                <div className="faq-item">
-                                    <h3>Feugiat scelerisque varius morbi enim nunc faucibus?</h3>
-                                    <div className="faq-content">
-                                        <p>Dolor sit amet consectetur adipiscing elit pellentesque habitant morbi. Id interdum velit laoreet id donec ultrices. Fringilla phasellus faucibus scelerisque eleifend donec pretium. Est pellentesque elit ullamcorper dignissim. Mauris ultrices eros in cursus turpis massa tincidunt dui.</p>
-                                    </div>
-                                    <i className="faq-toggle bi bi-chevron-right"></i>
-                                </div>
-                                {/* <!-- End Faq item--> */}
-                                <div className="faq-item">
-                                    <h3>Dolor sit amet consectetur adipiscing elit pellentesque?</h3>
-                                    <div className="faq-content">
-                                        <p>Eleifend mi in nulla posuere sollicitudin aliquam ultrices sagittis orci. Faucibus pulvinar elementum integer enim. Sem nulla pharetra diam sit amet nisl suscipit. Rutrum tellus pellentesque eu tincidunt. Lectus urna duis convallis convallis tellus. Urna molestie at elementum eu facilisis sed odio morbi quis</p>
-                                    </div>
-                                    <i className="faq-toggle bi bi-chevron-right"></i>
-                                </div>
-                                {/* <!-- End Faq item--> */}
-                                <div className="faq-item">
-                                    <h3>Ac odio tempor orci dapibus. Aliquam eleifend mi in nulla?</h3>
-                                    <div className="faq-content">
-                                        <p>Dolor sit amet consectetur adipiscing elit pellentesque habitant morbi. Id interdum velit laoreet id donec ultrices. Fringilla phasellus faucibus scelerisque eleifend donec pretium. Est pellentesque elit ullamcorper dignissim. Mauris ultrices eros in cursus turpis massa tincidunt dui.</p>
-                                    </div>
-                                    <i className="faq-toggle bi bi-chevron-right"></i>
-                                </div>
-                                {/* <!-- End Faq item--> */}
-                                <div className="faq-item">
-                                    <h3>Tempus quam pellentesque nec nam aliquam sem et tortor?</h3>
-                                    <div className="faq-content">
-                                        <p>Molestie a iaculis at erat pellentesque adipiscing commodo. Dignissim suspendisse in est ante in. Nunc vel risus commodo viverra maecenas accumsan. Sit amet nisl suscipit adipiscing bibendum est. Purus gravida quis blandit turpis cursus in</p>
-                                    </div>
-                                    <i className="faq-toggle bi bi-chevron-right"></i>
-                                </div>
-                                {/* <!-- End Faq item--> */}
+        <section id="faq" className="py-20 bg-white">
+            <div className="container mx-auto px-4 text-center" data-aos="fade-up">
+                <h2 className="text-4xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
+                <p className="text-gray-600 text-xl">Everything you need to know about your health care</p>
+            </div>
 
-                                <div className="faq-item">
-                                    <h3>Perspiciatis quod quo quos nulla quo illum ullam?</h3>
-                                    <div className="faq-content">
-                                        <p>Enim ea facilis quaerat voluptas quidem et dolorem. Quis et consequatur non sed in suscipit sequi. Distinctio ipsam dolore et.</p>
-                                    </div>
-                                    <i className="faq-toggle bi bi-chevron-right"></i>
+            <div className="container mx-auto px-4 mt-14">
+                <div className="max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="100">
+                    <div className="space-y-6">
+                        {faqs.map((faq, index) => (
+                            <div
+                                key={index}
+                                onClick={() => toggleFAQ(index)}
+                                className={
+                                    `border shadow-xs border-gray-200 rounded-2xl px-4 py-4 transition-all duration-300 cursor-pointer ${activeIndex === index ? "bg-blue-50 border-blue-400 shadow-md" : "bg-white"}`
+                                }
+                            >
+                                <div className="flex justify-between items-center">
+                                    <h6 className="text-xs text-gray-800">{faq.question}</h6>
+                                    <i
+                                        className={
+                                            `bi transition-transform duration-200 text-sm ${activeIndex === index ? "bi-chevron-down rotate-180" : "bi-chevron-right"} text-blue-600`
+                                        }
+                                    ></i>
                                 </div>
-                                {/* <!-- End Faq item--> */}
+                                <div
+                                    className={
+                                        `text-gray-700 transition-all duration-300 ease-in-out overflow-hidden ${activeIndex === index ? "mt-3 max-h-[300px]" : "max-h-0"}`
+                                    }
+                                >
+                                    <p className="text-base leading-relaxed">{faq.answer}</p>
+                                </div>
                             </div>
-                        </div>
-                        {/* <!-- End Faq Column--> */}
+                        ))}
                     </div>
                 </div>
-            </section>
-            {/* <!-- /Faq Section --> */}
-        </>
-    )
-}
+            </div>
+        </section>
+    );
+};
 
 export default LandingPageFAQ;

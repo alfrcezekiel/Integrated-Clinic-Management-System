@@ -171,7 +171,7 @@ function AdminLoginPage() {
                         control={<Checkbox />}
                         label={
                             <>
-                                <Typography variant="body2" color="textSecondary">
+                                <Typography variant="body2" className="text-black">
                                     Remember me
                                 </Typography>
                             </>
@@ -183,8 +183,8 @@ function AdminLoginPage() {
                         </Button>
                     </div>
                     <div className="flex items-center justify-between gap-2 mt-6">
-                        <Typography variant="body2" className="text-gray-900">
-                            <a href="#">Forgot Password</a>
+                        <Typography variant="body2" className="text-black">
+                            <a href="#" className="text-black">Forgot Password</a>
                         </Typography>
                     </div>
                 </form>

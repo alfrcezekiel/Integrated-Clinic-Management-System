@@ -1,6 +1,5 @@
 import HomeIcon from "@mui/icons-material/Home";
 import DashboardHome from "./widgets/layout/DashboardHome";
-import Schedule from "@mui/icons-material/Schedule";
 import PatientsTable from "./layouts/patients-utils/patients-table";
 import DoctorsDashboardHome from "./widgets/layout/doctors-dashboard/DoctorsDashboardHome";
 import DoctorsTablesListOfAppointments from "./layouts/ClinicUtils/DoctorsTablesListOfAppointment";
@@ -25,7 +24,12 @@ import ConsultPatientPage from "./layouts/ClinicUtils/ConsultationPage/ConsultPa
 
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import RegisterPatientsAccountTable from "./layouts/adminUtils/RegisterPatientsAccountTable";
-import AssignmentTurnedIn from "@mui/icons-material/AssignmentTurnedIn";
+import PersonIcon from '@mui/icons-material/Person';	
+import EventIcon from '@mui/icons-material/Event';	
+import HourglassTopIcon from '@mui/icons-material/HourglassTop';	
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';	
+import CancelIcon from '@mui/icons-material/Cancel';	
+import HistoryIcon from '@mui/icons-material/History';	
 
 const iconStyle = {
     fontSize: 20,
@@ -52,25 +56,25 @@ const routes = [
             },
             {
                 id: 3,
-                icon: <Schedule style={iconStyle} />,
+                icon: <EventIcon style={iconStyle} />,
                 name: "Appointments",
                 path: "View-Appointment",
                 element: <PatientsTable />
             }, {
                 id: 4,
-                icon: <Schedule style={iconStyle} />,
+                icon: <HourglassTopIcon style={iconStyle} />,
                 name: "Pending Appointments",
                 path: "Pending-Appointment",
                 element: <PendingAppointmentTable />
             }, {
                 id: 5,
-                icon: <Schedule style={iconStyle} />,
+                icon: <CheckCircleIcon style={iconStyle} />,
                 name: "Approved Appointments",
                 path: "Approved-Appointment",
                 element: <ApprovedAppointmentsTable />
             }, {
                 id: 6,
-                icon: <Schedule style={iconStyle} />,
+                icon: <CancelIcon style={iconStyle} />,
                 name: "Declined Appointments",
                 path: "Declined-Appointment",
                 element: <DeclinedAppointmentStatusTable />
@@ -92,42 +96,42 @@ export const doctorRoutes = [
             },
             {
                 id: 2,
-                icon: <Schedule style={iconStyle} />,
+                icon: <EventIcon style={iconStyle} />,
                 name: "Appointments",
                 path: "/patients-appointments",
                 element: <DoctorsTablesListOfAppointments />
             },
             {
                 id: 3,
-                icon: <Schedule style={iconStyle} />,
+                icon: <HourglassTopIcon style={iconStyle} />,
                 name: "Pending Appointments",
                 path: "/pending-appointments",
                 element: <PendingAppointmentClinicTable />
             },
             {
                 id: 4,
-                icon: <Schedule style={iconStyle} />,
+                icon: <CheckCircleIcon style={iconStyle} />,
                 name: "Approved Appointments",
                 path: "/approved-appointments",
                 element: <ApprovedAppointmentClinicTable />
             },
             {
                 id: 5,
-                icon: <Schedule style={iconStyle} />,
+                icon: <CancelIcon style={iconStyle} />,
                 name: "Declined Appointments",
                 path: "/declined-appointments",
                 element: <DeclinedAppointmentStatusClinicTable />
             },
             {
                 id: 6,
-                icon: <AssignmentTurnedIn style={iconStyle} />,
+                icon: <HistoryIcon style={iconStyle} />,
                 name: "Appointment History",
                 path: "/appointment-history",
                 element: <AppointmentHistoryTable />
             },
             {
                 id: 7,
-                icon: <AssignmentTurnedIn style={iconStyle} />,
+                icon: <PersonIcon style={iconStyle} />,
                 name: "Consult Patient",
                 path: "/consult-patient",
                 element: <ConsultPatientPage />
@@ -157,7 +161,7 @@ export const adminRoutes = [
             {
                 id: 3,
                 icon: <AddClinicIcon style={iconStyle} />, // Use the new icon here
-                name: "Create Clinic",
+                name: "Add Clinic",
                 path: "/add-clinic",
                 element: <AddClinic />
             },

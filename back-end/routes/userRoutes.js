@@ -37,7 +37,9 @@ import {
     retrievePatientDetailsInPaymentDialog,
     retrievedPaymentConfirmedDetails,
     cancelledPaymentDetails,
-    validateStep
+    validateStep,
+    deleteRegisteredPatientAccount,
+    verifyToken
 } from "../controllers/cms.js";
 import validateRegister from "../middleware/validation.js";
 import patientsLoginValidation from "../middleware/patientsLoginValidation.js";
@@ -78,7 +80,7 @@ router.get("/patientsDashboard/getBookedAppointments/:id", getBookedAppointments
 router.post("/patientsDashboard/patientsBookedAppointments", [validatePatientBookAppointment], patientsBookedAppointments);
 
 // router for retrieving the patients booked appointments  to display in tables
-router.get("/patientsDashboard/bookedAppointments", getPatientsAppointments);
+router.get("/patientsDashboard/bookedAppointments/:email", getPatientsAppointments);
 
 // router for destroying the session of the patients account
 router.get("/patientsDashboard/logout", logout)
@@ -158,7 +160,7 @@ router.post("/clinic-dashboard/consultPatient", consultPatientInClinicDashboard)
 router.get("/clinic-dashboard/getAppointmentHistory/:clinicID", getAppointmentHistoryInClinic);
 
 // router for session verification
-router.get("/retrieveSession", requireLogin, getLoggedInUser);
+router.get("/retrieveSession", verifyToken, getLoggedInUser);
 
 // router for adding the payment information of the patients in patients dashboard
 router.post("/patients-dashboard/payment", [validatePaymentFields], addPatientPaymentInformation);
@@ -172,6 +174,10 @@ router.get("/patients-dashboard/retrievedConfirmedPaymentDetails/:patientID", re
 // router for cancelling the payment information if the patientts cancel their payment
 router.put("/patients-dashboard/cancelPaymentDetails/:paymentID", cancelledPaymentDetails);
 
+// router for validating the steps in clinic side
 router.post("/clinic-dashboard/validatePatientConsultation/:step", validateStep);
+
+// router for deleting the patient register account in admin side
+router.delete("/admin-dashboard/deleteRegisteredPatientAccount/:patientID", deleteRegisteredPatientAccount);
 
 export default router;

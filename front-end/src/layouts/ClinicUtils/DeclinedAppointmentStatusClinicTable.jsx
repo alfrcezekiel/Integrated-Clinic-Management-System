@@ -40,7 +40,12 @@ const DeclinedAppointmentStatusClinicTable = () => {
 
         const retrieveAppoinmentDeclinedStatus = async () => {
             try {
-                const response = await CMS.get(`/CMS/doctors-dashboard/getPatientDeclinedStatus/${clinicID}`);
+                const response = await CMS.get(`/CMS/doctors-dashboard/getPatientDeclinedStatus/${clinicID}`, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
+                    }
+                });
 
                 if (!response.data) {
                     throw new Error("No retrieved declined status for appointments");

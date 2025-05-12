@@ -77,6 +77,12 @@ const ClinicRegistrationModal = ({ open, onClose, fieldErrors, setFieldErrors, f
                 ...prev,
                 clinicImage: file,
             }));
+        } else {
+            setFileName('');
+            setFormData((prev) => ({
+                ...prev,
+                clinicImage: null,
+            }));
         }
 
         if (fieldErrors.clinicImage) {
@@ -98,6 +104,7 @@ const ClinicRegistrationModal = ({ open, onClose, fieldErrors, setFieldErrors, f
         setConfirmShowPassword((prev) => !prev);
     }
 
+    // handles the clinic data  registration form submission
     const handleSubmit = useCallback(async (e) => {
         e.preventDefault();
         try {

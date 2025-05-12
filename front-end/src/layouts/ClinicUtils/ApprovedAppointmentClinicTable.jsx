@@ -17,47 +17,9 @@ import {
 } from "@mui/material"
 import { useState } from "react"
 import CMS from "../../API/CMS"
-import ConsultationFormModal from "./ConsultationFormModal"
 
 const ApprovedAppointmentClinicTable = () => {
     const [appointmentsData, setAppointmentsData] = useState([])
-    const [consultationFormData, setConsultationFormData] = useState({
-        firstName: "",
-        lastName: "",
-        email: "",
-        phoneNumber: "",
-        appoimtmentdate: "",
-        appointmentTime: "",
-        medicalConditionDetails: "",
-        medicationDetails: "",
-        smokeFrequency: "",
-        allergyDetails: "",
-        alcoholFrequency: "",
-        diagnosis: "",
-        symptoms: "",
-        prescription: "",
-        consent: "",
-        appointmentID: "",
-    })
-
-    const [fieldsError, setFieldsError] = useState({
-        firstName: "",
-        lastName: "",
-        email: "",
-        phoneNumber: "",
-        appointmentDate: "",
-        appointmentTime: "",
-        medicalConditionDetails: "",
-        medicationDetails: "",
-        smokeFrequency: "",
-        allergyDetails: "",
-        alcoholFrequency: "",
-        diagnosis: "",
-        symptoms: "",
-        prescription: "",
-        consent: "",
-    })
-
     const appointmentsTableColumn = [
         "Clinic Name",
         'First Name',
@@ -71,8 +33,6 @@ const ApprovedAppointmentClinicTable = () => {
         'Purpose of Appointment',
         "Consult Patient"
     ]
-
-    const [open, setOpen] = useState(false);
 
     // this function is to formate the date to YYYY-MM-DD
     const formatDate = (dateString) => {
@@ -101,11 +61,6 @@ const ApprovedAppointmentClinicTable = () => {
         })
     }
 
-    const handleClose = () => {
-        setFieldsError({});
-        setOpen(false);
-    }
-
     const formatTimeToAMPM = (time) => {
         if (!time) return "N/A";
         if (time.includes("AM") || time.includes("PM")) return time;
@@ -127,7 +82,12 @@ const ApprovedAppointmentClinicTable = () => {
     const retrieveAppoinmentApprovedStatus = async () => {
         const clinicID = localStorage.getItem("sid")
         try {
-            const response = await CMS.get(`/CMS/doctors-dashboard/getPatientApprovedStatus/${clinicID}`);
+            const response = await CMS.get(`/CMS/doctors-dashboard/getPatientApprovedStatus/${clinicID}`, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("authToken")}`
+                }
+            });
 
             if (!response.data) {
                 throw new Error("No retrieved approved status for appointments");
@@ -163,37 +123,6 @@ const ApprovedAppointmentClinicTable = () => {
 
     const navigate = useNavigate();
 
-    // this function is to submit the consultation form data
-    const handleSubmit = async () => {
-        try {
-            const response = await CMS.post("/CMS/clinic-dashboard/consultPatient", {
-                ...consultationFormData,
-                admin_id: localStorage.getItem("sid"),
-                clinic_name: consultationFormData.clinic_name,
-                appointment_id: consultationFormData.appointmentID
-            }, {
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
-                },
-            })
-
-            if (response.status === 200) {
-                setFieldsError({});
-                alert("Consulted Patient Successfully!");
-                navigate("/doctor-portal/dashboard/appointment-history")
-                setOpen(false);
-                retrieveAppoinmentApprovedStatus();
-            }
-        } catch (error) {
-            if(error.response && error.response?.status === 400) {
-                const fieldErrors = error.response.data.errors;
-                setFieldsError(fieldErrors);
-            } else {
-                console.error(`Code functionality error in consultation form: ${error}`);
-            }
-        }
-    }
 
     // this function determines the color of the status of the patients
     const getStatusColor = (status) => {
@@ -328,15 +257,6 @@ const ApprovedAppointmentClinicTable = () => {
                     </CardContent>
                 </Card>
             </div>
-            <ConsultationFormModal
-                open={open}
-                onClose={handleClose}
-                onSubmit={handleSubmit}
-                consultationFormData={consultationFormData}
-                setConsultationFormData={setConsultationFormData}
-                fieldsError={fieldsError}
-                setFieldsError={setFieldsError}
-            />
         </>
     )
 }

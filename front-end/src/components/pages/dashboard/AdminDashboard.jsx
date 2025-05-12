@@ -1,5 +1,5 @@
-import {useEffect, useState} from "react";
-import {useLocation, Outlet, Route, Routes, useNavigate} from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useLocation, Outlet, Route, Routes, useNavigate } from "react-router-dom";
 import AdminDashboardNavbar from "../../../layouts/adminUtils/adminNavBar";
 import AdminSideNav from "../../../layouts/adminUtils/AdminSideNav";
 import { adminRoutes } from "../../../routes";
@@ -21,6 +21,7 @@ const AdminDashboard = () => {
                     withCredentials: true,
                     headers: {
                         "Content-Type": "application/json",
+                        "Authorization": `Bearer ${localStorage.getItem("authToken")}`
                     },
                 });
 
@@ -50,7 +51,7 @@ const AdminDashboard = () => {
                         <AdminDashboardNavbar />
                         <Outlet />
                         <Routes>
-                            {adminRoutes.flatMap((layout) => 
+                            {adminRoutes.flatMap((layout) =>
                                 layout.pages.map((page) => (
                                     <Route
                                         key={page.id}

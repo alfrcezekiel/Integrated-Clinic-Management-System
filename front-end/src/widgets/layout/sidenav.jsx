@@ -99,6 +99,7 @@ const SideNav = ({ brandName, routes }) => {
                     </Collapse>
                 </List>
                 <div className="h-4"></div>
+                {/* Dropdown component of appointment management */}
                 <List className="bg-white shadow-lg rounded-2xl">
                     <ListItemButton onClick={handleDropdownAppointmentClick}>
                         <ListItemText primary="Appointment Management" />

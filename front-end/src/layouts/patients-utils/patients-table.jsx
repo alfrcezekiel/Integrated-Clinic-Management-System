@@ -29,9 +29,12 @@ const PatientsTable = () => {
     useEffect(() => {
         const retrieveAppointments = async () => {
             try {
-                const response = await CMS.get("/CMS/patientsDashboard/bookedAppointments", {
+                const email = localStorage.getItem("sem");
+
+                const response = await CMS.get(`/CMS/patientsDashboard/bookedAppointments/${email}`, {
                     headers: {
                         "Content-Type": "application/json",
+                        "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
                     },
                 });
 
@@ -40,7 +43,7 @@ const PatientsTable = () => {
                 }
 
             } catch (error) {
-                console.log(`Failed to retrieve appointments: ${error}`);
+                console.error(`Failed to retrieve appointments: ${error}`);
             }
         }
         retrieveAppointments();

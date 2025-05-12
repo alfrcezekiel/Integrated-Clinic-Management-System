@@ -11,24 +11,37 @@ class Clinic {
             const query = `SELECT
                 pa.appointmentID,
                 c.clinic_name,
-                pa.firstName,
-                pa.lastName,
-                pa.email,
+                cp.patient_first_name,
+                cp.patient_last_name,
+                cp.patient_email,
                 cp.created_by,
                 cp.appointmentID,
                 cp.medical_condition_details,
                 cp.medication_details,
                 cp.smoke_frequency,
-                cp.high_blood_details,
+                cp.past_surgeries_details,
                 cp.exercise_frequency_details,
                 cp.treatment_plan,
+                cp.what_brings_you_here_details,
+                cp.symptoms_details,
+                cp.symptoms_start_details,
+                cp.past_surgeries_details,
+                cp.experience_issue_details,
+                cp.vaccination_details,
+                cp.exercise_frequency_details,
+                cp.sleep_hours_details,
+                cp.stress_level_details,
+                cp.taking_supplements_details,
+                cp.water_intake_details,
+                cp.blood_pressure_details,
+                cp.heart_rate_details,
                 cp.allergies_details,
                 cp.alcohol_details,
                 cp.diagnosis,
                 cp.symptoms,
                 cp.prescription,
-                pa.appointmentDate,
-                pa.preferredTime,
+                cp.appointment_date,
+                cp.appointment_time,
                 pa.phoneNumber,
                 pa.gender,
                 pa.status,
@@ -215,6 +228,7 @@ class Clinic {
         }
     }
 
+    // method for cancelliing the patients payment
     cancelledPaymentDetailsInConfirmedPaymentDialog = async (paymentID) => {
         try {
             const paymentStatus = "Non Paid"
@@ -234,6 +248,30 @@ class Clinic {
             return result;
         } catch (error) {
             console.error("Error cancelling patients details in retrievedConfirmedPaymentDetails model function:", error);
+            throw error;
+        }
+    }
+
+    // method for deleting the patient registered account in admin side
+    deletePatientRegisteredAccount = async (patientID) => {
+        try {
+            const query = `
+                DELETE pr1, pr2 
+                FROM patientsregisteraccount1 AS pr1
+                INNER JOIN patientsregisteraccount2 as pr2
+                ON pr1.patientID = pr2.registerPatientID
+                WHERE pr1.patientID = ?;
+            `
+
+            const value = [
+                patientID
+            ]
+
+            const [result] = await conn.query(query, value);
+
+            return result;
+        } catch(error){
+            console.error(`Error deleting the patient registered account in model function: ${error}`)
             throw error;
         }
     }

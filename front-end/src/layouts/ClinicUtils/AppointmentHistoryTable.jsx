@@ -96,7 +96,12 @@ const AppointmentHistoryTable = () => {
 
         const retrieveAppointmentHistory = async () => {
             try {
-                const response = await CMS.get(`/CMS/clinic-dashboard/getAppointmentHistory/${clinicID}`);
+                const response = await CMS.get(`/CMS/clinic-dashboard/getAppointmentHistory/${clinicID}`, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
+                    }
+                });
 
                 if (!response.data) {
                     throw new Error("No retrieved appointment history data");
@@ -173,27 +178,27 @@ const AppointmentHistoryTable = () => {
                                             </TableCell>
                                             <TableCell align="center">
                                                 <Typography variant="body2" className="text-blue-gray-900">
-                                                    {appointment.firstName}
+                                                    {appointment.patient_first_name}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="center">
                                                 <Typography variant="body2" className="text-blue-gray-900">
-                                                    {appointment.lastName}
+                                                    {appointment.patient_last_name}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="center">
                                                 <Typography variant="body2" className="text-blue-gray-900">
-                                                    {appointment.email}
+                                                    {appointment.patient_email}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="center">
                                                 <Typography variant="body2" className="text-blue-gray-900">
-                                                    {dateFormat(appointment.appointmentDate)}
+                                                    {dateFormat(appointment.appointment_date)}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="center">
                                                 <Typography variant="body2" className="text-blue-gray-900">
-                                                    {formatTimeToAMPM(appointment.preferredTime)}
+                                                    {formatTimeToAMPM(appointment.appointment_time)}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="center">
@@ -236,117 +241,161 @@ const AppointmentHistoryTable = () => {
                 </Card>
 
                 {/* Modal for Patients Results */}
-                <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md" className="rounded-4xl">
+                <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md" className="rounded-2xl">
                     <DialogTitle className="flex justify-between items-center bg-blue-500">
-                        <span className="text-lg font-semibold text-black">Patient Consultation</span>
+                        <span className="text-lg font-semibold text-white">Patient Consultation Result</span>
                         <IconButton onClick={handleClose} className="text-white">
                             <CloseIcon />
                         </IconButton>
                     </DialogTitle>
-                    <DialogContent className="bg-gray-50">
+                    <DialogContent className="bg-gray-100">
                         {selectedPatient && (
-                            <div className="space-y-6 p-2">
-                                {/* Patient Information */}
-                                <section className="bg-white p-4 rounded-xl shadow-lg mt-3">
-                                    <h3 className="text-lg font-semibold text-black mb-3">Patient Information</h3>
-                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm text-gray-700">
-                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                            <strong>First Name: </strong>
-                                            {selectedPatient.firstName}
+                            <>
+                                <div className="space-y-6 p-4">
+                                    {/* Patient Information */}
+                                    <section className="bg-white p-4 rounded-xl shadow-lg">
+                                        <h3 className="text-lg font-semibold text-black mb-3">Patient Information</h3>
+                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm text-gray-700">
+                                            <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                                <strong>First Name: </strong>
+                                                {selectedPatient.patient_first_name}
+                                            </div>
+                                            <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                                <strong>Last Name: </strong>
+                                                {selectedPatient.patient_last_name}
+                                            </div>
+                                            <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                                <strong>Email: </strong>
+                                                {selectedPatient.patient_email}
+                                            </div>
+                                            <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                                <strong>Phone Number: </strong>
+                                                {selectedPatient.phoneNumber}
+                                            </div>
+                                            <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                                <strong>Appointment Date: </strong>
+                                                {dateFormat(selectedPatient.appointment_date)}
+                                            </div>
+                                            <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                                <strong>Appointment Time: </strong>
+                                                {formatTimeToAMPM(selectedPatient.appointment_time)}
+                                            </div>
+                                            <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                                <strong>Status: </strong>
+                                                {selectedPatient.status}
+                                            </div>
+                                            <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                                <strong>Gender: </strong>
+                                                {selectedPatient.gender}
+                                            </div>
+                                            <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                                <strong>Purpose Of Appointment: </strong>
+                                                {selectedPatient.purposeOfAppointment}
+                                            </div>
                                         </div>
-                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                            <strong>Last Name: </strong>
-                                            {selectedPatient.lastName}
-                                        </div>
-                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                            <strong>Email: </strong>
-                                            {selectedPatient.email}
-                                        </div>
-                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                            <strong>Phone Number: </strong>
-                                            {selectedPatient.phoneNumber}
-                                        </div>
-                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                            <strong>Appointment Date: </strong>
-                                            {dateFormat(selectedPatient.appointmentDate)}
-                                        </div>
-                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                            <strong>Appointment Time: </strong>
-                                            {formatTimeToAMPM(selectedPatient.preferredTime)}
-                                        </div>
-                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                            <strong>Status: </strong>
-                                            {selectedPatient.status}
-                                        </div>
-                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                            <strong>Gender: </strong>
-                                            {selectedPatient.gender}
-                                        </div>
-                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                            <strong>Purpose Of Appointment: </strong>
-                                            {selectedPatient.purposeOfAppointment}
-                                        </div>
-                                    </div>
-                                </section>
+                                    </section>
 
-                                {/* Medical History */}
-                                <section className="bg-white p-4 rounded-xl shadow-lg">
-                                    <h3 className="text-lg font-semibold text-black mb-3">Medical History</h3>
-                                    <div className="grid grid-cols-2 gap-4 text-sm text-gray-700">
-                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                            <strong>Medical Condition Details: </strong>
-                                            {selectedPatient.medical_condition_details ? selectedPatient.medical_condition_details : "N/A"}
+                                    {/* /* Medical History */}
+                                    <section className="bg-white p-4 rounded-xl shadow-lg">
+                                        <h3 className="text-lg font-semibold text-black mb-3">Medical History</h3>
+                                        <div className="grid grid-cols-2 gap-4 text-sm text-gray-700">
+                                            <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                                <strong>Reason For Visit: </strong>
+                                                {selectedPatient.what_brings_you_here_details || "N/A"}
+                                            </div>
+                                            <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                                <strong>Symptoms Started: </strong>
+                                                {selectedPatient.symptoms_start_details || "N/A"}
+                                            </div>
+                                            <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                                <strong>Reported Symptoms: </strong>
+                                                {selectedPatient.symptoms__details || "N/A"}
+                                            </div>
+                                            <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                                <strong>Known Medical Conditions: </strong>
+                                                {selectedPatient.medical_condition_details || "N/A"}
+                                            </div>
+                                            <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                                <strong>Current Medications: </strong>
+                                                {selectedPatient.medication_details || "N/A"}
+                                            </div>
+                                            <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                                <strong>Smoking Habits: </strong>
+                                                {selectedPatient.smoke_frequency || "N/A"}
+                                            </div>
+                                            <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                                <strong>Known Allergies: </strong>
+                                                {selectedPatient.allergies_details || "N/A"}
+                                            </div>
+                                            <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                                <strong>Prior Encountered Concern: </strong>
+                                                {selectedPatient.experience_issue_dettails || "N/A"}
+                                            </div>
+                                            <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                                <strong>Alcohol Consumption: </strong>
+                                                {selectedPatient.alcohol_details || "N/A"}
+                                            </div>
+                                            <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                                <strong>History of Surgical Procedures: </strong>
+                                                {selectedPatient.past_surgeries_details || "N/A"}
+                                            </div>
                                         </div>
-                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                            <strong>Taking Medication Details: </strong>
-                                            {selectedPatient.medication_details ? selectedPatient.medication_details : "N/A"}
+                                    </section>
+                                    <section className="bg-white p-4 rounded-xl shadow-lg">
+                                        <h3 className="text-lg font-semibold text-black mb-4">Lifestyle and Clinical Assessment</h3>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-700">
+                                            <div>
+                                                <strong>Clinical Diagnosis: </strong>
+                                                {selectedPatient.diagnosis || "N/A"}
+                                            </div>
+                                            <div>
+                                                <strong>Reported Symptoms: </strong>
+                                                {selectedPatient.symptoms || "N/A"}
+                                            </div>
+                                            <div>
+                                                <strong>Prescribed Medications: </strong>
+                                                {selectedPatient.prescription || "N/A"}
+                                            </div>
+                                            <div>
+                                                <strong>Treatment Plan Summary: </strong>
+                                                {selectedPatient.treatment_plan || "N/A"}
+                                            </div>
+                                            <div>
+                                                <strong>Exercise Routine: </strong>
+                                                {selectedPatient.exercise_frequency_details || "N/A"}
+                                            </div>
+                                            <div>
+                                                <strong>Immunization Record: </strong>
+                                                {selectedPatient.vaccination_details || "N/A"}
+                                            </div>
+                                            <div>
+                                                <strong>Average Sleep Duration: </strong>
+                                                {selectedPatient.sleep_hours_details || "N/A"}
+                                            </div>
+                                            <div>
+                                                <strong>Heart Rate: </strong>
+                                                {selectedPatient.heart_rate_details || "N/A"}
+                                            </div>
+                                            <div>
+                                                <strong>Blood Pressure Reading: </strong>
+                                                {selectedPatient.blood_pressure_details || "N/A"}
+                                            </div>
+                                            <div>
+                                                <strong>Stress Level: </strong>
+                                                {selectedPatient.stress_level_details || "N/A"}
+                                            </div>
+                                            <div>
+                                                <strong>Hydration Status: </strong>
+                                                {selectedPatient.water_intake_details || "N/A"}
+                                            </div>
+                                            <div>
+                                                <strong>Supplement Intake: </strong>
+                                                {selectedPatient.taking_supplements_details || "N/A"}
+                                            </div>
                                         </div>
-                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                            <strong>Smoke Frequency Details: </strong>
-                                            {selectedPatient.smoke_frequency ? selectedPatient.smoke_frequency : "N/A"}
-                                        </div>
-                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                            <strong>Allergies Details: </strong>
-                                            {selectedPatient.allergies_details ? selectedPatient.allergies_details : "N/A"}
-                                        </div>
-                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                            <strong>Drinks Frequency Details: </strong>
-                                            {selectedPatient.alcohol_details ? selectedPatient.alcohol_details : "N/A"}
-                                        </div>
-                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                            <strong>High Blood Pressure or Cardiovascular Details:  </strong>
-                                            {selectedPatient.high_blood_details ? selectedPatient.high_blood_details : "N/A"}
-                                        </div>
-                                    </div>
-                                </section>
-
-                                {/* Lifestyle Info */}
-                                <section className="bg-white p-4 rounded-xl shadow-lg">
-                                    <h3 className="text-lg font-semibold text-black mb-3">Lifestyle Information</h3>
-                                    <div className="space-y-2 text-sm text-gray-700">
-                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                            <strong>Diagnosis: </strong>
-                                            {selectedPatient.diagnosis}
-                                        </div>
-                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                            <strong>Symptoms: </strong>
-                                            {selectedPatient.symptoms}
-                                        </div>
-                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                            <strong>Prescription: </strong>
-                                            {selectedPatient.prescription}
-                                        </div>
-                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                            <strong>Treatment Plan: </strong>
-                                            {selectedPatient.treatment_plan}
-                                        </div>
-                                        <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                            <strong>Does Exercise: </strong>
-                                            {selectedPatient.exercise_frequency_details}
-                                        </div>
-                                    </div>
-                                </section>
-                            </div>
+                                    </section>
+                                </div>
+                            </>
                         )}
                     </DialogContent>
                 </Dialog>

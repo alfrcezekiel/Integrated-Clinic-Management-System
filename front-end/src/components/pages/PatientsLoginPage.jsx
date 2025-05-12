@@ -46,6 +46,9 @@ function PatientsLoginPortal() {
         if (response.data.messageStatus === "Account is still pending for wait for the admin approval!") {
             setAccountStatus("Your account is pending approval. Please wait for the admin to approve your account.");
             setOpenModal(true)
+        } else if (response.data.messageStatus === "Your account has been declined"){
+            setAccountStatus("Your account has been declined by the admin! Please provide valid credentials!")
+            setOpenModal(true)
         }
     }, [])
 
@@ -95,6 +98,7 @@ function PatientsLoginPortal() {
 
     const navigate = useNavigate();
 
+    // handles the patient login portal going to the patients dashboard
     const handleLoggedInPatient = async (e) => {
         try {
             e.preventDefault();
@@ -111,7 +115,7 @@ function PatientsLoginPortal() {
 
                 if (response.data.messageStatus === "Account is still pending for wait for the admin approval!") {
                     handleAccountStatus(response);
-                }
+                } 
 
                 if (response.data.token && response.data.sid) {
                     localStorage.setItem("authToken", response.data.token);
@@ -135,6 +139,10 @@ function PatientsLoginPortal() {
                     email: error.response.data.emailMessage,
                     password: error.response.data.passwordMessage
                 });
+            } else if (error.response && error.response.status === 404){
+                if(error.response.data.messageStatus === "Your account has been declined"){
+                    handleAccountStatus(error.response)
+                }
             } else {
                 console.error(`Error in logging in patient: ${error}`);
             }

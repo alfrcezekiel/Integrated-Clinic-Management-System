@@ -98,7 +98,7 @@ export const registerPatientAccount = async (req, res) => {
             status
         ]);
 
-        const token = jwt.sign({ id: patientID, email: email }, SECRET_KEY, { expiresIn: "1hr" });
+        const token = jwt.sign({ id: patientID, email: email }, SECRET_KEY);
         return res.status(StatusCodes.OK).json({
             message: "Patient account registered successfully. Your Account is Pending. Please wait for the admin approval",
             token
@@ -170,9 +170,14 @@ export const loginPatientsAccount = async (req, res) => {
             return res.status(StatusCodes.OK).json({
                 messageStatus: "Account is still pending for wait for the admin approval!"
             })
+        } else if (patients.status === "Declined") {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                messageStatus: "Your account has been declined"
+            })
         }
+
         // generate a token
-        const token = jwt.sign({ id: patients.patientID }, SECRET_KEY, { expiresIn: "1hr" });
+        const token = jwt.sign({ id: patients.patientID }, SECRET_KEY);
 
         // session token
         req.session.user = {
@@ -233,7 +238,12 @@ export const loginDoctorsAccount = async (req, res) => {
             });
         }
 
-        const token = jwt.sign({ id: doctorsUsers.doctorsID, firstName: doctorsUsers.firstName, lastName: doctorsUsers.lastName }, SECRET_KEY, { expiresIn: "1hr" });
+        const token = jwt.sign({
+            id: doctorsUsers.doctorsID,
+            firstName: doctorsUsers.firstName,
+            lastName: doctorsUsers.lastName
+        }, SECRET_KEY);
+
         const sid = req.session.user = {
             id: doctorsUsers.doctorsID,
             firstName: doctorsUsers.firstName,
@@ -280,7 +290,11 @@ export const loginAdminAccount = async (req, res) => {
             });
         }
 
-        const token = jwt.sign({ id: adminUsers.adminID, email: adminUsers.email }, SECRET_KEY, { expiresIn: "1hr" });
+        const token = jwt.sign({
+            id: adminUsers.adminID,
+            email: adminUsers.email
+        }, SECRET_KEY);
+
         const sid = req.session.user = {
             id: adminUsers.adminID,
         }
@@ -462,20 +476,34 @@ export const patientsBookedAppointments = async (req, res) => {
 
 // verify a token to protect routes
 export const verifyToken = (req, res, next) => {
-    const token = req.headers.authorization?.split(" ")[1];
-    if (!token) {
-        return res.status(StatusCodes.UNAUTHORIZED).json({
-            message: "Access Denied! No token provided"
-        })
-    }
-
     try {
-        const SECRET_KEY = process.env.JWT_SECRET
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                message: "Access Denied! Invalid token or missing an authorization header"
+            })
+        }
+
+        const token = authHeader.split(" ")[1];
+        if (!token) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                message: "Access Denied! No token provided in the authorization header"
+            })
+        }   
+
+        const SECRET_KEY = process.env.JWT_SECRET;
+
+        if (!SECRET_KEY) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "Server configuration error: Missing JWT secret key"
+            });
+        }
+
         const decoded = jwt.verify(token, SECRET_KEY);
-        req.user = decoded;
+        req.session.user = decoded;
         next();
     } catch (error) {
-        console.error(`Invalid or Expired token: ${error}`);
+        console.error(`Invalid or Expired token in verify token controller : ${error}`);
         return res.status(StatusCodes.UNAUTHORIZED).json({
             message: "Invalid or Expired token"
         })
@@ -485,6 +513,16 @@ export const verifyToken = (req, res, next) => {
 // controller logic for getting patients appointments to display in table rows
 export const getPatientsAppointments = async (req, res) => {
     try {
+        const { email } = req.params;
+
+        const email_address = String(email);
+
+        if (!email_address) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Please enter a valid email address"
+            })
+        }
+
         const query = `SELECT
             firstName,
             lastName,
@@ -495,10 +533,15 @@ export const getPatientsAppointments = async (req, res) => {
             preferredTime,
             purposeOfAppointment
             FROM patientsappointment
-            ORDER BY appointmentDate ASC
+            WHERE email = ?
+            ORDER BY appointmentDate ASC;
         `;
 
-        const [rows] = await conn.query(query);
+        const value = [
+            email_address
+        ]
+
+        const [rows] = await conn.query(query, value);
 
         return res.status(StatusCodes.OK).json({
             patientsAppointments: rows
@@ -870,7 +913,7 @@ export const createClinic = async (req, res) => {
         if (!req.file) {
             return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Please upload a valid clinic image' });
         }
-        const clinic_image = req.file.path;
+        const clinic_image = req.file.filename;
 
         const query = `INSERT INTO clinic (
             clinic_name,
@@ -1112,7 +1155,7 @@ export const loggedInClinicAccount = async (req, res) => {
             })
         }
 
-        const token = jwt.sign({ id: clinicUsers.clinic_id, email: clinicUsers.email }, SECRET_KEY, { expiresIn: "1hr" });
+        const token = jwt.sign({ id: clinicUsers.clinic_id, email: clinicUsers.email }, SECRET_KEY);
         const sid = req.session.user = {
             id: clinicUsers.clinic_id,
             scn: clinicUsers.clinic_name,
@@ -1514,17 +1557,28 @@ export const consultPatientInClinicDashboard = async (req, res) => {
             phoneNumber,
             appointmentDate,
             preferredTime,
+            whatBringsYouHereDetails,
+            symptomsDetails,
             medicalConditionDetails,
+            symptomsStartDetails,
             medicationDetails,
-            cardioVascularDetails,
+            surgeryDetails,
+            experienceIssueDetails,
+            vaccinationDetails,
             smokeFrequency,
             allergyDetails,
             alcoholFrequency,
             exerciseFrequency,
+            sleepHours,
+            stressFrequency,
+            dietarySupplements,
+            waterIntake,
             diagnosis,
             symptoms,
             prescription,
             treatmentPlan,
+            bloodPressure,
+            heartRate,
             clinic_name,
             admin_id,
             appointmentID
@@ -1538,17 +1592,28 @@ export const consultPatientInClinicDashboard = async (req, res) => {
         const phone_number = String(phoneNumber)
         const appointment_date = dayjs(appointmentDate).format("YYYY-MM-DD")
         const appointment_time = dayjs(preferredTime).format("hh:mm")
+        const what_brings_you_here_details = String(whatBringsYouHereDetails);
+        const symptoms_details = String(symptomsDetails);
         const medical_condition_details = String(medicalConditionDetails)
+        const symptoms_start_date_details = String(symptomsStartDetails)
         const medication_details = String(medicationDetails)
-        const cardiovascular_details = String(cardioVascularDetails);
+        const past_surgery_details = String(surgeryDetails)
+        const experienced_issue_details = String(experienceIssueDetails)
+        const vaccination_details = String(vaccinationDetails)
         const smoke_frequency = String(smokeFrequency)
         const allergy_details = String(allergyDetails)
         const alcohol_details = String(alcoholFrequency)
         const exercise_frequency_details = String(exerciseFrequency)
+        const sleep_hours_details = String(sleepHours)
+        const stress_level_details = String(stressFrequency)
+        const taking_supplements_details = String(dietarySupplements)
+        const water_intake_details = String(waterIntake)
         const diagnosis_field = String(diagnosis)
         const symptoms_field = String(symptoms)
         const prescription_field = String(prescription)
         const treatment_plan = String(treatmentPlan)
+        const blood_pressure_details = String(bloodPressure)
+        const heart_rate_details = String(heartRate)
         const clinic_name_field = String(clinic_name);
 
         // Parse IDs with validation
@@ -1576,17 +1641,28 @@ export const consultPatientInClinicDashboard = async (req, res) => {
             phone_number,
             appointment_date,
             appointment_time,
+            what_brings_you_here_details,
+            symptoms_details,
             medical_condition_details,
+            symptoms_start_date_details,
             medication_details,
-            cardiovascular_details,
+            past_surgery_details,
+            experienced_issue_details,
+            vaccination_details,
             smoke_frequency,
             allergy_details,
             alcohol_details,
             exercise_frequency_details,
+            sleep_hours_details,
+            stress_level_details,
+            taking_supplements_details,
+            water_intake_details,
             diagnosis_field,
             symptoms_field,
             prescription_field,
             treatment_plan,
+            blood_pressure_details,
+            heart_rate_details,
             clinic_name_field,
             consent,
             admin_id_field,
@@ -1600,21 +1676,32 @@ export const consultPatientInClinicDashboard = async (req, res) => {
             phone_number,
             appointment_date,
             appointment_time,
+            what_brings_you_here_details,
+            symptoms_details,
             medical_condition_details,
+            symptoms_start_details,
             medication_details,
-            high_blood_details,    
+            past_surgeries_details,    
+            experience_issue_details,
+            vaccination_details,
             smoke_frequency,
             allergies_details,
             alcohol_details,
             exercise_frequency_details,
+            sleep_hours_details,
+            stress_level_details,
+            taking_supplements_details,
+            water_intake_details,
             diagnosis,
             symptoms,
             prescription,
             treatment_plan,
+            blood_pressure_details,
+            heart_rate_details,
             clinic_name,
             consent,
             created_by
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
         `
 
         const [result1] = await conn.query(query, values);
@@ -1881,3 +1968,35 @@ export const validateStep = async (req, res, next) => {
         });
     }
 };
+
+// controller logic for deleting the patient registered account in admin side
+export const deleteRegisteredPatientAccount = async (req, res) => {
+    try {
+        const { patientID } = req.params;
+
+        const patient_id = parseInt(patientID)
+
+        if (isNaN(patient_id)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid patienID"
+            })
+        }
+
+        const result = await new Clinic().deletePatientRegisteredAccount(patient_id)
+
+        if (result.affectedRows === 0) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No registered patient account found"
+            })
+        }
+
+        return res.status(StatusCodes.OK).json({
+            message: "Patient registered accouunt deleted successfully"
+        })
+    } catch (error) {
+        console.error("Failed to delete the patient registered account in function controller")
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to delete the patient register account"
+        })
+    }
+}

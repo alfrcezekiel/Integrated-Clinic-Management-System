@@ -30,9 +30,12 @@ const AdminViewPatientRegisteredAccountCalendar = () => {
   useEffect(() => {
     const retrievedPatientsRegisteredAccounts = async () => {
       try {
-        const response = await CMS.get(
-          "/CMS/admin-dashboard/registeredPatientAccount"
-        );
+        const response = await CMS.get("/CMS/admin-dashboard/registeredPatientAccount", {
+          headers: {
+            "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
+            "Content-Type": "application/json"
+          }
+        });
 
         if (response.status === 200) {
           const rawData = response.data.registeredPatientsAccount;
@@ -134,9 +137,9 @@ const AdminViewPatientRegisteredAccountCalendar = () => {
                 <Typography>
                   {selectedEvent.originalDate
                     ? format(
-                        new Date(selectedEvent.originalDate),
-                        "MMMM d, yyyy"
-                      )
+                      new Date(selectedEvent.originalDate),
+                      "MMMM d, yyyy"
+                    )
                     : "N/A"}
                 </Typography>
               </div>

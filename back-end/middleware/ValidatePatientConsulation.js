@@ -29,15 +29,30 @@ const step1Validation = [
 
 // Step 2: Medical History
 const step2Validation = [
+    body("whatBringsYouHereDetails")
+        .notEmpty()
+        .withMessage("What brings you here today details is required"),
+    body("symptomsDetails")
+        .notEmpty()
+        .withMessage("Symptoms details is required"),
     body("medicalConditionDetails")
         .notEmpty()
-        .withMessage("Medical Condition Details are required"),
+        .withMessage("Medical condition details are required"),
+    body("symptomsStartDetails")
+        .notEmpty()
+        .withMessage("Symptoms start date started is required"),
     body("medicationDetails")
         .notEmpty()
-        .withMessage("Medication Details are required"),
-    body("cardioVascularDetails")
+        .withMessage("Medication details are required"),
+    body("surgeryDetails")
         .notEmpty()
-        .withMessage("High Blood Details or Cardiovascular Details is required"),
+        .withMessage("Surgery details are required"),
+    body("experienceIssueDetails")
+        .notEmpty()
+        .withMessage("Experience issue details is required"),
+    body("vaccinationDetails")
+        .notEmpty()
+        .withMessage("Vaccination details is required")
 ];
 
 // Step 3: Lifestyle Information
@@ -54,6 +69,18 @@ const step3Validation = [
     body("exerciseFrequency")
         .notEmpty()
         .withMessage("Exercise Frequency Details is required"),
+    body("sleepHours")
+        .notEmpty()
+        .withMessage("Sleep hours details is required"),
+    body("stressFrequency")
+        .notEmpty()
+        .withMessage("Stress frequency details is required"),
+    body("dietarySupplements")
+        .notEmpty()
+        .withMessage("Dietary supplements details is required"),
+    body("waterIntake")
+        .notEmpty()
+        .withMessage("Water intake details is required")
 ];
 
 // Step 4: Clinic Assessments
@@ -70,6 +97,12 @@ const step4Validation = [
     body("treatmentPlan")
         .notEmpty()
         .withMessage("Treatment Plan Details is required"),
+    body("bloodPressure")
+        .notEmpty()
+        .withMessage("Blood pressure details is required"),
+    body("heartRate")
+        .notEmpty()
+        .withMessage("Heart rate is required")
 ];
 
 // Step 5: Consent and Agreement
@@ -83,7 +116,7 @@ const step5Validation = [
 const validatePatientConsultation = (step) => {
     let validations = [];
     // parse the step parameter to an integet
-    switch (parseInt(step, 10)) { 
+    switch (parseInt(step, 10)) {
         case 0:
             validations = step1Validation;
             break;
@@ -103,7 +136,9 @@ const validatePatientConsultation = (step) => {
             return [
                 (req, res) => {
                     return res.status(StatusCodes.BAD_REQUEST).json({
-                        errors: { step: "Invalid step provided." },
+                        errors: {
+                            step: "Invalid step provided."
+                        },
                     });
                 },
             ];

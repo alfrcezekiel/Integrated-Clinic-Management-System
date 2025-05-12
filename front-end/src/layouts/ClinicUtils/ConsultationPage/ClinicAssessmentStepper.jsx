@@ -8,9 +8,6 @@ import PropTypes from "prop-types";
 const ClinicAssessmentStepper = ({ patientFormData, handleChange, fieldErrors }) => {
     return (
         <div className="space-y-2">
-            <div className="block p-4 justify-start">
-                <h1 className="font-semibold text-black text-2xl">Clinic Assessements</h1>
-            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormControl component="fieldset" className="w-full pt-2">
                     <FormLabel>Diagnosis</FormLabel>
@@ -72,6 +69,36 @@ const ClinicAssessmentStepper = ({ patientFormData, handleChange, fieldErrors })
                         onChange={handleChange}
                         error={!!fieldErrors.treatmentPlan}
                         helperText={fieldErrors.treatmentPlan ? fieldErrors.treatmentPlan : ""}
+                        autoComplete="off"
+                    />
+                </FormControl>
+                <FormControl component="fieldset" className="w-full pt-2">
+                    <FormLabel>Blood Pressure</FormLabel>
+                    <TextField
+                        label="Blood Pressure Details"
+                        name="bloodPressure"
+                        placeholder="Enter Blood Pressure Details"
+                        fullWidth
+                        margin="dense"
+                        value={patientFormData.bloodPressure}
+                        onChange={handleChange}
+                        error={!!fieldErrors.bloodPressure}
+                        helperText={fieldErrors.bloodPressure ? fieldErrors.bloodPressure : ""}
+                        autoComplete="off"
+                    />
+                </FormControl>
+                <FormControl component="fieldset" className="w-full pt-2">
+                    <FormLabel>Heart Rate</FormLabel>
+                    <TextField
+                        label="Heart Rate Details"
+                        name="heartRate"
+                        placeholder="Enter Heart Rate Details"
+                        fullWidth
+                        margin="dense"
+                        value={patientFormData.heartRate}
+                        onChange={handleChange}
+                        error={!!fieldErrors.heartRate}
+                        helperText={fieldErrors.heartRate ? fieldErrors.heartRate : ""}
                         autoComplete="off"
                     />
                 </FormControl>

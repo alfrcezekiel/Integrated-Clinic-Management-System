@@ -98,7 +98,20 @@ const DoctorsTablesListOfAppointments = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const memoizedFormDataValue = useMemo(() => formData, [formData]);
+    // Ensure memoizedFormDataValue is always initialized with default values to avoid undefined errors.
+    const memoizedFormDataValue = useMemo(() => ({
+        appointmentID: "",
+        firstName: "",
+        lastName: "",
+        email: "",
+        appointmentDate: null,
+        preferredTime: null,
+        phoneNumber: "",
+        gender: "",
+        status: "",
+        purposeOfAppointment: "",
+        ...formData,
+    }), [formData]);
 
     useEffect(() => {
         const titleHeader = () => {
@@ -110,7 +123,12 @@ const DoctorsTablesListOfAppointments = () => {
 
         const retrievedAppointmentsData = async () => {
             try {
-                const response = await CMS.get(`/CMS/doctors-dashboard/appointments/${clinicID}`);
+                const response = await CMS.get(`/CMS/doctors-dashboard/appointments/${clinicID}`, {
+                    headers: {
+                        "Content-Type":"application/json",
+                        "Authorization": `Bearer ${localStorage.getItem("authToken")}`
+                    }
+                });
 
                 if (!response.data) {
                     throw new Error("No retrieved data for appointments");
@@ -126,6 +144,7 @@ const DoctorsTablesListOfAppointments = () => {
         retrievedAppointmentsData();
     }, [location.pathname])
 
+    // this function is used to format the time to AM/PM
     const formatTimeToAMPM = (time) => {
         if (!time) return "N/A";
         if (time.includes("AM") || time.includes("PM")) return time;
@@ -141,7 +160,8 @@ const DoctorsTablesListOfAppointments = () => {
         }
     };
 
-    const handleCallbackAppointmentDateChange = useCallback((newValue) => {
+    // this function is used to handle the date picker when the user selects the date
+    const handleCallbackAppointmentDateChange = useCallback(async (newValue) => {
         if (newValue) {
             const selectedDate = dayjs(newValue).format("YYYY-MM-DD");
             setFormData((prev) => ({
@@ -163,6 +183,7 @@ const DoctorsTablesListOfAppointments = () => {
         }
     }, [fieldsError]);
 
+    // this function is used to handle the input change
     const handleChangeInput = useCallback((e) => {
         if (typeof e === "object" && e !== null && e.target) {
             const { name, value } = e.target;
@@ -185,16 +206,24 @@ const DoctorsTablesListOfAppointments = () => {
         return dayjs(dateString).format("MMMM D, YYYY");
     };
 
+    // function for handling the time picker when the user selects the time
     const handleCallbackTimePickerChange = useCallback(async (newValue) => {
-        setFormData((prev) => ({
-            ...prev,
-            preferredTime: newValue ?? null
-        }))
+        if (newValue && dayjs(newValue).isValid()) {
+            setFormData((prev) => ({
+                ...prev,
+                preferredTime: dayjs(newValue).format("HH:mm")
+            }))
+        } else {
+            setFormData((prev) => ({
+                ...prev,
+                preferredTime: null
+            }))
+        }
 
         if (fieldsError.preferredTime) {
             setFieldsError({
                 ...fieldsError,
-                preferredTime: ""
+                preferredTime: null
             })
         }
     }, [fieldsError])
@@ -209,26 +238,20 @@ const DoctorsTablesListOfAppointments = () => {
                 appointmentDate: memoizedFormDataValue.status === "Approved"
                     ? dayjs(memoizedFormDataValue.appointmentDate)
                     : memoizedFormDataValue.appointmentDate,
-                preferredTime: memoizedFormDataValue.preferredTime ? memoizedFormDataValue.preferredTime.format("HH:mm") : null
+                preferredTime: memoizedFormDataValue.preferredTime ? memoizedFormDataValue.preferredTime : null
             };
 
-            const response = await CMS.put(`/CMS/doctors-dashboard/updateAppointment/${memoizedFormDataValue.appointmentID}`, updatedData);
+            const response = await CMS.put(`/CMS/doctors-dashboard/updateAppointment/${memoizedFormDataValue.appointmentID}`, updatedData, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("authToken")}`
+                }
+            });
 
-            if (response.status === 200 && memoizedFormDataValue.status === "Pending") {
+            if (response.status === 200) {
                 setFieldsError({})
                 setOpen(false);
                 setSuccessfullAppointmentModalOpen(true);
-                navigate("/doctor-portal/dashboard/pending-appointments");
-            } else if (response.status === 200 && memoizedFormDataValue.status === "Approved") {
-                setFieldsError({})
-                setOpen(false);
-                setSuccessfullAppointmentModalOpen(true);
-                navigate("/doctor-portal/dashboard/approved-appointments");
-            } else if (response.status === 200 && memoizedFormDataValue.status === "Declined") {
-                setFieldsError({})
-                setOpen(false);
-                setSuccessfullAppointmentModalOpen(true);
-                navigate("/doctor-portal/dashboard/declined-appointments");
             } else {
                 throw new Error(`Unexpected error in status ${response.status}`)
             }
@@ -244,23 +267,32 @@ const DoctorsTablesListOfAppointments = () => {
     // this function is used to open the modal for updating the appointment details
     const handleClickOpen = (appointment) => {
         setFormData({
-            appointmentID: appointment.appointmentID,
-            firstName: appointment.firstName,
-            lastName: appointment.lastName,
-            email: appointment.email,
+            appointmentID: appointment?.appointmentID,
+            firstName: appointment?.firstName,
+            lastName: appointment?.lastName,
+            email: appointment?.email,
             appointmentDate: dayjs(appointment.appointmentDate),
-            preferredTime: appointment.preferredTime ? dayjs(appointment.preferredTime, "HH:mm") : null,
-            phoneNumber: appointment.phoneNumber,
-            gender: appointment.gender,
-            status: appointment.status,
-            purposeOfAppointment: appointment.purposeOfAppointment,
+            preferredTime: appointment?.preferredTime ? appointment.preferredTime : null,
+            phoneNumber: appointment?.phoneNumber,
+            gender: appointment?.gender,
+            status: appointment?.status,
+            purposeOfAppointment: appointment?.purposeOfAppointment,
         });
         setOpen(true);
     }
 
     const handleCloseSuccessfullAppointmentModal = () => {
+        setFieldsError({});
         setSuccessfullAppointmentModalOpen(false);
-        handleClose();
+
+        // Navigate after dialog is closed
+        if (memoizedFormDataValue.status === "Pending") {
+            navigate("/doctor-portal/dashboard/pending-appointments");
+        } else if (memoizedFormDataValue.status === "Approved") {
+            navigate("/doctor-portal/dashboard/approved-appointments");
+        } else if (memoizedFormDataValue.status === "Declined") {
+            navigate("/doctor-portal/dashboard/declined-appointments");
+        }
     }
 
     // this function determines the color of the status of the patients
@@ -415,8 +447,8 @@ const DoctorsTablesListOfAppointments = () => {
                             name="firstName"
                             value={memoizedFormDataValue.firstName}
                             onChange={handleChangeInput}
-                            error={Boolean(fieldsError.firstName)}
-                            helperText={fieldsError.firstName ? fieldsError.firstName : ""}
+                            error={Boolean(fieldsError?.firstName)}
+                            helperText={fieldsError?.firstName ? fieldsError.firstName : ""}
                         />
                         <TextField
                             margin="dense"
@@ -427,8 +459,8 @@ const DoctorsTablesListOfAppointments = () => {
                             autoComplete="off"
                             value={memoizedFormDataValue.lastName}
                             onChange={handleChangeInput}
-                            error={Boolean(fieldsError.lastName)}
-                            helperText={fieldsError.lastName ? fieldsError.lastName : ""}
+                            error={Boolean(fieldsError?.lastName)}
+                            helperText={fieldsError?.lastName ? fieldsError.lastName : ""}
                         />
                         <TextField
                             margin="dense"
@@ -439,8 +471,8 @@ const DoctorsTablesListOfAppointments = () => {
                             name="email"
                             onChange={handleChangeInput}
                             value={memoizedFormDataValue.email}
-                            error={Boolean(fieldsError.email)}
-                            helperText={fieldsError.email ? fieldsError.email : ""}
+                            error={Boolean(fieldsError?.email)}
+                            helperText={fieldsError?.email ? fieldsError.email : ""}
                         />
                         <LocalizationProvider dateAdapter={AdapterDayjs}>
                             <DemoContainer components={['DatePicker']}>
@@ -454,8 +486,8 @@ const DoctorsTablesListOfAppointments = () => {
                                             variant: "outlined",
                                             margin: "dense",
                                             fullWidth: true,
-                                            error: Boolean(fieldsError.appointmentDate),
-                                            helperText: fieldsError.appointmentDate ? fieldsError.appointmentDate : null,
+                                            error: Boolean(fieldsError?.appointmentDate),
+                                            helperText: fieldsError?.appointmentDate ? fieldsError.appointmentDate : null,
                                         },
                                     }}
                                     value={memoizedFormDataValue?.appointmentDate !== null ? dayjs(memoizedFormDataValue.appointmentDate) : null}
@@ -468,8 +500,8 @@ const DoctorsTablesListOfAppointments = () => {
                                     margin="dense"
                                     label="Appointment Time"
                                     fullWidth
-                                    name="appointmentTime"
-                                    onChange={(newValue) => handleCallbackTimePickerChange(newValue)}
+                                    name="preferredTime"
+                                    onChange={handleCallbackTimePickerChange}
                                     className="w-full"
                                     autoComplete="off"
                                     slotProps={{
@@ -477,11 +509,11 @@ const DoctorsTablesListOfAppointments = () => {
                                             className: "w-full",
                                             variant: "outlined",
                                             fullWidth: true,
-                                            error: Boolean(fieldsError.preferredTime),
-                                            helperText: fieldsError.preferredTime ? fieldsError.preferredTime : null,
+                                            error: Boolean(fieldsError?.preferredTime),
+                                            helperText: fieldsError?.preferredTime ? fieldsError.preferredTime : null,
                                         },
                                     }}
-                                    value={memoizedFormDataValue?.preferredTime !== null ? dayjs(memoizedFormDataValue.preferredTime) : null}
+                                    value={memoizedFormDataValue?.preferredTime ? dayjs(memoizedFormDataValue.preferredTime, "HH:mm") : null}
                                 />
                             </DemoContainer>
                         </LocalizationProvider>
@@ -499,8 +531,8 @@ const DoctorsTablesListOfAppointments = () => {
                                     shrink: true,
                                 },
                             }}
-                            error={Boolean(fieldsError.phoneNumber)}
-                            helperText={fieldsError.phoneNumber ? fieldsError.phoneNumber : ""}
+                            error={Boolean(fieldsError?.phoneNumber)}
+                            helperText={fieldsError?.phoneNumber ? fieldsError.phoneNumber : ""}
                         />
                         <TextField
                             margin="dense"
@@ -512,8 +544,8 @@ const DoctorsTablesListOfAppointments = () => {
                             name="gender"
                             fullWidth
                             select
-                            error={Boolean(fieldsError.gender)}
-                            helperText={fieldsError.gender ? fieldsError.gender : ""}
+                            error={Boolean(fieldsError?.gender)}
+                            helperText={fieldsError?.gender ? fieldsError.gender : ""}
                         >
                             {gender.map((gender, i) => (
                                 <MenuItem key={i} value={gender}>
@@ -531,8 +563,8 @@ const DoctorsTablesListOfAppointments = () => {
                             fullWidth
                             value={memoizedFormDataValue.status}
                             onChange={handleChangeInput}
-                            error={Boolean(fieldsError.status)}
-                            helperText={fieldsError.status ? fieldsError.status : ""}
+                            error={Boolean(fieldsError?.status)}
+                            helperText={fieldsError?.status ? fieldsError.status : ""}
                         >
                             {status.map((status, i) => (
                                 <MenuItem key={i} value={status}>
@@ -550,8 +582,8 @@ const DoctorsTablesListOfAppointments = () => {
                             fullWidth
                             onChange={handleChangeInput}
                             value={memoizedFormDataValue.purposeOfAppointment}
-                            error={Boolean(fieldsError.purposeOfAppointment)}
-                            helperText={fieldsError.purposeOfAppointment ? fieldsError.purposeOfAppointment : ""}
+                            error={Boolean(fieldsError?.purposeOfAppointment)}
+                            helperText={fieldsError?.purposeOfAppointment ? fieldsError.purposeOfAppointment : ""}
                         />
                         <DialogActions>
                             <Button onClick={handleClose} color="primary" variant="outlined">

@@ -12,7 +12,8 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-const PatientsAccountsTableValue = ({ patientsAccountData, registerPatientColumns, updateRegisteredPatientsAccount }) => {
+// function component of registerd patients accounts
+const PatientsAccountsTableValue = ({ patientsAccountData, registerPatientColumns, updateRegisteredPatientsAccount, deleteRegisteredPatientsAccount }) => {
     // function to determine  the color of registered patient account status
     const getStatusColor = (status) => {
         switch (status) {
@@ -87,7 +88,7 @@ const PatientsAccountsTableValue = ({ patientsAccountData, registerPatientColumn
                         </IconButton>
                     </TableCell>
                     <TableCell align="center">
-                        <IconButton aria-label="edit">
+                        <IconButton aria-label="edit" onClick={() => deleteRegisteredPatientsAccount(patient)}>
                             <DeleteIcon color="error"/>
                         </IconButton>
                     </TableCell>
@@ -105,7 +106,7 @@ const PatientsAccountsTableValue = ({ patientsAccountData, registerPatientColumn
                 </TableRow>
             );
         }
-    }, [patientsAccountData, registerPatientColumns, updateRegisteredPatientsAccount]);
+    }, [patientsAccountData, registerPatientColumns, updateRegisteredPatientsAccount, deleteRegisteredPatientsAccount]);
 
     return (
         <TableBody>
@@ -118,6 +119,7 @@ PatientsAccountsTableValue.propTypes = {
     patientsAccountData: PropTypes.array.isRequired,
     registerPatientColumns: PropTypes.array.isRequired,
     updateRegisteredPatientsAccount: PropTypes.func.isRequired,
+    deleteRegisteredPatientsAccount: PropTypes.func.isRequired
 }
 
 export default PatientsAccountsTableValue

@@ -37,14 +37,13 @@ const PatientsViewAppointmentCalendar = () => {
   useEffect(() => {
     const retrievePatientsAppointments = async () => {
       try {
-        const response = await CMS.get(
-          "/CMS/patientsDashboard/bookedAppointments",
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        const patient_email = localStorage.getItem("sem");
+        const response = await CMS.get(`/CMS/patientsDashboard/bookedAppointments/${patient_email}`, {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        });
 
         if (response.status === 200) {
           const formattedAppointments = response.data.patientsAppointments.map(

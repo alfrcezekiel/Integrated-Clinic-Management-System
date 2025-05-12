@@ -35,6 +35,7 @@ const PendingAppointmentTable = () => {
                 const response = await CMS.get(`/CMS/patients-dashboard/getPatientPendingStatus/${patientEmail}`, {
                     headers: {
                         "Content-Type": "application/json",
+                        "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
                     },
                 });
 

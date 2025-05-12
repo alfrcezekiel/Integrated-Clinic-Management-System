@@ -14,7 +14,7 @@ const DoctorsDashboard = () => {
 
     useEffect(() => {
         const doctorTitleHeader = () => {
-            document.title = "Doctor's Dashboard | CMS"
+            document.title = "Clinic Dashboard | CMS"
         }
         doctorTitleHeader();
         
@@ -25,6 +25,7 @@ const DoctorsDashboard = () => {
                     withCredentials: true,
                     headers: {
                         "Content-Type": "application/json",
+                        "Authorization": `Bearer ${localStorage.getItem("authToken")}`
                     },
                 });
 

@@ -7,7 +7,12 @@ function usePatientsCount() {
     useEffect(() => {
         const retrievePatientsData = async () => {
             try {
-                const response = await CMS.get("/CMS/patientsDashboard");
+                const response = await CMS.get("/CMS/patientsDashboard", {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
+                    }
+                });
                 if (!response.data) {
                     throw new Error("No retrieved data for patients");
                 } else {

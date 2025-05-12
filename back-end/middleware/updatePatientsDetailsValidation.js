@@ -25,11 +25,14 @@ const validatePatientsDetails = [
                 throw new Error("Invalid appointment date format.")
             }
 
-            if (appointmentDate.isBefore(currentDate, "day")) {
+            if (appointmentDate.isBefore(currentDate, "day") || appointmentDate.isSame(currentDate, "day")) {
                 throw new Error("Appointment date must not be earlier than the current date");
+            } else if (appointmentDate.isAfter(currentDate.add(1, "month"), "day")) {
+                throw new Error("Appointment date must not be later than one month from now");  
             }
             return true;
         }),
+    // Updated the time validation logic to ensure proper handling of time format using dayjs
     body("preferredTime")
         .notEmpty()
         .withMessage("Appointment time is required"),
