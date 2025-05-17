@@ -30,6 +30,7 @@ import HourglassTopIcon from '@mui/icons-material/HourglassTop';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';	
 import CancelIcon from '@mui/icons-material/Cancel';	
 import HistoryIcon from '@mui/icons-material/History';	
+import ViewClinicDetails from "./layouts/adminUtils/ViewClinicDetails";
 
 const iconStyle = {
     fontSize: 20,
@@ -148,7 +149,7 @@ export const adminRoutes = [
                 id: 1,
                 icon: <HomeIcon style={iconStyle} />,
                 name: "Admin Dashboard",
-                path: "/home",
+                path: "/Home",
                 element: <AdminDashboardHome />
             },
             {
@@ -160,17 +161,23 @@ export const adminRoutes = [
             },
             {
                 id: 3,
-                icon: <AddClinicIcon style={iconStyle} />, // Use the new icon here
+                icon: <AddClinicIcon style={iconStyle} />, 
                 name: "Add Clinic",
-                path: "/add-clinic",
+                path: "/AddClinic",
                 element: <AddClinic />
             },
             {
                 id: 4,
                 icon: <AccountCircle style={iconStyle} />,
-                name: "Register Patients Account",
-                path: "/register-patients-account",
+                name: "Registered Patients Account",
+                path: "/RegisterPatientsAccount",
                 element: <RegisterPatientsAccountTable />
+            },{
+                id: 5,
+                icon: <ClinicIcon style={iconStyle} />,
+                name:"View Clinic",
+                path: "/ViewClinic",
+                element: <ViewClinicDetails />  
             }
         ]
     }

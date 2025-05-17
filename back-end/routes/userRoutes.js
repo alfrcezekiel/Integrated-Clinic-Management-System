@@ -39,7 +39,8 @@ import {
     cancelledPaymentDetails,
     validateStep,
     deleteRegisteredPatientAccount,
-    verifyToken
+    verifyToken,
+    consultationQuestionnaire
 } from "../controllers/cms.js";
 import validateRegister from "../middleware/validation.js";
 import patientsLoginValidation from "../middleware/patientsLoginValidation.js";
@@ -54,7 +55,7 @@ import validatePatientsDetails from "../middleware/updatePatientsDetailsValidati
 import validateCreateClinicDetails from "../middleware/ValidateCreateClinicDetails.js";
 import upload from "../middleware/fileImage/clinicImage.js";
 import validatePaymentFields from "../middleware/PaymentValidation/PaymentFieldValidation.js";
-import validatePatientConsultation from "../middleware/ValidatePatientConsulation.js";
+import validateQuestionnaires from "../middleware/ValidateQuestionnaires.js";
 
 const router = express.Router();
 
@@ -116,7 +117,7 @@ router.put("/admin-dashboard/updateDoctor/:doctorsID", [validateUpdatingDoctor],
 router.delete("/admin-dashboard/deleteDoctor/:doctorsID", deleteDoctorsDetails);
 
 // router for creating a clinic in admin dashboard
-router.post("/admin-dashboard/create-clinic", upload, [validateCreateClinicDetails], createClinic);
+router.post("/admin-dashboard/create-clinic", upload.single("clinicImage"), [validateCreateClinicDetails], createClinic);
 
 // router for getting the clinic details in admin dashboard
 router.get("/admin-dashboard/clinics", getClinics);
@@ -179,5 +180,8 @@ router.post("/clinic-dashboard/validatePatientConsultation/:step", validateStep)
 
 // router for deleting the patient register account in admin side
 router.delete("/admin-dashboard/deleteRegisteredPatientAccount/:patientID", deleteRegisteredPatientAccount);
+
+// router for inserting the consultation questionnaire in admin side
+router.post("/admin-dashboard/submittedConsultationQuestionnaire", [validateQuestionnaires], consultationQuestionnaire);
 
 export default router;

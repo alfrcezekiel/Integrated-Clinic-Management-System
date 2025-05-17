@@ -123,6 +123,7 @@ function PatientsLoginPortal() {
                     localStorage.setItem("sfn", response.data.sid.sfn);
                     localStorage.setItem("sln", response.data.sid.sln);
                     localStorage.setItem("sem", response.data.sid.sem);
+                    localStorage.setItem("sprefix", response.data.sid.sprefix);
                     navigate("/patients-dashboard/Home");
                 } else {
                     console.error("No token found in response data");

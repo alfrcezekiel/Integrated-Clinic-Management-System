@@ -6,8 +6,6 @@ import {
     Link,
     useLocation
 } from "react-router-dom";
-import Checkbox from "@mui/material/Checkbox";
-import FormControlLabel from "@mui/material/FormControlLabel";
 import DentistryPicture from "../../assets/img/dental clinic assets/bg4.jpg";
 import {
     useState,
@@ -66,6 +64,7 @@ const PatientsRegistrationPortal = () => {
     const location = useLocation();
 
     const civilStatus = ["Single", "Married", "Divorced", "Widowed"];
+    const gender = ["Male", "Female"];
 
     useEffect(() => {
         const displayTitleHeader = () => {
@@ -80,6 +79,7 @@ const PatientsRegistrationPortal = () => {
         email: "",
         phoneNumber: "",
         address: "",
+        gender: "",
         civilStatus: "",
         dateOfBirth: "",
         password: "",
@@ -91,6 +91,7 @@ const PatientsRegistrationPortal = () => {
         lastName: "",
         email: "",
         address: "",
+        gender: "",
         civilStatus: "",
         dateOfBirth: null,
         phoneNumber: "",
@@ -118,10 +119,18 @@ const PatientsRegistrationPortal = () => {
 
 
     const handleDateChange = useCallback(async (newValue) => {
-        setFormRegistrationPatientsData({
-            ...formRegistrationPatientsData,
-            dateOfBirth: newValue && dayjs(newValue).isValid() ? dayjs(newValue.toISOString().split('T')[0]) : null
-        });
+        if (newValue) {
+            const selectedDateOfBirth = dayjs(newValue).format("YYYY-MM-DD")
+            setFormRegistrationPatientsData({
+                ...formRegistrationPatientsData,
+                dateOfBirth: dayjs(selectedDateOfBirth)
+            });
+        } else {
+            setFormRegistrationPatientsData((prev) => ({
+                ...prev,
+                dateOfBirth: null
+            }))
+        }
 
         if (fieldsErrors.dateOfBirth) {
             setFieldsErrors({
@@ -247,6 +256,28 @@ const PatientsRegistrationPortal = () => {
                             />
                         </div>
                         <div className="mb-1 flex flex-col gap-6">
+                            <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">Gender</Typography>
+                            <TextField
+                                autoComplete="off"
+                                size="lg"
+                                select
+                                label="Select Gender"
+                                variant="outlined"
+                                name="gender"
+                                type="text"
+                                onChange={handleInputChange}
+                                value={memoizedFormRegistrationPatientsData.gender}
+                                helperText={fieldsErrors.gender || ""}
+                                error={Boolean(fieldsErrors.gender)}
+                            >
+                                {gender.map((gender, index) => (
+                                    <MenuItem key={index} value={gender}>
+                                        {gender}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+                        </div>
+                        <div className="mb-1 flex flex-col gap-6">
                             <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">Civil Status</Typography>
                             <TextField
                                 autoComplete="off"
@@ -277,7 +308,7 @@ const PatientsRegistrationPortal = () => {
                                         margin="dense"
                                         id="date-of-birth"
                                         name="dateOfBirth"
-                                        value={memoizedFormRegistrationPatientsData.dateOfBirth}
+                                        value={memoizedFormRegistrationPatientsData.dateOfBirth !== null ? dayjs(memoizedFormRegistrationPatientsData.dateOfBirth) : null}
                                         onChange={handleDateChange}
                                         label="Date of Birth"
                                         slotProps={{
@@ -370,10 +401,6 @@ const PatientsRegistrationPortal = () => {
                                 {fieldsErrors.confirmPassword && <FormHelperText error>{fieldsErrors.confirmPassword}</FormHelperText>}
                             </FormControl>
                         </div>
-                        <FormControlLabel
-                            control={<Checkbox />}
-                            label="Remember me"
-                        />
                         <div className="mt-6 flex flex-col gap-6 bg-black p-[0.30rem] rounded-[3rem] text-white">
                             <Button className="mt-9" fullWidth color="white" type="submit">
                                 Register

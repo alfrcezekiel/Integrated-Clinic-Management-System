@@ -38,6 +38,7 @@ const RegisterPatientsAccountTable = () => {
         "Last Name",
         "Email",
         "Address",
+        "Gender",
         "Civil Status",
         "Date of Birth",
         "Phone Number",
@@ -58,7 +59,7 @@ const RegisterPatientsAccountTable = () => {
 
     const navigateToPatientsRegisterAccounts =  async () => {
         retrievedPatientsAccountData()
-        navigate("/admin-dashboard/register-patients-account")
+        navigate("/admin-dashboard/RegisterPatientsAccount")
     }
 
     // function to open the dialog of modify patient registered account

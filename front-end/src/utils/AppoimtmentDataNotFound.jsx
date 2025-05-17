@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-
+import "../App.css";
 
 const AppointmentDataNotFoundDialog = ({ isOpen, onClose }) => {
     if (!isOpen) return null;

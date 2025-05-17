@@ -43,7 +43,7 @@ const AdminSideNav = ({ brandName, routes }) => {
             classes={{ paper: isMobile ? "bg-white w-72 shadow-md" : "w-72 bg-white shadow-md" }}
         >
             <div className="relative p-6">
-                <Link to={"/admin-dashboard/home"} className="text-black">
+                <Link to={"/admin-dashboard/home"} className="text-black text-center">
                     <Typography variant="h6" className="text-black text-center">
                         {brandName}
                     </Typography>
@@ -54,7 +54,7 @@ const AdminSideNav = ({ brandName, routes }) => {
                 {routes.map(({ layout, pages }, index) => (
                     <div key={layout || index} className="mb-4">
                         {pages
-                            .filter(((page) => page.name !== "Add Clinic" && page.name !== "Add Doctor" && page.name !== "Register Patients Account"))
+                            .filter(((page) => page.name !== "Add Clinic" && page.name !== "Add Doctor" && page.name !== "Registered Patients Account" && page.name !== "View Clinic"))
                             .map(({ icon, name, path }) => (
                                 <NavLink
                                     key={name}
@@ -84,6 +84,26 @@ const AdminSideNav = ({ brandName, routes }) => {
                                             className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-black" : "hover:bg-gray-100 p-2"}`}
                                         >
                                             {icon}
+                                            <ListItem button>
+                                                <ListItemText primary={name} className="text-black" />
+                                            </ListItem>
+                                        </NavLink>
+                                    ))
+                            ))}
+                        </List>
+                    </Collapse>
+                    <Collapse in={createClinicOpen} timeout="auto" unmountOnExit className="p-3">
+                        <List component="div" disablePadding>
+                            {routes.map(({ layout, pages }, index) => (
+                                pages
+                                    .filter((page) => page.name === "Registered Patients Account")
+                                    .map(({ path, icon, name }) => (
+                                        <NavLink
+                                            key={index}
+                                            to={`${layout}${path}`}
+                                            className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-black" : "hover:bg-gray-100 p-2"}`}
+                                        >
+                                            {icon}
                                             <ListItem button="true">
                                                 <ListItemText primary={name} className="text-black" />
                                             </ListItem>
@@ -96,7 +116,7 @@ const AdminSideNav = ({ brandName, routes }) => {
                         <List component="div" disablePadding>
                             {routes.map(({ layout, pages }, index) => (
                                 pages
-                                    .filter((page) => page.name === "Register Patients Account")
+                                    .filter((page) => page.name === "View Clinic")
                                     .map(({ path, icon, name }) => (
                                         <NavLink
                                             key={index}

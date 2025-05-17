@@ -37,6 +37,7 @@ export const registerPatientAccount = async (req, res) => {
             lastName,
             email,
             address,
+            gender,
             civilStatus,
             dateOfBirth,
             phoneNumber,
@@ -47,6 +48,7 @@ export const registerPatientAccount = async (req, res) => {
         const address_field = String(address);
         const civil_status = String(civilStatus);
         const date_of_birth = String(dateOfBirth);
+        const gender_field = String(gender);
 
         const SECRET_KEY = process.env.JWT_SECRET;
 
@@ -62,13 +64,14 @@ export const registerPatientAccount = async (req, res) => {
 
         // 1st table of patients register account
         const query1 = `INSERT INTO patientsregisteraccount1 (
-        firstName,
-        lastName,
-        email,
-        address,
-        civilStatus,
-        dateOfBirth
-        ) VALUES (?, ?, ?, ?, ?, ?)`;
+            firstName,
+            lastName,
+            email,
+            address,
+            gender,
+            civilStatus,
+            dateOfBirth
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)`;
 
         // 2nd table of patients register account
         const query2 = `INSERT INTO patientsregisteraccount2 (
@@ -85,6 +88,7 @@ export const registerPatientAccount = async (req, res) => {
             lastName,
             email,
             address_field,
+            gender_field,
             civil_status,
             formattedDate
         ]);
@@ -141,6 +145,8 @@ export const loginPatientsAccount = async (req, res) => {
             patientsregisteraccount1.firstName,
             patientsregisteraccount1.lastName,
             patientsregisteraccount1.email,
+            patientsregisteraccount1.civilStatus,
+            patientsregisteraccount1.gender,
             patientsregisteraccount2.password,
             patientsregisteraccount2.status
             FROM patientsregisteraccount1
@@ -176,6 +182,18 @@ export const loginPatientsAccount = async (req, res) => {
             })
         }
 
+        let prefix = "Mr. "
+
+        if (patients.gender === "Female") {
+            const marital_status = patients.civilStatus;
+
+            if (marital_status === "Married") {
+                prefix = "Mrs. "
+            } else if (marital_status === "Single") {
+                prefix = "Ms. "
+            }
+        }
+
         // generate a token
         const token = jwt.sign({ id: patients.patientID }, SECRET_KEY);
 
@@ -184,7 +202,8 @@ export const loginPatientsAccount = async (req, res) => {
             patientID: patients.patientID,
             sfn: patients.firstName,
             sln: patients.lastName,
-            sem: patients.email
+            sem: patients.email,
+            sprefix: prefix
         }
 
         return res.status(StatusCodes.OK).json({
@@ -335,6 +354,12 @@ export const requireLogin = (req, res, next) => {
 
 // destroy the session request
 export const logout = (req, res) => {
+    if (!req.session) {
+        return res.status(StatusCodes.UNAUTHORIZED).json({
+            message: "No active session found"
+        });
+    }
+
     req.session.destroy((err) => {
         if (err) {
             return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
@@ -343,6 +368,7 @@ export const logout = (req, res) => {
         }
 
         res.clearCookie("connect.sid"); // remove session details
+
         return res.status(StatusCodes.OK).json({
             message: "Logged out successfully"
         });
@@ -489,7 +515,7 @@ export const verifyToken = (req, res, next) => {
             return res.status(StatusCodes.UNAUTHORIZED).json({
                 message: "Access Denied! No token provided in the authorization header"
             })
-        }   
+        }
 
         const SECRET_KEY = process.env.JWT_SECRET;
 
@@ -911,8 +937,11 @@ export const createClinic = async (req, res) => {
         const hashedConfirmPassword = await bcrypt.hash(clinic_confirm_password, saltRound);
 
         if (!req.file) {
-            return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Please upload a valid clinic image' });
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: 'Please upload a valid clinic image'
+            });
         }
+
         const clinic_image = req.file.filename;
 
         const query = `INSERT INTO clinic (
@@ -931,7 +960,7 @@ export const createClinic = async (req, res) => {
             clinic_close_time,
             clinic_id_field,
             created_by
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
 
         const [result] = await conn.query(query, [
             clinic_name,
@@ -1155,7 +1184,11 @@ export const loggedInClinicAccount = async (req, res) => {
             })
         }
 
-        const token = jwt.sign({ id: clinicUsers.clinic_id, email: clinicUsers.email }, SECRET_KEY);
+        const token = jwt.sign({
+            id: clinicUsers.clinic_id,
+            email: clinicUsers.email
+        }, SECRET_KEY);
+
         const sid = req.session.user = {
             id: clinicUsers.clinic_id,
             scn: clinicUsers.clinic_name,
@@ -1445,6 +1478,7 @@ export const getRegisteredPatientsAccountInAdmin = async (req, res) => {
             patientsregisteraccount1.lastName,
             patientsregisteraccount1.email,
             patientsregisteraccount1.address,
+            patientsregisteraccount1.gender,
             patientsregisteraccount1.civilStatus,
             patientsregisteraccount1.dateOfBirth,
             patientsregisteraccount2.phoneNumber,
@@ -1997,6 +2031,37 @@ export const deleteRegisteredPatientAccount = async (req, res) => {
         console.error("Failed to delete the patient registered account in function controller")
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             message: "Failed to delete the patient register account"
+        })
+    }
+}
+
+// controller logic for consultation questionnaire for clinics attached in admin side
+export const consultationQuestionnaire = async (req, res) => {
+    try {
+        const { responses } = req.body;
+        
+        if(!responses || !Array.isArray(responses) || responses.length === 0) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "No questionnaires responses provided"
+            });
+        }
+        
+        const result = await new Clinic().insertConsultationQuestionnaire(responses);
+
+        if(result.affectedRows === 0) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Failed to insert consultation questionnaires"
+            });
+        }
+
+        return res.status(StatusCodes.OK).json({
+            message: "Consultation questionnaires inserted successfully"
+        });
+
+    } catch (error) {
+        console.error(`Failed to insert consultation questionnaires in controller: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to insert consultation questionnaires"
         })
     }
 }

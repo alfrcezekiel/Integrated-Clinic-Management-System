@@ -12,11 +12,6 @@ import {
     CardMedia,
     ImageList,
     ImageListItem,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-
 } from "@mui/material";
 import CMS from "../../API/CMS";
 import LocationOn from "@mui/icons-material/LocationOn";
@@ -34,7 +29,6 @@ import {
     useNavigate
 } from "react-router-dom";
 import ConfirmAppointmentModal from "./ConfirmBookedAppointment";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 
 const ClinicCards = () => {
     const [clinics, setClinics] = useState([]);
@@ -287,7 +281,7 @@ const ClinicCards = () => {
                                 <ImageList sx={{ width: '100%', height: 450 }} cols={3} rowHeight={164}>
                                     <ImageListItem>
                                         <img
-                                            src={`CMS/patients-dashboard/uploads/${clinic.clinic_image}`}
+                                            src={`uploads/${clinic.clinic_image}`}
                                             alt="Clinic Image"
                                             loading="lazy"
                                         />
@@ -376,31 +370,37 @@ const ClinicCards = () => {
             )}
 
             {showSuccessConfirmedBookedAppointmentDialogBox && (
-                <Dialog open={showSuccessConfirmedBookedAppointmentDialogBox} onClose={handleCloseConfirmedBookedAppointmentSuccessDialogBox} maxWidth="xs" fullWidth>
-                    <div className="relative p-4">
-                        <div className="flex flex-col items-center text-center p-6">
-                            <CheckCircleOutlineIcon className="text-green-500 text-2xl" />
-                            <DialogTitle className="text-lg font-semibold text-black">
-                                Confirmed Booked Appointment Successful!
-                            </DialogTitle>
-                            <DialogContent className="px-2">
-                                <Typography className="text-gray-600">
-                                    Thank you! Your appointment  was processed successfully.
-                                </Typography>
-                            </DialogContent>
-                            <DialogActions className="mt-1">
-                                <Button
-                                    onClick={handleCloseConfirmedBookedAppointmentSuccessDialogBox}
-                                    variant="contained"
-                                    color="success"
-                                    className="w-full"
-                                >
-                                    Okay
-                                </Button>
-                            </DialogActions>
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 transition-opacity duration-300">
+                    <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 relative transform transition-all duration-300 scale-100 opacity-100 animate-fadeInScale">
+                        <div className="flex flex-col items-center text-center">
+                            <svg
+                                className="w-12 h-12 text-green-500 mb-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M9 12l2 2l4-4m5 2a9 9 0 11-18 0a9 9 0 0118 0z"
+                                />
+                            </svg>
+                            <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                                Appointment Confirmed!
+                            </h2>
+                            <p className="text-gray-600 mb-4">
+                                Thank you! Your appointment was booked successfully.
+                            </p>
+                            <button
+                                onClick={handleCloseConfirmedBookedAppointmentSuccessDialogBox}
+                                className="w-20 bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200"
+                            >
+                                Okay
+                            </button>
                         </div>
                     </div>
-                </Dialog>
+                </div>
             )}
         </div>
     );

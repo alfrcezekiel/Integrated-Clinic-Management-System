@@ -30,6 +30,11 @@ const validateRegister = [
         .trim()
         .notEmpty()
         .withMessage("Address is required"),
+    body("gender")
+        .notEmpty()
+        .withMessage("Gender is required")
+        .isIn(["Male", "Female"])
+        .withMessage("Invalid Selected Gender"),
     body("civilStatus")
         .trim()
         .notEmpty()

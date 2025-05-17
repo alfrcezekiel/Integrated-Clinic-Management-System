@@ -98,6 +98,7 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
             return time; // Return original if parsing fails
         }
     };
+    
     return (
         <Modal open={!!selectedClinic} onClose={handleCloseModal}>
             <Box className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-8 rounded-2xl shadow-lg w-full max-w-[50vw] max-h-[80vh] overflow-y-auto">

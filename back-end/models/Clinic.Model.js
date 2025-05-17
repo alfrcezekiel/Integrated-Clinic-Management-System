@@ -1,3 +1,4 @@
+import { response } from "express";
 import conn from "../db/mysql/conn.js";
 
 // created a new instance of class Clinic Models
@@ -272,6 +273,40 @@ class Clinic {
             return result;
         } catch(error){
             console.error(`Error deleting the patient registered account in model function: ${error}`)
+            throw error;
+        }
+    }
+
+    // method for inserting a consultation questionnaire varies in different clinic field in admin side
+    insertConsultationQuestionnaire = async (responses) => {
+        try {
+            const query = `
+                INSERT INTO consultation_questionnaires (
+                    clinic_id,
+                    clinic_name,
+                    clinic_type,
+                    section,
+                    question,
+                    answer,
+                    createdBy
+                ) VALUES ?
+            `
+
+            const values = responses.map(response => [
+                response.clinic_id,
+                response.clinic_name,
+                response.clinic_type,
+                response.section,
+                response.question,
+                response.answer,
+                response.adminID
+            ]);
+
+            const [result] = await conn.query(query, [values]);
+
+            return result;
+        } catch (error) {
+            console.error(`Error inserting the consultation questionnaire in model function: ${error}`)
             throw error;
         }
     }

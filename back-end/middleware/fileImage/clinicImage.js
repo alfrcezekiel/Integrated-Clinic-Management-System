@@ -1,14 +1,21 @@
 import multer from "multer";
+import fs from "fs";
 
 const storage = multer.diskStorage({
     destination: (_req, _file, cb) => {
-        cb(null, "uploads/")
+        const uploadPath = "../../uploads";
+        if (!fs.existsSync(uploadPath)) {
+            fs.mkdirSync(uploadPath, { recursive: true });
+        }
+        cb(null, uploadPath);
     },
     filename: (_req, file, cb) => {
         const dateSuffix = Date.now();
-        cb(null, `${dateSuffix} - ${file.originalname}`);
+        const randomString = Math.random().toString(36).substring(2, 8); // Generate a random string
+        const sanitizedOriginalName = file.originalname.replace(/\s+/g, "_");
+        cb(null, `${dateSuffix}_${randomString}_${sanitizedOriginalName}`);
     }
-})
+});
 
 const fileFilter = (_req, file, cb) => {
     const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
@@ -20,11 +27,11 @@ const fileFilter = (_req, file, cb) => {
 }
 
 const upload = multer({
-    storage,
-    fileFilter,
+    storage: storage,
+    fileFilter: fileFilter,
     limits: {
         fileSize: 1024 * 1024 * 5 // 5MB
     },
-}).single('clinicImage');
+});
 
 export default upload;

@@ -44,33 +44,30 @@ const ClinicRegistrationModal = ({ open, onClose, fieldErrors, setFieldErrors, f
     const [fileName, setFileName] = useState('');
 
     const handleFormDataChange = useCallback(async (e, field) => {
-        const handleCBFormDataChange = async (e, field) => {
-            if (typeof e === "object" && e !== null && e.target) {
-                const { name, value } = e.target;
-                setFormData((prev) => ({
-                    ...prev,
-                    [name]: value
-                }));
-            } else if (field) {
-                setFormData((prev) => ({
-                    ...prev,
-                    [field]: e
-                }));
-            }
-
-            const { name } = e.target;
-            if (fieldErrors[name]) {
-                setFieldErrors((prev) => ({
-                    ...prev,
-                    [name]: null
-                }));
-            }
+        if (e && typeof e === "object" && e.target) {
+            const { name, value } = e.target;
+            setFormData((prev) => ({
+                ...prev,
+                [name]: value
+            }));
+        } else if (field) {
+            setFormData((prev) => ({
+                ...prev,
+                [field]: e
+            }));
         }
-        handleCBFormDataChange(e, field);
+
+        const { name } = e.target;
+        if (fieldErrors[name]) {
+            setFieldErrors((prev) => ({
+                ...prev,
+                [name]: null
+            }));
+        }
     }, [fieldErrors, setFieldErrors, setFormData]);
 
     const handleFileChange = useCallback((event) => {
-        const file = event.target.files[0];
+        const file = event?.target?.files ? event.target.files[0] : null;
         if (file) {
             setFileName(file.name);
             setFormData((prev) => ({
@@ -88,7 +85,7 @@ const ClinicRegistrationModal = ({ open, onClose, fieldErrors, setFieldErrors, f
         if (fieldErrors.clinicImage) {
             setFieldErrors((prev) => ({
                 ...prev,
-                clinicImage: ""
+                clinicImage: null
             }));
         }
     }, [fieldErrors, setFieldErrors, setFormData]);
@@ -109,38 +106,32 @@ const ClinicRegistrationModal = ({ open, onClose, fieldErrors, setFieldErrors, f
         e.preventDefault();
         try {
             const data = new FormData();
+
+            // Append all fields to FormData
             data.append("clinicName", formData.clinicName);
             data.append("clinicAddress", formData.clinicAddress);
+            data.append("clinicPhoneNumber", formData.clinicPhoneNumber);
             data.append("clinicEmail", formData.clinicEmail);
-
-            if (formData.clinicImage) {
-                data.append("clinicImage", formData.clinicImage);  // Append file if present
-            }
-
             data.append("openingDays", formData.openingDays);
             data.append("closingDays", formData.closingDays);
-
-            // Convert time values to a string format (if they exist)
-            if (formData.openingHours) {
-                const openingTime = dayjs(formData.openingHours).format('hh:mm A');  // Format the time
-                data.append('openingHours', openingTime);
-            }
-            if (formData.closingHours) {
-                const closingTime = dayjs(formData.closingHours).format('hh:mm A');  // Format the time
-                data.append('closingHours', closingTime)
-            }
-            data.append("clinicPhoneNumber", formData.clinicPhoneNumber);
+            data.append("openingHours", formData.openingHours ? dayjs(formData.openingHours).format('hh:mm A') : "");
+            data.append("closingHours", formData.closingHours ? dayjs(formData.closingHours).format('hh:mm A') : "");
             data.append("consultationFee", formData.consultationFee);
             data.append("clinicType", formData.clinicType);
             data.append("clinicId", formData.clinicId);
             data.append("password", formData.password);
             data.append("confirmPassword", formData.confirmPassword);
-            data.append("adminID", localStorage.getItem("sid"))
+            data.append("adminID", localStorage.getItem("sid"));
+
+            // Append image only if present
+            if (formData.clinicImage) {
+                data.append("clinicImage", formData.clinicImage);
+            }
 
             const response = await CMS.post("/CMS/admin-dashboard/create-clinic", data, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
-                    'Accept': 'application/json',
+                    "Authorization": `Bearer ${localStorage.getItem("authToken")}`
                 }
             });
 
@@ -382,27 +373,19 @@ const ClinicRegistrationModal = ({ open, onClose, fieldErrors, setFieldErrors, f
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                                     <DemoContainer components={['TimePicker']} className="w-full">
                                         <TimePicker
+                                            ampm
                                             label="Select Opening Hours"
-                                            value={formData.openingHours}
+                                            value={formData.openingHours ? dayjs(formData.openingHours, "hh:mm A") : null}
                                             name="openingHours"
                                             className='w-screen'
-                                            ampm
                                             onChange={(e) => handleFormDataChange(e, "openingHours")}
-                                            renderinput={(params) =>
-                                                <TextField
-                                                    fullWidth
-                                                    margin="dense"
-                                                    error={Boolean(fieldErrors.openingHours)}
-                                                    helperText={fieldErrors.openingHours ? fieldErrors.openingHours : ""}
-                                                    {...params}
-                                                />
-                                            }
                                             slotProps={{
                                                 textField: {
                                                     margin: "dense",
+                                                    autoComplete: "off",
                                                     name: "openingHours",
                                                     error: Boolean(fieldErrors.openingHours),
-                                                    helperText: fieldErrors.openingHours ? fieldErrors.openingHours : ""
+                                                    helperText: fieldErrors.openingHours || ""
                                                 }
                                             }}
                                         />
@@ -419,23 +402,16 @@ const ClinicRegistrationModal = ({ open, onClose, fieldErrors, setFieldErrors, f
                                         <TimePicker
                                             className='w-screen'
                                             label="Select Closing Hours"
-                                            value={formData.closingHours}
+                                            value={formData.closingHours ? dayjs(formData.closingHours, "hh:mm A") : null}
                                             name="closingHours"
-                                            ampm
                                             onChange={(e) => handleFormDataChange(e, "closingHours")}
-                                            renderinput={(params) =>
-                                                <TextField
-                                                    fullWidth
-                                                    margin="dense"
-                                                    {...params}
-                                                />
-                                            }
                                             slotProps={{
                                                 textField: {
+                                                    autoComplete: "off",
                                                     margin: "dense",
                                                     name: "closingHours",
                                                     error: Boolean(fieldErrors.closingHours),
-                                                    helperText: fieldErrors.closingHours ? fieldErrors.closingHours : ""
+                                                    helperText: fieldErrors.closingHours || ""
                                                 }
                                             }}
                                         />

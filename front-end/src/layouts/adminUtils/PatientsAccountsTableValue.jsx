@@ -64,6 +64,11 @@ const PatientsAccountsTableValue = ({ patientsAccountData, registerPatientColumn
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
                         <Typography variant="body2" className="text-blue-gray-900">
+                            {patient.gender}
+                        </Typography>
+                    </TableCell>
+                    <TableCell className="border-b border-blue-gray-50 text-center" align="center">
+                        <Typography variant="body2" className="text-blue-gray-900">
                             {patient.civilStatus}
                         </Typography>
                     </TableCell>

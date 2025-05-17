@@ -67,7 +67,12 @@ const AddClinic = () => {
         try {
             setLoading(true);
             setError(null);
-            const response = await CMS.get('/CMS/admin-dashboard/clinics');
+            const response = await CMS.get('/CMS/admin-dashboard/clinics', {
+                headers: {
+                    "Content-Type": 'application/json',
+                    "Authorization": `Bearer ${localStorage.getItem('authToken')}`
+                }
+            });
 
             if (response.status === 200) {
                 setClinics(response.data.clinics);

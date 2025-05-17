@@ -35,7 +35,7 @@ const DashboardNavbar = () => {
     const [filteredClinics, setFilteredClinics] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const navigate = useNavigate();
-
+    const [patientNameWithPrefix, setPatientNameWithPrefix] = useState("");
 
     useEffect(() => {
         const fetchClinicData = async () => {
@@ -61,6 +61,15 @@ const DashboardNavbar = () => {
         } else {
             setFilteredClinics([])
         }
+
+        const patientNameWithSuffix = () => {
+            const first_name = localStorage.getItem("sfn");
+            const prefix = localStorage.getItem("sprefix");
+
+            const patient_full_name = `${prefix} ${first_name}`;
+            setPatientNameWithPrefix(patient_full_name);
+        }
+        patientNameWithSuffix();
     }, [searchQuery])
 
     const memoizedSearchQueryValue = useMemo(() => searchQuery, [searchQuery])
@@ -80,6 +89,7 @@ const DashboardNavbar = () => {
                 localStorage.removeItem("sfn")
                 localStorage.removeItem("sln")
                 localStorage.removeItem("sem")
+                localStorage.removeItem("sprefix")
                 navigate("/cms");
             }
         } catch (error) {
@@ -180,6 +190,9 @@ const DashboardNavbar = () => {
                         onClose={handleSettingsMenuClose}
                         keepMounted
                     >
+                        <MenuItem>
+                            <Typography variant="body1">{patientNameWithPrefix}</Typography>
+                        </MenuItem>
                         <MenuItem onClick={() => setOpenConfigurator(dispatch, true)}>
                             <Settings className="mr-2" />
                             <Typography>Settings</Typography>
