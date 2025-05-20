@@ -39,7 +39,8 @@ const ViewClinicDetails = () => {
             "Have you had any surgeries or hospital stays in the past 5 years?",
             "Do you have a history of jaw pain or temporomandibular joint (TMJ) disorders?",
             "Have you ever experienced excessive bleeding after dental procedures?",
-            "Do you have a history of heart problems or heart valve issues?"
+            "Do you have a history of heart problems or heart valve issues?",
+            "Have you ever been advised to take antibiotics before dental procedures?"
         ],
         "Lifestyle Information": [
             "Do you smoke cigarettes, vape, or use tobacco products?",
@@ -177,23 +178,23 @@ const ViewClinicDetails = () => {
                                                     {secIndex + 1}.{qIndex + 1} {question}
                                                 </p>
                                                 <div className="flex space-x-6">
-                                                    <label className="flex items-center space-x-2">
+                                                    <label className="flex items-center space-x-2 cursor-pointer">
                                                         <input
                                                             type="radio"
                                                             name={`question-${secIndex}-${qIndex}`}
                                                             value="Yes"
-                                                            className="text-blue-600 focus:ring-blue-500"
+                                                            className="text-blue-600 focus:ring-blue-500 cursor-pointer"
                                                             checked={questionnaire[`question-${secIndex}-${qIndex}`] === "Yes"}
                                                             onChange={() => handleQuestionnaireChange(`question-${secIndex}-${qIndex}`, `Yes`)}
                                                         />
                                                         <span className="text-gray-700"> Yes</span>
                                                     </label>
-                                                    <label className="flex items-center space-x-2">
+                                                    <label className="flex items-center space-x-2 cursor-pointer">
                                                         <input
                                                             type="radio"
                                                             name={`question-${secIndex}-${qIndex}`}
                                                             value="No"
-                                                            className="text-red-600 focus:ring-red-500"
+                                                            className="text-red-600 focus:ring-red-500 cursor-pointer"
                                                             checked={questionnaire[`question-${secIndex}-${qIndex}`] === "No"}
                                                             onChange={() => handleQuestionnaireChange(`question-${secIndex}-${qIndex}`, `No`)}
                                                         />
@@ -214,7 +215,7 @@ const ViewClinicDetails = () => {
                         <div className="flex justify-center mt-8">
                             <button
                                 type="submit"
-                                className="bg-blue-600 text-white px-6 py-2 rounded-3xl shadow-md hover:bg-blue-700 transition duration-200"
+                                className="bg-blue-600 text-white px-6 py-2 rounded-3xl shadow-md hover:bg-blue-700 transition duration-200 cursor-pointer"
                             >
                                 Submit Questionnaire
                             </button>

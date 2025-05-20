@@ -344,103 +344,86 @@ const AppointmentHistoryTable = () => {
                                     {/* /* Medical History */}
                                     <section className="bg-white p-4 rounded-xl shadow-lg">
                                         <h3 className="text-lg font-semibold text-black mb-3">
-                                            Medical History
+                                            Medical History Overview
                                         </h3>
                                         <div className="grid grid-cols-2 gap-4 text-sm text-gray-700">
                                             <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                                <strong>Reason For Visit: </strong>
-                                                {selectedPatient.what_brings_you_here_details || "N/A"}
+                                                <strong>Documented Allergic Reactions: </strong>
+                                                {selectedPatient.allergy_details || "N/A"}
                                             </div>
                                             <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                                <strong>Symptoms Started: </strong>
-                                                {selectedPatient.symptoms_start_details || "N/A"}
+                                                <strong>Current Prescription Medications: </strong>
+                                                {selectedPatient.taking_prescription_medication_details || "N/A"}
                                             </div>
                                             <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                                <strong>Reported Symptoms: </strong>
-                                                {selectedPatient.symptoms__details || "N/A"}
+                                                <strong>Chronic Health Conditions: </strong>
+                                                {selectedPatient.chronic_condition_details || "N/A"}
                                             </div>
                                             <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                                <strong>Known Medical Conditions: </strong>
-                                                {selectedPatient.medical_condition_details || "N/A"}
+                                                <strong>Temporomandibular Joint (TMJ) or Jaw Pain History: </strong>
+                                                {selectedPatient.history_of_jaw_pain_details || "N/A"}
                                             </div>
                                             <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                                <strong>Current Medications: </strong>
-                                                {selectedPatient.medication_details || "N/A"}
+                                                <strong>History of Excessive Bleeding: </strong>
+                                                {selectedPatient.experienced_excessive_bleeding_details || "N/A"}
                                             </div>
                                             <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                                <strong>Smoking Habits: </strong>
-                                                {selectedPatient.smoke_frequency || "N/A"}
+                                                <strong>Cardiovascular History: </strong>
+                                                {selectedPatient.past_history_of_cardiovascular_issues || "N/A"}
                                             </div>
                                             <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                                <strong>Known Allergies: </strong>
-                                                {selectedPatient.allergies_details || "N/A"}
+                                                <strong>Prophylactic Antibiotic Recommendation: </strong>
+                                                {selectedPatient.advised_taking_antibiotics_details || "N/A"}
                                             </div>
                                             <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                                <strong>Prior Encountered Concern: </strong>
-                                                {selectedPatient.experience_issue_dettails || "N/A"}
-                                            </div>
-                                            <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                                <strong>Alcohol Consumption: </strong>
-                                                {selectedPatient.alcohol_details || "N/A"}
-                                            </div>
-                                            <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                                <strong>History of Surgical Procedures: </strong>
+                                                <strong>Surgical History: </strong>
                                                 {selectedPatient.past_surgeries_details || "N/A"}
                                             </div>
                                         </div>
                                     </section>
                                     <section className="bg-white p-4 rounded-xl shadow-lg">
                                         <h3 className="text-lg font-semibold text-black mb-4">
-                                            Lifestyle and Clinical Assessment
+                                            Lifestyle and Clinical Assessment Overview
                                         </h3>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-700">
-                                            <div>
-                                                <strong>Clinical Diagnosis: </strong>
-                                                {selectedPatient.diagnosis || "N/A"}
+                                            <div className="col-span-2 md:col-span-1">
+                                                <strong>Clinical Diagnosis:</strong> {selectedPatient.diagnosis || "N/A"}
                                             </div>
-                                            <div>
-                                                <strong>Reported Symptoms: </strong>
-                                                {selectedPatient.symptoms || "N/A"}
+                                            <div className="col-span-2 md:col-span-1">
+                                                <strong>Reported Symptoms:</strong> {selectedPatient.symptoms || "N/A"}
                                             </div>
-                                            <div>
-                                                <strong>Prescribed Medications: </strong>
-                                                {selectedPatient.prescription || "N/A"}
+                                            <div className="col-span-2 md:col-span-1">
+                                                <strong>Prescribed Medications:</strong> {selectedPatient.prescription || "N/A"}
                                             </div>
-                                            <div>
-                                                <strong>Treatment Plan Summary: </strong>
-                                                {selectedPatient.treatment_plan || "N/A"}
+                                            <div className="col-span-2 md:col-span-1">
+                                                <strong>Treatment Plan Summary:</strong> {selectedPatient.treatment_plan || "N/A"}
                                             </div>
-                                            <div>
-                                                <strong>Exercise Routine: </strong>
-                                                {selectedPatient.exercise_frequency_details || "N/A"}
+                                            <div className="col-span-2 md:col-span-1">
+                                                <strong>Exercise Routine:</strong> {selectedPatient.regular_exercise_details || "N/A"}
                                             </div>
-                                            <div>
-                                                <strong>Immunization Record: </strong>
-                                                {selectedPatient.vaccination_details || "N/A"}
+                                            <div className="col-span-2 md:col-span-1">
+                                                <strong>Alcohol Consumption:</strong> {selectedPatient.consume_alcohol_details || "N/A"}
                                             </div>
-                                            <div>
-                                                <strong>Average Sleep Duration: </strong>
-                                                {selectedPatient.sleep_hours_details || "N/A"}
+                                            <div className="col-span-2 md:col-span-1">
+                                                <strong>Dental Flossing Habit:</strong> {selectedPatient.dental_floss_details || "N/A"}
                                             </div>
-                                            <div>
-                                                <strong>Heart Rate: </strong>
-                                                {selectedPatient.heart_rate_details || "N/A"}
+                                            <div className="col-span-2 md:col-span-1">
+                                                <strong>Sugary Food/Beverage Intake:</strong> {selectedPatient.consume_sugary_foods_or_beverages_details || "N/A"}
                                             </div>
-                                            <div>
-                                                <strong>Blood Pressure Reading: </strong>
-                                                {selectedPatient.blood_pressure_details || "N/A"}
+                                            <div className="col-span-2 md:col-span-1">
+                                                <strong>Heart Rate:</strong> {selectedPatient.heart_rate_details || "N/A"}
                                             </div>
-                                            <div>
-                                                <strong>Stress Level: </strong>
-                                                {selectedPatient.stress_level_details || "N/A"}
+                                            <div className="col-span-2 md:col-span-1">
+                                                <strong>Blood Pressure Reading:</strong> {selectedPatient.blood_pressure_details || "N/A"}
                                             </div>
-                                            <div>
-                                                <strong>Hydration Status: </strong>
-                                                {selectedPatient.water_intake_details || "N/A"}
+                                            <div className="col-span-2 md:col-span-1">
+                                                <strong>Balanced Diet:</strong> {selectedPatient.balanced_diet_details || "N/A"}
                                             </div>
-                                            <div>
-                                                <strong>Supplement Intake: </strong>
-                                                {selectedPatient.taking_supplements_details || "N/A"}
+                                            <div className="col-span-2 md:col-span-1">
+                                                <strong>Smoking Frequency:</strong> {selectedPatient.smoke_frequency_details || "N/A"}
+                                            </div>
+                                            <div className="col-span-2 md:col-span-1">
+                                                <strong>Sports Participation:</strong> {selectedPatient.participate_in_sports_details || "N/A"}
                                             </div>
                                         </div>
                                     </section>

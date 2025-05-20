@@ -2,144 +2,108 @@ import {
     TextField,
     FormControl,
     FormLabel,
+    CircularProgress
 } from "@mui/material";
 import PropTypes from "prop-types";
+import {
+    useEffect,
+    useState
+} from "react";
+import CMS from "../../../API/CMS";
 
 const LifeStyleInformationStepper = ({ patientFormData, handleChange, fieldErrors }) => {
+    const [lifestyleInformationQuestions, setLifestyleInformationQuestions] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    const lifestyleInformationQuestionnaires = {
+        smokeDetails: "Do you smoke cigarettes, vape, or use tobacco products?",
+        consumeSugaryFoodsOrDrinksDetails: "Do you frequently consume sugary foods or beverages?",
+        dentalFlossDetails: "Do you use dental floss regularly?",
+        consumeAlcoholDetails: "Do you consume alcohol regularly?",
+        participateInSportsDetails: "Do you participate in contact sports without a mouthguard?",
+        balancedDietDetails: "Do you have a balanced diet rich in fruits and vegetables?",
+        regularExerciseDetails: "Do you have a regular exercise routine?",
+        eatingDisordersDetails: "Do you have a history of eating disorders?",
+    }
+
+    useEffect(() => {
+        const clinicID = localStorage.getItem("sid");
+        const retrievedLifestleInformationQuestionnaire = async () => {
+            try {
+                if (!clinicID) {
+                    throw new Error("Clinic ID is not available in local storage.");
+                }
+
+                const response = await CMS.get(`CMS/clinic-dashboard/retrieveLifestyleInformationQuestionnaires/${clinicID}`, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${localStorage.getItem("authToken")}`
+                    }
+                })
+
+                if (response.status === 200) {
+                    const data = response.data.lifestyleInformationQuestionnaires;
+
+                    setLifestyleInformationQuestions(data);
+                } else {
+                    throw new Error(`Failed to retrieve lifestyle information questionnaires ${response.status}`);
+                }
+            } catch (error) {
+                console.error(`Failed to retrieved the lifestyle information questions component: ${error}`);
+            } finally {
+                setTimeout(() => {
+                    setLoading(false);
+                }, 1000);
+            }
+        }
+        retrievedLifestleInformationQuestionnaire();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center flex-col h-full mt-4">
+                <CircularProgress />
+                <p>Loading</p>
+            </div>
+        )
+    }
+
     return (
         <div className="space-y-2">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Smoking */}
-                <FormControl component="fieldset" className="w-full pt-2">
-                    <FormLabel>Do you smoke or use tobacco products?</FormLabel>
-                    <TextField
-                        margin="dense"
-                        label="Smoking Frequency"
-                        name="smokeFrequency"
-                        fullWidth
-                        placeholder="Enter Smoking Frequency Details"
-                        value={patientFormData.smokeFrequency}
-                        onChange={handleChange}
-                        error={!!fieldErrors.smokeFrequency}
-                        helperText={fieldErrors.smokeFrequency ? fieldErrors.smokeFrequency : ""}
-                        autoComplete="off"
-                    />
-                </FormControl>
+                {lifestyleInformationQuestions.map((question, i) => {
+                    const lifestyleConsultationQuestion = question.question;
 
-                {/* Allergies */}
-                <FormControl component="fieldset" className="w-full pt-2">
-                    <FormLabel>Do you have any allergies (medications, food, etc.)?</FormLabel>
-                    <TextField
-                        label="Allergy Details"
-                        name="allergyDetails"
-                        fullWidth
-                        placeholder="Enter Allergies Details"
-                        margin="dense"
-                        value={patientFormData.allergyDetails}
-                        error={!!fieldErrors.allergyDetails}
-                        helperText={fieldErrors.allergyDetails ? fieldErrors.allergyDetails : ""}
-                        onChange={handleChange}
-                        autoComplete="off"
-                    />
-                </FormControl>
+                    const matecheLifestyleInfoEntry = Object.entries(lifestyleInformationQuestionnaires).find(
+                        ([, lifestyleQuestion]) => lifestyleQuestion === lifestyleConsultationQuestion
+                    )
 
-                {/* Alcohol */}
-                <FormControl component="fieldset" className="w-full pt-2">
-                    <FormLabel>Do you drink alcohol? How often?</FormLabel>
-                    <TextField
-                        label="Alchohol Frequency"
-                        name="alcoholFrequency"
-                        placeholder="Enter Alcohol Frequency Details"
-                        fullWidth
-                        value={patientFormData.alcoholFrequency}
-                        margin="dense"
-                        onChange={handleChange}
-                        error={!!fieldErrors.alcoholFrequency}
-                        helperText={fieldErrors.alcoholFrequency ? fieldErrors.alcoholFrequency : ""}
-                        autoComplete="off"
-                    />
-                </FormControl>
+                    const fieldName = matecheLifestyleInfoEntry ? matecheLifestyleInfoEntry[0] : `question_${question.id}`;
 
-                {/* {/* Exercise */}
-                <FormControl component="fieldset" className="w-full pt-2">
-                    <FormLabel>Do you regularly exercise?</FormLabel>
-                    <TextField
-                        label="Exercise Frequency"
-                        name="exerciseFrequency"
-                        placeholder="Enter Exercise Frequency Details"
-                        fullWidth
-                        margin="dense"
-                        value={patientFormData.exerciseFrequency}
-                        onChange={handleChange}
-                        error={!!fieldErrors.exerciseFrequency}
-                        helperText={fieldErrors.exerciseFrequency ? fieldErrors.exerciseFrequency : ""}
-                        autoComplete="off"
-                    />
-                </FormControl>
-                {/* Sleep hours */}
-                <FormControl component="fieldset" className="w-full pt-2">
-                    <FormLabel>How many hours of sleep do you get per night?</FormLabel>
-                    <TextField
-                        label="Sleep Hours"
-                        name="sleepHours"
-                        placeholder="Enter Sleep Hours Details"
-                        fullWidth
-                        margin="dense"
-                        value={patientFormData.sleepHours}
-                        onChange={handleChange}
-                        error={!!fieldErrors.sleepHours}
-                        helperText={fieldErrors.sleepHours ? fieldErrors.sleepHours : ""}
-                        autoComplete="off"
-                    />
-                </FormControl>
-                {/* Stress Level */}
-                <FormControl component="fieldset" className="w-full pt-2">
-                    <FormLabel>How often do you feel stressed?</FormLabel>
-                    <TextField
-                        label="Stress Frequency"
-                        name="stressFrequency"
-                        placeholder="Enter Stress Frequency Details"
-                        fullWidth
-                        margin="dense"
-                        value={patientFormData.stressFrequency}
-                        onChange={handleChange}
-                        error={!!fieldErrors.stressFrequency}
-                        helperText={fieldErrors.stressFrequency ? fieldErrors.stressFrequency : ""}
-                        autoComplete="off"
-                    />
-                </FormControl>
-                {/* Dietary supplements or vitamins intake */}
-                <FormControl component="fieldset" className="w-full pt-2">
-                    <FormLabel>Do you take any dietary supplements or vitamins?</FormLabel>
-                    <TextField
-                        label="Dietary Supplements"
-                        name="dietarySupplements"
-                        placeholder="Enter Dietary Supplements Details"
-                        fullWidth
-                        margin="dense"
-                        value={patientFormData.dietarySupplements}
-                        onChange={handleChange}
-                        error={!!fieldErrors.dietarySupplements}
-                        helperText={fieldErrors.dietarySupplements ? fieldErrors.dietarySupplements : ""}
-                        autoComplete="off"
-                    />
-                </FormControl>
-                {/* Water intake */}
-                <FormControl component="fieldset" className="w-full pt-2">
-                    <FormLabel>How much water do you drink daily?</FormLabel>
-                    <TextField
-                        label="Water Intake"
-                        name="waterIntake"
-                        placeholder="Enter Water Intake Details"
-                        fullWidth
-                        margin="dense"
-                        value={patientFormData.waterIntake}
-                        onChange={handleChange}
-                        error={!!fieldErrors.waterIntake}
-                        helperText={fieldErrors.waterIntake ? fieldErrors.waterIntake : ""}
-                        autoComplete="off"
-                    />
-                </FormControl>
+                    console.log(fieldName)
+                    return (
+                        <>
+                            <FormControl key={i} className="w-full">
+                                <FormLabel className="mb-2 text-sm text-gray-700">
+                                    {lifestyleConsultationQuestion}
+                                </FormLabel>
+                                <TextField
+                                    name={fieldName}
+                                    label={lifestyleConsultationQuestion}
+                                    placeholder={`Enter ${lifestyleConsultationQuestion}`}
+                                    type="text"
+                                    margin="dense"
+                                    value={patientFormData[fieldName]}
+                                    onChange={handleChange}
+                                    error={!!fieldErrors[fieldName]}
+                                    helperText={fieldErrors[fieldName] ? fieldErrors[fieldName] : ""}
+                                    fullWidth
+                                    autoComplete="off"
+                                />
+                            </FormControl>
+                        </>
+                    )
+                })}
             </div>
         </div>
     );

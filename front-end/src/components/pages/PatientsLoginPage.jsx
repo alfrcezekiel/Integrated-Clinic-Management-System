@@ -46,7 +46,7 @@ function PatientsLoginPortal() {
         if (response.data.messageStatus === "Account is still pending for wait for the admin approval!") {
             setAccountStatus("Your account is pending approval. Please wait for the admin to approve your account.");
             setOpenModal(true)
-        } else if (response.data.messageStatus === "Your account has been declined"){
+        } else if (response.data.messageStatus === "Your account has been declined") {
             setAccountStatus("Your account has been declined by the admin! Please provide valid credentials!")
             setOpenModal(true)
         }
@@ -115,7 +115,7 @@ function PatientsLoginPortal() {
 
                 if (response.data.messageStatus === "Account is still pending for wait for the admin approval!") {
                     handleAccountStatus(response);
-                } 
+                }
 
                 if (response.data.token && response.data.sid) {
                     localStorage.setItem("authToken", response.data.token);
@@ -140,8 +140,8 @@ function PatientsLoginPortal() {
                     email: error.response.data.emailMessage,
                     password: error.response.data.passwordMessage
                 });
-            } else if (error.response && error.response.status === 404){
-                if(error.response.data.messageStatus === "Your account has been declined"){
+            } else if (error.response && error.response.status === 404) {
+                if (error.response.data.messageStatus === "Your account has been declined") {
                     handleAccountStatus(error.response)
                 }
             } else {
@@ -236,7 +236,7 @@ function PatientsLoginPortal() {
             <Dialog open={openModal} onClose={handleCloseModal} className="flex items-center justify-center">
                 <DialogTitle className="text-center">Account Status</DialogTitle>
                 <DialogContent className="flex flex-col items-center justify-center">
-                    <Typography variant="body2" color="textSecondary">
+                    <Typography variant="body2" className="text-gray-600">
                         {accountStatus}
                     </Typography>
                 </DialogContent>

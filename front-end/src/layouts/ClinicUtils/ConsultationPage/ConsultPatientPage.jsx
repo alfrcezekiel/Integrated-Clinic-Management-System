@@ -25,20 +25,23 @@ const ConsultationPatientPage = () => {
     const navigate = useNavigate();
     const [activeStep, setActiveStep] = useState(0);
     const [fieldErrors, setFieldErrors] = useState({
+        // patient information states
         firstName: "",
         lastName: "",
         email: "",
         phoneNumber: "",
         appointmentDate: null,
         preferredTime: null,
-        whatBringsYouHereDetails: "",
-        symptomsDetails: "",
-        medicalConditionDetails: "",
-        symptomsStartDetails: "",
-        medicationDetails: "",
-        surgeryDetails: "",
-        experienceIssueDetails: "",
-        vaccinationDetails: "",
+        // medical history state
+        allergiesDetails: "",
+        takingPrescriptionMedicationDetails: "",
+        chronicConditionDetails: "",
+        surgeriesDetails: "",
+        jawPainDetails: "",
+        experiencedExcessiveBleedingDetails: "",
+        heartProblemsDetails: "",
+        advisedTakingAntibioticsDetails: "",
+        // lifestyle information state
         smokeFrequency: "",
         allergyDetails: "",
         alcoholFrequency: "",
@@ -47,6 +50,7 @@ const ConsultationPatientPage = () => {
         stressFrequency: "",
         dietarySupplements: "",
         waterIntake: "",
+        // clinic assessment state
         diagnosis: "",
         symptoms: "",
         prescription: "",
@@ -57,20 +61,23 @@ const ConsultationPatientPage = () => {
     });
 
     const [patientFormData, setPatientFormData] = useState({
+        // patient information state
         firstName: "",
         lastName: "",
         email: "",
         phoneNumber: "",
         appointmentDate: null,
         preferredTime: null,
-        whatBringsYouHereDetails: "",
-        symptomsDetails: "",
-        medicalConditionDetails: "",
-        symptomsStartDetails: "",
-        medicationDetails: "",
-        surgeryDetails: "",
-        experienceIssueDetails: "",
-        vaccinationDetails: "",
+        // medical history state
+        allergiesDetails: "",
+        takingPrescriptionMedicationDetails: "",
+        chronicConditionDetails: "",
+        surgeriesDetails: "",
+        jawPainDetails: "",
+        experiencedExcessiveBleedingDetails: "",
+        heartProblemsDetails: "",
+        advisedTakingAntibioticsDetails: "",
+        // lifestyle information state
         smokeFrequency: "",
         allergyDetails: "",
         alcoholFrequency: "",
@@ -79,6 +86,7 @@ const ConsultationPatientPage = () => {
         stressFrequency: "",
         dietarySupplements: "",
         waterIntake: "",
+        // clinic assessment state
         diagnosis: "",
         symptoms: "",
         prescription: "",
@@ -109,7 +117,7 @@ const ConsultationPatientPage = () => {
             setOpenAppointmentDataNotFoundDialog(true);
             return;
         }
-        
+
         setPatientFormData((prev) => ({
             ...prev,
             firstName: appointmentData.firstName,
@@ -171,6 +179,7 @@ const ConsultationPatientPage = () => {
         }
     }, [fieldErrors]);
 
+    // function to submit the consultation multi step form
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (patientFormData.consent !== "Yes") {
@@ -215,8 +224,8 @@ const ConsultationPatientPage = () => {
         // display the error message in the relevant field
         const stepFields = [
             ["firstName", "lastName", "email", "phoneNumber", "appointmentDate", "preferredTime"],
-            ["whatBringsYouHereDetails", "symptomsDetails", "medicalConditionDetails", "symptomsStartDetails", "medicationDetails", "surgeryDetails", "experienceIssueDetails", "vaccinationDetails"],
-            ["smokeFrequency", "allergyDetails", "alcoholFrequency", "exerciseFrequency", "sleepHours", "stressFrequency", "dietarySupplements", "waterIntake"],
+            ["allergiesDetails", "takingPrescriptionMedicationDetails", "chronicConditionDetails", "surgeriesDetails", "jawPainDetails", "experiencedExcessiveBleedingDetails", "heartProblemsDetails", "advisedTakingAntibioticsDetails"],
+            ["smokeDetails", "consumeSugaryFoodsOrDrinksDetails", "dentalFlossDetails", "consumeAlcoholDetails", "participateInSportsDetails", "balancedDietDetails", "regularExerciseDetails", "eatingDisordersDetails"],
             ["diagnosis", "symptoms", "prescription", "treatmentPlan", "bloodPressure", "heartRate"],
             ["consent"]
         ];

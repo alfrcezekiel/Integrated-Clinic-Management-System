@@ -25,13 +25,11 @@ export default function Loader() {
         return () => {
             clearTimeout(timer);
         }
-        
-
     }, [])
 
     return (
         <>
-            <div className="flex items-center justify-center h-screen bg-purple-400">
+            <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-purple-400 z-50">
                 {loading ? (
                     <div className="flex flex-col items-center">
                         <div className="w-12 h-12 border-4 border-purple-600 border-t-transparent border-solid rounded-full animate-spin"></div>

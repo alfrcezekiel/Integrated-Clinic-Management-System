@@ -35,7 +35,6 @@ const PatientsRegistrationPortal = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [openPatientStatusDialog, setOpenPatientStatusDialog] = useState(false);
-    const [accountMessage, setAccountMessage] = useState("");
 
     const handleClickShowPassword = () => {
         setShowPassword((show) => !show);
@@ -158,7 +157,6 @@ const PatientsRegistrationPortal = () => {
             if (response.data.token && response.status === 200) {
                 setFieldsErrors({})
                 if (response.data.message === "Patient account registered successfully. Your Account is Pending. Please wait for the admin approval") {
-                    setAccountMessage(response.data.message);
                     setOpenPatientStatusDialog(true);
                 }
             }
@@ -417,7 +415,6 @@ const PatientsRegistrationPortal = () => {
                 open={openPatientStatusDialog}
                 onClose={handleClosePatientStatusDialog}
                 onConfirm={handleConfirmPatientStatusDialog}
-                accountMessage={accountMessage}
             />
         </>
     );

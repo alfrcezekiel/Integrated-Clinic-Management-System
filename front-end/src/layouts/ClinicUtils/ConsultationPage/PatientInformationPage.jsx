@@ -6,13 +6,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 
-const PatientInformationStepper = ({
-    patientFormData,
-    handleChange,
-    fieldErrors,
-    handleAppointmentDateChange,
-    handleCallBackTimePickerChange
-}) => {
+const PatientInformationStepper = ({patientFormData, handleChange, fieldErrors, handleAppointmentDateChange, handleCallBackTimePickerChange}) => {
     return (
         <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

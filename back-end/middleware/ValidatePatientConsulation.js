@@ -29,58 +29,58 @@ const step1Validation = [
 
 // Step 2: Medical History
 const step2Validation = [
-    body("whatBringsYouHereDetails")
+    body("allergiesDetails")
         .notEmpty()
-        .withMessage("What brings you here today details is required"),
-    body("symptomsDetails")
+        .withMessage("Allergy details is required"),
+    body("takingPrescriptionMedicationDetails")
         .notEmpty()
-        .withMessage("Symptoms details is required"),
-    body("medicalConditionDetails")
+        .withMessage("Prescription medication details is required"),
+    body("chronicConditionDetails")
         .notEmpty()
         .withMessage("Medical condition details are required"),
-    body("symptomsStartDetails")
+    body("surgeriesDetails")
         .notEmpty()
-        .withMessage("Symptoms start date started is required"),
-    body("medicationDetails")
+        .withMessage("Surgeries details is required"),
+    body("jawPainDetails")
         .notEmpty()
-        .withMessage("Medication details are required"),
-    body("surgeryDetails")
+        .withMessage("Jaw pain details are required"),
+    body("experiencedExcessiveBleedingDetails")
         .notEmpty()
-        .withMessage("Surgery details are required"),
-    body("experienceIssueDetails")
+        .withMessage("Experience excessive bleeding details is required"),
+    body("heartProblemsDetails")
         .notEmpty()
-        .withMessage("Experience issue details is required"),
-    body("vaccinationDetails")
+        .withMessage("Cardiovascular issues details is required"),
+    body("advisedTakingAntibioticsDetails")
         .notEmpty()
-        .withMessage("Vaccination details is required")
+        .withMessage("Advised taking antibiotics details is required")
 ];
 
 // Step 3: Lifestyle Information
 const step3Validation = [
-    body("smokeFrequency")
+    body("smokeDetails")
         .notEmpty()
-        .withMessage("Smoking Frequency details required"),
-    body("allergyDetails")
+        .withMessage("Smoking details required"),
+    body("consumeSugaryFoodsOrDrinksDetails")
         .notEmpty()
-        .withMessage("Allergy Details are required"),
-    body("alcoholFrequency")
+        .withMessage("Sugary foods or drinks details is required"),
+    body("dentalFlossDetails")
         .notEmpty()
-        .withMessage("Alcohol Consumption Frequency is required"),
-    body("exerciseFrequency")
+        .withMessage("Dental floss details is required"),
+    body("consumeAlcoholDetails")
         .notEmpty()
-        .withMessage("Exercise Frequency Details is required"),
-    body("sleepHours")
+        .withMessage("Alcohol consumption details is required"),
+    body("participateInSportsDetails")
         .notEmpty()
-        .withMessage("Sleep hours details is required"),
-    body("stressFrequency")
+        .withMessage("Sports participation details is required"),
+    body("balancedDietDetails")
         .notEmpty()
-        .withMessage("Stress frequency details is required"),
-    body("dietarySupplements")
+        .withMessage("Balanced diet details is required"),
+    body("regularExerciseDetails")
         .notEmpty()
-        .withMessage("Dietary supplements details is required"),
-    body("waterIntake")
+        .withMessage("Regular exercise details is required"),
+    body("eatingDisordersDetails")
         .notEmpty()
-        .withMessage("Water intake details is required")
+        .withMessage("Eating disorders details is required"),
 ];
 
 // Step 4: Clinic Assessments

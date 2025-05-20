@@ -45,7 +45,6 @@ const PatientAccountStatusDialogBox = ({open, onClose, onConfirm}) => {
 PatientAccountStatusDialogBox.propTypes = {
     open: PropTypes.bool.isRequired,
     onClose: PropTypes.func.isRequired,
-    onConfirm: PropTypes.func.isRequired,
-    accountMessage: PropTypes.string.isRequired
+    onConfirm: PropTypes.func.isRequired
 }
 export default PatientAccountStatusDialogBox;

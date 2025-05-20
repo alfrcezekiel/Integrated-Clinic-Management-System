@@ -169,7 +169,7 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
                                 </div>
 
                                 {/* Form Layout - Top Row */}
-                                <div className="grid grid-cols-3 gap-6">
+                                <div className="grid grid-cols-3 gap-6 cursor-pointer">
                                     {/* First Name */}
                                     <TextField
                                         fullWidth

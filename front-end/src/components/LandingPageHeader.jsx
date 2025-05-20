@@ -47,7 +47,7 @@ const LandingPageHeader = () => {
     }, []);
 
     return (
-        <header id="header" className="fixed top-0 w-full bg-violet-600 shadow z-50">
+        <header id="header" className="fixed top-0 w-full bg-violet-600 shadow z-10">
             <div className="container mx-auto max-w-screen-xl flex items-center justify-between px-4 py-3">
                 <a href="/cms" className="flex items-center space-x-2">
                     <h1 className="text-2xl font-bold text-white">CMS</h1>

@@ -284,7 +284,12 @@ export const loginAdminAccount = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        const query = `SELECT * FROM cmsadmin WHERE email = ? AND password = ?;`;
+        const query = `SELECT
+            adminID,
+            email,
+            password
+            FROM cmsadmin 
+            WHERE email = ? AND password = ?;`;
 
         const [rows] = await conn.query(query, [email, password]);
 
@@ -1588,31 +1593,31 @@ export const consultPatientInClinicDashboard = async (req, res) => {
             firstName,
             lastName,
             email,
-            phoneNumber,
-            appointmentDate,
-            preferredTime,
-            whatBringsYouHereDetails,
-            symptomsDetails,
-            medicalConditionDetails,
-            symptomsStartDetails,
-            medicationDetails,
-            surgeryDetails,
-            experienceIssueDetails,
-            vaccinationDetails,
-            smokeFrequency,
-            allergyDetails,
-            alcoholFrequency,
-            exerciseFrequency,
-            sleepHours,
-            stressFrequency,
-            dietarySupplements,
-            waterIntake,
+            phoneNumber, 
+            appointmentDate, //patient information req.body
+            preferredTime,                                       
+            allergiesDetails,
+            takingPrescriptionMedicationDetails,
+            chronicConditionDetails,
+            surgeriesDetails,
+            jawPainDetails,
+            experiencedExcessiveBleedingDetails,
+            heartProblemsDetails,
+            advisedTakingAntibioticsDetails, //medical history req.body
+            smokeDetails,
+            consumeSugaryFoodsOrDrinksDetails,
+            dentalFlossDetails,
+            consumeAlcoholDetails,
+            participateInSportsDetails,
+            balancedDietDetails,
+            regularExerciseDetails,
+            eatingDisordersDetails, //lifestyle information req.body
             diagnosis,
             symptoms,
             prescription,
             treatmentPlan,
             bloodPressure,
-            heartRate,
+            heartRate, //clinic assessments req.body
             clinic_name,
             admin_id,
             appointmentID
@@ -1626,22 +1631,32 @@ export const consultPatientInClinicDashboard = async (req, res) => {
         const phone_number = String(phoneNumber)
         const appointment_date = dayjs(appointmentDate).format("YYYY-MM-DD")
         const appointment_time = dayjs(preferredTime).format("hh:mm")
-        const what_brings_you_here_details = String(whatBringsYouHereDetails);
-        const symptoms_details = String(symptomsDetails);
-        const medical_condition_details = String(medicalConditionDetails)
-        const symptoms_start_date_details = String(symptomsStartDetails)
-        const medication_details = String(medicationDetails)
-        const past_surgery_details = String(surgeryDetails)
-        const experienced_issue_details = String(experienceIssueDetails)
-        const vaccination_details = String(vaccinationDetails)
-        const smoke_frequency = String(smokeFrequency)
-        const allergy_details = String(allergyDetails)
-        const alcohol_details = String(alcoholFrequency)
-        const exercise_frequency_details = String(exerciseFrequency)
-        const sleep_hours_details = String(sleepHours)
-        const stress_level_details = String(stressFrequency)
-        const taking_supplements_details = String(dietarySupplements)
-        const water_intake_details = String(waterIntake)
+
+        /*
+            Medical history variable
+        */
+        const allergies_details = String(allergiesDetails)
+        const taking_prescription_medication_details = String(takingPrescriptionMedicationDetails)
+        const chronic_condition_details = String(chronicConditionDetails)
+        const surgeries_details = String(surgeriesDetails)
+        const jaw_pain_details = String(jawPainDetails)
+        const experienced_excessive_bleeding_details = String(experiencedExcessiveBleedingDetails)
+        const heart_problems_details = String(heartProblemsDetails)
+        const advised_taking_antibiotics_details = String(advisedTakingAntibioticsDetails)
+        /* 
+            Lifestyle information variable
+        */
+        const smoking_frequency_details = String(smokeDetails)
+        const sugary_foods_or_drinks_details = String(consumeSugaryFoodsOrDrinksDetails)
+        const dental_floss_details = String(dentalFlossDetails)
+        const consume_alcohol_details = String(consumeAlcoholDetails)
+        const sports_participation_details = String(participateInSportsDetails)
+        const balanced_diet_details = String(balancedDietDetails)
+        const regular_exercise_details = String(regularExerciseDetails)
+        const eating_disorders_details = String(eatingDisordersDetails)
+        /* 
+            Clinic assessments variable
+        */
         const diagnosis_field = String(diagnosis)
         const symptoms_field = String(symptoms)
         const prescription_field = String(prescription)
@@ -1675,22 +1690,22 @@ export const consultPatientInClinicDashboard = async (req, res) => {
             phone_number,
             appointment_date,
             appointment_time,
-            what_brings_you_here_details,
-            symptoms_details,
-            medical_condition_details,
-            symptoms_start_date_details,
-            medication_details,
-            past_surgery_details,
-            experienced_issue_details,
-            vaccination_details,
-            smoke_frequency,
-            allergy_details,
-            alcohol_details,
-            exercise_frequency_details,
-            sleep_hours_details,
-            stress_level_details,
-            taking_supplements_details,
-            water_intake_details,
+            allergies_details,
+            taking_prescription_medication_details,
+            chronic_condition_details,
+            surgeries_details,
+            jaw_pain_details,
+            experienced_excessive_bleeding_details,
+            heart_problems_details,
+            advised_taking_antibiotics_details,
+            smoking_frequency_details,
+            sugary_foods_or_drinks_details,
+            dental_floss_details,
+            consume_alcohol_details,
+            sports_participation_details,
+            balanced_diet_details,
+            regular_exercise_details,
+            eating_disorders_details,
             diagnosis_field,
             symptoms_field,
             prescription_field,
@@ -1710,22 +1725,22 @@ export const consultPatientInClinicDashboard = async (req, res) => {
             phone_number,
             appointment_date,
             appointment_time,
-            what_brings_you_here_details,
-            symptoms_details,
-            medical_condition_details,
-            symptoms_start_details,
-            medication_details,
-            past_surgeries_details,    
-            experience_issue_details,
-            vaccination_details,
-            smoke_frequency,
-            allergies_details,
-            alcohol_details,
-            exercise_frequency_details,
-            sleep_hours_details,
-            stress_level_details,
-            taking_supplements_details,
-            water_intake_details,
+            allergy_details,
+            taking_prescription_medication_details,
+            chronic_condition_details,
+            past_surgeries_details,
+            history_of_jaw_pain_details,
+            experienced_excessive_bleeding_details,
+            past_history_of_cardiovascular_issues,
+            advised_taking_antibiotics_details,
+            smoke_frequency_details,
+            consume_sugary_foods_or_beverages_details,
+            dental_floss_details,
+            consume_alcohol_details,
+            participate_in_sports_details,
+            balanced_diet_details,
+            regular_exercise_details,
+            eating_disorder_details,
             diagnosis,
             symptoms,
             prescription,
@@ -2039,16 +2054,16 @@ export const deleteRegisteredPatientAccount = async (req, res) => {
 export const consultationQuestionnaire = async (req, res) => {
     try {
         const { responses } = req.body;
-        
-        if(!responses || !Array.isArray(responses) || responses.length === 0) {
+
+        if (!responses || !Array.isArray(responses) || responses.length === 0) {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 message: "No questionnaires responses provided"
             });
         }
-        
+
         const result = await new Clinic().insertConsultationQuestionnaire(responses);
 
-        if(result.affectedRows === 0) {
+        if (result.affectedRows === 0) {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 message: "Failed to insert consultation questionnaires"
             });
@@ -2062,6 +2077,83 @@ export const consultationQuestionnaire = async (req, res) => {
         console.error(`Failed to insert consultation questionnaires in controller: ${error}`);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             message: "Failed to insert consultation questionnaires"
+        })
+    }
+}
+
+// controller logic for getting the consultation questionnaires in clinic dashboard
+export const retrievedMedicalHistoryConsultationQuestionnaires = async (req, res) => {
+    try {
+        const { clinicID } = req.params;
+
+        if (!clinicID) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Please enter a valid clinic ID"
+            })
+        }
+
+        const clinic_id = parseInt(clinicID, 10);
+
+        if (isNaN(clinic_id)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid clinic ID format"
+            })
+        }
+
+        const result = await new Clinic().retrievedMedicalHistoryQuestionnaire(clinic_id);
+        if (result.length === 0) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No medical history questionnaires found"
+            })
+        }
+
+        return res.status(StatusCodes.OK).json({
+            consultationQuestionnaires: result
+        })
+    } catch (error) {
+        console.error(`Failed to retrieve medical history questionnaires in controller: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to retrieve medical history consultation questionnaires"
+        })
+    }
+}
+
+// controller logic for retrieving the lifestyle information consultation questionnaires in admin side
+export const retrieveLifestyleInformationQuestionnaires = async (req, res) => {
+    try {
+        const { clinicID } = req.params;
+
+        if(!clinicID){
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Please enter a valid clinic ID"
+            })
+        }
+
+        const clinic_id = parseInt(clinicID, 10);
+
+        if (isNaN(clinic_id)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid clinic ID is not a number"
+            })
+        }
+
+        const result = await new Clinic().retrieveLifestyleInformationQuestionnaire(clinic_id);
+
+        if(result.length === 0){
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No lifestyle information questionnaires found"
+            })
+        }
+
+        if(result.length > 0){
+            return res.status(StatusCodes.OK).json({
+                lifestyleInformationQuestionnaires: result
+            })
+        }
+    } catch (error) {
+        console.error(`Failed to retrieve lifestyle information questionnaires in controller: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to retrieve lifestyle information questionnaires"
         })
     }
 }

@@ -25,7 +25,7 @@ const Dashboard = () => {
                     )}
                 </Routes>
             </div>
-            <div className="text-blue-gray-600">
+            <div className="text-blue-gray-600 text-center">
                 <Footer
                     brandName="Clinic Management System"
                     brandLink="https://clinicanagementsystem.com"

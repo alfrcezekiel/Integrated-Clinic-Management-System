@@ -17,27 +17,26 @@ class Clinic {
                 cp.patient_email,
                 cp.created_by,
                 cp.appointmentID,
-                cp.medical_condition_details,
-                cp.medication_details,
-                cp.smoke_frequency,
                 cp.past_surgeries_details,
-                cp.exercise_frequency_details,
                 cp.treatment_plan,
-                cp.what_brings_you_here_details,
-                cp.symptoms_details,
-                cp.symptoms_start_details,
+                cp.allergy_details,
+                cp.taking_prescription_medication_details,
+                cp.chronic_condition_details,
                 cp.past_surgeries_details,
-                cp.experience_issue_details,
-                cp.vaccination_details,
-                cp.exercise_frequency_details,
-                cp.sleep_hours_details,
-                cp.stress_level_details,
-                cp.taking_supplements_details,
-                cp.water_intake_details,
+                cp.history_of_jaw_pain_details,
+                cp.experienced_excessive_bleeding_details,
+                cp.past_history_of_cardiovascular_issues,
+                cp.advised_taking_antibiotics_details,
                 cp.blood_pressure_details,
                 cp.heart_rate_details,
-                cp.allergies_details,
-                cp.alcohol_details,
+                cp.smoke_frequency_details,
+                cp.consume_sugary_foods_or_beverages_details,
+                cp.dental_floss_details,
+                cp.consume_alcohol_details,
+                cp.participate_in_sports_details,
+                cp.balanced_diet_details,
+                cp.regular_exercise_details,
+                cp.eating_disorder_details,
                 cp.diagnosis,
                 cp.symptoms,
                 cp.prescription,
@@ -307,6 +306,89 @@ class Clinic {
             return result;
         } catch (error) {
             console.error(`Error inserting the consultation questionnaire in model function: ${error}`)
+            throw error;
+        }
+    }
+
+    // method for retrieving the consultation questionnaire to render in clinic side
+    retrievedMedicalHistoryQuestionnaire = async (clinicID) => {
+        try {
+            const answer = "Yes";
+            const sectionType = "Medical History"
+
+            const query = `
+                SELECT 
+                id,
+                clinic_id,
+                clinic_name,
+                clinic_type,
+                section, 
+                question,
+                answer
+                FROM consultation_questionnaires
+                WHERE clinic_id = ?
+                AND answer = ?
+                AND section = ?
+                LIMIT 8;
+            `
+
+            const value = [
+                clinicID,
+                answer,
+                sectionType
+            ]
+
+            const [rows] = await conn.query(query, value);
+
+            return rows;
+        } catch (error){
+            console.error(`Error retrieving the consultation questionnaire in model method: ${error}`)
+            throw error;
+        }
+    }
+
+    // method for retrieving the lifestle info consultation questionnaires to render in clinic side
+    retrieveLifestyleInformationQuestionnaire = async (clinicID) => {
+        try {
+            if(!Number.isInteger(clinicID) || clinicID <= 0){
+                throw new Error("Invalid clinic ID");
+            }
+
+            const MAX_LIMIT = 10;
+            const limit = 8;
+            const safeLimit = Math.min(Number(limit) || 8, MAX_LIMIT);
+
+            const answer = "Yes";
+            const sectionType = "Lifestyle Information"
+
+            const query = `
+                SELECT 
+                    id,
+                    clinic_id,
+                    clinic_name,
+                    clinic_type,
+                    section, 
+                    question,
+                    answer
+                FROM consultation_questionnaires
+                WHERE clinic_id = ?
+                    AND answer = ?
+                    AND section = ?
+                LIMIT ?;
+            `
+
+            const value = [
+                clinicID,
+                answer,
+                sectionType,
+                safeLimit
+            ]
+
+            const [rows] = await conn.query(query, value);
+
+            return rows;
+        } catch (error) {
+            console.error(`Error retrieving the lifestyle information questionnaire in model method: ${error}`)
             throw error;
         }
     }

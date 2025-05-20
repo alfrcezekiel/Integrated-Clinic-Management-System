@@ -2,150 +2,100 @@ import {
     TextField,
     FormControl,
     FormLabel,
+    CircularProgress
 } from "@mui/material";
 import PropTypes from "prop-types";
+import {
+    useState,
+    useEffect,
+} from "react";
+import CMS from "../../../API/CMS";
 
 const MedicalHistoryStepper = ({ patientFormData, handleChange, fieldErrors }) => {
+    const [medicalHistoryQuestions, setMedicalHistoryQuestions] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    const questionFieldNames = {
+        allergiesDetails: "Do you have any allergies (e.g., latex, medications)?",
+        takingPrescriptionMedicationDetails: "Are you currently taking any prescription medications?",
+        chronicConditionDetails: "Do you have any chronic conditions (e.g., diabetes, heart disease)?",
+        surgeriesDetails: "Have you had any surgeries or hospital stays in the past 5 years?",
+        jawPainDetails: "Do you have a history of jaw pain or temporomandibular joint (TMJ) disorders?",
+        experiencedExcessiveBleedingDetails: "Have you ever experienced excessive bleeding after dental procedures?",
+        heartProblemsDetails: "Do you have a history of heart problems or heart valve issues?",
+        advisedTakingAntibioticsDetails: "Have you ever been advised to take antibiotics before dental procedures?",
+    }
+
+    useEffect(() => {
+        const clinicID = localStorage.getItem("sid")
+        const retrievedMedicalHistoryQuestions = async () => {
+            try {
+                const response = await CMS.get(`CMS/clinic-dashboard/retrievedMedicalHistoryConsultationQuestionnaires/${clinicID}`, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${localStorage.getItem("authToken")}`
+                    }
+                })
+
+                if (response.status === 200) {
+                    const data = response.data.consultationQuestionnaires;
+
+                    setMedicalHistoryQuestions(data)
+                }
+            } catch (error) {
+                console.error(`Failed to retrieved the medical history questions: ${error}`);
+            } finally {
+                setTimeout(() => {
+                    setLoading(false)
+                }, 1000)
+            }
+        }
+        retrievedMedicalHistoryQuestions()
+    }, []);
+
+    if (loading) {
+        return (
+            <>
+                <div className="flex justify-center items-center flex-col h-full mt-4">
+                    <CircularProgress />
+                    <p>Loading</p>
+                </div>
+            </>
+        )
+    }
+
     return (
         <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormControl className="w-full">
-                    <FormLabel className="mb-2 text-sm text-gray-700">
-                        What brings you here today?
-                    </FormLabel>
-                    <TextField
-                        name="whatBringsYouHereDetails"
-                        label="What brings you here today?"
-                        placeholder="What brings you here today?"
-                        value={patientFormData.whatBringsYouHereDetails}
-                        onChange={handleChange}
-                        error={!!fieldErrors.whatBringsYouHereDetails}
-                        helperText={fieldErrors.whatBringsYouHereDetails || ""}
-                        fullWidth
-                        margin="dense"
-                        autoComplete="off"
-                    />
-                </FormControl>
-                <FormControl className="w-full">
-                    <FormLabel className="mb-2 text-sm text-gray-700">
-                        What are your symptoms?
-                    </FormLabel>
-                    <TextField
-                        label="Enter Symptoms Details"
-                        name="symptomsDetails"
-                        value={patientFormData.symptomsDetails}
-                        onChange={handleChange}
-                        error={!!fieldErrors.symptomsDetails}
-                        helperText={fieldErrors.symptomsDetails || ""}
-                        fullWidth
-                        margin="dense"
-                        autoComplete="off"
-                    />
-                </FormControl>
-                <FormControl className="w-full">
-                    <FormLabel className="mb-2 text-sm text-gray-700">
-                        Have you ever diagnosed with any chronic illnessess ?
-                    </FormLabel>
-                    <TextField
-                        label="Recent Illness Details"
-                        placeholder="Enter Recent Illness Details"
-                        name="medicalConditionDetails"
-                        value={patientFormData.medicalConditionDetails}
-                        onChange={handleChange}
-                        error={!!fieldErrors.medicalConditionDetails}
-                        helperText={fieldErrors.medicalConditionDetails || ""}
-                        fullWidth
-                        margin="dense"
-                        autoComplete="off"
-                    />
-                </FormControl>
-                <FormControl className="w-full">
-                    <FormLabel className="mb-2 text-sm text-gray-700">
-                        When did your symptoms start?
-                    </FormLabel>
-                    <TextField
-                        label="When Symptoms Started"
-                        placeholder="Enter When Symptoms Started"
-                        name="symptomsStartDetails"
-                        value={patientFormData.symptomsStartDetails}
-                        onChange={handleChange}
-                        error={!!fieldErrors.symptomsStartDetails}
-                        helperText={fieldErrors.symptomsStartDetails || ""}
-                        fullWidth
-                        margin="dense"
-                        autoComplete="off"
-                    />
-                </FormControl>
+                {medicalHistoryQuestions.map((question, i) => {
+                    const consultationQuestion = question.question
 
-                <FormControl className="w-full">
-                    <FormLabel className="mb-2 text-sm text-gray-700">
-                        Are you currently taking any medications?
-                    </FormLabel>
-                    <TextField
-                        label="Currently Taking Medications"
-                        placeholder="Enter Currently Taking Medications"
-                        name="medicationDetails"
-                        value={patientFormData.medicationDetails}
-                        onChange={handleChange}
-                        error={!!fieldErrors.medicationDetails}
-                        helperText={fieldErrors.medicationDetails || ""}
-                        fullWidth
-                        margin="dense"
-                        autoComplete="off"
-                    />
-                </FormControl>
+                    const matchedEntry = Object.entries(questionFieldNames).find(
+                        ([, questionText]) => questionText === consultationQuestion
+                    )
 
-                <FormControl className="w-full">
-                    <FormLabel className="mb-2 text-sm text-gray-700">
-                        Have you had any surgeries?
-                    </FormLabel>
-                    <TextField
-                        label="Surgery Details"
-                        placeholder="Enter Surgery Details"
-                        name="surgeryDetails"
-                        value={patientFormData.surgeryDetails}
-                        onChange={handleChange}
-                        error={!!fieldErrors.surgeryDetails}
-                        helperText={fieldErrors.surgeryDetails || ""}
-                        fullWidth
-                        margin="dense"
-                        autoComplete="off"
-                    />
-                </FormControl>
-                <FormControl className="w-full">
-                    <FormLabel className="mb-2 text-sm text-gray-700">
-                        Have you experienced the issue before?
-                    </FormLabel>
-                    <TextField
-                        label="Experience Issue details"
-                        placeholder="Enter Experience Issue Details"
-                        name="experienceIssueDetails"
-                        value={patientFormData.experienceIssueDetails}
-                        onChange={handleChange}
-                        error={!!fieldErrors.experienceIssueDetails}
-                        helperText={fieldErrors.experienceIssueDetails || ""}
-                        fullWidth
-                        margin="dense"
-                        autoComplete="off"
-                    />
-                </FormControl>
-                <FormControl className="w-full">
-                    <FormLabel className="mb-2 text-sm text-gray-700">
-                        Are your vaccinations up to date?
-                    </FormLabel>
-                    <TextField
-                        label="Vaccination Details"
-                        placeholder="Enter Vaccination Details"
-                        name="vaccinationDetails"
-                        value={patientFormData.vaccinationDetails}
-                        onChange={handleChange}
-                        error={!!fieldErrors.vaccinationDetails}
-                        helperText={fieldErrors.vaccinationDetails || ""}
-                        fullWidth
-                        margin="dense"
-                        autoComplete="off"
-                    />
-                </FormControl>
+                    const fieldName = matchedEntry ? matchedEntry[0] : `question_${question.id}`
+
+                    return (
+                        <FormControl className="w-full" key={i}>
+                            <FormLabel className="mb-2 text-sm text-gray-700">
+                                {consultationQuestion}
+                            </FormLabel>
+                            <TextField
+                                name={fieldName}
+                                label={consultationQuestion}
+                                placeholder={`Enter ${consultationQuestion}`}
+                                value={patientFormData[fieldName]}
+                                onChange={handleChange}
+                                error={!!fieldErrors[fieldName]}
+                                helperText={fieldErrors[fieldName]}
+                                fullWidth
+                                margin="dense"
+                                autoComplete="off"
+                            />
+                        </FormControl>
+                    )
+                })}
             </div>
         </div>
     );
@@ -155,6 +105,7 @@ MedicalHistoryStepper.propTypes = {
     patientFormData: PropTypes.object.isRequired,
     handleChange: PropTypes.func.isRequired,
     fieldErrors: PropTypes.object.isRequired,
+    setIncludedMedicalFields: PropTypes.func.isRequired,
 };
 
 export default MedicalHistoryStepper;

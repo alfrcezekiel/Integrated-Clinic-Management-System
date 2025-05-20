@@ -40,7 +40,9 @@ import {
     validateStep,
     deleteRegisteredPatientAccount,
     verifyToken,
-    consultationQuestionnaire
+    consultationQuestionnaire,
+    retrievedMedicalHistoryConsultationQuestionnaires,
+    retrieveLifestyleInformationQuestionnaires
 } from "../controllers/cms.js";
 import validateRegister from "../middleware/validation.js";
 import patientsLoginValidation from "../middleware/patientsLoginValidation.js";
@@ -183,5 +185,11 @@ router.delete("/admin-dashboard/deleteRegisteredPatientAccount/:patientID", dele
 
 // router for inserting the consultation questionnaire in admin side
 router.post("/admin-dashboard/submittedConsultationQuestionnaire", [validateQuestionnaires], consultationQuestionnaire);
+
+// router for getting the consultation questionnaires in admin side
+router.get("/clinic-dashboard/retrievedMedicalHistoryConsultationQuestionnaires/:clinicID", retrievedMedicalHistoryConsultationQuestionnaires);
+
+// router for retrieving the lifestyle information questionnaires in admin side
+router.get("/clinic-dashboard/retrieveLifestyleInformationQuestionnaires/:clinicID", retrieveLifestyleInformationQuestionnaires);
 
 export default router;
