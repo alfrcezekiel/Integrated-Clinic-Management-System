@@ -1,6 +1,6 @@
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import DoctorsDashboardNavbar from "../../../layouts/ClinicUtils/doctor.navbar";
-import {Outlet, useLocation, Routes, Route} from "react-router-dom";
+import { Outlet, useLocation, Routes, Route } from "react-router-dom";
 import DoctorsSideNav from "../../../layouts/ClinicUtils/DoctorsSideNav";
 import { doctorRoutes } from "../../../routes";
 import CMS from "../../../API/CMS";
@@ -17,7 +17,7 @@ const DoctorsDashboard = () => {
             document.title = "Clinic Dashboard | CMS"
         }
         doctorTitleHeader();
-        
+
         const navigateBackToHome = () => navigate("/cms");
         const fetchUserSession = async () => {
             try {
@@ -52,10 +52,10 @@ const DoctorsDashboard = () => {
                 <div className="min-h-screen bg-blue-gray-50/50">
                     <DoctorsSideNav routes={doctorRoutes} brandName={clinicName} />
                     <div className="p-4 flex-1 xl:ml-80">
-                        <DoctorsDashboardNavbar/>
-                        <Outlet/>
+                        <DoctorsDashboardNavbar />
+                        <Outlet />
                         <Routes>
-                            {doctorRoutes.flatMap((layout) => 
+                            {doctorRoutes.flatMap((layout) =>
                                 layout.pages.map((page) => (
                                     <Route
                                         key={page.id}

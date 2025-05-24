@@ -2,106 +2,158 @@ import {
     TextField,
     FormControl,
     FormLabel,
+    CircularProgress
 } from "@mui/material";
 import PropTypes from "prop-types";
+import {
+    useState,
+    useMemo,
+    useEffect
+} from "react";
+import CMS from "../../../API/CMS";
 
-const ClinicAssessmentStepper = ({ patientFormData, handleChange, fieldErrors }) => {
+const ClinicAssessmentStepper = ({ patientFormData, handleChange, fieldErrors, setDynamicClinicalAssessmentFieldNames }) => {
+    const [loading, setLoading] = useState(true);
+    const [clinicalAssessmentQuestionnaire, setClinicalAssessmentQuestionnaire] = useState([]);
+
+    const clinicalAssessmentQuestionnaireMemo = useMemo(() => {
+        const clinicalAssessmentQuestionnaire = {
+            experienceBleedingDetails: "Do you experience bleeding when brushing or flossing?",
+            toothSensitivityDetails: "Have you noticed any tooth sensitivity or pain recently?",
+            dentalAppearanceDetails: "Are you satisfied with your dental appearance?",
+            looseTeethDetails: "Have you noticed any loose teeth or changes in your bite?",
+            badBreathOrBadTasteDetails: "Do you have persistent bad breath or a bad taste in your mouth?",
+            dentalXraysDetails: "Have you had any dental X-rays in the past year?",
+            dentalRestorationDetails: "Do you have any dental restorations (fillings, crowns, etc.)?",
+            orthodonticTreatmentDetails: "Have you had any orthodontic treatment (braces, aligners)?"
+        }
+        return clinicalAssessmentQuestionnaire
+    }, [])
+
+    const clinicalAssessmentFieldNamesMemo = useMemo(() => {
+        const clinicalAssessmentFieldNames = [
+            "experienceBleedingDetails",
+            "toothSensitivityDetails",
+            "dentalAppearanceDetails",
+            "looseTeethDetails",
+            "badBreathOrBadTasteDetails",
+            "dentalXraysDetails",
+            "dentalRestorationDetails",
+            "orthodonticTreatmentDetails"
+        ]
+        return clinicalAssessmentFieldNames;
+    }, [])
+
+    useEffect(() => {
+        const clinicID = localStorage.getItem("sid");
+        const retrievedClinicalAssessmentQuestionnaire = async () => {
+            try {
+                if (!clinicID) {
+                    throw new Error("Clinic ID is not available in local storage.");
+                }
+
+                const response = await CMS.get(`CMS/clinic-dashboard/retrieveClinicalAssessmentQuestionnaires/${clinicID}`, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${localStorage.getItem("authToken")}`
+                    }
+                })
+
+                if (response.status === 200) {
+                    const data = response.data.clinicalAssessmentQuestionnaires;
+
+                    const uniqueClinicalAssessmentQuestionnaireMap = new Map();
+
+                    data.forEach((q) => {
+                        if(!uniqueClinicalAssessmentQuestionnaireMap.has(q.question)){
+                            uniqueClinicalAssessmentQuestionnaireMap.set(q.question, q);
+                        }
+                    })
+
+                    const uniqueClinicalAssessmentQuestionnaire = Array.from(uniqueClinicalAssessmentQuestionnaireMap.values());
+
+                    setClinicalAssessmentQuestionnaire(uniqueClinicalAssessmentQuestionnaire)
+                } else {
+                    throw new Error(`Failed to retrieve clinical assessment questionnaire: ${response.statusText}`);
+                }
+            } catch (error) {
+                console.error(`Error retrieving clincal assessment questionnaire function: ${error}`)
+            } finally {
+                setTimeout(() => {
+                    setLoading(false)
+                }, 1000)
+            }
+        }
+
+        if (clinicID) {
+            retrievedClinicalAssessmentQuestionnaire()
+        }
+    }, [])
+
+    useEffect(() => {
+        if(!loading && clinicalAssessmentQuestionnaire.length > 0){
+            const clinicalAssesmentFieldNames = clinicalAssessmentQuestionnaire.map((question) => {
+                const clinicalAssessmentQuestion = question.question
+
+                const matchedEntry = Object.entries(clinicalAssessmentQuestionnaireMemo).find(
+                    ([, questionText]) => questionText === clinicalAssessmentQuestion
+                )
+                
+                return matchedEntry ? matchedEntry[0] : `question_${question.id}`;
+            }).filter((clinicalAssessmentFieldNames) => clinicalAssessmentFieldNamesMemo.includes(clinicalAssessmentFieldNames))
+            setDynamicClinicalAssessmentFieldNames(clinicalAssesmentFieldNames)
+        }
+    }, [clinicalAssessmentFieldNamesMemo, clinicalAssessmentQuestionnaireMemo, loading, setDynamicClinicalAssessmentFieldNames, clinicalAssessmentQuestionnaire])
+
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center h-full flex-col mt-4">
+                <CircularProgress />
+                <p>Loading</p>
+            </div>
+        )
+    }
+
     return (
         <div className="space-y-2">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormControl component="fieldset" className="w-full pt-2">
-                    <FormLabel>Diagnosis</FormLabel>
-                    <TextField
-                        label="Enter Diagnosis Details"
-                        name="diagnosis"
-                        placeholder="Enter Diagnosis Details"
-                        fullWidth
-                        margin="dense"
-                        value={patientFormData.diagnosis}
-                        onChange={handleChange}
-                        error={!!fieldErrors.diagnosis}
-                        helperText={fieldErrors.diagnosis ? fieldErrors.diagnosis : ""}
-                        autoComplete="off"
-                    />
-                </FormControl>
+                {clinicalAssessmentQuestionnaire
+                    .filter((clinicalAssessmentQuestion) => {
+                        const matchedEntry = Object.entries(clinicalAssessmentQuestionnaireMemo).find(
+                            ([, questionText]) => questionText === clinicalAssessmentQuestion.question
+                        )
 
-                <FormControl component="fieldset" className="w-full pt-2">
-                    <FormLabel>Symptoms</FormLabel>
-                    <TextField
-                        label="Enter Symptoms Details"
-                        name="symptoms"
-                        placeholder="Enter Symptoms Details"
-                        fullWidth
-                        margin="dense"
-                        value={patientFormData.symptoms}
-                        onChange={handleChange}
-                        error={!!fieldErrors.symptoms}
-                        helperText={fieldErrors.symptoms ? fieldErrors.symptoms : ""}
-                        autoComplete="off"
-                    />
-                </FormControl>
+                        return matchedEntry && clinicalAssessmentFieldNamesMemo.includes(matchedEntry[0])
+                    })
+                    .map((question, i) => {
+                        const clinicalAssessmentQuestion = question.question;
 
-                <FormControl component="fieldset" className="w-full pt-2">
-                    <FormLabel>Prescription</FormLabel>
-                    <TextField
-                        label="Enter Prescription Details"
-                        name="prescription"
-                        placeholder="Enter Prescription Details"
-                        fullWidth
-                        margin="dense"
-                        value={patientFormData.prescription}
-                        onChange={handleChange}
-                        error={!!fieldErrors.prescription}
-                        helperText={fieldErrors.prescription ? fieldErrors.prescription : ""}
-                        autoComplete="off"
-                    />
-                </FormControl>
+                        const matchedEntry = Object.entries(clinicalAssessmentQuestionnaireMemo).find(
+                            ([, questionText]) => questionText === clinicalAssessmentQuestion
+                        )
 
-                <FormControl component="fieldset" className="w-full pt-2">
-                    <FormLabel>Treatment Plan</FormLabel>
-                    <TextField
-                        label="Enter Treatment Plan"
-                        name="treatmentPlan"
-                        placeholder="Enter Treatment Plan Details"
-                        fullWidth
-                        margin="dense"
-                        value={patientFormData.treatmentPlan}
-                        onChange={handleChange}
-                        error={!!fieldErrors.treatmentPlan}
-                        helperText={fieldErrors.treatmentPlan ? fieldErrors.treatmentPlan : ""}
-                        autoComplete="off"
-                    />
-                </FormControl>
-                <FormControl component="fieldset" className="w-full pt-2">
-                    <FormLabel>Blood Pressure</FormLabel>
-                    <TextField
-                        label="Blood Pressure Details"
-                        name="bloodPressure"
-                        placeholder="Enter Blood Pressure Details"
-                        fullWidth
-                        margin="dense"
-                        value={patientFormData.bloodPressure}
-                        onChange={handleChange}
-                        error={!!fieldErrors.bloodPressure}
-                        helperText={fieldErrors.bloodPressure ? fieldErrors.bloodPressure : ""}
-                        autoComplete="off"
-                    />
-                </FormControl>
-                <FormControl component="fieldset" className="w-full pt-2">
-                    <FormLabel>Heart Rate</FormLabel>
-                    <TextField
-                        label="Heart Rate Details"
-                        name="heartRate"
-                        placeholder="Enter Heart Rate Details"
-                        fullWidth
-                        margin="dense"
-                        value={patientFormData.heartRate}
-                        onChange={handleChange}
-                        error={!!fieldErrors.heartRate}
-                        helperText={fieldErrors.heartRate ? fieldErrors.heartRate : ""}
-                        autoComplete="off"
-                    />
-                </FormControl>
+                        const fieldName = matchedEntry ? matchedEntry[0] : `question_${question.id}`;
+
+                        return (
+                            <FormControl className="w-full" key={i}>
+                                <FormLabel className="mb-2 text-sm text-gray-700">
+                                    {clinicalAssessmentQuestion}
+                                </FormLabel>
+                                <TextField
+                                    label={`Question ${i + 1}`}
+                                    name={fieldName}
+                                    placeholder="Enter Details"
+                                    fullWidth
+                                    margin="dense"
+                                    value={patientFormData[fieldName]}
+                                    onChange={handleChange}
+                                    error={!!fieldErrors[fieldName]}
+                                    helperText={fieldErrors[fieldName] ? fieldErrors[fieldName] : ""}
+                                    autoComplete="off"
+                                />
+                            </FormControl>
+                        )
+                    })}
             </div>
         </div>
     );
@@ -111,6 +163,7 @@ ClinicAssessmentStepper.propTypes = {
     patientFormData: PropTypes.object.isRequired,
     handleChange: PropTypes.func.isRequired,
     fieldErrors: PropTypes.object.isRequired,
+    setDynamicClinicalAssessmentFieldNames: PropTypes.func.isRequired
 };
 
 export default ClinicAssessmentStepper;

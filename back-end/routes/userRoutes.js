@@ -42,7 +42,9 @@ import {
     verifyToken,
     consultationQuestionnaire,
     retrievedMedicalHistoryConsultationQuestionnaires,
-    retrieveLifestyleInformationQuestionnaires
+    retrieveLifestyleInformationQuestionnaires,
+    retrieveClinicalAssessmentQuestionnaires,
+    retrieveOralHygieneQuestionnaires
 } from "../controllers/cms.js";
 import validateRegister from "../middleware/validation.js";
 import patientsLoginValidation from "../middleware/patientsLoginValidation.js";
@@ -191,5 +193,11 @@ router.get("/clinic-dashboard/retrievedMedicalHistoryConsultationQuestionnaires/
 
 // router for retrieving the lifestyle information questionnaires in admin side
 router.get("/clinic-dashboard/retrieveLifestyleInformationQuestionnaires/:clinicID", retrieveLifestyleInformationQuestionnaires);
+
+// route for retrieving the clinical assessment questionnaires in server
+router.get("/clinic-dashboard/retrieveClinicalAssessmentQuestionnaires/:clinicID", retrieveClinicalAssessmentQuestionnaires);
+
+// router for retriving the oral hygiene consultation questionnaires in server
+router.get("/clinic-dashboard/retrieveOralHygieneConsultationQuestionnaires/:clinicID", retrieveOralHygieneQuestionnaires);
 
 export default router;

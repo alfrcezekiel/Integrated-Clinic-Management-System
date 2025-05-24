@@ -42,21 +42,23 @@ const ConsultationPatientPage = () => {
         heartProblemsDetails: "",
         advisedTakingAntibioticsDetails: "",
         // lifestyle information state
-        smokeFrequency: "",
-        allergyDetails: "",
-        alcoholFrequency: "",
-        exerciseFrequency: "",
-        sleepHours: "",
-        stressFrequency: "",
-        dietarySupplements: "",
-        waterIntake: "",
+        smokeDetails: "",
+        consumeSugaryFoodsOrDrinksDetails: "",
+        dentalFlossDetails: "",
+        consumeAlcoholDetails: "",
+        participateInSportsDetails: "",
+        balancedDietDetails: "",
+        regularExerciseDetails: "",
+        eatingDisordersDetails: "",
         // clinic assessment state
-        diagnosis: "",
-        symptoms: "",
-        prescription: "",
-        treatmentPlan: "",
-        bloodPressure: "",
-        heartRate: "",
+        experienceBleedingDetails: "",
+        toothSensitivityDetails: "",
+        dentalAppearanceDetails: "",
+        looseTeethDetails: "",
+        badBreathOrBadTasteDetails: "",
+        dentalXraysDetails: "",
+        dentalRestorationDetails: "",
+        orthodonticTreatmentDetails: "",
         consent: ""
     });
 
@@ -78,27 +80,32 @@ const ConsultationPatientPage = () => {
         heartProblemsDetails: "",
         advisedTakingAntibioticsDetails: "",
         // lifestyle information state
-        smokeFrequency: "",
-        allergyDetails: "",
-        alcoholFrequency: "",
-        exerciseFrequency: "",
-        sleepHours: "",
-        stressFrequency: "",
-        dietarySupplements: "",
-        waterIntake: "",
+        smokeDetails: "",
+        consumeSugaryFoodsOrDrinksDetails: "",
+        dentalFlossDetails: "",
+        consumeAlcoholDetails: "",
+        participateInSportsDetails: "",
+        balancedDietDetails: "",
+        regularExerciseDetails: "",
+        eatingDisordersDetails: "",
         // clinic assessment state
-        diagnosis: "",
-        symptoms: "",
-        prescription: "",
-        treatmentPlan: "",
-        bloodPressure: "",
-        heartRate: "",
-        consent: "",
+        experienceBleedingDetails: "",
+        toothSensitivityDetails: "",
+        dentalAppearanceDetails: "",
+        looseTeethDetails: "",
+        badBreathOrBadTasteDetails: "",
+        dentalXraysDetails: "",
+        dentalRestorationDetails: "",
+        orthodonticTreatmentDetails: "",
+        consent: "No",
         appointmentID: "",
         clinic_name: "",
         admin_id: ""
     });
     const [openAppointmentDataNotFoundDialog, setOpenAppointmentDataNotFoundDialog] = useState(false);
+    const [medicalHistoryFieldNames, setMedicalHistoryFieldNames] = useState([]);
+    const [lifestyleInformationFieldNames, setLifestyleInformationFieldNames] = useState([]);
+    const [clinicalAssessmentFieldNames, setClinicalAssessementFieldNames] = useState([]);
 
     const steps = [
         "Patient Information",
@@ -142,12 +149,13 @@ const ConsultationPatientPage = () => {
         const { name, value, type, checked } = e.target;
         setPatientFormData((prev) => ({
             ...prev,
-            [name]: type === "checkbox" ? checked : value,
+            [name]: type === "checkbox" && name === "consent" ? checked ? "Yes" : "No" : value
         }));
+
         if (fieldErrors[name]) {
             setFieldErrors((prev) => ({
                 ...prev,
-                [name]: "",
+                [name]: ""
             }));
         }
     };
@@ -156,12 +164,13 @@ const ConsultationPatientPage = () => {
     const handleAppointmentDateChange = useCallback((newValue) => {
         setPatientFormData((prev) => ({
             ...prev,
-            appointmentDate: newValue && dayjs(newValue) ? newValue : ""
+            appointmentDate: newValue && dayjs(newValue) ? newValue : null
         }));
+
         if (fieldErrors.appointmentDate) {
             setFieldErrors((prev) => ({
                 ...prev,
-                appointmentDate: ""
+                appointmentDate: null
             }));
         }
     }, [fieldErrors]);
@@ -169,12 +178,12 @@ const ConsultationPatientPage = () => {
     const handleCallBackTimePickerChange = useCallback((newValue) => {
         setPatientFormData((prev) => ({
             ...prev,
-            preferredTime: newValue && dayjs(newValue) ? newValue : ""
+            preferredTime: newValue && dayjs(newValue) ? newValue : null
         }));
         if (fieldErrors.preferredTime) {
             setFieldErrors((prev) => ({
                 ...prev,
-                preferredTime: ""
+                preferredTime: null
             }));
         }
     }, [fieldErrors]);
@@ -182,15 +191,15 @@ const ConsultationPatientPage = () => {
     // function to submit the consultation multi step form
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (patientFormData.consent !== "Yes") {
-            setFieldErrors((prev) => ({
-                ...prev,
-                consent: "Consent is required. You must agree to the terms and privacy policy.."
-            }));
-            return;
-        }
-
         try {
+            if (patientFormData?.consent !== "Yes") {
+                setFieldErrors((prev) => ({
+                    ...prev,
+                    consent: "Consent is required. You must agree to the terms and privacy policy.."
+                }));
+                return;
+            }
+
             const response = await CMS.post("/CMS/clinic-dashboard/consultPatient", {
                 ...patientFormData,
                 admin_id: localStorage.getItem("sid"),
@@ -224,9 +233,9 @@ const ConsultationPatientPage = () => {
         // display the error message in the relevant field
         const stepFields = [
             ["firstName", "lastName", "email", "phoneNumber", "appointmentDate", "preferredTime"],
-            ["allergiesDetails", "takingPrescriptionMedicationDetails", "chronicConditionDetails", "surgeriesDetails", "jawPainDetails", "experiencedExcessiveBleedingDetails", "heartProblemsDetails", "advisedTakingAntibioticsDetails"],
-            ["smokeDetails", "consumeSugaryFoodsOrDrinksDetails", "dentalFlossDetails", "consumeAlcoholDetails", "participateInSportsDetails", "balancedDietDetails", "regularExerciseDetails", "eatingDisordersDetails"],
-            ["diagnosis", "symptoms", "prescription", "treatmentPlan", "bloodPressure", "heartRate"],
+            medicalHistoryFieldNames, // dynamically render the fieldnames based on the retrieved medical history questionnaires
+            lifestyleInformationFieldNames, // dynamically render the fieldnames based on the retrieved lifestyle information questionnaires
+            clinicalAssessmentFieldNames, // dynamically render the fieldnames based on the retrieved clinical assessment questionnaires
             ["consent"]
         ];
 
@@ -286,6 +295,7 @@ const ConsultationPatientPage = () => {
                         patientFormData={patientFormData}
                         handleChange={handleChange}
                         fieldErrors={fieldErrors}
+                        setDynamicFieldNames={setMedicalHistoryFieldNames}
                     />
                 );
             case 2:
@@ -294,6 +304,7 @@ const ConsultationPatientPage = () => {
                         patientFormData={patientFormData}
                         handleChange={handleChange}
                         fieldErrors={fieldErrors}
+                        setDynamicLifeStyleInformationFieldNames={setLifestyleInformationFieldNames}
                     />
                 );
             case 3:
@@ -302,6 +313,7 @@ const ConsultationPatientPage = () => {
                         patientFormData={patientFormData}
                         handleChange={handleChange}
                         fieldErrors={fieldErrors}
+                        setDynamicClinicalAssessmentFieldNames={setClinicalAssessementFieldNames}
                     />
                 );
             case 4:
@@ -325,8 +337,8 @@ const ConsultationPatientPage = () => {
                         Patient Consultation Steps
                     </h2>
                     <Stepper activeStep={activeStep} className="mb-4 mt-4" alternativeLabel>
-                        {steps.map((label, index) => (
-                            <Step key={index}>
+                        {steps.map((label) => (
+                            <Step key={label}>
                                 <StepLabel>{label}</StepLabel>
                             </Step>
                         ))}
@@ -343,6 +355,7 @@ const ConsultationPatientPage = () => {
 
                         <div className="flex flex-col sm:flex-row justify-between space-y-2 sm:space-y-0 sm:space-x-4 mt-4 gap-4">
                             <button
+                                type="button"
                                 disabled={activeStep === 0}
                                 onClick={handleBack}
                                 color="primary"

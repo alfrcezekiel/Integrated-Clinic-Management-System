@@ -27,7 +27,8 @@ app.use(session({
     cookie:{
         secure:false,
         httpOnly:true,
-        maxAge: 1000 * 60 * 60 * 24
+        maxAge: 1000 * 60 * 60 * 24,
+        sameSite: "lax",
     },
 }))
 app.use(express.json());
@@ -37,8 +38,8 @@ app.use(morgan("dev"));
 app.use(express.static(path.join(__dirname, "public")));
 
 // Ensure the directory exists before serving it as static content
-const clinicImagesPath = path.join(__dirname, "uploads");
-app.use("uploads/", express.static(clinicImagesPath));
+const clinicImagesPath = path.join(__dirname, "public/uploads");
+app.use("/public/uploads", express.static(clinicImagesPath));
 app.use(cors({
     origin: "http://localhost:5173",
     methods: ["GET", "POST", "PUT", "DELETE"],
@@ -53,6 +54,9 @@ app.use((req, res) => {
         routeMessage: "Server route not found"
     })
 })
+
+// error handling for server error
+app.options("*", cors());
 
 // function for statrting the server
 const startServer = async () => {

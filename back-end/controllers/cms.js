@@ -1588,14 +1588,18 @@ export const updateRegisteredPatientsAccountInAdmin = async (req, res) => {
 
 // controller logic for inserting a consult patient data
 export const consultPatientInClinicDashboard = async (req, res) => {
+    const connection = await conn.getConnection();
+
     try {
+        await connection.beginTransaction();
+
         const {
             firstName,
             lastName,
             email,
-            phoneNumber, 
+            phoneNumber,
             appointmentDate, //patient information req.body
-            preferredTime,                                       
+            preferredTime,
             allergiesDetails,
             takingPrescriptionMedicationDetails,
             chronicConditionDetails,
@@ -1612,12 +1616,14 @@ export const consultPatientInClinicDashboard = async (req, res) => {
             balancedDietDetails,
             regularExerciseDetails,
             eatingDisordersDetails, //lifestyle information req.body
-            diagnosis,
-            symptoms,
-            prescription,
-            treatmentPlan,
-            bloodPressure,
-            heartRate, //clinic assessments req.body
+            experienceBleedingDetails,
+            toothSensitivityDetails,
+            dentalAppearanceDetails,
+            looseTeethDetails,
+            badBreathOrBadTasteDetails,
+            dentalXraysDetails,
+            dentalRestorationDetails,
+            orthodonticTreatmentDetails, //clinical assessment req.body
             clinic_name,
             admin_id,
             appointmentID
@@ -1655,14 +1661,17 @@ export const consultPatientInClinicDashboard = async (req, res) => {
         const regular_exercise_details = String(regularExerciseDetails)
         const eating_disorders_details = String(eatingDisordersDetails)
         /* 
-            Clinic assessments variable
+            Clinical assessments variable
         */
-        const diagnosis_field = String(diagnosis)
-        const symptoms_field = String(symptoms)
-        const prescription_field = String(prescription)
-        const treatment_plan = String(treatmentPlan)
-        const blood_pressure_details = String(bloodPressure)
-        const heart_rate_details = String(heartRate)
+        const experience_bleeding_details = String(experienceBleedingDetails)
+        const tooth_sensitivity_details = String(toothSensitivityDetails)
+        const dental_appearance_details = String(dentalAppearanceDetails)
+        const loose_teeth_details = String(looseTeethDetails)
+        const bad_breath_or_bad_taste_details = String(badBreathOrBadTasteDetails)
+        const dental_xrays_details = String(dentalXraysDetails)
+        const dental_restoration_details = String(dentalRestorationDetails)
+        const orthodontic_treatment_details = String(orthodonticTreatmentDetails)
+
         const clinic_name_field = String(clinic_name);
 
         // Parse IDs with validation
@@ -1689,7 +1698,7 @@ export const consultPatientInClinicDashboard = async (req, res) => {
             email_address,
             phone_number,
             appointment_date,
-            appointment_time,
+            appointment_time, // patient information values
             allergies_details,
             taking_prescription_medication_details,
             chronic_condition_details,
@@ -1697,7 +1706,7 @@ export const consultPatientInClinicDashboard = async (req, res) => {
             jaw_pain_details,
             experienced_excessive_bleeding_details,
             heart_problems_details,
-            advised_taking_antibiotics_details,
+            advised_taking_antibiotics_details, // medical history values
             smoking_frequency_details,
             sugary_foods_or_drinks_details,
             dental_floss_details,
@@ -1705,13 +1714,15 @@ export const consultPatientInClinicDashboard = async (req, res) => {
             sports_participation_details,
             balanced_diet_details,
             regular_exercise_details,
-            eating_disorders_details,
-            diagnosis_field,
-            symptoms_field,
-            prescription_field,
-            treatment_plan,
-            blood_pressure_details,
-            heart_rate_details,
+            eating_disorders_details, // lifestyle information values
+            experience_bleeding_details,
+            tooth_sensitivity_details,
+            dental_appearance_details,
+            loose_teeth_details,
+            bad_breath_or_bad_taste_details,
+            dental_xrays_details,
+            dental_restoration_details,
+            orthodontic_treatment_details, // clinical assessment values
             clinic_name_field,
             consent,
             admin_id_field,
@@ -1741,19 +1752,21 @@ export const consultPatientInClinicDashboard = async (req, res) => {
             balanced_diet_details,
             regular_exercise_details,
             eating_disorder_details,
-            diagnosis,
-            symptoms,
-            prescription,
-            treatment_plan,
-            blood_pressure_details,
-            heart_rate_details,
+            experience_bleeding_details,
+            tooth_sensitivity_details,
+            dental_appearance_details,
+            loose_teeth_details,
+            bad_breath_or_bad_taste_details,
+            dental_xrays_details,
+            dental_restoration_details,
+            orthodontic_treatment_details,
             clinic_name,
             consent,
             created_by
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
         `
 
-        const [result1] = await conn.query(query, values);
+        const [result1] = await connection.query(query, values);
 
         if (result1.affectedRows === 0) {
             return res.status(StatusCodes.BAD_REQUEST).json({
@@ -1764,11 +1777,21 @@ export const consultPatientInClinicDashboard = async (req, res) => {
         const updateQuery = `UPDATE patientsappointment SET status = ? WHERE appointmentID = ?;`;
         const status = "Consulted";
 
-        const [result2] = await conn.query(updateQuery, [status, appointment_id]);
+        const [result2] = await connection.query(updateQuery, [
+            status,
+            appointment_id
+        ]);
 
         if (result2.affectedRows === 0) {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 message: "Failed to update appointment status"
+            })
+        }
+
+        const commitQuery = await connection.commit();
+        if (!commitQuery) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "Failed to commit transaction in consult patient data"
             })
         }
 
@@ -1777,6 +1800,13 @@ export const consultPatientInClinicDashboard = async (req, res) => {
         })
 
     } catch (error) {
+        const rollbackQuery = await connection.rollback();
+        if (!rollbackQuery) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "Failed to rollback transaction"
+            })
+        }
+
         console.error(`Failed to insert consult patient data: ${error}`);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             message: "Failed to insert consult patient data"
@@ -2123,7 +2153,7 @@ export const retrieveLifestyleInformationQuestionnaires = async (req, res) => {
     try {
         const { clinicID } = req.params;
 
-        if(!clinicID){
+        if (!clinicID) {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 message: "Please enter a valid clinic ID"
             })
@@ -2139,13 +2169,13 @@ export const retrieveLifestyleInformationQuestionnaires = async (req, res) => {
 
         const result = await new Clinic().retrieveLifestyleInformationQuestionnaire(clinic_id);
 
-        if(result.length === 0){
+        if (result.length === 0) {
             return res.status(StatusCodes.NOT_FOUND).json({
                 message: "No lifestyle information questionnaires found"
             })
         }
 
-        if(result.length > 0){
+        if (result.length > 0) {
             return res.status(StatusCodes.OK).json({
                 lifestyleInformationQuestionnaires: result
             })
@@ -2154,6 +2184,84 @@ export const retrieveLifestyleInformationQuestionnaires = async (req, res) => {
         console.error(`Failed to retrieve lifestyle information questionnaires in controller: ${error}`);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             message: "Failed to retrieve lifestyle information questionnaires"
+        })
+    }
+}
+
+// controller logic for retrieving the clical assessment questionnaires to render in clinic side
+export const retrieveClinicalAssessmentQuestionnaires = async (req, res) => {
+    try {
+        const { clinicID } = req.params;
+
+        if (!clinicID) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Please enter a valid clinic ID"
+            })
+        }
+
+        const clinic_id = parseInt(clinicID, 10);
+
+        if (isNaN(clinic_id)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid clinic ID is not a number"
+            })
+        }
+
+        const result = await new Clinic().retrieveClinicalAssessmentQuestionnaire(clinic_id);
+
+        if (result.length === 0) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No clinical assessment questionnaires found"
+            })
+        }
+
+        return res.status(StatusCodes.OK).json({
+            clinicalAssessmentQuestionnaires: result
+        })
+    } catch (error) {
+        console.error(`Failed to retrieve clinical assessment questionnaires in controller: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to retrieve clinical assessment questionnaires"
+        })
+    }
+}
+
+// controller logic for retrieving the oral hygiene questionnaires in admin side
+export const retrieveOralHygieneQuestionnaires = async (req, res) => {
+    try {
+        const { clinicID } = req.params;
+
+        if (!clinicID) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Please enter a valid clinic ID"
+            })
+        }
+
+        const clinic_id = parseInt(clinicID, 10);
+        if (isNaN(clinic_id)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid clinic ID is not a number"
+            })
+        }
+
+        const sectionType = "Oral Hygiene";
+        const limit = 7;
+
+        const result = await new Clinic().retrieveOralHygieneQuestionnaire(clinic_id, sectionType, limit);
+
+        if (!result.length) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No oral hygiene questionnaires found"
+            })
+        }
+
+        return res.status(StatusCodes.OK).json({
+            oralHygieneQuestionnaires: result
+        })
+    } catch (error) {
+        console.error(`Failed to retrieve oral hygiene questionnaires in controller: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to retrieve oral hygiene questionnaires"
         })
     }
 }

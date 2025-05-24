@@ -111,7 +111,7 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
                                 <CardMedia
                                     component="img"
                                     height="200"
-                                    image={selectedClinic.clinic_image}
+                                    src={`http://localhost:7506/public/uploads/${selectedClinic.clinic_image}`}
                                     alt="Clinic"
                                     className="rounded-md h-48 object-cover"
                                 />

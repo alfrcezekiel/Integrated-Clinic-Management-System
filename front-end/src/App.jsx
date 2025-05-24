@@ -9,7 +9,7 @@ const PatientRegistrationPortal = lazy(() => import("./components/pages/Patients
 const PatientsLoginPortal = lazy(() => import("./components/pages/PatientsLoginPage.jsx"));
 const PatientsDashboard = lazy(() => import("./components/pages/dashboard/PatientsDashboard.jsx"));
 const ClinicLoginPortal = lazy(() => import("./components/pages/ClinicLoginPage.jsx"));
-const DoctorsDashboard = lazy(() => import("./components/pages/dashboard/DoctorsDashboard.jsx"));
+const ClinicDashboard = lazy(() => import("./components/pages/dashboard/ClinicDashboard.jsx"));
 const AdminLoginPortal = lazy(() => import("./components/pages/AdminLoginPage.jsx"));
 const AdminDashboard = lazy(() => import("./components/pages/dashboard/AdminDashboard.jsx"));
 
@@ -71,7 +71,7 @@ function App() {
             <Route path="/cms/login-admin" element={<AdminLoginPortal />} />
             <Route path="/patients-dashboard/*" element={<PatientsDashboard />} />
             <Route path="/doctor-portal/login" element={<ClinicLoginPortal />} />
-            <Route path="/doctor-portal/dashboard/*" element={<DoctorsDashboard />} />
+            <Route path="/doctor-portal/dashboard/*" element={<ClinicDashboard />} />
             <Route path="/admin-dashboard/*" element={<AdminDashboard />} />
             <Route path="*" element={<PageNotFound />} />
           </Routes>

@@ -1,4 +1,3 @@
-import { response } from "express";
 import conn from "../db/mysql/conn.js";
 
 // created a new instance of class Clinic Models
@@ -6,7 +5,9 @@ class Clinic {
 
     // method of retrieving all appointment history to render in appointment history in clinic side
     getAppointmentHistory = async (clinicID) => {
+        const connection = await conn.getConnection();
         try {
+            await connection.beginTransaction(); // starts a transaction in retrieving all appointment history
             const status = "Consulted";
 
             const query = `SELECT
@@ -18,7 +19,6 @@ class Clinic {
                 cp.created_by,
                 cp.appointmentID,
                 cp.past_surgeries_details,
-                cp.treatment_plan,
                 cp.allergy_details,
                 cp.taking_prescription_medication_details,
                 cp.chronic_condition_details,
@@ -27,8 +27,6 @@ class Clinic {
                 cp.experienced_excessive_bleeding_details,
                 cp.past_history_of_cardiovascular_issues,
                 cp.advised_taking_antibiotics_details,
-                cp.blood_pressure_details,
-                cp.heart_rate_details,
                 cp.smoke_frequency_details,
                 cp.consume_sugary_foods_or_beverages_details,
                 cp.dental_floss_details,
@@ -37,15 +35,20 @@ class Clinic {
                 cp.balanced_diet_details,
                 cp.regular_exercise_details,
                 cp.eating_disorder_details,
-                cp.diagnosis,
-                cp.symptoms,
-                cp.prescription,
                 cp.appointment_date,
                 cp.appointment_time,
                 pa.phoneNumber,
                 pa.gender,
                 pa.status,
-                pa.purposeOfAppointment
+                pa.purposeOfAppointment,
+                cp.experience_bleeding_details,
+                cp.tooth_sensitivity_details,
+                cp.dental_appearance_details,
+                cp.loose_teeth_details,
+                cp.bad_breath_or_bad_taste_details,
+                cp.dental_xrays_details,
+                cp.dental_restoration_details,
+                cp.orthodontic_treatment_details
                 FROM patientsappointment AS pa
                 INNER JOIN clinic AS c
                 ON pa.clinic_id = c.clinic_id
@@ -55,15 +58,27 @@ class Clinic {
                 ORDER BY pa.appointmentDate ASC
             `
 
-            const [rows] = await conn.query(query, [
+            const [rows] = await connection.query(query, [
                 clinicID,
                 status
             ])
 
+            const commitQuery = await connection.commit();
+            if (!commitQuery) {
+                throw new Error(`Failed to commit transaction in retrieving all appoinment history`)
+            }
+
             return rows;
         } catch (error) {
-            console.error("Error fetching appointment history:", error);
+            const rollbackQuery = await connection.rollback();
+            if (!rollbackQuery) {
+                console.error(`Failed to rollback transaction in retrieving all appointments: ${error} `)
+            }
+
+            console.error(`Error fetching appointment history: ${error}`);
             throw error;
+        } finally {
+            connection.release();
         }
     }
 
@@ -168,7 +183,7 @@ class Clinic {
                 ORDER BY pa.createdAt DESC
                 LIMIT 1;
             `
-            
+
             const value = [
                 patientID
             ]
@@ -215,7 +230,7 @@ class Clinic {
                 ...methodOfPayment
             ]
 
-            if(query.match(/\?/g).length !== value.length){
+            if (query.match(/\?/g).length !== value.length) {
                 throw new Error("Number of placeholders and values do not match")
             }
 
@@ -270,7 +285,7 @@ class Clinic {
             const [result] = await conn.query(query, value);
 
             return result;
-        } catch(error){
+        } catch (error) {
             console.error(`Error deleting the patient registered account in model function: ${error}`)
             throw error;
         }
@@ -312,23 +327,29 @@ class Clinic {
 
     // method for retrieving the consultation questionnaire to render in clinic side
     retrievedMedicalHistoryQuestionnaire = async (clinicID) => {
+        const connection = await conn.getConnection();
+
         try {
+            await connection.beginTransaction(); // start a transaction
+
             const answer = "Yes";
             const sectionType = "Medical History"
 
             const query = `
                 SELECT 
-                id,
+                MAX(id) AS id,
                 clinic_id,
-                clinic_name,
-                clinic_type,
+                MAX(clinic_name) AS clinic_name,
+                MAX(clinic_type) AS clinic_type,
                 section, 
                 question,
-                answer
+                MAX(answer) AS answer
                 FROM consultation_questionnaires
                 WHERE clinic_id = ?
                 AND answer = ?
                 AND section = ?
+                GROUP BY section, question, clinic_id
+                ORDER BY id ASC
                 LIMIT 8;
             `
 
@@ -338,19 +359,36 @@ class Clinic {
                 sectionType
             ]
 
-            const [rows] = await conn.query(query, value);
+            const [rows] = await connection.query(query, value);
+
+            const commitQuery = await connection.commit()
+
+            if (!commitQuery) {
+                throw new Error("Failed to commit transaction in retrieving medical history questionnaire");
+            }
 
             return rows;
-        } catch (error){
+        } catch (error) {
+            const rollbackQuery = await connection.rollback();
+            if (!rollbackQuery) {
+                console.error(`Error rolling back transaction in medical history method model: ${error}`);
+            }
+
             console.error(`Error retrieving the consultation questionnaire in model method: ${error}`)
             throw error;
+        } finally {
+            connection.release();
         }
     }
 
     // method for retrieving the lifestle info consultation questionnaires to render in clinic side
     retrieveLifestyleInformationQuestionnaire = async (clinicID) => {
+        const connection = await conn.getConnection();
         try {
-            if(!Number.isInteger(clinicID) || clinicID <= 0){
+
+            await connection.beginTransaction(); // start a transaction
+
+            if (!Number.isInteger(clinicID) || clinicID <= 0) {
                 throw new Error("Invalid clinic ID");
             }
 
@@ -363,17 +401,19 @@ class Clinic {
 
             const query = `
                 SELECT 
-                    id,
+                    MAX(id) AS id,
                     clinic_id,
-                    clinic_name,
-                    clinic_type,
+                    MAX(clinic_name) AS clinic_name,
+                    MAX(clinic_type) AS clinic_type,
                     section, 
                     question,
-                    answer
+                    MAX(answer) AS answer
                 FROM consultation_questionnaires
                 WHERE clinic_id = ?
                     AND answer = ?
                     AND section = ?
+                GROUP BY section, question, clinic_id
+                ORDER BY id ASC
                 LIMIT ?;
             `
 
@@ -384,12 +424,170 @@ class Clinic {
                 safeLimit
             ]
 
-            const [rows] = await conn.query(query, value);
+            const [rows] = await connection.query(query, value);
+
+            const commitQuery = await connection.commit();  // commit the transaction query if successful
+
+            if (!commitQuery) {
+                throw new Error("Failed to commit transaction in retrieving lifestyle information questionnaire");
+            }
 
             return rows;
         } catch (error) {
+            const rollbackQuery = await connection.rollback();
+            if (!rollbackQuery) {
+                console.error(`Error rolling back transaction in lifestyle information: ${error}`);
+            }
+
             console.error(`Error retrieving the lifestyle information questionnaire in model method: ${error}`)
             throw error;
+        } finally {
+            connection.release();
+        }
+    }
+
+    // method for retrieving the clinical assessment questionnaire to render in clinic side
+    retrieveClinicalAssessmentQuestionnaire = async (clinicID) => {
+        const connection = await conn.getConnection();
+        try {
+            await connection.beginTransaction(); // start a transaction
+
+            if (!Number.isInteger(clinicID) || clinicID <= 0) {
+                throw new Error("Invalid clinic ID");
+            }
+            const MAX_LIMIT = 10;
+            const limit = 8;
+
+            const safeLimit = Math.min(Number(limit) || 8, MAX_LIMIT);
+
+            const answer = "Yes";
+            const sectionType = "Clinical Assessments"
+
+            const fields = [
+                "MAX(id) AS id",
+                "clinic_id",
+                "MAX(clinic_name) AS clinic_name",
+                "MAX(clinic_type) AS clinic_type",
+                "section",
+                "question",
+                "MAX(answer) AS answer"
+            ]
+
+            const query = `
+                SELECT
+                    ${fields.join(", ")}
+                FROM consultation_questionnaires
+                WHERE clinic_id = ?
+                    AND answer = ?
+                    AND section = ?
+                GROUP BY section, question, clinic_id
+                ORDER BY id ASC
+                LIMIT ?;
+            `
+
+            const value = [
+                clinicID,
+                answer,
+                sectionType,
+                safeLimit
+            ]
+
+            const [rows] = await connection.query(query, value);
+
+            const commitQuery = await connection.commit();  // commit the transaction query if successful
+
+            if (!commitQuery) {
+                throw new Error("Failed to commit transaction in retrieving clinical assessment questionnaire");
+            }
+
+            return rows;
+        } catch (error) {
+            const rollbackQuery = await connection.rollback();
+            if (!rollbackQuery) {
+                console.error(`Error rolling back transaction in clinical assessment questionnaire: ${error}`);
+            }
+
+            console.error(`Error retrieving the clinical assessment questionnaire in model method: ${error}`)
+            throw error
+        } finally {
+            connection.release();
+        }
+    }
+
+    // method for retrieving the oral hygiene questionnaire to render in clinic side
+    retrieveOralHygieneQuestionnaire = async (clinicID, sectionType, limit) => {
+        const connection = await conn.getConnection();
+        try {
+            await connection.beginTransaction(); // start a transaction
+            
+            if (!Number.isInteger(clinicID) || clinicID <= 0) {
+                throw new Error("Invalid clinic ID");
+            }
+
+            if(!sectionType || typeof sectionType !== "string"){
+                throw new Error("Invalid section type");
+            }
+
+            if (!limit || isNaN(limit) || limit <= 0) {
+                throw new Error("Invalid limit value");
+            }
+
+            const MAX_LIMIT = 10;
+            const safeLimit = Math.min(Number(limit) || 7, MAX_LIMIT);
+
+            const answer = "Yes"
+
+            const fields = [
+                "MAX(id) AS id",
+                "clinic_id",
+                "MAX(clinic_name) AS clinic_name",
+                "MAX(clinic_type) AS clinic_type",
+                "section",
+                "question",
+                "MAX(answer) AS answer"
+            ]
+
+            const query = `
+                SELECT
+                    ${fields.join(", ")}
+                FROM consultation_questionnaires
+                WHERE clinic_id = ?
+                    AND answer = ?
+                    AND section = ?
+                GROUP BY section, question, clinic_id
+                ORDER BY id ASC
+                LIMIT ?;
+            `
+
+            const values = [
+                clinicID,
+                answer,
+                sectionType,
+                safeLimit
+            ]
+
+            if (query.match(/\?/g).length !== values.length) {
+                throw new Error("Number of placeholders and values do not match");
+            }
+
+            const [rows] = await connection.query(query, values);
+
+            const commitQuery = await connection.commit();  // commit the transaction query if successful
+            if (!commitQuery) {
+                throw new Error("Failed to commit transaction in retrieving oral hygiene questionnaire");
+            }
+
+            return rows;
+        } catch (error) {
+            const rollbackQuery = await connection.rollback();
+            if (!rollbackQuery) {
+                console.error(`Error rolling back transaction in oral hygiene questionnaire: ${error}`);
+            }
+
+            console.error(`Error retrieving the oral hygiene questionnaire in model method: ${error}`)
+            throw error;
+        } finally {
+            connection.release();
         }
     }
 }

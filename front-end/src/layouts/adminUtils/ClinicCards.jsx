@@ -72,8 +72,8 @@ const ClinicCard = ({ clinic, onViewDetails, onEditClinic }) => {
     return (
         <div className="max-w-md mx-auto bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200 hover:shadow-xl transition-transform transform hover:-translate-y-2">
             <img
-                className="w-full h-38 object-cover"
-                src={`uploads/${clinic.clinic_image}`}
+                className="w-full h-full object-cover"
+                src={`http://localhost:7506/public/uploads/${clinic.clinic_image}`}
                 alt="Clinic"
             />
 

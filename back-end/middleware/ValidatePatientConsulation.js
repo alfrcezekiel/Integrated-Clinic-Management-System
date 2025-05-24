@@ -112,51 +112,117 @@ const step5Validation = [
         .withMessage("Consent is required. You must agree to the terms and privacy policy."),
 ];
 
-// Combine validations dynamically
-const validatePatientConsultation = (step) => {
-    let validations = [];
-    // parse the step parameter to an integet
-    switch (parseInt(step, 10)) {
-        case 0:
-            validations = step1Validation;
-            break;
-        case 1:
-            validations = step2Validation;
-            break;
-        case 2:
-            validations = step3Validation;
-            break;
-        case 3:
-            validations = step4Validation;
-            break;
-        case 4:
-            validations = step5Validation;
-            break;
-        default:
-            return [
-                (req, res) => {
-                    return res.status(StatusCodes.BAD_REQUEST).json({
-                        errors: {
-                            step: "Invalid step provided."
-                        },
-                    });
-                },
-            ];
+// dynamic medical history question based on the retrieved consultation questionnaire in the server
+const step2DynamicMedicalHistoryValidation = async (req) => {
+    const possibleFields = {
+        allergiesDetails: "Allergy details is required",
+        takingPrescriptionMedicationDetails: "Prescription medication details is required",
+        chronicConditionDetails: "Medical condition details are required",
+        surgeriesDetails: "Surgeries details is required",
+        jawPainDetails: "Jaw pain details are required",
+        experiencedExcessiveBleedingDetails: "Experience excessive bleeding details is required",
+        heartProblemsDetails: "Cardiovascular issues details is required",
+        advisedTakingAntibioticsDetails: "Advised taking antibiotics details is required"
     }
 
-    return [
-        ...validations,
-        (req, res, next) => {
-            const errors = validationResult(req);
+    return Object.entries(possibleFields).map(([field, message]) => {
+        return body(field)
+            .if(body(field).exists())
+            .notEmpty()
+            .withMessage(message)
+    })
+}
 
-            if (!errors.isEmpty()) {
-                return res.status(StatusCodes.BAD_REQUEST).json({
-                    errors: errors.formatWith((error) => error.msg).mapped(),
-                });
+const step3DynamicLifestyleInformationValidation = async (req) => {
+    const possibleLifestyleInformationFields = {
+        smokeDetails: "Smoking details required",
+        consumeSugaryFoodsOrDrinksDetails: "Sugary foods or drinks details is required",
+        dentalFlossDetails: "Dental floss details is required",
+        consumeAlcoholDetails: "Alcohol consumption details is required",
+        participateInSportsDetails: "Sports participation details is required",
+        balancedDietDetails: "Balanced diet details is required",
+        regularExerciseDetails: "Regular exercise details is required",
+        eatingDisordersDetails: "Eating disorders details is required"
+    }
+
+    return Object.entries(possibleLifestyleInformationFields).map(([field, message]) => {
+        return body(field)
+            .if(body(field).exists())
+            .notEmpty()
+            .withMessage(message)
+    })
+}
+
+const step4DynamicClinicalAssessmentValidation = async (req) => {
+    const possibleClinicalAssessmentFields = {
+        experienceBleedingDetails: "Experience bleeding details is required",
+        toothSensitivityDetails: "Tooth sensitivity details is required",
+        dentalAppearanceDetails: "Dental appearance details is required",
+        looseTeethDetails: "Loose teeth details is required",
+        badBreathOrBadTasteDetails: "Bad breath or bad taste details is required",
+        dentalXraysDetails: "Dental X-rays details is required",
+        dentalRestorationDetails: "Dental restoration details is required",
+        orthodonticTreatmentDetails: "Orthodontic treatment details is required"
+    }
+
+    const fields = Object.entries(possibleClinicalAssessmentFields).map(([field, message]) => {
+            return body(field)
+                .if(body(field).exists())
+                .notEmpty()
+                .withMessage(message)
+        })
+    
+    return fields;
+}
+
+// Combine validations dynamically
+const validatePatientConsultation = (step) => {
+    return [
+        async (req, res, next) => {
+            let validations = [];
+            // parse the step parameter to an integer
+            switch (parseInt(step, 10)) {
+                case 0:
+                    validations = step1Validation;
+                    break;
+                case 1:
+                    validations = await step2DynamicMedicalHistoryValidation(req);
+                    break;
+                case 2:
+                    validations = await step3DynamicLifestyleInformationValidation(req);
+                    break;
+                case 3:
+                    validations = await step4DynamicClinicalAssessmentValidation(req);
+                    break;
+                case 4:
+                    validations = step5Validation;
+                    break;
+                default:
+                    return [
+                        (req, res) => {
+                            return res.status(StatusCodes.BAD_REQUEST).json({
+                                errors: {
+                                    step: "Invalid step provided."
+                                },
+                            });
+                        },
+                    ];
             }
-            next();
-        },
-    ];
+
+            await Promise.all(validations.map((validation) => validation.run(req)))
+                .then(() => {
+                    const errors = validationResult(req)
+
+                    if (!errors.isEmpty()) {
+                        return res.status(StatusCodes.BAD_REQUEST).json({
+                            errors: errors.formatWith((err) => err.msg).mapped()
+                        })
+                    }
+                    next()
+                })
+                .catch(next)
+        }
+    ]
 };
 
 export default validatePatientConsultation;

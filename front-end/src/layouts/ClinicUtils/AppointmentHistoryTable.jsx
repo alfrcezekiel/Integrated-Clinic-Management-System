@@ -303,39 +303,39 @@ const AppointmentHistoryTable = () => {
                                         </h3>
                                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm text-gray-700">
                                             <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                                <strong>First Name: </strong>
+                                                <strong className="text-sm/6">First Name: </strong>
                                                 {selectedPatient.patient_first_name}
                                             </div>
                                             <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                                <strong>Last Name: </strong>
+                                                <strong className="text-sm/6">Last Name: </strong>
                                                 {selectedPatient.patient_last_name}
                                             </div>
                                             <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                                <strong>Email: </strong>
+                                                <strong className="text-sm/6">Email: </strong>
                                                 {selectedPatient.patient_email}
                                             </div>
                                             <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                                <strong>Phone Number: </strong>
+                                                <strong className="text-sm/6">Phone Number: </strong>
                                                 {selectedPatient.phoneNumber}
                                             </div>
                                             <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                                <strong>Appointment Date: </strong>
+                                                <strong className="text-sm/6">Appointment Date: </strong>
                                                 {dateFormat(selectedPatient.appointment_date)}
                                             </div>
                                             <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                                <strong>Appointment Time: </strong>
+                                                <strong className="text-sm/6">Appointment Time: </strong>
                                                 {formatTimeToAMPM(selectedPatient.appointment_time)}
                                             </div>
                                             <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                                <strong>Status: </strong>
+                                                <strong className="text-sm/6">Status: </strong>
                                                 {selectedPatient.status}
                                             </div>
                                             <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                                <strong>Gender: </strong>
+                                                <strong className="text-sm/6">Gender: </strong>
                                                 {selectedPatient.gender}
                                             </div>
                                             <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                                <strong>Purpose Of Appointment: </strong>
+                                                <strong className="text-sm/6">Purpose Of Appointment: </strong>
                                                 {selectedPatient.purposeOfAppointment}
                                             </div>
                                         </div>
@@ -348,11 +348,11 @@ const AppointmentHistoryTable = () => {
                                         </h3>
                                         <div className="grid grid-cols-2 gap-4 text-sm text-gray-700">
                                             <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                                <strong>Documented Allergic Reactions: </strong>
+                                                <strong className="text-sm/6">Documented Allergic Reactions: </strong>
                                                 {selectedPatient.allergy_details || "N/A"}
                                             </div>
                                             <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                                <strong>Current Prescription Medications: </strong>
+                                                <strong className="text-sm/6">Current Prescription Medications: </strong>
                                                 {selectedPatient.taking_prescription_medication_details || "N/A"}
                                             </div>
                                             <div className="col-span-2 md:col-span-1 sm:col-span-2">
@@ -360,23 +360,23 @@ const AppointmentHistoryTable = () => {
                                                 {selectedPatient.chronic_condition_details || "N/A"}
                                             </div>
                                             <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                                <strong>Temporomandibular Joint (TMJ) or Jaw Pain History: </strong>
+                                                <strong className="text-sm/6">Temporomandibular Joint (TMJ) or Jaw Pain History: </strong>
                                                 {selectedPatient.history_of_jaw_pain_details || "N/A"}
                                             </div>
                                             <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                                <strong>History of Excessive Bleeding: </strong>
+                                                <strong className="text-sm/6">History of Excessive Bleeding: </strong>
                                                 {selectedPatient.experienced_excessive_bleeding_details || "N/A"}
                                             </div>
                                             <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                                <strong>Cardiovascular History: </strong>
+                                                <strong className="text-sm/6">Cardiovascular History: </strong>
                                                 {selectedPatient.past_history_of_cardiovascular_issues || "N/A"}
                                             </div>
                                             <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                                <strong>Prophylactic Antibiotic Recommendation: </strong>
+                                                <strong className="text-sm/6">Prophylactic Antibiotic Recommendation: </strong>
                                                 {selectedPatient.advised_taking_antibiotics_details || "N/A"}
                                             </div>
                                             <div className="col-span-2 md:col-span-1 sm:col-span-2">
-                                                <strong>Surgical History: </strong>
+                                                <strong className="text-sm/6">Surgical History: </strong>
                                                 {selectedPatient.past_surgeries_details || "N/A"}
                                             </div>
                                         </div>
@@ -387,43 +387,64 @@ const AppointmentHistoryTable = () => {
                                         </h3>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-700">
                                             <div className="col-span-2 md:col-span-1">
-                                                <strong>Clinical Diagnosis:</strong> {selectedPatient.diagnosis || "N/A"}
+                                                <strong className="text-sm/6">Gingival Bleeding History: </strong>
+                                                {selectedPatient.experience_bleeding_details || "N/A"}
                                             </div>
                                             <div className="col-span-2 md:col-span-1">
-                                                <strong>Reported Symptoms:</strong> {selectedPatient.symptoms || "N/A"}
+                                                <strong className="text-sm/6">Dental Sensitivity Description: </strong>
+                                                {selectedPatient.tooth_sensitivity_details || "N/A"}
                                             </div>
                                             <div className="col-span-2 md:col-span-1">
-                                                <strong>Prescribed Medications:</strong> {selectedPatient.prescription || "N/A"}
+                                                <strong className="text-sm/6">Concerns Regarding Dental Aesthetics: </strong>
+                                                {selectedPatient.dental_appearance_details || "N/A"}
                                             </div>
                                             <div className="col-span-2 md:col-span-1">
-                                                <strong>Treatment Plan Summary:</strong> {selectedPatient.treatment_plan || "N/A"}
+                                                <strong className="text-sm/6">Tooth Mobility Observations: </strong>
+                                                {selectedPatient.loose_teeth_details || "N/A"}
                                             </div>
                                             <div className="col-span-2 md:col-span-1">
-                                                <strong>Exercise Routine:</strong> {selectedPatient.regular_exercise_details || "N/A"}
+                                                <strong className="text-sm/6">Regular Physical Activity: </strong>
+                                                {selectedPatient.regular_exercise_details || "N/A"}
                                             </div>
                                             <div className="col-span-2 md:col-span-1">
-                                                <strong>Alcohol Consumption:</strong> {selectedPatient.consume_alcohol_details || "N/A"}
+                                                <strong className="text-sm/6">Alcohol Consumption Habits: </strong>
+                                                {selectedPatient.consume_alcohol_details || "N/A"}
                                             </div>
                                             <div className="col-span-2 md:col-span-1">
-                                                <strong>Dental Flossing Habit:</strong> {selectedPatient.dental_floss_details || "N/A"}
+                                                <strong className="text-sm/6">Dental Floss Usage: </strong>
+                                                {selectedPatient.dental_floss_details || "N/A"}
                                             </div>
                                             <div className="col-span-2 md:col-span-1">
-                                                <strong>Sugary Food/Beverage Intake:</strong> {selectedPatient.consume_sugary_foods_or_beverages_details || "N/A"}
+                                                <strong className="text-sm/6">Intake of Sugary Foods or Beverages: </strong>
+                                                {selectedPatient.consume_sugary_foods_or_beverages_details || "N/A"}
                                             </div>
                                             <div className="col-span-2 md:col-span-1">
-                                                <strong>Heart Rate:</strong> {selectedPatient.heart_rate_details || "N/A"}
+                                                <strong className="text-sm/6">Oral Malodor or Dysgeusia: </strong>
+                                                {selectedPatient.bad_breath_or_bad_taste_details || "N/A"}
                                             </div>
                                             <div className="col-span-2 md:col-span-1">
-                                                <strong>Blood Pressure Reading:</strong> {selectedPatient.blood_pressure_details || "N/A"}
+                                                <strong className="text-sm/6">Recent Dental Radiographs: </strong>
+                                                {selectedPatient.dental_xrays_details || "N/A"}
                                             </div>
                                             <div className="col-span-2 md:col-span-1">
-                                                <strong>Balanced Diet:</strong> {selectedPatient.balanced_diet_details || "N/A"}
+                                                <strong className="text-sm/6">Nutritional Balance and Diet Quality: </strong>
+                                                {selectedPatient.balanced_diet_details || "N/A"}
                                             </div>
                                             <div className="col-span-2 md:col-span-1">
-                                                <strong>Smoking Frequency:</strong> {selectedPatient.smoke_frequency_details || "N/A"}
+                                                <strong className="text-sm/6">Tobacco Use Frequency: </strong>
+                                                {selectedPatient.smoke_frequency_details || "N/A"}
                                             </div>
                                             <div className="col-span-2 md:col-span-1">
-                                                <strong>Sports Participation:</strong> {selectedPatient.participate_in_sports_details || "N/A"}
+                                                <strong className="text-sm/6">Engagement in Athletic Activities: </strong>
+                                                {selectedPatient.participate_in_sports_details || "N/A"}
+                                            </div>
+                                            <div className="col-span-2 md:col-span-1">
+                                                <strong className="text-sm/6">Previous Dental Restorations: </strong>
+                                                {selectedPatient.dental_restoration_details || "N/A"}
+                                            </div>
+                                            <div className="col-span-2 md:col-span-1">
+                                                <strong className="text-sm/6">History of Orthodontic Interventions: </strong>
+                                                {selectedPatient.orthodontic_treatment_details || "N/A"}
                                             </div>
                                         </div>
                                     </section>

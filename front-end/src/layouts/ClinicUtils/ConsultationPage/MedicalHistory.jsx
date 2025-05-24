@@ -8,23 +8,41 @@ import PropTypes from "prop-types";
 import {
     useState,
     useEffect,
+    useMemo
 } from "react";
 import CMS from "../../../API/CMS";
 
-const MedicalHistoryStepper = ({ patientFormData, handleChange, fieldErrors }) => {
+const MedicalHistoryStepper = ({ patientFormData, handleChange, fieldErrors, setDynamicFieldNames }) => {
     const [medicalHistoryQuestions, setMedicalHistoryQuestions] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    const questionFieldNames = {
-        allergiesDetails: "Do you have any allergies (e.g., latex, medications)?",
-        takingPrescriptionMedicationDetails: "Are you currently taking any prescription medications?",
-        chronicConditionDetails: "Do you have any chronic conditions (e.g., diabetes, heart disease)?",
-        surgeriesDetails: "Have you had any surgeries or hospital stays in the past 5 years?",
-        jawPainDetails: "Do you have a history of jaw pain or temporomandibular joint (TMJ) disorders?",
-        experiencedExcessiveBleedingDetails: "Have you ever experienced excessive bleeding after dental procedures?",
-        heartProblemsDetails: "Do you have a history of heart problems or heart valve issues?",
-        advisedTakingAntibioticsDetails: "Have you ever been advised to take antibiotics before dental procedures?",
-    }
+    const questionFieldNamesMemo = useMemo(() => {
+        const questionFieldNames = {
+            allergiesDetails: "Do you have any allergies (e.g., latex, medications)?",
+            takingPrescriptionMedicationDetails: "Are you currently taking any prescription medications?",
+            chronicConditionDetails: "Do you have any chronic conditions (e.g., diabetes, heart disease)?",
+            surgeriesDetails: "Have you had any surgeries or hospital stays in the past 5 years?",
+            jawPainDetails: "Do you have a history of jaw pain or temporomandibular joint (TMJ) disorders?",
+            experiencedExcessiveBleedingDetails: "Have you ever experienced excessive bleeding after dental procedures?",
+            heartProblemsDetails: "Do you have a history of heart problems or heart valve issues?",
+            advisedTakingAntibioticsDetails: "Have you ever been advised to take antibiotics before dental procedures?",
+        }
+        return questionFieldNames;
+    }, [])
+
+    const allowedFieldNamesMemo = useMemo(() => {
+        const allowedFieldNames = [
+            "allergiesDetails",
+            "takingPrescriptionMedicationDetails",
+            "chronicConditionDetails",
+            "surgeriesDetails",
+            "jawPainDetails",
+            "experiencedExcessiveBleedingDetails",
+            "heartProblemsDetails",
+            "advisedTakingAntibioticsDetails"
+        ]
+        return allowedFieldNames;
+    }, [])
 
     useEffect(() => {
         const clinicID = localStorage.getItem("sid")
@@ -40,7 +58,19 @@ const MedicalHistoryStepper = ({ patientFormData, handleChange, fieldErrors }) =
                 if (response.status === 200) {
                     const data = response.data.consultationQuestionnaires;
 
-                    setMedicalHistoryQuestions(data)
+                    // removed duplicate medical history consultation questions
+                    const uniqueQuestionsMap = new Map();
+
+                    data.forEach((q) => {
+                        if (!uniqueQuestionsMap.has(q.question)) {
+                            uniqueQuestionsMap.set(q.question, q);
+                        }
+                    })
+                    const uniqueMedicalHistoryQuestions = Array.from(uniqueQuestionsMap.values());
+
+                    setMedicalHistoryQuestions(uniqueMedicalHistoryQuestions)
+                } else {
+                    throw new Error(`Failed to retrieve medical history questionnaires ${response.status}`);
                 }
             } catch (error) {
                 console.error(`Failed to retrieved the medical history questions: ${error}`);
@@ -50,8 +80,25 @@ const MedicalHistoryStepper = ({ patientFormData, handleChange, fieldErrors }) =
                 }, 1000)
             }
         }
-        retrievedMedicalHistoryQuestions()
+
+        if (clinicID) {
+            retrievedMedicalHistoryQuestions()
+        }
     }, []);
+
+    useEffect(() => {
+        if (!loading && medicalHistoryQuestions.length > 0) {
+            const fieldNames = medicalHistoryQuestions
+                .map((question) => {
+                    const matchedEntry = Object.entries(questionFieldNamesMemo).find(
+                        ([, questionText]) => questionText === question.question,
+                    );
+                    return matchedEntry ? matchedEntry[0] : `question_${question.id}`;
+                })
+                .filter((medicalHistoryFieldNames) => allowedFieldNamesMemo.includes(medicalHistoryFieldNames));
+            setDynamicFieldNames(fieldNames);
+        }
+    }, [loading, medicalHistoryQuestions, questionFieldNamesMemo, setDynamicFieldNames, allowedFieldNamesMemo]);
 
     if (loading) {
         return (
@@ -67,45 +114,53 @@ const MedicalHistoryStepper = ({ patientFormData, handleChange, fieldErrors }) =
     return (
         <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {medicalHistoryQuestions.map((question, i) => {
-                    const consultationQuestion = question.question
+                {medicalHistoryQuestions
+                    .filter((question) => {
+                        const matchedEntries = Object.entries(questionFieldNamesMemo).find(
+                            ([, questionText]) => questionText === question.question
+                        )
+                        return matchedEntries && allowedFieldNamesMemo.includes(matchedEntries[0]);
+                    })
+                    .map((question, i) => {
+                        const consultationQuestion = question.question
 
-                    const matchedEntry = Object.entries(questionFieldNames).find(
-                        ([, questionText]) => questionText === consultationQuestion
-                    )
+                        const matchedEntry = Object.entries(questionFieldNamesMemo).find(
+                            ([, questionText]) => questionText === consultationQuestion
+                        )
 
-                    const fieldName = matchedEntry ? matchedEntry[0] : `question_${question.id}`
+                        const fieldName = matchedEntry ? matchedEntry[0] : `question_${question.id}`
 
-                    return (
-                        <FormControl className="w-full" key={i}>
-                            <FormLabel className="mb-2 text-sm text-gray-700">
-                                {consultationQuestion}
-                            </FormLabel>
-                            <TextField
-                                name={fieldName}
-                                label={consultationQuestion}
-                                placeholder={`Enter ${consultationQuestion}`}
-                                value={patientFormData[fieldName]}
-                                onChange={handleChange}
-                                error={!!fieldErrors[fieldName]}
-                                helperText={fieldErrors[fieldName]}
-                                fullWidth
-                                margin="dense"
-                                autoComplete="off"
-                            />
-                        </FormControl>
-                    )
-                })}
+                        return (
+                            <FormControl className="w-full" key={i}>
+                                <FormLabel className="mb-2 text-sm text-gray-700">
+                                    {consultationQuestion}
+                                </FormLabel>
+                                <TextField
+                                    name={fieldName}
+                                    label={`Question ${i + 1}`}
+                                    placeholder={`Enter Details`}
+                                    value={patientFormData[fieldName] || ""}
+                                    onChange={handleChange}
+                                    error={!!fieldErrors[fieldName]}
+                                    helperText={fieldErrors[fieldName] || ""}
+                                    fullWidth
+                                    margin="dense"
+                                    autoComplete="off"
+                                />
+                            </FormControl>
+                        )
+                    })
+                }
             </div>
         </div>
-    );
-};
+    )
+}
 
 MedicalHistoryStepper.propTypes = {
     patientFormData: PropTypes.object.isRequired,
     handleChange: PropTypes.func.isRequired,
     fieldErrors: PropTypes.object.isRequired,
-    setIncludedMedicalFields: PropTypes.func.isRequired,
+    setDynamicFieldNames: PropTypes.func.isRequired
 };
 
 export default MedicalHistoryStepper;
