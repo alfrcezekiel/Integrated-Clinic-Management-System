@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import PropTypes from "prop-types";
 
-const ConsentAndAgreementStepper = ({ patientFormData, handleChange, fieldErrors = {} }) => {
+const ConsentAndAgreementStepper = ({ patientFormData, handleChange, fieldErrors}) => {
     const consentValue = patientFormData?.consent || "No";
 
     const handleConsentChange = (e) => {

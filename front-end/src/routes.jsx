@@ -44,7 +44,7 @@ const routes = [
             {
                 id: 1,
                 icon: <HomeIcon style={iconStyle} />,
-                name: "Patients Dashboard",
+                name: "Patient Dashboard",
                 path: "Home",
                 element: <DashboardHome />,
             },
@@ -91,7 +91,7 @@ export const doctorRoutes = [
             {
                 id: 1,
                 icon: <HomeIcon style={iconStyle} />,
-                name: "Clinics Dashboard",
+                name: "Clinic Dashboard",
                 path: "/home",
                 element: <DoctorsDashboardHome />,
             },
@@ -99,42 +99,42 @@ export const doctorRoutes = [
                 id: 2,
                 icon: <EventIcon style={iconStyle} />,
                 name: "Appointments",
-                path: "/patients-appointments",
+                path: "/Appointments",
                 element: <DoctorsTablesListOfAppointments />
             },
             {
                 id: 3,
                 icon: <HourglassTopIcon style={iconStyle} />,
                 name: "Pending Appointments",
-                path: "/pending-appointments",
+                path: "/PendingAppointments",
                 element: <PendingAppointmentClinicTable />
             },
             {
                 id: 4,
                 icon: <CheckCircleIcon style={iconStyle} />,
                 name: "Approved Appointments",
-                path: "/approved-appointments",
+                path: "/ApprovedAppointments",
                 element: <ApprovedAppointmentClinicTable />
             },
             {
                 id: 5,
                 icon: <CancelIcon style={iconStyle} />,
                 name: "Declined Appointments",
-                path: "/declined-appointments",
+                path: "/DeclinedAppointments",
                 element: <DeclinedAppointmentStatusClinicTable />
             },
             {
                 id: 6,
                 icon: <HistoryIcon style={iconStyle} />,
                 name: "Appointment History",
-                path: "/appointment-history",
+                path: "/AppointmentHistory",
                 element: <AppointmentHistoryTable />
             },
             {
                 id: 7,
                 icon: <PersonIcon style={iconStyle} />,
                 name: "Consult Patient",
-                path: "/consult-patient",
+                path: "/ConsultPatient",
                 element: <ConsultPatientPage />
             }
         ]

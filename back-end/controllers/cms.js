@@ -941,7 +941,7 @@ export const createClinic = async (req, res) => {
         const hashedPassword = await bcrypt.hash(clinic_password, saltRound);
         const hashedConfirmPassword = await bcrypt.hash(clinic_confirm_password, saltRound);
 
-        if (!req.file) {
+        if (!req.file || !req.file.filename) {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 message: 'Please upload a valid clinic image'
             });
@@ -1624,6 +1624,13 @@ export const consultPatientInClinicDashboard = async (req, res) => {
             dentalXraysDetails,
             dentalRestorationDetails,
             orthodonticTreatmentDetails, //clinical assessment req.body
+            brushFrequencyDetails,
+            useMouthWashDetails,
+            replaceToothbrushDetails,
+            cleanTongueDetails,
+            regularCheckupDetails,
+            dentalAnxietyDetails,
+            dentalTraumaDetails, // oral hygiene habits req.body
             clinic_name,
             admin_id,
             appointmentID
@@ -1671,6 +1678,16 @@ export const consultPatientInClinicDashboard = async (req, res) => {
         const dental_xrays_details = String(dentalXraysDetails)
         const dental_restoration_details = String(dentalRestorationDetails)
         const orthodontic_treatment_details = String(orthodonticTreatmentDetails)
+        /*
+            Oral hygiene habits variable
+        */
+        const brush_frequency_details = String(brushFrequencyDetails);
+        const use_mouthwash_details = String(useMouthWashDetails);
+        const replace_toothbrush_details = String(replaceToothbrushDetails);
+        const clean_tongue_details = String(cleanTongueDetails);
+        const regular_checkup_details = String(regularCheckupDetails);
+        const dental_anxiety_details = String(dentalAnxietyDetails);
+        const dental_trauma_details = String(dentalTraumaDetails);
 
         const clinic_name_field = String(clinic_name);
 
@@ -1723,9 +1740,16 @@ export const consultPatientInClinicDashboard = async (req, res) => {
             dental_xrays_details,
             dental_restoration_details,
             orthodontic_treatment_details, // clinical assessment values
+            brush_frequency_details,
+            use_mouthwash_details,
+            replace_toothbrush_details,
+            clean_tongue_details,
+            regular_checkup_details,
+            dental_anxiety_details,
+            dental_trauma_details, // oral hygiene habits values
             clinic_name_field,
             consent,
-            admin_id_field,
+            admin_id_field
         ]
 
         const query = `INSERT INTO consultedpatients (
@@ -1760,10 +1784,19 @@ export const consultPatientInClinicDashboard = async (req, res) => {
             dental_xrays_details,
             dental_restoration_details,
             orthodontic_treatment_details,
+            brush_frequency_details,
+            use_mouthwash_details,
+            replace_toothbrush_details,
+            clean_tongue_details,
+            regular_checkup_details,
+            dental_anxiety_details,
+            dental_trauma_details,
             clinic_name,
             consent,
             created_by
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            ) VALUES (
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+            );
         `
 
         const [result1] = await connection.query(query, values);
@@ -1811,6 +1844,8 @@ export const consultPatientInClinicDashboard = async (req, res) => {
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             message: "Failed to insert consult patient data"
         })
+    } finally {
+        connection.release();
     }
 }
 
@@ -2244,12 +2279,12 @@ export const retrieveOralHygieneQuestionnaires = async (req, res) => {
             })
         }
 
-        const sectionType = "Oral Hygiene";
+        const sectionType = "Oral Hygiene Habits";
         const limit = 7;
 
         const result = await new Clinic().retrieveOralHygieneQuestionnaire(clinic_id, sectionType, limit);
 
-        if (!result.length) {
+        if (result.length === 0) {
             return res.status(StatusCodes.NOT_FOUND).json({
                 message: "No oral hygiene questionnaires found"
             })

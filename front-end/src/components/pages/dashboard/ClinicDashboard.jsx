@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import DoctorsDashboardNavbar from "../../../layouts/ClinicUtils/doctor.navbar";
+import DoctorsDashboardNavbar from "../../../layouts/ClinicUtils/ClinicNavigationBar";
 import { Outlet, useLocation, Routes, Route } from "react-router-dom";
-import DoctorsSideNav from "../../../layouts/ClinicUtils/DoctorsSideNav";
+import DoctorsSideNav from "../../../layouts/ClinicUtils/ClinicSideNavigation";
 import { doctorRoutes } from "../../../routes";
 import CMS from "../../../API/CMS";
 import { useNavigate } from "react-router-dom";

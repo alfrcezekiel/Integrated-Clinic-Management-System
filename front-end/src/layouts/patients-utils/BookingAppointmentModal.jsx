@@ -107,11 +107,11 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
                         {/* Clinic Details Section */}
                         <div className="flex mb-6">
                             {/* Left side - Clinic Image */}
-                            <div className="w-1/3 mr-4">
+                            <div className="w-1/3 mr-10">
                                 <CardMedia
                                     component="img"
                                     height="200"
-                                    src={`http://localhost:7506/public/uploads/${selectedClinic.clinic_image}`}
+                                    src={`http://localhost:7506/uploads/clinic_images/${selectedClinic.clinic_image}`}
                                     alt="Clinic"
                                     className="rounded-md h-48 object-cover"
                                 />

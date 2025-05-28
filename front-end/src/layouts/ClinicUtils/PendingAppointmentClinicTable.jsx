@@ -210,11 +210,11 @@ const PendingAppointmentClinicTable = () => {
 
         // Navigate after dialog is closed
         if (memoizedFormDataValue.status === "Pending") {
-            navigate("/doctor-portal/dashboard/patients-appointments");
+            navigate("/doctor-portal/dashboard/Appointments");
         } else if (memoizedFormDataValue.status === "Approved") {
-            navigate("/doctor-portal/dashboard/approved-appointments");
+            navigate("/doctor-portal/dashboard/ApprovedAppointments");
         } else if (memoizedFormDataValue.status === "Declined") {
-            navigate("/doctor-portal/dashboard/declined-appointments");
+            navigate("/doctor-portal/dashboard/DeclinedAppointments");
         }
     }
 

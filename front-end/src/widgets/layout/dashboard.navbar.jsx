@@ -80,7 +80,13 @@ const DashboardNavbar = () => {
 
     const handleLogoutConfirm = async () => {
         try {
-            const response = await CMS.get("/CMS/patientsDashboard/logout");
+            const response = await CMS.get("/CMS/patientsDashboard/logout", {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("authToken")}`
+                }
+            });
+            
             if (!response.data || !response.data.message) {
                 throw new Error("No response data or no success message");
             } else {

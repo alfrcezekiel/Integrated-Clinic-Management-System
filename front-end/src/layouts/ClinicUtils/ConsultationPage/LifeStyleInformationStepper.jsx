@@ -1,7 +1,5 @@
 import {
     TextField,
-    FormControl,
-    FormLabel,
     CircularProgress
 } from "@mui/material";
 import PropTypes from "prop-types";
@@ -117,7 +115,7 @@ const LifeStyleInformationStepper = ({ patientFormData, handleChange, fieldError
     }
 
     return (
-        <div className="space-y-2">
+        <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {lifestyleInformationQuestions
                     .filter((lifeStyleInfoQuestions) => {
@@ -136,10 +134,10 @@ const LifeStyleInformationStepper = ({ patientFormData, handleChange, fieldError
 
                         const fieldName = matecheLifestyleInfoEntry ? matecheLifestyleInfoEntry[0] : `question_${question.id}`;
                         return (
-                            <FormControl key={i} className="w-full">
-                                <FormLabel className="mb-2 text-sm text-gray-700">
+                            <div key={i} className="w-full flex flex-col space-y-1 justify-between">
+                                <label className="mb-1 text-sm text-gray-700 font-medium">
                                     {lifestyleConsultationQuestion}
-                                </FormLabel>
+                                </label>
                                 <TextField
                                     name={fieldName}
                                     label={`Question ${i += 1}`}
@@ -153,7 +151,7 @@ const LifeStyleInformationStepper = ({ patientFormData, handleChange, fieldError
                                     fullWidth
                                     autoComplete="off"
                                 />
-                            </FormControl>
+                            </div>
                         )
                     })}
             </div>

@@ -8,7 +8,7 @@ const Dashboard = () => {
     return (
         <div className="min-h-screen bg-blue-gray-50/50">
             {/* this top component is for side nav */}
-            <SideNav routes={routes} brandName="Patients Dashboard" />
+            <SideNav routes={routes} brandName="Patient Dashboard" />
             {/* Main Content */}
             <div className="p-4 flex-1 xl:ml-80">
                 <DashboardNavbar />

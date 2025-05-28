@@ -1,13 +1,14 @@
 import multer from "multer";
 import fs from "fs";
+import path from "path";
 
 const storage = multer.diskStorage({
     destination: (_req, _file, cb) => {
-        const uploadPath = "public/uploads"
+        const uploadPath = "uploads/clinic_images"
         if (!fs.existsSync(uploadPath)) {
             fs.mkdirSync(uploadPath, { recursive: true });
         }
-        cb(null, uploadPath);
+        cb(null, path.join(process.cwd()), uploadPath);
     },
     filename: (_req, file, cb) => {
         const dateSuffix = Date.now();

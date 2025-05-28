@@ -113,7 +113,7 @@ const step5Validation = [
 ];
 
 // dynamic medical history question based on the retrieved consultation questionnaire in the server
-const step2DynamicMedicalHistoryValidation = async (req) => {
+const step2DynamicMedicalHistoryValidation = async () => {
     const possibleFields = {
         allergiesDetails: "Allergy details is required",
         takingPrescriptionMedicationDetails: "Prescription medication details is required",
@@ -133,7 +133,7 @@ const step2DynamicMedicalHistoryValidation = async (req) => {
     })
 }
 
-const step3DynamicLifestyleInformationValidation = async (req) => {
+const step3DynamicLifestyleInformationValidation = async () => {
     const possibleLifestyleInformationFields = {
         smokeDetails: "Smoking details required",
         consumeSugaryFoodsOrDrinksDetails: "Sugary foods or drinks details is required",
@@ -153,7 +153,7 @@ const step3DynamicLifestyleInformationValidation = async (req) => {
     })
 }
 
-const step4DynamicClinicalAssessmentValidation = async (req) => {
+const step4DynamicClinicalAssessmentValidation = async () => {
     const possibleClinicalAssessmentFields = {
         experienceBleedingDetails: "Experience bleeding details is required",
         toothSensitivityDetails: "Tooth sensitivity details is required",
@@ -166,13 +166,35 @@ const step4DynamicClinicalAssessmentValidation = async (req) => {
     }
 
     const fields = Object.entries(possibleClinicalAssessmentFields).map(([field, message]) => {
+        return body(field)
+            .if(body(field).exists())
+            .notEmpty()
+            .withMessage(message)
+    })
+
+    return fields;
+}
+
+const step5DynamicOralHygieneValidation = async () => {
+    const possibleOralHygieneFields = {
+        brushFrequencyDetails: "Brushing frequency is required",
+        useMouthWashDetails: "Mouthwash usage details is required",
+        replaceToothbrushDetails: "Toothbrush replacement details is required",
+        cleanTongueDetails: "Tongue cleaning details is required",
+        regularCheckupDetails: "Regular dental checkup details is required",
+        dentalAnxietyDetails: "Dental anxiety details is required",
+        dentalTraumaDetails: "Dental trauma details is required"
+    };
+
+    const oralHygieneFields = Object.entries(possibleOralHygieneFields)
+        .map(([field, message]) => {
             return body(field)
                 .if(body(field).exists())
                 .notEmpty()
                 .withMessage(message)
-        })
-    
-    return fields;
+        });
+
+    return oralHygieneFields;
 }
 
 // Combine validations dynamically
@@ -195,6 +217,9 @@ const validatePatientConsultation = (step) => {
                     validations = await step4DynamicClinicalAssessmentValidation(req);
                     break;
                 case 4:
+                    validations = await step5DynamicOralHygieneValidation(req);
+                    break;
+                case 5:
                     validations = step5Validation;
                     break;
                 default:

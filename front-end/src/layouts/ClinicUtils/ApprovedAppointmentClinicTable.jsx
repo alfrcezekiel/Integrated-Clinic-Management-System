@@ -45,7 +45,7 @@ const ApprovedAppointmentClinicTable = () => {
 
 
     const handleOpenConsulationForm = (appointment) => {
-        navigate("/doctor-portal/dashboard/consult-patient", {
+        navigate("/doctor-portal/dashboard/ConsultPatient", {
             state: {
                 appointmentData: {
                     firstName: appointment.firstName,

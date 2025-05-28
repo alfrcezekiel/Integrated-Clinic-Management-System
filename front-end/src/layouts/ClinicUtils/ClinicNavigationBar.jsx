@@ -13,7 +13,7 @@ const DoctorsDashboardNavbar = () => {
     const { fixedNavbar, openSideNav } = controller;
     const location = useLocation();
     const pathParts = location.pathname.substring(1).split("/").filter(Boolean);
-    const [layout = "/dashboard/home", page = "", path = "/dashboard/home"] = pathParts;
+    const [layout = "/dashboard/home", page = "", path="/dashboard/home", name="Clinic Dashboard"] = pathParts;
     const [anchorEl, setAnchorEl] = useState(null);
     const [settingsAnchorEl, setSettingsAnchorEl] = useState(null);
     const handleMenuOpen = (e) => {
@@ -25,7 +25,12 @@ const DoctorsDashboardNavbar = () => {
 
     const handleLogoutConfirm = async () => {
         try {
-            const response = await CMS.get("/CMS/doctors-dashboard/logout");
+            const response = await CMS.get("/CMS/doctors-dashboard/logout", {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("authToken")}`
+                }
+            });
             if (!response.data || !response.data.message) {
                 throw new Error("No response for logging out the doctors details");
             } else {
@@ -73,7 +78,7 @@ const DoctorsDashboardNavbar = () => {
                     </IconButton>
                     <Breadcrumbs className="text-black">
                         <Link to={`/${layout}/dashboard/${path}`} className="text-black no-underline">
-                            <Typography variant="body1">{layout} / {page}</Typography>
+                            <Typography variant="body1">{name} / {page}</Typography>
                         </Link>
                     </Breadcrumbs>
                     <Outlet />

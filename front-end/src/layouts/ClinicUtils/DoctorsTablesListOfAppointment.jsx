@@ -287,11 +287,11 @@ const DoctorsTablesListOfAppointments = () => {
 
         // Navigate after dialog is closed
         if (memoizedFormDataValue.status === "Pending") {
-            navigate("/doctor-portal/dashboard/pending-appointments");
+            navigate("/doctor-portal/dashboard/PendingAppointments");
         } else if (memoizedFormDataValue.status === "Approved") {
-            navigate("/doctor-portal/dashboard/approved-appointments");
+            navigate("/doctor-portal/dashboard/ApprovedAppointments");
         } else if (memoizedFormDataValue.status === "Declined") {
-            navigate("/doctor-portal/dashboard/declined-appointments");
+            navigate("/doctor-portal/dashboard/DeclinedAppointments");
         }
     }
 

@@ -20,6 +20,8 @@ import ConsentAndAgreementStepper from "./ConsentAndAgreementStepper";
 import dayjs from "dayjs";
 import CMS from "../../../API/CMS";
 import AppointmentDataNotFoundDialog from "../../../utils/AppoimtmentDataNotFound";
+import OralHygieneStepper from "./OralHygieneStepper";
+import PatientConsultationSuccessfulDialog from "../../../utils/PatientConsultationSuccessfulDialog";
 
 const ConsultationPatientPage = () => {
     const navigate = useNavigate();
@@ -59,6 +61,14 @@ const ConsultationPatientPage = () => {
         dentalXraysDetails: "",
         dentalRestorationDetails: "",
         orthodonticTreatmentDetails: "",
+        // oral hygiene state
+        brushFrequencyDetails: "",
+        useMouthWashDetails: "",
+        replaceToothbrushDetails: "",
+        cleanTongueDetails: "",
+        regularCheckupDetails: "",
+        dentalAnxietyDetails: "",
+        dentalTraumaDetails: "",
         consent: ""
     });
 
@@ -97,7 +107,16 @@ const ConsultationPatientPage = () => {
         dentalXraysDetails: "",
         dentalRestorationDetails: "",
         orthodonticTreatmentDetails: "",
-        consent: "No",
+        // oral hygiene state
+        brushFrequencyDetails: "",
+        useMouthWashDetails: "",
+        replaceToothbrushDetails: "",
+        cleanTongueDetails: "",
+        regularCheckupDetails: "",
+        dentalAnxietyDetails: "",
+        dentalTraumaDetails: "",
+        // consent and agreement state
+        consent: "",
         appointmentID: "",
         clinic_name: "",
         admin_id: ""
@@ -106,12 +125,15 @@ const ConsultationPatientPage = () => {
     const [medicalHistoryFieldNames, setMedicalHistoryFieldNames] = useState([]);
     const [lifestyleInformationFieldNames, setLifestyleInformationFieldNames] = useState([]);
     const [clinicalAssessmentFieldNames, setClinicalAssessementFieldNames] = useState([]);
+    const [oralHygieneFieldNames, setOralHygieneFieldNames] = useState([]);
+    const [openPatientConsultationSuccessfulDialog, setOpenPatientConsultationSuccessfulDialog] = useState(false);  
 
     const steps = [
         "Patient Information",
         "Medical History",
         "Lifestyle Information",
         "Clinic Assessments",
+        "Oral Hygiene",
         "Consent and Agreement",
     ];
 
@@ -140,10 +162,11 @@ const ConsultationPatientPage = () => {
 
     const handleCloseTheAppointmentDataNotFoundDialog = async () => {
         setOpenAppointmentDataNotFoundDialog(false);
-        navigate("/doctor-portal/dashboard/approved-appointments", {
+        navigate("/doctor-portal/dashboard/ApprovedAppointments", {
             replace: true
         });
     }
+    
     // function for handling the input during changing
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -214,8 +237,7 @@ const ConsultationPatientPage = () => {
 
             if (response.status === 200) {
                 setFieldErrors({});
-                alert("Consulted Patient Successfully!");
-                navigate("/doctor-portal/dashboard/appointment-history");
+                setOpenPatientConsultationSuccessfulDialog(true);
             }
         } catch (error) {
             if (error?.response?.status === 400) {
@@ -236,6 +258,7 @@ const ConsultationPatientPage = () => {
             medicalHistoryFieldNames, // dynamically render the fieldnames based on the retrieved medical history questionnaires
             lifestyleInformationFieldNames, // dynamically render the fieldnames based on the retrieved lifestyle information questionnaires
             clinicalAssessmentFieldNames, // dynamically render the fieldnames based on the retrieved clinical assessment questionnaires
+            oralHygieneFieldNames, // dynamically render the fieldnames based on the retrieved oral hygiene questionnaires
             ["consent"]
         ];
 
@@ -277,6 +300,7 @@ const ConsultationPatientPage = () => {
         setActiveStep((prev) => prev - 1);
     };
 
+    // components of consultation steps
     const renderStepContent = (step) => {
         switch (step) {
             case 0:
@@ -316,7 +340,16 @@ const ConsultationPatientPage = () => {
                         setDynamicClinicalAssessmentFieldNames={setClinicalAssessementFieldNames}
                     />
                 );
-            case 4:
+            case 4: 
+                return (
+                    <OralHygieneStepper 
+                        patientFormData={patientFormData}
+                        handleChange={handleChange}
+                        fieldErrors={fieldErrors}
+                        setDynamicOralHygieneFieldNames={setOralHygieneFieldNames}
+                    />
+                )
+            case 5:
                 return (
                     <ConsentAndAgreementStepper
                         patientFormData={patientFormData}
@@ -328,6 +361,12 @@ const ConsultationPatientPage = () => {
                 return null;
         }
     };
+
+    // function for closing the dialog box of patient consultation successful dialog
+    const handleClosePatientConsultationSuccessfulDialog = async () => {
+        setOpenPatientConsultationSuccessfulDialog(false);
+        navigate("/doctor-portal/dashboard/AppointmentHistory");
+    }
 
     return (
         <div className="flex justify-center items-center min-h-[90vh] px-4 sm:px-6 lg:px-8">
@@ -359,7 +398,7 @@ const ConsultationPatientPage = () => {
                                 disabled={activeStep === 0}
                                 onClick={handleBack}
                                 color="primary"
-                                className="text-sm sm:text-base bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500 disabled:opacity-50"
+                                className="text-sm sm:text-base bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500 disabled:opacity-50 cursor-pointer"
                             >
                                 Back
                             </button>
@@ -367,7 +406,7 @@ const ConsultationPatientPage = () => {
                                 <button
                                     type="submit"
                                     color="primary"
-                                    className="text-sm sm:text-base bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+                                    className="text-sm sm:text-base bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
                                 >
                                     Submit
                                 </button>
@@ -376,7 +415,7 @@ const ConsultationPatientPage = () => {
                                     type="button"
                                     onClick={handleNext}
                                     color="primary"
-                                    className="text-sm sm:text-base bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+                                    className="text-sm sm:text-base bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
                                 >
                                     Next
                                 </button>
@@ -388,6 +427,10 @@ const ConsultationPatientPage = () => {
             <AppointmentDataNotFoundDialog
                 isOpen={openAppointmentDataNotFoundDialog}
                 onClose={handleCloseTheAppointmentDataNotFoundDialog}
+            />
+            <PatientConsultationSuccessfulDialog
+                open={openPatientConsultationSuccessfulDialog}
+                onClose={handleClosePatientConsultationSuccessfulDialog}
             />
         </div>
 

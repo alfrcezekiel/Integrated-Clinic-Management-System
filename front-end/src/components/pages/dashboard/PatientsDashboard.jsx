@@ -33,9 +33,11 @@ const PatientsDashboard = () => {
                 if (response.status === 200) {
                     setUserSession(response.data.sid);
                 } else {
+                    setUserSession(null);
                     console.error("Error fetching user session data");
                 }
             } catch (error) {
+                setUserSession(null);
                 console.error(`Code functionality error for fetching user session: ${error}`);
                 if (error.response && error.response.status === 401) {
                     navigateBackToHome();
@@ -49,8 +51,10 @@ const PatientsDashboard = () => {
 
     return (
         <>
-            {userSession && (
+            {userSession ? (
                 <Dashboard/>
+            ) : (
+                null
             )}
         </>
     )

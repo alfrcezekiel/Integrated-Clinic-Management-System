@@ -274,17 +274,17 @@ const ClinicCards = () => {
                 clinics.map((clinic, i) => (
                     <Card key={i} className="w-md mx-auto bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl shadow-lg overflow-hidden transform transition duration-300 hover:scale-105">
                         <CardMedia
-                            className="h-48 w-full bg-blue-200 flex items-center justify-center"
+                            className="h-74 w-full bg-neutral-50 flex items-center justify-center"
                             component="div"
                         >
                             <div className="text-center p-4">
-                                <ImageList cols={3} rowHeight={164}>
+                                <ImageList cols={3} rowHeight={164} className="w-7xl h-screen">
                                     <ImageListItem>
                                         <img
-                                            src={`http://localhost:7506/public/uploads/${clinic.clinic_image}`}
+                                            src={`http://localhost:7506/uploads/clinic_images/${clinic.clinic_image}`}
                                             alt="Clinic Image"
                                             loading="lazy"
-                                            className="w-full h-full object-cover rounded-lg shadow-md"
+                                            className="w-full h-full object-cover rounded-lg"
                                         />
                                     </ImageListItem>
                                 </ImageList>

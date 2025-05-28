@@ -1,7 +1,5 @@
 import {
     TextField,
-    FormControl,
-    FormLabel,
     CircularProgress
 } from "@mui/material";
 import PropTypes from "prop-types";
@@ -131,10 +129,10 @@ const MedicalHistoryStepper = ({ patientFormData, handleChange, fieldErrors, set
                         const fieldName = matchedEntry ? matchedEntry[0] : `question_${question.id}`
 
                         return (
-                            <FormControl className="w-full" key={i}>
-                                <FormLabel className="mb-2 text-sm text-gray-700">
+                            <div className="flex flex-col w-full space-y-1 justify-between" key={i}>
+                                <label className="text-sm text-gray-700 font-medium mb-1">
                                     {consultationQuestion}
-                                </FormLabel>
+                                </label>
                                 <TextField
                                     name={fieldName}
                                     label={`Question ${i + 1}`}
@@ -144,10 +142,11 @@ const MedicalHistoryStepper = ({ patientFormData, handleChange, fieldErrors, set
                                     error={!!fieldErrors[fieldName]}
                                     helperText={fieldErrors[fieldName] || ""}
                                     fullWidth
+                                    className="w-full"
                                     margin="dense"
                                     autoComplete="off"
                                 />
-                            </FormControl>
+                            </div>
                         )
                     })
                 }
