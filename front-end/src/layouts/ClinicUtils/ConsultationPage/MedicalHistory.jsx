@@ -9,10 +9,12 @@ import {
     useMemo
 } from "react";
 import CMS from "../../../API/CMS";
+import { useAuthorization } from "../../../context/auth/useAuthorization";
 
 const MedicalHistoryStepper = ({ patientFormData, handleChange, fieldErrors, setDynamicFieldNames }) => {
     const [medicalHistoryQuestions, setMedicalHistoryQuestions] = useState([]);
     const [loading, setLoading] = useState(true);
+    const { user, token } = useAuthorization();
 
     const questionFieldNamesMemo = useMemo(() => {
         const questionFieldNames = {
@@ -43,13 +45,20 @@ const MedicalHistoryStepper = ({ patientFormData, handleChange, fieldErrors, set
     }, [])
 
     useEffect(() => {
-        const clinicID = localStorage.getItem("sid")
+        const clinicID = user?.sid;
+        const tokenContext = token;
+
+        if (!clinicID || !tokenContext) {
+            console.error("Clinic ID or token is not available in the context or local storage.");
+            setLoading(false);
+        }
+        
         const retrievedMedicalHistoryQuestions = async () => {
             try {
                 const response = await CMS.get(`CMS/clinic-dashboard/retrievedMedicalHistoryConsultationQuestionnaires/${clinicID}`, {
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${localStorage.getItem("authToken")}`
+                        "Authorization": `Bearer ${tokenContext}`
                     }
                 })
 
@@ -82,7 +91,7 @@ const MedicalHistoryStepper = ({ patientFormData, handleChange, fieldErrors, set
         if (clinicID) {
             retrievedMedicalHistoryQuestions()
         }
-    }, []);
+    }, [token, user?.sid]);
 
     useEffect(() => {
         if (!loading && medicalHistoryQuestions.length > 0) {

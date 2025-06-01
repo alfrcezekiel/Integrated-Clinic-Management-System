@@ -141,18 +141,18 @@ export const loginPatientsAccount = async (req, res) => {
         const { email, password } = req.body;
 
         const query = `SELECT
-            patientsregisteraccount1.patientID,
-            patientsregisteraccount1.firstName,
-            patientsregisteraccount1.lastName,
-            patientsregisteraccount1.email,
-            patientsregisteraccount1.civilStatus,
-            patientsregisteraccount1.gender,
-            patientsregisteraccount2.password,
-            patientsregisteraccount2.status
-            FROM patientsregisteraccount1
-            INNER JOIN patientsregisteraccount2
-            ON patientsregisteraccount1.patientID = patientsregisteraccount2.patientID
-            WHERE patientsregisteraccount1.email = ?;
+            pr1.patientID,
+            pr1.firstName,
+            pr1.lastName,
+            pr1.email,
+            pr1.civilStatus,
+            pr1.gender,
+            pr2.password,
+            pr2.status
+            FROM patientsregisteraccount1 AS pr1
+            INNER JOIN patientsregisteraccount2 AS pr2
+            ON pr1.patientID = pr2.patientID
+            WHERE pr1.email = ?;
         `;
 
         const [rows] = await conn.query(query, [email]);
@@ -162,6 +162,7 @@ export const loginPatientsAccount = async (req, res) => {
                 emailMessage: "Incorrect Email Address"
             });
         }
+
         const patients = rows[0];
         const SECRET_KEY = process.env.JWT_SECRET;
         const isPasswordValid = await bcrypt.compare(password, patients.password);
@@ -335,26 +336,75 @@ export const loginAdminAccount = async (req, res) => {
 
 // get session of the user
 export const getLoggedInUser = (req, res) => {
-    if (!req.session.user) {
-        return res.status(StatusCodes.UNAUTHORIZED).json({
-            message: "No active session. Please log in."
+    try {
+        if (!req.session.user) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                message: "No active session. Please log in."
+            });
+        }
+
+        return res.status(StatusCodes.OK).json({
+            message: "User session retrieved successfully",
+            sid: req.session.user
+        });
+    } catch (sessionError) {
+        console.error(`Failed to retrieve user session: ${sessionError}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Internal server error while retrieving user session"
         });
     }
-
-    return res.status(StatusCodes.OK).json({
-        message: "User session retrieved successfully",
-        sid: req.session.user
-    });
 };
 
 // controller logic for checking if the user is authenticated
 export const requireLogin = (req, res, next) => {
-    if (!req.session.user) {
-        return res.status(StatusCodes.UNAUTHORIZED).json({
-            message: "Access denied. Please log in."
+    try {
+        // Check if the user is authenticated
+        if (req.session.user) {
+            return next();
+        }
+
+        // If not authenticated, return an unauthorized response
+        const authorizationHeader = req.headers.authorization;
+        if (!authorizationHeader || !authorizationHeader.startsWith("Bearer ")) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                message: "Access Denied! Invalid token or missing an authorization header"
+            });
+        }
+
+        // Extract the token from the authorization header
+        const token = authorizationHeader.split(" ")[1];
+        if (!token) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                message: "Access Denied! No token provided in the authorization header"
+            });
+        }
+
+        // Verify the token
+        const SECRET_KEY = process.env.JWT_SECRET;
+        if (!SECRET_KEY) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "Server configuration error: Missing JWT secret key"
+            });
+        }
+
+        const decoded = jwt.verify(token, SECRET_KEY);
+
+        req.user = decoded;
+        req.session.user = {
+            patientID: decoded.patientID,
+            sfn: decoded.firstName,
+            sln: decoded.lastName,
+            sem: decoded.email,
+            sprefix: decoded.prefix// Default prefix if not provided
+        }
+
+        next();
+    } catch (error) {
+        console.error(`Error in requireLogin middleware: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Internal server error while checking authentication"
         });
     }
-    next();
 };
 
 // destroy the session request
@@ -383,11 +433,12 @@ export const logout = (req, res) => {
 // controller logic for counting the total number of patients in row
 export const getPatientsDashboard = async (req, res) => {
     try {
-        const query = `SELECT COUNT(*) AS total_count FROM (
-        SELECT patientID FROM patientsregisteraccount1
-        UNION ALL
-        SELECT registerPatientID FROM patientsregisteraccount2
-        ) AS combined_tables;`;
+        const query = `
+            SELECT 
+            COUNT(*) AS total_count FROM (
+            SELECT patientID FROM patientsregisteraccount1
+            ) AS combined_tables;
+        `;
 
         const [rows] = await conn.query(query);
 
@@ -403,24 +454,25 @@ export const getPatientsDashboard = async (req, res) => {
 export const getBookedAppointments = async (req, res) => {
     try {
         const patientID = req.params.id;
+
         if (!patientID) {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 message: "Please enter a valid patient ID"
             })
         }
 
-        const query = `SELECT
-                patientsregisteraccount1.firstName,
-                patientsregisteraccount1.lastName,
-                patientsregisteraccount1.email,
-                patientsregisteraccount2.phoneNumber
-                FROM patientsregisteraccount1
+        const query = `
+            SELECT
+                pr1.firstName,
+                pr1.lastName,
+                pr1.email,
+                pr2.phoneNumber
+                FROM patientsregisteraccount1 AS pr1
                 INNER JOIN
-                patientsregisteraccount2
-                ON patientsregisteraccount1.patientID
-                = patientsregisteraccount2.registerPatientID
-                WHERE patientsregisteraccount1.patientID = ?;
-            `;
+                patientsregisteraccount2 AS pr2
+                ON pr1.patientID = pr2.registerPatientID
+            WHERE pr1.patientID = ?;
+        `;
 
         const [rows] = await conn.query(query, [patientID]);
 
@@ -458,6 +510,7 @@ export const patientsBookedAppointments = async (req, res) => {
         const createdAt = new Date()
         const clinic_id = parseInt(clinicID, 10);
         const appointmentDateFormat = dayjs(appointmentDate).format("YYYY-MM-DD");
+        const status = String("Pending");
 
         const query = `INSERT INTO patientsappointment (
             patientID,
@@ -467,11 +520,12 @@ export const patientsBookedAppointments = async (req, res) => {
             appointmentDate,
             phoneNumber,
             gender,
+            status,
             preferredTime,
             purposeOfAppointment,
             clinic_id,
             createdAt
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
 
         const [result] = await conn.query(query, [
             patientID,
@@ -481,6 +535,7 @@ export const patientsBookedAppointments = async (req, res) => {
             appointmentDateFormat,
             phoneNumber,
             gender,
+            status,
             preferredTime,
             purposeOfAppointment,
             clinic_id,
@@ -493,8 +548,35 @@ export const patientsBookedAppointments = async (req, res) => {
             });
         }
 
+        const retrieveAppointmentIDQuery = `
+            SELECT 
+                appointmentID,
+                patientID,
+                firstName,
+                lastName,
+                email,
+                appointmentDate,
+                phoneNumber,
+                gender,
+                preferredTime,
+                purposeOfAppointment
+            FROM patientsappointment
+                WHERE appointmentID = ?;
+        `
+
+        const [appointmentRows] = await conn.query(retrieveAppointmentIDQuery, [
+            result.insertId
+        ])
+
+        if (appointmentRows.length === 0) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No appointment found with the provided ID"
+            });
+        }
+
         return res.status(StatusCodes.OK).json({
             message: "Appointment booked successfully",
+            appointment: appointmentRows[0]
         });
 
     } catch (error) {
@@ -530,14 +612,21 @@ export const verifyToken = (req, res, next) => {
             });
         }
 
-        const decoded = jwt.verify(token, SECRET_KEY);
-        req.session.user = decoded;
-        next();
+        try {
+            const decoded = jwt.verify(token, SECRET_KEY);
+            req.user = decoded;
+            next();
+        } catch (jwtError) {
+            console.error(`Invalid or Expired token in verify token controller : ${jwtError}`);
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                message: "Invalid or Expired token"
+            });
+        }
     } catch (error) {
-        console.error(`Invalid or Expired token in verify token controller : ${error}`);
-        return res.status(StatusCodes.UNAUTHORIZED).json({
-            message: "Invalid or Expired token"
-        })
+        console.error(`Error in verifyToken middleware: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Internal server error"
+        });
     }
 }
 
@@ -582,7 +671,7 @@ export const getPatientsAppointments = async (req, res) => {
     }
 }
 
-// controller logic for retrieving the patients booked appointments to display in tables in doctors dashboard appointments
+// controller logic for retrieving the patients booked appointments to display in tables in clinic dashboard appointments
 export const getBookedAppointmentsToDisplayInDoctorsDashboard = async (req, res) => {
     try {
 
@@ -2297,6 +2386,155 @@ export const retrieveOralHygieneQuestionnaires = async (req, res) => {
         console.error(`Failed to retrieve oral hygiene questionnaires in controller: ${error}`);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             message: "Failed to retrieve oral hygiene questionnaires"
+        })
+    }
+}
+
+// controller logic for cancelling the booked appointment in patient side
+export const cancelBookedAppointment = async (req, res) => {
+    try {
+        const { appointmentID } = req.params;
+
+        if (!appointmentID) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Please enter a valid appointment ID"
+            })
+        }
+
+        const appointment_id = parseInt(appointmentID, 10);
+
+        if (isNaN(appointment_id)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid appointment ID format"
+            })
+        }
+
+        const status = "Cancelled";
+        const result = await new Clinic().cancelBookedAppointment(appointment_id, status);
+
+        if (!result || result.affectedRows === 0) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No appointment id found"
+            })
+        }
+
+        return res.status(StatusCodes.OK).json({
+            cancelledBookedAppoinment: "Cancelled Booked Appointment Successfully",
+            appointment_id
+        })
+    } catch (error) {
+        console.error(`Failed to cancel booked appointment in controller: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to cancel booked appointment"
+        })
+    }
+}
+
+// controller logic for deleting the booked appointment in clinic side
+export const deleteBookedAppointment = async (req, res) => {
+    try {
+        const { appointmentID } = req.params;
+
+        if (!appointmentID) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Please enter a valid appointment ID"
+            })
+        }
+
+        const appointment_id = parseInt(appointmentID, 10)
+
+        if (isNaN(appointment_id)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid appointment id format"
+            })
+        }
+
+        const booked_appointment_result = await new Clinic().deleteBookedAppointment(appointment_id);
+
+        if (booked_appointment_result.length === 0) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No booked appointment found"
+            })
+        }
+
+        return res.status(StatusCodes.OK).json({
+            deletedBookedAppointment: "Delete booked appointment successfully"
+        })
+    } catch (error) {
+        console.error(`Failed to delete booked appointment in controller: ${error}`)
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to delete the booked appointment"
+        })
+    }
+}
+
+// controller logic for inserting a book appointment in clinic side
+export const addBookAppointmentInClinic = async (req, res) => {
+    try {
+        const {
+            firstName,
+            lastName,
+            address,
+            email,
+            phoneNumber,
+            appointmentDate,
+            appointmentTime,
+            gender,
+            purposeOfAppointment,
+            clinicID,
+            clinicName
+        } = req.body
+
+        const first_name = String(firstName);
+        const last_name = String(lastName);
+        const patient_address = String(address);
+        const email_address = String(email);
+        const phone_number = String(phoneNumber);
+        const appointment_date = dayjs(appointmentDate).format("YYYY-MM-DD");
+        const appointment_time = dayjs(appointmentTime).format("hh:mm");
+        const sex = String(gender);
+        const purpose_of_appointment = String(purposeOfAppointment);
+        const clinic_id = parseInt(clinicID, 10);
+        const clinic_name = String(clinicName);
+        const created_date = dayjs().format("YYYY-MM-DD");
+        const status = String("Pending");
+
+        if (isNaN(clinic_id)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid clinic ID format"
+            })
+        }
+
+        const bookAppointmentsData = {
+            firstName: first_name,
+            lastName: last_name,
+            address: patient_address,
+            email: email_address,
+            phoneNumber: phone_number,
+            appointmentDate: appointment_date,
+            appointmentTime: appointment_time,
+            gender: sex,    
+            purposeOfAppointment: purpose_of_appointment,
+            clinicID: clinic_id,
+            clinicName: clinic_name,
+            createdDate: created_date,
+            status: status
+        }
+
+        const book_appointment_result = await new Clinic().insertBookedAppointment(bookAppointmentsData);
+        if (book_appointment_result.affectedRows === 0) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Failed to add book appointment"
+            })
+        }
+
+        return res.status(StatusCodes.OK).json({
+            message: "Book appointment added successfully",
+        })
+    } catch (error) {
+        console.error(`Failed to add book appointment in controller function: ${error}`)
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to add book appointment"
         })
     }
 }

@@ -29,6 +29,8 @@ const AppointmentsTable = ({ retrievedAppointmentsData }) => {
                 return "text-black bg-red-200";
             case "Consulted":
                 return "text-black bg-blue-200";
+            case "Cancelled":
+                return "text-black bg-yellow-200";
             case "Pending":
                 return "text-black bg-white"
             default:
@@ -55,42 +57,42 @@ const AppointmentsTable = ({ retrievedAppointmentsData }) => {
             return retrievedAppointmentsData.map((appointment, i) => (
                 <TableRow key={i} className={`hover:bg-gray-200 transition duration-200 ease-in-out ${getStatusColor(appointment.status)}`}>
                     <TableCell className={`border-b border-blue-gray-50 text-center`} align="center">
-                        <Typography variant="body2" className="text-blue-gray-900">
+                        <Typography variant="body2" className="text-gray-900">
                             {appointment.firstName}
                         </Typography>
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
-                        <Typography variant="body2" className="text-blue-gray-900">
+                        <Typography variant="body2" className="text-gray-900">
                             {appointment.lastName}
                         </Typography>
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
-                        <Typography variant="body2" className="text-blue-gray-900">
+                        <Typography variant="body2" className="text-gray-900">
                             {appointment.email}
                         </Typography>
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
-                        <Typography variant="body2" className="text-blue-gray-900">
+                        <Typography variant="body2" className="text-gray-900">
                             {formatDate(appointment.appointmentDate)}
                         </Typography>
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
-                        <Typography variant="body2" className="text-blue-gray-900">
+                        <Typography variant="body2" className="text-gray-900">
                             {appointment.phoneNumber}
                         </Typography>
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
-                        <Typography variant="body2" className="text-blue-gray-900">
+                        <Typography variant="body2" className="text-gray-900">
                             {formatTimeToAMPM(appointment.preferredTime) ? formatTimeToAMPM(appointment.preferredTime) : "N/A"}
                         </Typography>
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
-                        <Typography variant="body2" className="text-blue-gray-900">
+                        <Typography variant="body2" className="text-gray-900">
                             {appointment.status}
                         </Typography>
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
-                        <Typography variant="body2" className="text-blue-gray-900">
+                        <Typography variant="body2" className="text-gray-900">
                             {appointment.purposeOfAppointment}
                         </Typography>
                     </TableCell>
@@ -100,7 +102,7 @@ const AppointmentsTable = ({ retrievedAppointmentsData }) => {
             // If no data is found, render a no appointments found row
             return (
                 <TableRow key={0}>
-                    <TableCell colSpan={9} className="py-3 px-5 border-b border-blue-gray-50 text-center" align="center">
+                    <TableCell colSpan={8} className="py-3 px-5 border-b border-blue-gray-50 text-center" align="center">
                         <Typography variant="body2" className="text-blue-gray-900">
                             {retrievedAppointmentsData ? "No appointments found" : "Please input credentials to view appointments"}
                         </Typography>

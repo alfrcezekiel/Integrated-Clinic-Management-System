@@ -11,6 +11,7 @@ import {
 import PendingStatusAppointmentTable from "../../hooks/PendingTableAppointment";
 import { useState, useEffect } from "react";
 import CMS from "../../API/CMS";
+import { useAuthorization } from "../../context/auth/useAuthorization";
 
 const PendingAppointmentTable = () => {
     const appointmentsTableColumn = [
@@ -24,8 +25,10 @@ const PendingAppointmentTable = () => {
         'Status',
         'Purpose of Appointment',
     ]
+    const { user, token } = useAuthorization();
 
-    const patientEmail = localStorage.getItem("sem");
+    const patientEmail = user?.sem;
+    const tokenContext = token || localStorage.getItem("authToken");
 
     const [retrievedAppointmentsData, setRetrievedAppointmentsData] = useState([]);
 
@@ -35,7 +38,7 @@ const PendingAppointmentTable = () => {
                 const response = await CMS.get(`/CMS/patients-dashboard/getPatientPendingStatus/${patientEmail}`, {
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
+                        "Authorization": `Bearer ${tokenContext}`,
                     },
                 });
 
@@ -50,7 +53,7 @@ const PendingAppointmentTable = () => {
             }
         }
         retrievePendingStatus();
-    }, [patientEmail]);
+    }, [patientEmail, tokenContext]);
 
     return (
         <>

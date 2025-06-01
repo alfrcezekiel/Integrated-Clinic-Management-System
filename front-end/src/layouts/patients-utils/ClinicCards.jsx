@@ -1,5 +1,4 @@
 import {
-    useCallback,
     useEffect,
     useState
 } from "react";
@@ -21,7 +20,7 @@ import {
     Mail,
     Stethoscope,
     Building,
-    DollarSign
+    PhilippinePesoIcon
 } from 'lucide-react';
 import BookingAppointmentModal from "./BookingAppointmentModal";
 import {
@@ -29,6 +28,7 @@ import {
     useNavigate
 } from "react-router-dom";
 import ConfirmAppointmentModal from "./ConfirmBookedAppointment";
+import { useAuthorization } from "../../context/auth/useAuthorization";
 
 const ClinicCards = () => {
     const [clinics, setClinics] = useState([]);
@@ -60,31 +60,17 @@ const ClinicCards = () => {
     const [showSuccessConfirmedBookedAppointmentDialogBox, setShowSuccessConfirmedBookedAppointmentDialogBox] = useState(false);
 
     const navigate = useNavigate();
-
-    const retrievePatientData = async (patientID) => {
-        try {
-            const response = await CMS.get(`/CMS/patientsDashboard/getBookedAppointments/${patientID}`, {
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorage.getItem("authToken")}`
-                },
-            });
-
-            if (response.status === 200) {
-                setAppointmentData(prevData => ({
-                    ...prevData,
-                    firstName: response.data.firstName,
-                    lastName: response.data.lastName,
-                    email: response.data.email,
-                    phoneNumber: response.data.phoneNumber
-                }));
-            }
-        } catch (error) {
-            console.error(`Failed to retrieve patient data: ${error}`);
-        }
+    const { user, token } = useAuthorization();
+    const tokenContext = token || localStorage.getItem("authToken");
+    if (!tokenContext) {
+        console.error("No token found in context or localStorage");
     }
 
     const location = useLocation();
+
+    if (!tokenContext) {
+        console.error("No token found in context or localStorage");
+    }
 
     const formatTimeToAMPM = (time) => {
         if (!time) return "N/A";
@@ -117,7 +103,7 @@ const ClinicCards = () => {
                 const response = await CMS.get("/CMS/admin-dashboard/clinics", {
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${localStorage.getItem("authToken")}`
+                        "Authorization": `Bearer ${tokenContext}`,
                     }
                 });
 
@@ -131,7 +117,31 @@ const ClinicCards = () => {
         }
         fetchClinics();
 
-        const retrievePatientId = localStorage.getItem("sid")
+        const retrievePatientId = user?.sid;
+
+        // function to retrieve the patient data based on the patiente id to automate the input fields
+        const retrievePatientData = async (patientID) => {
+            try {
+                const response = await CMS.get(`/CMS/patientsDashboard/getBookedAppointments/${patientID}`, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${tokenContext}`,
+                    },
+                });
+
+                if (response.status === 200) {
+                    setAppointmentData(prevData => ({
+                        ...prevData,
+                        firstName: response.data.firstName,
+                        lastName: response.data.lastName,
+                        email: response.data.email,
+                        phoneNumber: response.data.phoneNumber
+                    }));
+                }
+            } catch (error) {
+                console.error(`Failed to retrieve patient data: ${error}`);
+            }
+        }
 
         if (retrievePatientId) {
             setAppointmentID(retrievePatientId);
@@ -141,14 +151,14 @@ const ClinicCards = () => {
         const confirmedBookedAppointment = () => {
             if (showConfirmedBookAppointmentModal) {
                 const timer = setTimeout(() => {
-                    navigate("/patients-dashboard/View-Clinics");
+                    navigate("/patients-dashboard/ViewClinics");
                 }, 3000)
 
                 return () => clearTimeout(timer);
             }
         }
         confirmedBookedAppointment()
-    }, [appointmentID, location.pathname, navigate, showConfirmedBookAppointmentModal]);
+    }, [appointmentID, location.pathname, navigate, showConfirmedBookAppointmentModal, user?.sid, tokenContext]);
 
     // function to open a booking appointment dialog
     const handleOpenModal = (clinic) => {
@@ -160,6 +170,13 @@ const ClinicCards = () => {
     const handleCloseModal = () => {
         setSelectedClinic(null);
         setFieldErrors({})
+        setAppointmentData((prev) => ({
+            ...prev,
+            gender: "",
+            appointmentDate: "",
+            preferredTime: "",
+            purposeOfAppointment: ""
+        }))
     };
 
     const formatDate = (dateString) => {
@@ -212,12 +229,14 @@ const ClinicCards = () => {
             const response = await CMS.post("/CMS/patientsDashboard/patientsBookedAppointments", payload, {
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorage.getItem("authToken")}`
+                    "Authorization": `Bearer ${tokenContext}`,
                 }
             });
 
             if (response.status === 200) {
-                alert("Confirmed Booked Appointment!");
+                const confirmedAppointment = getConfirmedBookedAppointment();
+                const apppointment = response.data.appointment;
+
                 setFieldErrors({})
                 setAppointmentData({
                     firstName: "",
@@ -231,7 +250,10 @@ const ClinicCards = () => {
                 });
                 handleCloseModal(); // close the modal
                 setShowConfirmedBookAppointmentModal(true); // show the confirmed booked appointment modal
-                setConfirmedAppointmentData(getConfirmedBookedAppointment()) // set the confirmed appointment data
+                setConfirmedAppointmentData({
+                    ...confirmedAppointment,
+                    appointmentID: apppointment?.appointmentID
+                }) // set the confirmed appointment data
             } else {
                 console.error(`Error in rendering the status code: ${response.status}`);
             }
@@ -246,13 +268,29 @@ const ClinicCards = () => {
         }
     };
 
-    const handleCallbackCloseConfirmedBookedAppointmentModal = useCallback(async () => {
-        const handleCloseConfirmedBookedAppointmentModal = async () => {
-            setShowConfirmedBookAppointmentModal(false);
-        }
-        handleCloseConfirmedBookedAppointmentModal()
-    }, []);
+    // function to close the confirmed booked appointment dialog
+    const handleCallbackCloseConfirmedBookedAppointmentModal = async (appointmentID) => {
+        // setShowConfirmedBookAppointmentModal(false);
+        try {
+            const response = await CMS.put(`/CMS/patients-dashboard/cancelBookedAppointment/${appointmentID}`, {
+                headers: {
+                    "Authorization": `Bearer ${tokenContext}`,
+                    "Content-Type": "application/json"
+                }
+            })
 
+            if (response.status === 200) {
+                setShowConfirmedBookAppointmentModal(false);
+                alert("Booked Appointment cancelled successfully.");
+            } else {
+                throw new Error(`Failed to cancel appointment: ${response.status}`);
+            }
+        } catch (error) {
+            console.error(`Error in cancelling an booked appointment ${error}`)
+        }
+    };
+
+    // function to close the success confirmed booked appointment dialog
     const handleCloseConfirmedBookedAppointmentSuccessDialogBox = async () => {
         setShowSuccessConfirmedBookedAppointmentDialogBox(false);
     }
@@ -325,8 +363,8 @@ const ClinicCards = () => {
                                     <span className="text-gray-800">{formatTimeToAMPM(clinic.clinic_time)} - {formatTimeToAMPM(clinic.clinic_close_time)}</span>
                                 </div>
                                 <div className="flex items-center">
-                                    <DollarSign className="h-6 w-6 text-blue-600 mr-3" />
-                                    <span className="text-gray-800">₱ {clinic.consultation_fee}</span>
+                                    <PhilippinePesoIcon className="h-6 w-6 text-blue-600 mr-3" />
+                                    <span className="text-gray-800">{clinic.consultation_fee}</span>
                                 </div>
                                 <div className="flex items-center">
                                     <Stethoscope className="h-6 w-6 text-blue-600 mr-3" />

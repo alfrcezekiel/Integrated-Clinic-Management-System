@@ -72,10 +72,18 @@ const ConfirmAppointmentModal = ({ open, onClose, patientsData, onNextStep }) =>
             )}
 
             <DialogActions className="p-4 flex justify-between">
-                <Button variant="outlined" color="secondary" onClick={onClose}>
-                    Back
+                <Button
+                    variant="contained"
+                    color="error"
+                    onClick={() => onClose(patientsData?.appointmentID)}
+                >
+                    Cancel Appointment
                 </Button>
-                <Button variant="contained" color="primary" onClick={onNextStep}>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={onNextStep}
+                >
                     Confirmed Booked Appointment
                 </Button>
             </DialogActions>
@@ -87,6 +95,7 @@ ConfirmAppointmentModal.propTypes = {
     open: PropTypes.bool.isRequired,
     onClose: PropTypes.func.isRequired,
     patientsData: PropTypes.shape({
+        appointmentID: PropTypes.string,
         patient: PropTypes.shape({
             firstName: PropTypes.string,
             lastName: PropTypes.string,

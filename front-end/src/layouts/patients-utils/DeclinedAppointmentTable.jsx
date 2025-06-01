@@ -11,6 +11,7 @@ import {
 import { useState, useEffect } from "react";
 import CMS from "../../API/CMS";
 import DeclinedAppointmentsTableValue from "../../hooks/DeclinedAppointmentValues";
+import { useAuthorization } from "../../context/auth/useAuthorization";
 
 // this component is used to render the declined appointments table
 const DeclinedAppointmentStatusTable = () => {
@@ -25,9 +26,14 @@ const DeclinedAppointmentStatusTable = () => {
         'Status',
         'Purpose of Appointment',
     ]
+    const { user, token } = useAuthorization();
 
-    const patientEmail = localStorage.getItem("sem");
-
+    const patientEmail = user?.sem || "";
+    const tokenContext = token;
+    if (!tokenContext) {
+        console.error("No token found in context or localStorage");
+    }
+    
     const [retrievedAppointmentsData, setRetrievedAppointmentsData] = useState([]);
 
     useEffect(() => {
@@ -36,22 +42,22 @@ const DeclinedAppointmentStatusTable = () => {
                 const response = await CMS.get(`/CMS/patients-dashboard/getPatientDeclinedStatus/${patientEmail}`, {
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
+                        "Authorization": `Bearer ${tokenContext}`,
                     },
                 });
 
                 if (response.status === 200) {
                     setRetrievedAppointmentsData(response.data.patientsDeclinedStatus);
                 } else {
-                    console.log(`Failed to retrieve declined appointment status in server: ${response.status}`);
+                    console.error(`Failed to retrieve declined appointment status in server: ${response.status}`);
                 }
 
             } catch (error) {
-                console.log(`Failed to retrieve declined appointment status: ${error}`);
+                console.error(`Failed to retrieve declined appointment status: ${error}`);
             }
         }
         retrieveDeclinedStatus();
-    }, [patientEmail]);
+    }, [patientEmail, tokenContext]);
 
     return (
         <>

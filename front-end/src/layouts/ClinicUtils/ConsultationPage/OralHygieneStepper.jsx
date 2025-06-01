@@ -9,10 +9,14 @@ import {
     TextField,
     CircularProgress
 } from "@mui/material";
+import { useAuthorization } from "../../../context/auth/useAuthorization";
 
 const OralHygieneStepper = ({ patientFormData, handleChange, fieldErrors, setDynamicOralHygieneFieldNames }) => {
     const [oralHygieneQuestionnaire, setOralHygieneQuestionnaire] = useState([]);
     const [loading, setLoading] = useState(true);
+    const { user, token } = useAuthorization();
+    const clinicID = user?.sid;
+    const tokenContext = token;
 
     const oralHygieneQuestionnaireMemo = useMemo(() => {
         return {
@@ -39,17 +43,17 @@ const OralHygieneStepper = ({ patientFormData, handleChange, fieldErrors, setDyn
     }, []);
 
     useEffect(() => {
-        const clinicID = localStorage.getItem("sid");
         const retrieveOralHygieneQuestionnaire = async () => {
             try {
-                if (!clinicID) {
-                    throw new Error("Clinic ID is not available in local storage.");
-                }
-
+                if (!clinicID || !tokenContext) {
+                    console.error("Clinic ID or token is not available in the context or local storage.");
+                    setLoading(false);
+                }   
+                
                 const response = await CMS.get(`CMS/clinic-dashboard/retrieveOralHygieneConsultationQuestionnaires/${clinicID}`, {
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${localStorage.getItem("authToken")}`
+                        "Authorization": `Bearer ${tokenContext}`
                     }
                 })
 
@@ -82,7 +86,7 @@ const OralHygieneStepper = ({ patientFormData, handleChange, fieldErrors, setDyn
         if (clinicID) {
             retrieveOralHygieneQuestionnaire();
         }
-    }, [])
+    }, [tokenContext, clinicID]);
 
     useEffect(() => {
         const dynamicOralHygieneFieldNames = async () => {

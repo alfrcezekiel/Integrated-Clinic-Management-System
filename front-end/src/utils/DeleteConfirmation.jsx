@@ -7,7 +7,7 @@ const DeleteConfirmationDialog = ({ open, onClose, onConfirm, users }) => {
         <div className="fixed inset-0 z-50 flex items-center justify-center">
             {/* Backdrop */}
             <div
-                className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
+                className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
                 onClick={onClose}
             />
             {/* Dialog */}

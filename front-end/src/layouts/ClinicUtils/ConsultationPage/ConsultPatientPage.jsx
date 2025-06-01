@@ -22,6 +22,7 @@ import CMS from "../../../API/CMS";
 import AppointmentDataNotFoundDialog from "../../../utils/AppoimtmentDataNotFound";
 import OralHygieneStepper from "./OralHygieneStepper";
 import PatientConsultationSuccessfulDialog from "../../../utils/PatientConsultationSuccessfulDialog";
+import { useAuthorization } from "../../../context/auth/useAuthorization.jsx";
 
 const ConsultationPatientPage = () => {
     const navigate = useNavigate();
@@ -126,7 +127,13 @@ const ConsultationPatientPage = () => {
     const [lifestyleInformationFieldNames, setLifestyleInformationFieldNames] = useState([]);
     const [clinicalAssessmentFieldNames, setClinicalAssessementFieldNames] = useState([]);
     const [oralHygieneFieldNames, setOralHygieneFieldNames] = useState([]);
-    const [openPatientConsultationSuccessfulDialog, setOpenPatientConsultationSuccessfulDialog] = useState(false);  
+    const [openPatientConsultationSuccessfulDialog, setOpenPatientConsultationSuccessfulDialog] = useState(false);
+
+    const { token, user } = useAuthorization();
+    const tokenContext = token;
+    if(!tokenContext){
+        console.error("Token is not available in the context or local storage.");
+    }
 
     const steps = [
         "Patient Information",
@@ -166,7 +173,7 @@ const ConsultationPatientPage = () => {
             replace: true
         });
     }
-    
+
     // function for handling the input during changing
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -203,6 +210,7 @@ const ConsultationPatientPage = () => {
             ...prev,
             preferredTime: newValue && dayjs(newValue) ? newValue : null
         }));
+        
         if (fieldErrors.preferredTime) {
             setFieldErrors((prev) => ({
                 ...prev,
@@ -225,13 +233,13 @@ const ConsultationPatientPage = () => {
 
             const response = await CMS.post("/CMS/clinic-dashboard/consultPatient", {
                 ...patientFormData,
-                admin_id: localStorage.getItem("sid"),
+                admin_id: user?.sid,
                 clinic_name: patientFormData.clinic_name,
                 appointmentID: patientFormData.appointmentID
             }, {
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorage.getItem("authToken")}`
+                    "Authorization": `Bearer ${tokenContext}`
                 },
             });
 
@@ -272,7 +280,7 @@ const ConsultationPatientPage = () => {
             const response = await CMS.post(`/CMS/clinic-dashboard/validatePatientConsultation/${activeStep}`, currentData, {
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorage.getItem("authToken")}`
+                    "Authorization": `Bearer ${tokenContext}`
                 }
             });
 
@@ -340,9 +348,9 @@ const ConsultationPatientPage = () => {
                         setDynamicClinicalAssessmentFieldNames={setClinicalAssessementFieldNames}
                     />
                 );
-            case 4: 
+            case 4:
                 return (
-                    <OralHygieneStepper 
+                    <OralHygieneStepper
                         patientFormData={patientFormData}
                         handleChange={handleChange}
                         fieldErrors={fieldErrors}

@@ -28,6 +28,7 @@ import Dialog from "@mui/material/Dialog"
 import DialogTitle from "@mui/material/DialogTitle"
 import DialogContent from "@mui/material/DialogContent"
 import DialogActions from "@mui/material/DialogActions"
+import { useAuthorization } from "../../context/auth/useAuthorization"
 
 function PatientsLoginPortal() {
     const [showPassword, setShowPassword] = useState(false);
@@ -53,6 +54,7 @@ function PatientsLoginPortal() {
     }, [])
 
     const location = useLocation();
+    const { login, userData } = useAuthorization();
 
     useEffect(() => {
         const titleElement = () => {
@@ -105,7 +107,6 @@ function PatientsLoginPortal() {
             const response = await CMS.post("/CMS/loginPatientsAccount", patientsLoginFormData, {
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
                 },
                 withCredentials: true,
             });
@@ -118,19 +119,20 @@ function PatientsLoginPortal() {
                 }
 
                 if (response.data.token && response.data.sid) {
-                    localStorage.setItem("authToken", response.data.token);
-                    localStorage.setItem("sid", response.data.sid.patientID);
-                    localStorage.setItem("sfn", response.data.sid.sfn);
-                    localStorage.setItem("sln", response.data.sid.sln);
-                    localStorage.setItem("sem", response.data.sid.sem);
-                    localStorage.setItem("sprefix", response.data.sid.sprefix);
+                    login(response.data.token);
+                    userData({
+                        sid: response.data.sid.patientID,
+                        sfn: response.data.sid.sfn,
+                        sln: response.data.sid.sln,
+                        sem: response.data.sid.sem,
+                        sprefix: response.data.sid.sprefix
+                    })
                     navigate("/patients-dashboard/Home");
                 } else {
                     console.error("No token found in response data");
                 }
             } else {
-                console.error(`Error in logging in patient: ${response.status}`);
-                alert("Error in logging in patient")
+                throw new Error(`No response data or no success message: ${response.data}`);
             }
         } catch (error) {
             if (error.response && error.response.status === 400) {

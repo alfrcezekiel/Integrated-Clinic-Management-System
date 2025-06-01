@@ -12,12 +12,17 @@ import {
   Button,
   DialogContent,
 } from "@mui/material";
+import { useAuthorization } from "../../../context/auth/useAuthorization";
 
 const ClinicViewAppointmentCalendar = () => {
   const locales = {
     "en-US": enUS,
   };
+
+  const [selectedEvent, setSelectedEvent] = useState(null);
   const [events, setEvents] = useState([]);
+  const { user, token } = useAuthorization();
+  const tokenContext = token;
 
   const localizer = dateFnsLocalizer({
     format,
@@ -35,17 +40,16 @@ const ClinicViewAppointmentCalendar = () => {
   };
 
   useEffect(() => {
-    const clinicID = localStorage.getItem("sid");
+    const clinicID = user?.sid
+
     const retrievePatientsAppointments = async () => {
       try {
-        const response = await CMS.get(
-          `CMS/doctors-dashboard/appointments/${clinicID}`,
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        const response = await CMS.get(`CMS/doctors-dashboard/appointments/${clinicID}`, {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${tokenContext}`,
+          },
+        });
 
         if (response.status === 200) {
           const formattedAppointments = response.data.patientsAppointments.map(
@@ -72,8 +76,7 @@ const ClinicViewAppointmentCalendar = () => {
       }
     };
     retrievePatientsAppointments();
-  }, []);
-  const [selectedEvent, setSelectedEvent] = useState(null);
+  }, [user?.sid, tokenContext]);
 
   const handleSelectEvent = (event) => {
     setSelectedEvent(event);
@@ -89,6 +92,8 @@ const ClinicViewAppointmentCalendar = () => {
         return "text-green-400";
       case "Pending":
         return "text-yellow-400";
+      case "Cancelled":
+        return "text-red-500";
       case "Declined":
         return "text-red-300";
       case "Consulted":

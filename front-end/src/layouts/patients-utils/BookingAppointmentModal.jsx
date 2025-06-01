@@ -24,7 +24,8 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import { PhilippinePeso } from 'lucide-react';
+import Phone from "@mui/icons-material/Phone"
 
 const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooking, appointmentData, setAppointmentData, fieldErrors, setFieldErrors, appointmentID }) => {
     const memoizedFirstNameValue = useMemo(() => appointmentData.firstName, [appointmentData.firstName]);
@@ -122,38 +123,36 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
                                 <Typography variant="h5" className="font-semibold text-blue-800 mb-2">
                                     {selectedClinic.clinic_name}
                                 </Typography>
-
                                 <div className="flex items-center text-gray-700 mb-1">
                                     <LocationOn className="mr-2 text-blue-600" />
                                     <Typography variant="body1">{selectedClinic.clinic_address}</Typography>
                                 </div>
-
                                 <div className="flex items-center text-gray-700 mb-1">
-                                    <Email className="mr-2 text-red-600" />
+                                    <Phone className="mr-2 text-blue-600" />
+                                    <Typography variant="body1">{selectedClinic.phoneNumber}</Typography>
+                                </div>
+                                <div className="flex items-center text-gray-700 mb-1">
+                                    <Email className="mr-2 text-blue-600" />
                                     <Typography variant="body1">{selectedClinic.email}</Typography>
                                 </div>
-
                                 <div className="flex items-center text-gray-700 mb-1">
-                                    <AccessTime className="mr-2 text-black" />
+                                    <AccessTime className="mr-2  text-blue-600" />
                                     <Typography variant="body1">
                                         Opening Days: {selectedClinic.clinic_date_open ? selectedClinic.clinic_date_open : ""} - {selectedClinic.clinic_close_date ? selectedClinic.clinic_close_date : ""}
                                     </Typography>
                                 </div>
-
                                 <div className="flex items-center text-gray-700 mb-1">
-                                    <AccessTime className="mr-2 text-lime-600" />
+                                    <AccessTime className="mr-2 text-blue-600" />
                                     <Typography variant="body1">
-                                        Opening Hours: {formatTimeToAMPM(selectedClinic.clinic_time) ? formatTimeToAMPM(selectedClinic.clinic_time) : ""} - {formatTimeToAMPM(selectedClinic.clinic_close_time) ? formatTimeToAMPM(selectedClinic.clinic_close_time) : ""}
+                                        Operating Hours: {formatTimeToAMPM(selectedClinic.clinic_time) ? formatTimeToAMPM(selectedClinic.clinic_time) : ""} - {formatTimeToAMPM(selectedClinic.clinic_close_time) ? formatTimeToAMPM(selectedClinic.clinic_close_time) : ""}
                                     </Typography>
                                 </div>
-
                                 <div className="flex items-center text-gray-700 mb-1">
-                                    <AttachMoneyIcon className="mr-2 text-pink-600" />
-                                    <Typography variant="body1">Consultation Fee: ₱ {selectedClinic.consultation_fee}</Typography>
+                                    <PhilippinePeso className="mr-2 text-blue-600"/>
+                                    <Typography variant="body1">Consultation Fee: {selectedClinic.consultation_fee}</Typography>
                                 </div>
-
                                 <div className="flex items-center text-gray-700 mb-1">
-                                    <MedicalServices className="mr-2 text-red-600" />
+                                    <MedicalServices className="mr-2 text-blue-600" />
                                     <Typography variant="body1">Clinic Type: {selectedClinic.clinic_type}</Typography>
                                 </div>
                             </div>
@@ -285,12 +284,12 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
                                     {/* Preferred Time */}
                                     <TextField
                                         fullWidth
-                                        label="Preferred Time"
+                                        label="Select Appointment Time"
                                         variant="outlined"
                                         margin="dense"
                                         className="w-full"
                                         autoComplete="off"
-                                        placeholder="Enter your preferred time"
+                                        placeholder="Select appointment time"
                                         name="preferredTime"
                                         type="time"
                                         InputLabelProps={{ shrink: true }}

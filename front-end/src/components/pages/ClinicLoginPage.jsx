@@ -24,6 +24,7 @@ import {
 import CMS from "../../API/CMS";
 import FormHelperText from "@mui/material/FormHelperText"
 import doctor from "../../assets/img/page-title-bg.jpg";
+import { useAuthorization } from "../../context/auth/useAuthorization";
 
 function ClinicLoginPortal() {
     const [showPassword, setShowPassword] = useState(false);
@@ -37,6 +38,7 @@ function ClinicLoginPortal() {
     })
 
     const location = useLocation();
+    const { login, userData } = useAuthorization(); 
 
     useEffect(() => {
         const titleElement = () => {
@@ -92,10 +94,12 @@ function ClinicLoginPortal() {
             if (response.data && response.status === 200) {
                 setFieldErrors({})
                 if (response.data.token && response.data.sid) {
-                    localStorage.setItem("authToken", response.data.token);
-                    localStorage.setItem("sid", response.data.sid.id);
-                    localStorage.setItem("scn", response.data.sid.scn);
-                    localStorage.setItem("sem", response.data.sid.sem);
+                    login(response.data.token)
+                    userData({
+                        sid: response.data.sid.id,
+                        scn: response.data.sid.scn,
+                        sem: response.data.sid.sem
+                    })
                     navigate("/doctor-portal/dashboard/home");
                 } else {
                     console.error("No token found in response data and session data");

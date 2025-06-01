@@ -9,10 +9,14 @@ import {
     useEffect
 } from "react";
 import CMS from "../../../API/CMS";
+import { useAuthorization } from "../../../context/auth/useAuthorization";
 
 const ClinicAssessmentStepper = ({ patientFormData, handleChange, fieldErrors, setDynamicClinicalAssessmentFieldNames }) => {
     const [loading, setLoading] = useState(true);
     const [clinicalAssessmentQuestionnaire, setClinicalAssessmentQuestionnaire] = useState([]);
+    const { user, token } = useAuthorization();
+    const clinicID = user?.sid;
+    const tokenContext = token;
 
     const clinicalAssessmentQuestionnaireMemo = useMemo(() => {
         const clinicalAssessmentQuestionnaire = {
@@ -43,17 +47,17 @@ const ClinicAssessmentStepper = ({ patientFormData, handleChange, fieldErrors, s
     }, [])
 
     useEffect(() => {
-        const clinicID = localStorage.getItem("sid");
         const retrievedClinicalAssessmentQuestionnaire = async () => {
             try {
-                if (!clinicID) {
-                    throw new Error("Clinic ID is not available in local storage.");
+                if (!clinicID || !tokenContext) {
+                    console.error("Clinic ID or token is not available in the context or local storage.");
+                    setLoading(false);
                 }
-
+                
                 const response = await CMS.get(`CMS/clinic-dashboard/retrieveClinicalAssessmentQuestionnaires/${clinicID}`, {
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${localStorage.getItem("authToken")}`
+                        "Authorization": `Bearer ${tokenContext}`
                     }
                 })
 
@@ -86,7 +90,7 @@ const ClinicAssessmentStepper = ({ patientFormData, handleChange, fieldErrors, s
         if (clinicID) {
             retrievedClinicalAssessmentQuestionnaire()
         }
-    }, [])
+    }, [tokenContext, clinicID]);
 
     useEffect(() => {
         if(!loading && clinicalAssessmentQuestionnaire.length > 0){

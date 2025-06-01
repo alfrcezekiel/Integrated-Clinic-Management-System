@@ -44,7 +44,10 @@ import {
     retrievedMedicalHistoryConsultationQuestionnaires,
     retrieveLifestyleInformationQuestionnaires,
     retrieveClinicalAssessmentQuestionnaires,
-    retrieveOralHygieneQuestionnaires
+    retrieveOralHygieneQuestionnaires,
+    cancelBookedAppointment,
+    deleteBookedAppointment,
+    addBookAppointmentInClinic
 } from "../controllers/cms.js";
 import validateRegister from "../middleware/validation.js";
 import patientsLoginValidation from "../middleware/patientsLoginValidation.js";
@@ -60,6 +63,7 @@ import validateCreateClinicDetails from "../middleware/ValidateCreateClinicDetai
 import upload from "../middleware/fileImage/clinicImage.js";
 import validatePaymentFields from "../middleware/PaymentValidation/PaymentFieldValidation.js";
 import validateQuestionnaires from "../middleware/ValidateQuestionnaires.js";
+import validateBookAppointmentInClinic from "../middleware/ValidateBookAppointmentInClinic.js";
 
 const router = express.Router();
 
@@ -199,5 +203,14 @@ router.get("/clinic-dashboard/retrieveClinicalAssessmentQuestionnaires/:clinicID
 
 // router for retriving the oral hygiene consultation questionnaires in server
 router.get("/clinic-dashboard/retrieveOralHygieneConsultationQuestionnaires/:clinicID", verifyToken, retrieveOralHygieneQuestionnaires);
+
+// router for cancelling the booked appointment in patient side
+router.put("/patients-dashboard/cancelBookedAppointment/:appointmentID", cancelBookedAppointment);
+
+// router for deleting the booked appointment information in clinic side
+router.delete("/clinicDashboard/deleteBookedAppointment/:appointmentID", deleteBookedAppointment);
+
+// router for adding a book appointment in the clinic side
+router.post("/clinicDashboard/addBookedAppointment", [validateBookAppointmentInClinic], addBookAppointmentInClinic);
 
 export default router;

@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import { Route, Routes, Navigate, useLocation, BrowserRouter } from "react-router-dom";
 import PageNotFound from './components/pageNotFound/error.jsx';
 import Loader from "./components/Loader/Loader.jsx";
+import ProtectedRoutes from './routes/ProtectedRoutes/ProtectedRoutes.jsx';
+import { AuthorizationProvider } from "./context/auth/AuthorizationProvider.jsx";
 
 const Home = lazy(() => import("./components/MainContent.jsx"));
 const PatientRegistrationPortal = lazy(() => import("./components/pages/PatientsRegistrationPage.jsx"));
@@ -58,26 +60,66 @@ RouteLoader.propTypes = {
   children: PropTypes.node.isRequired,
 };
 
-function App() {
+const App = () => {
   return (
-    <>
-      <BrowserRouter future={{ v7_startTransition: true }}>
+    <BrowserRouter>
+      <AuthorizationProvider>
         <RouteLoader>
           <Routes>
-            <Route path="/" element={<Navigate to={"/cms"} replace />} />
-            <Route path="/cms" element={<Home />} />
-            <Route path="/patients-portal" element={<PatientRegistrationPortal />} />
-            <Route path="/patients-login" element={<PatientsLoginPortal />} />
-            <Route path="/cms/login-admin" element={<AdminLoginPortal />} />
-            <Route path="/patients-dashboard/*" element={<PatientsDashboard />} />
-            <Route path="/doctor-portal/login" element={<ClinicLoginPortal />} />
-            <Route path="/doctor-portal/dashboard/*" element={<ClinicDashboard />} />
+            <Route
+              path="/"
+              element={
+                <Navigate to={"/cms"} replace />
+              }
+            />
+            <Route
+              path="/cms"
+              element={
+                <Home />
+              }
+            />
+            <Route
+              path="/PatientRegistration"
+              element={
+                <PatientRegistrationPortal />
+              }
+            />
+            <Route
+              path="/PatientLogin"
+              element={
+                <PatientsLoginPortal />
+              }
+            />
+            <Route
+              path="/AdminLogin"
+              element={<AdminLoginPortal />}
+            />
+            <Route
+              path="/patients-dashboard/*"
+              element={
+                <ProtectedRoutes>
+                  <PatientsDashboard />
+                </ProtectedRoutes>
+              }
+            />
+            <Route
+              path="/ClinicLogin"
+              element={<ClinicLoginPortal />}
+            />
+            <Route
+              path="/doctor-portal/dashboard/*"
+              element={
+                <ProtectedRoutes>
+                  <ClinicDashboard />
+                </ProtectedRoutes>
+              }
+            />
             <Route path="/admin-dashboard/*" element={<AdminDashboard />} />
             <Route path="*" element={<PageNotFound />} />
           </Routes>
         </RouteLoader>
-      </BrowserRouter>
-    </>
+      </AuthorizationProvider>
+    </BrowserRouter>
   )
 }
 

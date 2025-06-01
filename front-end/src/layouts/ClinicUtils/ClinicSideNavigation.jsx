@@ -72,7 +72,7 @@ const DoctorsSideNav = ({ brandName, routes }) => {
                 {routes.map(({ layout, pages }, index) => (
                     <div key={layout || index} className="mb-4">
                         {pages
-                            .filter((page) => page.name !== "Appointments" && page.name !== "Pending Appointments" && page.name !== "Approved Appointments" && page.name !== "Declined Appointments" && page.name !== "Appointment History" && page.name !== "Consult Patient")
+                            .filter((page) => page.name !== "Appointments" && page.name !== "Pending Appointments" && page.name !== "Approved Appointments" && page.name !== "Declined Appointments" && page.name !== "Appointment History" && page.name !== "Consult Patient" && page.name !== "Add Book Appointment")
                             .map(({ icon, name, path }) => (
                                 <NavLink
                                     key={name}
@@ -156,6 +156,26 @@ const DoctorsSideNav = ({ brandName, routes }) => {
                             {routes.map(({ layout, pages }, index) => (
                                 pages
                                     .filter((page) => page.name === "Declined Appointments")
+                                    .map(({ icon, name, path }) => (
+                                        <NavLink
+                                            key={index}
+                                            to={`${layout}${path}`}
+                                            className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-white" : "text-gray-700 hover:bg-gray-100"}`}
+                                        >
+                                            {icon}
+                                            <ListItem button="true">
+                                                <ListItemText primary={name} className="text-black" />
+                                            </ListItem>
+                                        </NavLink>
+                                    ))
+                            ))}
+                        </List>
+                    </Collapse>
+                    <Collapse in={appointmentDropDownOpen} timeout="auto" unmountOnExit className="p-2">
+                        <List component="div" disablePadding>\
+                            {routes.map(({layout, pages}, index) => (
+                                pages
+                                    .filter((page) => page.name === "Add Book Appointment")
                                     .map(({ icon, name, path }) => (
                                         <NavLink
                                             key={index}

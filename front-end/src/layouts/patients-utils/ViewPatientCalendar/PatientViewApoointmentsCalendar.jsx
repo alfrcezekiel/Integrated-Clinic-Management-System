@@ -12,12 +12,22 @@ import {
   Button,
   DialogContent,
 } from "@mui/material";
+import { useAuthorization } from "../../../context/auth/useAuthorization";
 
 const PatientsViewAppointmentCalendar = () => {
+  const [selectedEvent, setSelectedEvent] = useState(null);
   const locales = {
     "en-US": enUS,
   };
   const [events, setEvents] = useState([]);
+  const { user, token } = useAuthorization();
+
+  const patient_email = user?.sem;
+  const tokenContext = token || localStorage.getItem("authToken");
+
+  if (!tokenContext) {
+    console.error("No token found in context or localStorage");
+  }
 
   const localizer = dateFnsLocalizer({
     format,
@@ -37,11 +47,10 @@ const PatientsViewAppointmentCalendar = () => {
   useEffect(() => {
     const retrievePatientsAppointments = async () => {
       try {
-        const patient_email = localStorage.getItem("sem");
         const response = await CMS.get(`/CMS/patientsDashboard/bookedAppointments/${patient_email}`, {
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
+            "Authorization": `Bearer ${tokenContext}`,
           },
         });
 
@@ -70,8 +79,7 @@ const PatientsViewAppointmentCalendar = () => {
       }
     };
     retrievePatientsAppointments();
-  }, []);
-  const [selectedEvent, setSelectedEvent] = useState(null);
+  }, [patient_email, tokenContext]);
 
   const handleSelectEvent = (event) => {
     setSelectedEvent(event);
@@ -88,7 +96,9 @@ const PatientsViewAppointmentCalendar = () => {
       case "Pending":
         return "text-yellow-400";
       case "Declined":
-        return "text-red-300";
+        return "text-red-400";
+      case "Cancelled":
+        return "text-red-400"
       case "Consulted":
         return "text-blue-300";
       default:

@@ -13,6 +13,7 @@ const LandingPageHeader = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef(null);
+    
     // Close the dropdown when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -57,7 +58,6 @@ const LandingPageHeader = () => {
                     <a href="/cms" className="hover:text-blue-300 text-white">Home</a>
                     <a href="#about" className="hover:text-blue-300 text-white">About</a>
                     <a href="#services" className="hover:text-blue-300 text-white">Services</a>
-
                     <div className="relative inline-block" ref={dropdownRef}>
                         <button
                             className="flex items-center hover:text-blue-300"
@@ -78,10 +78,13 @@ const LandingPageHeader = () => {
                             </ul>
                         )}
                     </div>
-
                     <a href="#contact" className="hover:text-blue-300 text-white">Contact</a>
-                    <Link to="/patients-portal" className="hover:text-blue-300 text-white">Patients Registration Portal</Link>
-
+                    <Link
+                        to="/PatientRegistration"
+                        className="hover:text-blue-300 text-white"
+                    >
+                        Patients Registration Portal
+                    </Link>
                     {/* Login Dropdown */}
                     <div className="relative inline-block" ref={dropdownRef}>
                         <button
@@ -95,7 +98,7 @@ const LandingPageHeader = () => {
                             <ul className="absolute left-0 mt-4 bg-white text-gray-800 shadow-md rounded-md w-60 z-20 p-3">
                                 <li>
                                     <Link
-                                        to="/patients-login"
+                                        to="/PatientLogin"
                                         className="block px-4 py-3 hover:bg-gray-100 text-black"
                                         onClick={() => setIsOpen(false)}
                                     >
@@ -104,7 +107,7 @@ const LandingPageHeader = () => {
                                 </li>
                                 <li>
                                     <Link
-                                        to="/doctor-portal/login"
+                                        to="/ClinicLogin"
                                         className="block px-4 py-3 hover:bg-gray-100 text-black"
                                         onClick={() => setIsOpen(false)}
                                     >
@@ -113,7 +116,7 @@ const LandingPageHeader = () => {
                                 </li>
                                 <li>
                                     <Link
-                                        to="/cms/login-admin"
+                                        to="/AdminLogin"
                                         className="block px-4 py-3 hover:bg-gray-100 text-black"
                                         onClick={() => setIsOpen(false)}
                                     >

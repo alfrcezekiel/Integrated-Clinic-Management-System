@@ -18,6 +18,7 @@ import {
 import CMS from "../../API/CMS";
 import HistoryIcon from "@mui/icons-material/History";
 import CloseIcon from "@mui/icons-material/Close";
+import { useAuthorization } from "../../context/auth/useAuthorization";
 
 const AppointmentHistoryTable = () => {
     const appointmentsTableColumn = [
@@ -32,6 +33,7 @@ const AppointmentHistoryTable = () => {
         "Status",
         "View Patient Results",
     ];
+    const { user, token } = useAuthorization();
 
     const formatTimeToAMPM = (time) => {
         if (!time) return "N/A";
@@ -88,19 +90,23 @@ const AppointmentHistoryTable = () => {
         };
         titleHeader();
 
-        const clinicID = localStorage.getItem("sid");
+        const clinicID = user?.sid;
+        const tokenContext = token;
+        if (!tokenContext) {
+            console.error("No token found in context or localStorage");
+        }
+        if (!clinicID) {
+            console.error("Clinic ID is not available in user session.");
+        }
 
         const retrieveAppointmentHistory = async () => {
             try {
-                const response = await CMS.get(
-                    `/CMS/clinic-dashboard/getAppointmentHistory/${clinicID}`,
-                    {
-                        headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-                        },
-                    }
-                );
+                const response = await CMS.get(`/CMS/clinic-dashboard/getAppointmentHistory/${clinicID}`, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${tokenContext}`,
+                    },
+                });
 
                 if (!response.data) {
                     throw new Error("No retrieved appointment history data");
@@ -116,7 +122,7 @@ const AppointmentHistoryTable = () => {
             }
         };
         retrieveAppointmentHistory();
-    }, [location.pathname]);
+    }, [location.pathname, user?.sid, token]);
 
     // this function determines the color of the status of the patients
     const getStatusColor = (status) => {

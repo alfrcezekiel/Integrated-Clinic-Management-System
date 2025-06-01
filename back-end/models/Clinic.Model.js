@@ -519,12 +519,12 @@ class Clinic {
         const connection = await conn.getConnection();
         try {
             await connection.beginTransaction(); // start a transaction
-            
+
             if (!Number.isInteger(clinicID) || clinicID <= 0) {
                 throw new Error("Invalid clinic ID");
             }
 
-            if(!sectionType || typeof sectionType !== "string"){
+            if (!sectionType || typeof sectionType !== "string") {
                 throw new Error("Invalid section type");
             }
 
@@ -585,6 +585,235 @@ class Clinic {
             }
 
             console.error(`Error retrieving the oral hygiene questionnaire in model method: ${error}`)
+            throw error;
+        } finally {
+            connection.release();
+        }
+    }
+
+    // method for cancelling the booked appointment in patient side
+    cancelBookedAppointment = async (appointmentID, status) => {
+        const connection = await conn.getConnection();
+        try {
+            await connection.beginTransaction(); // start a transaction
+
+            if (!appointmentID || typeof appointmentID !== "number") {
+                throw new Error("Invalid appointment ID");
+            }
+
+            const query = `
+                UPDATE patientsappointment
+                    SET status = ?
+                WHERE appointmentID = ?;
+            `
+
+            const value = [
+                status,
+                appointmentID
+            ]
+
+            const [result] = await connection.query(query, value);
+
+            const commitQuery = await connection.commit(); // commit the transaction query if successful
+            if (!commitQuery) {
+                throw new Error("Failed to commit transaction in cancelling booked appointment");
+            }
+
+            return result;
+        } catch (error) {
+            const rollbackQuery = await connection.rollback();
+            if (!rollbackQuery) {
+                console.error(`Error rolling back transaction in cancelling booked appointment: ${error}`);
+            }
+
+            console.error(`Error cancelling the booked appointment in model function: ${error}`);
+            throw error;
+        } finally {
+            connection.release();
+        }
+    }
+
+    // method for retrieving the clinic operating hours
+    retrieveClinicOpeningHours = async (clinicID) => {
+        const connection = await conn.getConnection();
+        try {
+            await connection.beginTransaction(); // start a transaction
+
+            if (!clinicID || typeof clinicID !== "number") {
+                throw new Error("Invalid clinic ID");
+            }
+
+            const query = `
+                SELECT 
+                    clinic_time,
+                    clinic_close_time
+                FROM clinic
+                    WHERE clinic_id = ?;
+            `
+            const value = [clinicID];
+
+            const [rows] = await connection.execute(query, value);
+
+            const commitQuery = await connection.commit(); // commit the transaction query if successful
+            if (!commitQuery) {
+                throw new Error("Failed to commit transaction in retrieving opening hours");
+            }
+
+            return rows;
+        } catch (error) {
+            const rollbackQuery = await connection.rollback();
+            if (!rollbackQuery) {
+                console.error(`Error rolling back transaction in retrieving opening hours: ${error}`);
+            }
+
+            console.error(`Error retrieving opening hours in model function: ${error}`);
+            throw error;
+        } finally {
+            connection.release();
+        }
+    }
+
+    // method for deleting the booked appointment in clinic side
+    deleteBookedAppointment = async (appointmentID) => {
+        const connection = await conn.getConnection(); // retrieve the connection from the pool
+        try {
+            await connection.beginTransaction();
+
+            if (!appointmentID || typeof appointmentID !== "number") {
+                throw new Error("Invalid appointment id")
+            }
+
+            const query = `
+                DELETE pa, c
+                FROM patientsappointment AS pa
+                LEFT JOIN clinic AS c
+                ON pa.appointmentID = pa.clinic_id
+                WHERE pa.appointmentID = ?;
+            `
+
+            const value = [
+                appointmentID
+            ]
+
+            const [rows] = await connection.query(query, value)
+
+            // commits the transaction in deleting the booked appointment
+            const commitQuery = await connection.commit();
+            if (!commitQuery) {
+                console.error(`Failed to commit transaction in deleting booked appointment`)
+            }
+
+            return rows;
+        } catch (error) {
+            const rollbackQuery = await connection.rollback(); // rollback the transaction in deleting booked appointment
+            if (!rollbackQuery) {
+                console.error(`Error rolling back transaction in deleting the booked appointments: ${error}`)
+            }
+
+            console.error(`Error in deleting the booked appointment in model method: ${error}`)
+            throw error;
+        } finally {
+            connection.release();
+        }
+    }
+
+    // method for adding book appointment in clinic side
+    insertBookedAppointment = async (bookAppointment) => {
+        const connection = await conn.getConnection(); // retrieve the connection from the pool
+        try {
+            await connection.beginTransaction(); // starts a transaction in inserting booked appointment
+
+            if (!bookAppointment || typeof bookAppointment !== "object") {
+                throw new Error("Invalid book appointment data");
+            }
+
+            const {
+                firstName,
+                lastName,
+                address,
+                email,
+                phoneNumber,
+                appointmentDate,
+                appointmentTime,
+                gender,
+                purposeOfAppointment,
+                clinicID,
+                clinicName,
+                createdDate,
+                status
+            } = bookAppointment;
+
+            const first_name = String(firstName)
+            const last_name = String(lastName)
+            const patient_address = String(address)
+            const patient_email = String(email)
+            const phone_number = String(phoneNumber)
+            const appointment_date = String(appointmentDate)
+            const appointment_time = String(appointmentTime)
+            const sex = String(gender)
+            const purpose_of_appointment = String(purposeOfAppointment)
+            const clinic_id = Number(clinicID)
+            const clinic_name = String(clinicName)
+            const created_at = String(createdDate)
+            const book_appointment_status = String(status)
+
+            const fields = [
+                "firstName",
+                "lastName",
+                "address",
+                "email",
+                "phoneNumber",
+                "appointmentDate",
+                "appointmentTime",
+                "gender",
+                "purposeOfAppointment",
+                "clinic_id",
+                "clinic_name",
+                "created_at",
+                "status"
+            ]
+
+            const values = [
+                first_name,
+                last_name,
+                patient_address,
+                patient_email,
+                phone_number,
+                appointment_date,
+                appointment_time,
+                sex,
+                purpose_of_appointment,
+                clinic_id,
+                clinic_name,
+                created_at,
+                book_appointment_status
+            ]
+
+            const placeholders = fields.map(() => "?").join(", ");
+
+            const query = `
+                INSERT INTO clinic_appointments (
+                    ${fields.join(", ")}
+                ) VALUES (
+                    ${placeholders}
+                )
+            `
+
+            const [result] = await connection.query(query, values);
+
+            const commitQuery = await connection.commit(); // commit the transaction in inserting booked appointment
+            if (!commitQuery) {
+                throw new Error("Failed to commit transaction in inserting booked appointment");
+            }
+
+            return result;
+        } catch (error) {
+            const rollbackQuery = await connection.rollback(); // rollback the transaction in inserting booked appointment
+            if (!rollbackQuery) {
+                console.error(`Error rolling back transaction in inserting booked appointment: ${error}`);
+            }
+
+            console.error(`Error in inserting booked appointment in model method: ${error}`);
             throw error;
         } finally {
             connection.release();

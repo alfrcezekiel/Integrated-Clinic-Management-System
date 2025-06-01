@@ -1,11 +1,36 @@
-import { AppBar, Toolbar, Typography, IconButton, Breadcrumbs, InputBase, Menu, MenuItem, Avatar } from "@mui/material";
-import { Menu as MenuIcon, Notifications, Settings, CreditCard, Logout } from "@mui/icons-material";
+import {
+    AppBar,
+    Toolbar,
+    Typography,
+    IconButton,
+    Breadcrumbs,
+    InputBase,
+    Menu,
+    MenuItem,
+    Avatar
+} from "@mui/material";
+import {
+    Menu as MenuIcon,
+    Notifications,
+    Settings,
+    CreditCard,
+    Logout
+} from "@mui/icons-material";
 import { useMaterialUIController } from "../../context/useController";
-import { Link, useLocation, Outlet, useNavigate } from "react-router-dom";
-import { setOpenConfigurator, setOpenSideNav } from "../../context/materialUIController";
+import {
+    Link,
+    useLocation,
+    Outlet,
+    useNavigate
+} from "react-router-dom";
+import {
+    setOpenConfigurator,
+    setOpenSideNav
+} from "../../context/materialUIController";
 import { useState } from "react";
 import CMS from "../../API/CMS";
 import LogoutDialog from "../../components/loguoutConfirmation";
+import { useAuthorization } from "../../context/auth/useAuthorization";
 
 // this is the navbar component for the dashboard
 const DoctorsDashboardNavbar = () => {
@@ -13,31 +38,33 @@ const DoctorsDashboardNavbar = () => {
     const { fixedNavbar, openSideNav } = controller;
     const location = useLocation();
     const pathParts = location.pathname.substring(1).split("/").filter(Boolean);
-    const [layout = "/dashboard/home", page = "", path="/dashboard/home", name="Clinic Dashboard"] = pathParts;
+    const [layout = "/dashboard/home", page = "", path = "/dashboard/home", name = "Clinic Dashboard"] = pathParts;
     const [anchorEl, setAnchorEl] = useState(null);
     const [settingsAnchorEl, setSettingsAnchorEl] = useState(null);
     const handleMenuOpen = (e) => {
         setAnchorEl(e.currentTarget);
     }
     const [logoutDialog, setLogoutDialog] = useState(false);
-
+    const { token, logout } = useAuthorization();
     const navigate = useNavigate();
+
+    const tokenContext = token;
+    if(!tokenContext) {
+        console.error("No token found in context or localStorage");
+    }
 
     const handleLogoutConfirm = async () => {
         try {
             const response = await CMS.get("/CMS/doctors-dashboard/logout", {
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorage.getItem("authToken")}`
+                    "Authorization": `Bearer ${tokenContext}`
                 }
             });
             if (!response.data || !response.data.message) {
                 throw new Error("No response for logging out the doctors details");
             } else {
-                localStorage.removeItem("authToken");
-                localStorage.removeItem("sid")
-                localStorage.removeItem("sem");
-                localStorage.removeItem("scn");
+                logout();
                 navigate("/cms");
             }
         } catch (error) {

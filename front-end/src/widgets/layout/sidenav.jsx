@@ -46,7 +46,7 @@ const SideNav = ({ brandName, routes }) => {
             classes={{ paper: isMobile ? "bg-white w-72 shadow-md" : "w-72 bg-white shadow-md" }}
         >
             <div className="relative p-6">
-                <Link to={"/patients-dashboard/home"} className="text-black text-center">
+                <Link to={"/patients-dashboard/Home"} className="text-black text-center">
                     <Typography variant="h5" className="text-black">
                         {brandName}
                     </Typography>

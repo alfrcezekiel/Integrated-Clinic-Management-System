@@ -9,10 +9,12 @@ import {
     useMemo
 } from "react";
 import CMS from "../../../API/CMS";
+import { useAuthorization } from "../../../context/auth/useAuthorization";
 
 const LifeStyleInformationStepper = ({ patientFormData, handleChange, fieldErrors, setDynamicLifeStyleInformationFieldNames }) => {
     const [lifestyleInformationQuestions, setLifestyleInformationQuestions] = useState([]);
     const [loading, setLoading] = useState(true);
+    const { user, token } = useAuthorization();
 
     const lifeStyleInformationQuestionsMemo = useMemo(() => {
         const lifestyleInformationQuestionnaires = {
@@ -43,7 +45,14 @@ const LifeStyleInformationStepper = ({ patientFormData, handleChange, fieldError
     }, [])
 
     useEffect(() => {
-        const clinicID = localStorage.getItem("sid");
+        const clinicID = user?.sid;
+        const tokenContext = token;
+
+        if(!clinicID || !tokenContext) {
+            console.error("Clinic ID or token is not available in the context or local storage.");
+            setLoading(false);
+        }
+
         const retrievedLifestleInformationQuestionnaire = async () => {
             try {
                 if (!clinicID) {
@@ -53,7 +62,7 @@ const LifeStyleInformationStepper = ({ patientFormData, handleChange, fieldError
                 const response = await CMS.get(`CMS/clinic-dashboard/retrieveLifestyleInformationQuestionnaires/${clinicID}`, {
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${localStorage.getItem("authToken")}`
+                        "Authorization": `Bearer ${tokenContext}`
                     }
                 })
 
@@ -86,7 +95,7 @@ const LifeStyleInformationStepper = ({ patientFormData, handleChange, fieldError
         if (clinicID) {
             retrievedLifestleInformationQuestionnaire();
         }
-    }, []);
+    }, [token, user?.sid]);
 
     useEffect(() => {
         if (!loading && lifestyleInformationQuestions.length > 0) {

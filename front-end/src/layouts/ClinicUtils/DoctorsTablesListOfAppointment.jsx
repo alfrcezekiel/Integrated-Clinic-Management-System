@@ -35,6 +35,9 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import dayjs from "dayjs"
+import { useAuthorization } from "../../context/auth/useAuthorization";
+import DeleteIcon from "@mui/icons-material/Delete"
+import DeleteConfirmationDialog from "../../utils/DeleteConfirmation"
 
 const DoctorsTablesListOfAppointments = () => {
     const [appointmentsData, setAppointmentsData] = useState([])
@@ -61,7 +64,8 @@ const DoctorsTablesListOfAppointments = () => {
         "Gender",
         'Status',
         'Purpose of Appointment',
-        "Edit"
+        "Edit",
+        "Delete"
     ]
     // form data for updating the appointment details
     const [formData, setFormData] = useState({
@@ -78,6 +82,9 @@ const DoctorsTablesListOfAppointments = () => {
     });
     const [open, setOpen] = useState(false);
     const [successfullAppointmentModalOpen, setSuccessfullAppointmentModalOpen] = useState(false);
+    const [selectedBookedAppointment, setSelectedBookedAppointment] = useState(null);
+    const [openDeleteBookedAppointmentDialog, setOpenDeleteBookedAppointmentDialog] = useState(false);
+
     const handleClose = () => {
         setFieldsError({})
         setFormData({
@@ -95,6 +102,7 @@ const DoctorsTablesListOfAppointments = () => {
         setOpen(false);
     }
 
+    const { user, token } = useAuthorization();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -113,20 +121,26 @@ const DoctorsTablesListOfAppointments = () => {
         ...formData,
     }), [formData]);
 
+    // retriveve  the token from context or local storage
+    const tokenContext = useMemo(() => token || localStorage.getItem("authToken"), [token]);
+    if (!tokenContext) {
+        console.error("No token found in context or localStorage");
+    }
+
     useEffect(() => {
         const titleHeader = () => {
             document.title = "Clinic's Dashboard | Patient's Appointment | CMS"
         }
         titleHeader();
 
-        const clinicID = localStorage.getItem("sid")
+        const clinicID = user?.sid;
 
         const retrievedAppointmentsData = async () => {
             try {
                 const response = await CMS.get(`/CMS/doctors-dashboard/appointments/${clinicID}`, {
                     headers: {
-                        "Content-Type":"application/json",
-                        "Authorization": `Bearer ${localStorage.getItem("authToken")}`
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${tokenContext}`
                     }
                 });
 
@@ -136,13 +150,15 @@ const DoctorsTablesListOfAppointments = () => {
 
                 if (response.status === 200) {
                     setAppointmentsData(response.data.patientsAppointments);
+                } else {
+                    throw new Error(`Unexpected error in status ${response.status}`);
                 }
             } catch (error) {
                 console.error(`Code functionality error for fetching appointments data: ${error}`);
             }
         }
         retrievedAppointmentsData();
-    }, [location.pathname])
+    }, [location.pathname, tokenContext, user?.sid]);
 
     // this function is used to format the time to AM/PM
     const formatTimeToAMPM = (time) => {
@@ -235,16 +251,14 @@ const DoctorsTablesListOfAppointments = () => {
         try {
             const updatedData = {
                 ...memoizedFormDataValue,
-                appointmentDate: memoizedFormDataValue.status === "Approved"
-                    ? dayjs(memoizedFormDataValue.appointmentDate)
-                    : memoizedFormDataValue.appointmentDate,
+                appointmentDate: memoizedFormDataValue.status === "Approved" ? dayjs(memoizedFormDataValue.appointmentDate) : memoizedFormDataValue.appointmentDate,
                 preferredTime: memoizedFormDataValue.preferredTime ? memoizedFormDataValue.preferredTime : null
             };
 
             const response = await CMS.put(`/CMS/doctors-dashboard/updateAppointment/${memoizedFormDataValue.appointmentID}`, updatedData, {
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorage.getItem("authToken")}`
+                    "Authorization": `Bearer ${tokenContext}`
                 }
             });
 
@@ -281,6 +295,7 @@ const DoctorsTablesListOfAppointments = () => {
         setOpen(true);
     }
 
+    // function either of these selected status will redirect in respective route
     const handleCloseSuccessfullAppointmentModal = () => {
         setFieldsError({});
         setSuccessfullAppointmentModalOpen(false);
@@ -304,6 +319,8 @@ const DoctorsTablesListOfAppointments = () => {
                 return "text-black bg-red-200";
             case "Pending":
                 return "text-black bg-white";
+            case "Cancelled":
+                return "text-black bg-yellow-200";
             case "Consulted":
                 return "text-black bg-blue-200";
             default:
@@ -312,7 +329,42 @@ const DoctorsTablesListOfAppointments = () => {
     }
 
     const gender = ["Male", "Female"]
-    const status = ["Approved", "Declined", "Pending", "Consulted"];
+    const status = ["Approved", "Declined", "Pending", "Consulted", "Cancelled"];
+
+    // function to open the dialog to delete booked appointment
+    const deleteBookedAppointmentDialog = async (bookedAppointment) => {
+        setSelectedBookedAppointment(bookedAppointment)
+        setOpenDeleteBookedAppointmentDialog(true)
+    }
+
+    // function to closed the dialog of confirmed delete booked appointment
+    const closedBookedAppointmentDialog = async () => {
+        setSelectedBookedAppointment(null)
+        setOpenDeleteBookedAppointmentDialog(false)
+    }
+
+    // function to handles transaction in deleting the booked appointment
+    const handleConfirmedDeletedBookedAppointment = async () => {
+        try {
+            const response = await CMS.delete(`CMS/clinicDashboard/deleteBookedAppointment/${selectedBookedAppointment.appointmentID}`, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${tokenContext}`
+                }
+            })
+
+            if (response.status === 200) {
+                setAppointmentsData((prev) => (
+                    prev.filter((bookedAppointment) => bookedAppointment.appointmentID === selectedBookedAppointment.appointmentID ? selectedBookedAppointment : bookedAppointment)
+                ))
+                closedBookedAppointmentDialog()
+            } else {
+                throw new Error(`Unexpected error in deleting booked appointment: ${response.statusText}`)
+            }
+        } catch (error) {
+            console.error(`Codebase functionality error in deleting the confirmed booked appointment: ${error}`)
+        }
+    }
 
     return (
         <>
@@ -404,7 +456,12 @@ const DoctorsTablesListOfAppointments = () => {
                                             </TableCell>
                                             <TableCell align="center" className="border-b border-blue-gray-50 text-center">
                                                 <IconButton aria-label="edit" onClick={() => handleClickOpen(appointment)}>
-                                                    <EditIcon />
+                                                    <EditIcon color="primary" />
+                                                </IconButton>
+                                            </TableCell>
+                                            <TableCell align="center" className="border-b border-blue-gray-50 text-center">
+                                                <IconButton aria-label="delete" onClick={() => deleteBookedAppointmentDialog(appointment)}>
+                                                    <DeleteIcon color="error" />
                                                 </IconButton>
                                             </TableCell>
                                         </TableRow>
@@ -423,6 +480,7 @@ const DoctorsTablesListOfAppointments = () => {
                     </CardContent>
                 </Card>
             </div>
+            {/* Dialog box for modifying the booked appointment */}
             <Dialog open={open} onClose={handleClose}>
                 <DialogTitle>Modify Booked Appointment</DialogTitle>
                 <DialogContent>
@@ -621,6 +679,13 @@ const DoctorsTablesListOfAppointments = () => {
                     </DialogActions>
                 </div>
             </Dialog>
+            {/* component for deleting the booked appointment */}
+            <DeleteConfirmationDialog
+                open={openDeleteBookedAppointmentDialog}
+                users={selectedBookedAppointment}
+                onClose={closedBookedAppointmentDialog}
+                onConfirm={handleConfirmedDeletedBookedAppointment}
+            />
         </>
     )
 }

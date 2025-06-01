@@ -8,7 +8,7 @@ const storage = multer.diskStorage({
         if (!fs.existsSync(uploadPath)) {
             fs.mkdirSync(uploadPath, { recursive: true });
         }
-        cb(null, path.join(process.cwd()), uploadPath);
+        cb(null, uploadPath);
     },
     filename: (_req, file, cb) => {
         const dateSuffix = Date.now();

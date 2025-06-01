@@ -1,16 +1,30 @@
 import { useEffect, useState } from "react";
 import DoctorsDashboardNavbar from "../../../layouts/ClinicUtils/ClinicNavigationBar";
-import { Outlet, useLocation, Routes, Route } from "react-router-dom";
+import {
+    useLocation,
+    Routes,
+    Route
+} from "react-router-dom";
 import DoctorsSideNav from "../../../layouts/ClinicUtils/ClinicSideNavigation";
 import { doctorRoutes } from "../../../routes";
 import CMS from "../../../API/CMS";
 import { useNavigate } from "react-router-dom";
+import { useAuthorization } from "../../../context/auth/useAuthorization.jsx";
 
 const DoctorsDashboard = () => {
+    const { user, token } = useAuthorization();
     const location = useLocation();
-    const clinicName = localStorage.getItem("scn");
+    const clinicName = user?.scn || localStorage.getItem("scn");
     const navigate = useNavigate();
     const [userSession, setUserSession] = useState(null);
+    const tokenContext = token || localStorage.getItem("authToken");
+
+    useEffect(() => {
+        if (!tokenContext) {
+            console.error("No token found in context or localStorage");
+            navigate("/cms");
+        }
+    }, [tokenContext, navigate]);
 
     useEffect(() => {
         const doctorTitleHeader = () => {
@@ -25,7 +39,7 @@ const DoctorsDashboard = () => {
                     withCredentials: true,
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${localStorage.getItem("authToken")}`
+                        "Authorization": `Bearer ${tokenContext}`
                     },
                 });
 
@@ -43,8 +57,11 @@ const DoctorsDashboard = () => {
                 }
             }
         }
-        fetchUserSession();
-    }, [location.pathname, navigate]);
+        
+        if (tokenContext) {
+            fetchUserSession();
+        }
+    }, [location.pathname, navigate, tokenContext]);
 
     return (
         userSession && (
@@ -53,7 +70,6 @@ const DoctorsDashboard = () => {
                     <DoctorsSideNav routes={doctorRoutes} brandName={clinicName} />
                     <div className="p-4 flex-1 xl:ml-80">
                         <DoctorsDashboardNavbar />
-                        <Outlet />
                         <Routes>
                             {doctorRoutes.flatMap((layout) =>
                                 layout.pages.map((page) => (

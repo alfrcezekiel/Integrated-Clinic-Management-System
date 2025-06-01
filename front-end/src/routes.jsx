@@ -21,6 +21,7 @@ import ApprovedAppointmentClinicTable from "./layouts/ClinicUtils/ApprovedAppoin
 import DeclinedAppointmentStatusClinicTable from "./layouts/ClinicUtils/DeclinedAppointmentStatusClinicTable";
 import AppointmentHistoryTable from "./layouts/ClinicUtils/AppointmentHistoryTable";
 import ConsultPatientPage from "./layouts/ClinicUtils/ConsultationPage/ConsultPatientPage";
+import AddBookAppointment from "./layouts/ClinicUtils/AddBookedAppointment";
 
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import RegisterPatientsAccountTable from "./layouts/adminUtils/RegisterPatientsAccountTable";
@@ -52,32 +53,32 @@ const routes = [
                 id: 2,
                 icon: <ClinicIcon style={iconStyle} />,
                 name: "View Clinics",
-                path: "View-Clinics",
+                path: "ViewClinics",
                 element: <ClinicCard />
             },
             {
                 id: 3,
                 icon: <EventIcon style={iconStyle} />,
                 name: "Appointments",
-                path: "View-Appointment",
+                path: "ViewAppointment",
                 element: <PatientsTable />
             }, {
                 id: 4,
                 icon: <HourglassTopIcon style={iconStyle} />,
                 name: "Pending Appointments",
-                path: "Pending-Appointment",
+                path: "PendingAppointment",
                 element: <PendingAppointmentTable />
             }, {
                 id: 5,
                 icon: <CheckCircleIcon style={iconStyle} />,
                 name: "Approved Appointments",
-                path: "Approved-Appointment",
+                path: "ApprovedAppointment",
                 element: <ApprovedAppointmentsTable />
             }, {
                 id: 6,
                 icon: <CancelIcon style={iconStyle} />,
                 name: "Declined Appointments",
-                path: "Declined-Appointment",
+                path: "DeclinedAppointment",
                 element: <DeclinedAppointmentStatusTable />
             }
         ],
@@ -136,6 +137,13 @@ export const doctorRoutes = [
                 name: "Consult Patient",
                 path: "/ConsultPatient",
                 element: <ConsultPatientPage />
+            },
+            {
+                id: 8,
+                icon: <AddIcon style={iconStyle} />,
+                name: "Add Book Appointment",
+                path: "/AddBookAppointment",
+                element: <AddBookAppointment />
             }
         ]
     }

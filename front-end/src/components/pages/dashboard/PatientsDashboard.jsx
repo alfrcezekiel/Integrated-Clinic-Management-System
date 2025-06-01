@@ -8,16 +8,33 @@ import {
     useNavigate
 } from "react-router-dom";
 import CMS from "../../../API/CMS";
+import { useAuthorization } from "../../../context/auth/useAuthorization.jsx";
+
+import { useMemo } from "react";
 
 const PatientsDashboard = () => {
     const location = useLocation();
     const [userSession, setUserSession] = useState(null);
     const navigate = useNavigate();
 
-    
+    const { token } = useAuthorization();
+
+    const tokenContext = useMemo(() => token || localStorage.getItem("authToken"), [token]);
+
     useEffect(() => {
-        const navigateBackToHome = () => navigate("/cms");
-        const titleHead = () => document.title = "Patients Dashboard | CMS";
+        if (!tokenContext) {
+            console.error("No token found in context or localStorage");
+            navigate("/cms");
+        }
+    }, [tokenContext, navigate]);
+
+    useEffect(() => {
+        const navigateBackToHome = () => {
+            console.error("Unauthorized access, redirecting to home page");
+            navigate("/cms")
+        }
+
+        const titleHead = () => document.title = "Patient Dashboard | CMS";
         titleHead();
 
         const fetchUserSession = async () => {
@@ -26,7 +43,7 @@ const PatientsDashboard = () => {
                     withCredentials: true,
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${localStorage.getItem("authToken")}`
+                        "Authorization": `Bearer ${tokenContext}`,
                     },
                 });
 
@@ -37,7 +54,6 @@ const PatientsDashboard = () => {
                     console.error("Error fetching user session data");
                 }
             } catch (error) {
-                setUserSession(null);
                 console.error(`Code functionality error for fetching user session: ${error}`);
                 if (error.response && error.response.status === 401) {
                     navigateBackToHome();
@@ -45,14 +61,17 @@ const PatientsDashboard = () => {
                     console.error("Error fetching user session data:", error);
                 }
             }
+        };
+
+        if(tokenContext) {
+            fetchUserSession();
         }
-        fetchUserSession();
-    }, [location.pathname, navigate]);
+    }, [location.pathname, tokenContext, navigate]);
 
     return (
         <>
             {userSession ? (
-                <Dashboard/>
+                <Dashboard />
             ) : (
                 null
             )}

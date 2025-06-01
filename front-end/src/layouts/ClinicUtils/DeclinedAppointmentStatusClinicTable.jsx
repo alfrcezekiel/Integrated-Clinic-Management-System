@@ -13,6 +13,7 @@ import {
 } from "@mui/material"
 import { useState } from "react"
 import CMS from "../../API/CMS"
+import { useAuthorization } from "../../context/auth/useAuthorization"
 
 const DeclinedAppointmentStatusClinicTable = () => {
     const [appointmentsData, setAppointmentsData] = useState([])
@@ -28,7 +29,18 @@ const DeclinedAppointmentStatusClinicTable = () => {
         'Status',
         'Purpose of Appointment',
     ]
+    const { user, token } = useAuthorization();
+
     const location = useLocation();
+    const clinicID = user?.sid
+    const tokenContext = token;
+
+    if (!tokenContext) {
+        console.error("No token found in context or localStorage");
+    }
+    if (!clinicID) {
+        console.error("No clinic ID found in context or localStorage");
+    }
 
     useEffect(() => {
         const titleHeader = () => {
@@ -36,14 +48,12 @@ const DeclinedAppointmentStatusClinicTable = () => {
         }
         titleHeader();
 
-        const clinicID = localStorage.getItem("sid")
-
         const retrieveAppoinmentDeclinedStatus = async () => {
             try {
                 const response = await CMS.get(`/CMS/doctors-dashboard/getPatientDeclinedStatus/${clinicID}`, {
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
+                        "Authorization": `Bearer ${tokenContext}}`,
                     }
                 });
 
@@ -59,7 +69,7 @@ const DeclinedAppointmentStatusClinicTable = () => {
             }
         }
         retrieveAppoinmentDeclinedStatus();
-    }, [location.pathname])
+    }, [location.pathname, clinicID, tokenContext]);
 
     // function to format to MM/DD/YYYY to display in the table
     const dateFormat = (dateString) => {
