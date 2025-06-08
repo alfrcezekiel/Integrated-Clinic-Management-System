@@ -3,22 +3,18 @@ import {body, validationResult} from "express-validator"
 
 // validation for contact us
 const validateContacts = [
-    body("contactFirstName")
-        .trim()
+    body("contactName")
         .notEmpty()
         .withMessage("This field is required"),
     body("contactEmailAddress")
-        .trim()
-        .isEmail()
-        .withMessage("Invalid Email Format")
         .notEmpty()
-        .withMessage("This field is required"),
+        .withMessage("This field is required")
+        .isEmail()
+        .withMessage("Invalid email address"),
     body("contactSubject")
-        .trim()
         .notEmpty()
         .withMessage("This field is required"),
     body("contactMessage")
-        .trim()
         .notEmpty()
         .withMessage("This field is required"),
     (req, res, next) => {

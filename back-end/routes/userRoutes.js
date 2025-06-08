@@ -47,7 +47,12 @@ import {
     retrieveOralHygieneQuestionnaires,
     cancelBookedAppointment,
     deleteBookedAppointment,
-    addBookAppointmentInClinic
+    addBookAppointmentInClinic,
+    retrieveAllBookedAppointmentsOfClinic,
+    calculateTotalBookedAppointmentsOfClinic,
+    calculatePendingBookedAppointments,
+    confirmTokenVerification,
+    calculateApprovedBookedAppointments
 } from "../controllers/cms.js";
 import validateRegister from "../middleware/validation.js";
 import patientsLoginValidation from "../middleware/patientsLoginValidation.js";
@@ -64,6 +69,7 @@ import upload from "../middleware/fileImage/clinicImage.js";
 import validatePaymentFields from "../middleware/PaymentValidation/PaymentFieldValidation.js";
 import validateQuestionnaires from "../middleware/ValidateQuestionnaires.js";
 import validateBookAppointmentInClinic from "../middleware/ValidateBookAppointmentInClinic.js";
+import validatePatientRegisteredAccount from "../middleware/ValidateRegisteredAccount/validate.patientregisteredaccount.js";
 
 const router = express.Router();
 
@@ -160,7 +166,7 @@ router.get("/doctors-dashboard/getPatientDeclinedStatus/:clinicID", verifyToken,
 router.get("/admin-dashboard/registeredPatientAccount", verifyToken, getRegisteredPatientsAccountInAdmin);
 
 // router for updating the patient registered account in admin dashboard
-router.put("/admin-dashboard/updateRegisteredPatientAccount/:patientID", updateRegisteredPatientsAccountInAdmin);
+router.put("/admin-dashboard/updateRegisteredPatientAccount/:patientID", [validatePatientRegisteredAccount], updateRegisteredPatientsAccountInAdmin);
 
 // router for inserting the patients consultation in the clinic dashboard then update the status in appointment table
 router.post("/clinic-dashboard/consultPatient", consultPatientInClinicDashboard);
@@ -212,5 +218,20 @@ router.delete("/clinicDashboard/deleteBookedAppointment/:appointmentID", deleteB
 
 // router for adding a book appointment in the clinic side
 router.post("/clinicDashboard/addBookedAppointment", [validateBookAppointmentInClinic], addBookAppointmentInClinic);
+
+// router for retrieving all booked appointments of clinic side
+router.get("/clinicDashboard/clinicBookedAppointments/:clinicID", verifyToken, retrieveAllBookedAppointmentsOfClinic);
+
+// router for calculating the total booked appointments of specific clinic side
+router.get("/clinicDashboard/calculateTotalBookedAppointments", verifyToken, calculateTotalBookedAppointmentsOfClinic);
+
+// router for calculating the pending booked appointments of specific clinic side
+router.get("/clinicDashboard/calculatePendingBookedAppointments", verifyToken, calculatePendingBookedAppointments);
+
+// router for confirming the token verification
+router.get("/confirmVerificationToken", verifyToken, confirmTokenVerification);
+
+// router for calculating the approved booked appointments of specific clinic 
+router.get("/clinicDashboard/calculateTotalNumberOfApprovedBookedAppointments", verifyToken, calculateApprovedBookedAppointments);
 
 export default router;

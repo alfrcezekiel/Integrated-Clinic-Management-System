@@ -56,6 +56,16 @@ const RegisterPatientsAccountTable = () => {
     const [openModal, setOpenModal] = useState(false);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const navigate = useNavigate();
+    const [fieldErrors, setFieldErrors] = useState({
+        firstName: "",
+        lastName: "",
+        email: "",
+        address: "",
+        civilStatus: "",
+        dateOfBirth: null,
+        phoneNumber: "",
+        status: ""
+    });
 
     const navigateToPatientsRegisterAccounts =  async () => {
         retrievedPatientsAccountData()
@@ -72,6 +82,7 @@ const RegisterPatientsAccountTable = () => {
     const handleCloseModal = useCallback(() => {
         setSelectedPatient(null);
         setOpenModal(false);
+        setFieldErrors({})
         retrievedPatientsAccountData();
     }, [])
 
@@ -88,26 +99,55 @@ const RegisterPatientsAccountTable = () => {
         setOpenDeleteDialog(true);
     }
     
-    const handleChange = useCallback(async (e, field) => {
+    const handleChange = useCallback((e) => {
+        const { name, value } = e.target;
         if (e && e.target) {
-            const { name, value } = e.target;
             setSelectedPatient((prev) => ({
                 ...prev,
                 [name]: value
             }));
-        } else if (field) {
+        } 
+
+        if(fieldErrors[name]){
+            setFieldErrors((prev) => ({
+                ...prev,
+                [name]: ""
+            }))
+        }
+    }, [fieldErrors])
+
+    // function to handle the change of date of birth
+    const dateOfBirthChange = useCallback((dob) => {
+        const selectedDateOfBirth = dayjs(dob).format("YYYY-MM-DD");
+        if(dob){
             setSelectedPatient((prev) => ({
                 ...prev,
-                [field]: dayjs(e)
+                dateOfBirth: dayjs(selectedDateOfBirth)
+            }));
+        } else {
+            setSelectedPatient((prev) => ({
+                ...prev,
+                dateOfBirth: null
             }));
         }
-    }, [])
 
+        if(fieldErrors.dateOfBirth){
+            setFieldErrors((prev) => ({
+                ...prev,
+                dateOfBirth: ""
+            }))
+        }
+    }, [fieldErrors.dateOfBirth])
 
     // function to update the patient registered accounts
-    const handleUpdate = useCallback(async () => {
+    const handleUpdate = useCallback(async (e) => {
         try {
-            const response = await CMS.put(`/CMS/admin-dashboard/updateRegisteredPatientAccount/${selectedPatient.patientID}`, selectedPatient, {
+            e.preventDefault();
+
+            const response = await CMS.put(`/CMS/admin-dashboard/updateRegisteredPatientAccount/${selectedPatient.patientID}`, {
+                ...selectedPatient,
+                dateOfBirth: selectedPatient.dateOfBirth ? dayjs(selectedPatient.dateOfBirth).format("YYYY-MM-DD") : null
+            }, {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization":`Bearer ${localStorage.getItem("authToken")}`
@@ -124,6 +164,13 @@ const RegisterPatientsAccountTable = () => {
                 console.error(`Failed to update patient account: ${response.status}`);
             }
         } catch (error) {
+            if(error.response && error.response.status === 400){
+                const errors = error.response.data.errors;
+                setFieldErrors((prev) => ({
+                    ...prev,
+                    ...errors
+                }))
+            }
             console.error("Error updating patient account:", error);
         }
     }, [selectedPatient, handleCloseModal]);
@@ -230,139 +277,160 @@ const RegisterPatientsAccountTable = () => {
                 <DialogTitle className="text-center text-black">
                     Modify Patient Details Account
                 </DialogTitle>
-                <DialogContent className="flex flex-col gap-4">
-                    {selectedPatient && (
-                        <>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                                <TextField
-                                    margin="dense"
-                                    name="firstName"
-                                    label="First Name"
-                                    autoComplete="off"
-                                    placeholder="Enter your first name"
-                                    value={selectedPatient.firstName}
-                                    onChange={handleChange}
-                                    fullWidth
-                                />
-                                <TextField
-                                    margin="dense"
-                                    name="lastName"
-                                    placeholder="Enter your last name"
-                                    label="Last Name"
-                                    autoComplete="off"
-                                    value={selectedPatient.lastName}
-                                    onChange={handleChange}
-                                    fullWidth
-                                />
-                                <TextField
-                                    margin="dense"
-                                    name="email"
-                                    placeholder="Enter you email"
-                                    label="Email"
-                                    autoComplete="off"
-                                    value={selectedPatient.email}
-                                    onChange={handleChange}
-                                    fullWidth
-                                />
-                                <TextField
-                                    name="address"
-                                    margin="dense"
-                                    autoComplete="off"
-                                    placeholder="Enter your address"
-                                    label="Address"
-                                    value={selectedPatient.address}
-                                    onChange={handleChange}
-                                    fullWidth
-                                />
-                                <TextField
-                                    name="civilStatus"
-                                    label="Select Civil Status"
-                                    autoComplete="off"
-                                    placeholder="Select Civil Status"
-                                    margin="dense"
-                                    value={selectedPatient.civilStatus}
-                                    onChange={handleChange}
-                                    fullWidth
-                                    select
-                                >
-                                    {civilStatus.map((status, i) => (
-                                        <MenuItem
-                                            key={i}
-                                            value={status}
-                                        >
-                                            {status}
-                                        </MenuItem>
-                                    ))}
-                                </TextField>
-                                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                    <DemoContainer components={['DatePicker']}>
-                                        <DatePicker
-                                            className="w-full"
-                                            margin="dense"
-                                            id="date-of-birth"
-                                            name="dateOfBirth"
-                                            value={selectedPatient.dateOfBirth ? dayjs(selectedPatient.dateOfBirth) : ""}
-                                            onChange={() => handleChange(selectedPatient.dateOfBirth, "dateOfBirth")}
-                                            label="Date of Birth"
-                                            slotProps={{
-                                                textField: {
-                                                    variant: "outlined",
-                                                    placeholder: "Enter your date of birth",
-                                                    fullWidth: true,
-                                                    autoComplete: "off"
-                                                },
-                                            }}
-                                        />
-                                    </DemoContainer>
-                                </LocalizationProvider>
-                                <TextField
-                                    name="phoneNumber"
-                                    label="Phone Number"
-                                    placeholder="Enter your phone number"
-                                    margin="dense"
-                                    value={selectedPatient.phoneNumber}
-                                    autoComplete="off"
-                                    onChange={handleChange}
-                                    fullWidth
-                                />
-                                <TextField
-                                    name="status"
-                                    label="Select Status"
-                                    autoComplete="off"
-                                    margin="dense"
-                                    placeholder="Select status"
-                                    value={selectedPatient.status}
-                                    onChange={handleChange}
-                                    fullWidth
-                                    select
-                                >
-                                    {status.map((status, i) => (
-                                        <MenuItem
-                                            key={i}
-                                            value={status}
-                                        >
-                                            {status}
-                                        </MenuItem>
-                                    ))}
-                                </TextField>
-                            </div>
-                        </>
-                    )}
-                </DialogContent>
-                <DialogActions>
-                    <Button
-                        onClick={handleCloseModal}
-                        variant="outlined"
-                    >
-                        Cancel
-                    </Button>
-                    <Button
-                        onClick={handleUpdate}
-                        variant="contained"
-                    >
-                        Modify Patient Account
-                    </Button>
-                </DialogActions>
+                <form onSubmit={handleUpdate} id="updatePatientForm">
+                    <DialogContent className="flex flex-col gap-4">
+                        {selectedPatient && (
+                            <>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                                    <TextField
+                                        margin="dense"
+                                        name="firstName"
+                                        label="First Name"
+                                        autoComplete="off"
+                                        placeholder="Enter your first name"
+                                        value={selectedPatient.firstName}
+                                        onChange={handleChange}
+                                        error={!!fieldErrors.firstName}
+                                        helperText={fieldErrors.firstName || ""}
+                                        fullWidth
+                                    />
+                                    <TextField
+                                        margin="dense"
+                                        name="lastName"
+                                        placeholder="Enter your last name"
+                                        label="Last Name"
+                                        autoComplete="off"
+                                        value={selectedPatient.lastName}
+                                        onChange={handleChange}
+                                        error={!!fieldErrors.lastName}
+                                        helperText={fieldErrors.lastName || ""}
+                                        fullWidth
+                                    />
+                                    <TextField
+                                        margin="dense"
+                                        name="email"
+                                        placeholder="Enter you email"
+                                        label="Email"
+                                        autoComplete="off"
+                                        value={selectedPatient.email}
+                                        error={!!fieldErrors.email}
+                                        helperText={fieldErrors.email || ""}
+                                        onChange={handleChange}
+                                        fullWidth
+                                    />
+                                    <TextField
+                                        name="address"
+                                        margin="dense"
+                                        autoComplete="off"
+                                        placeholder="Enter your address"
+                                        label="Address"
+                                        error={!!fieldErrors.address}
+                                        helperText={fieldErrors.address || ""}
+                                        value={selectedPatient.address}
+                                        onChange={handleChange}
+                                        fullWidth
+                                    />
+                                    <TextField
+                                        name="civilStatus"
+                                        label="Select Civil Status"
+                                        autoComplete="off"
+                                        error={!!fieldErrors.civilStatus}
+                                        helperText={fieldErrors.civilStatus || ""}
+                                        placeholder="Select Civil Status"
+                                        margin="dense"
+                                        value={selectedPatient.civilStatus}
+                                        onChange={handleChange}
+                                        fullWidth
+                                        select
+                                    >
+                                        {civilStatus.map((status, i) => (
+                                            <MenuItem
+                                                key={i}
+                                                value={status}
+                                            >
+                                                {status}
+                                            </MenuItem>
+                                        ))}
+                                    </TextField>
+                                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                        <DemoContainer components={['DatePicker']}>
+                                            <DatePicker
+                                                className="w-full"
+                                                margin="dense"
+                                                id="date-of-birth"
+                                                name="dateOfBirth"
+                                                value={selectedPatient.dateOfBirth ? dayjs(selectedPatient.dateOfBirth) : null}
+                                                onChange={dateOfBirthChange}
+                                                label="Date of Birth"
+                                                slotProps={{
+                                                    textField: {
+                                                        error: !!fieldErrors.dateOfBirth,
+                                                        helperText: fieldErrors.dateOfBirth || "",
+                                                        name: "dateOfBirth",
+                                                        variant: "outlined",
+                                                        placeholder: "Enter your date of birth",
+                                                        fullWidth: true,
+                                                        autoComplete: "off"
+                                                    },
+                                                }}
+                                            />
+                                        </DemoContainer>
+                                    </LocalizationProvider>
+                                    <TextField
+                                        name="phoneNumber"
+                                        label="Phone Number"
+                                        placeholder="Enter your phone number"
+                                        margin="dense"
+                                        error={!!fieldErrors.phoneNumber}
+                                        helperText={fieldErrors.phoneNumber || ""}
+                                        value={selectedPatient.phoneNumber}
+                                        autoComplete="off"
+                                        onChange={handleChange}
+                                        fullWidth
+                                    />
+                                    <TextField
+                                        name="status"
+                                        label="Select Status"
+                                        autoComplete="off"
+                                        margin="dense"
+                                        placeholder="Select status"
+                                        value={selectedPatient.status}
+                                        error={!!fieldErrors.status}
+                                        helperText={fieldErrors.status || ""}
+                                        onChange={handleChange}
+                                        fullWidth
+                                        select
+                                    >
+                                        {status.map((status, i) => (
+                                            <MenuItem
+                                                key={i}
+                                                value={status}
+                                            >
+                                                {status}
+                                            </MenuItem>
+                                        ))}
+                                    </TextField>
+                                </div>
+                            </>
+                        )}
+                    </DialogContent>
+                    <DialogActions>
+                        <Button
+                            type="button"
+                            onClick={handleCloseModal}
+                            variant="outlined"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleUpdate}
+                            variant="contained"
+                            type="submit"
+                        >
+                            Modify Patient Account
+                        </Button>
+                    </DialogActions>
+                </form>
             </Dialog>
             
             {/* Component to open the dialog box of deleting the patient registerd account */}

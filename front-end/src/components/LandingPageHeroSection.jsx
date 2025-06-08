@@ -30,7 +30,7 @@ const LandingPageHeroSection = () => {
     return (
         <section
             id="hero"
-            className="rounded-2xl bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 text-white py-20 h-[100vh] transition-all duration-700 ease-in-out transform"
+            className="rounded-2xl bg-gradient-to-br from-purple-700 via-purple-500 to-purple-700 text-white py-20 h-[100vh] transition-all duration-700 ease-in-out transform"
         >
             <div className="container mx-auto px-6 md:px-12 h-full flex items-center justify-center">
                 <div className="flex flex-col-reverse md:flex-row items-center justify-between gap-8 w-full">
@@ -43,10 +43,10 @@ const LandingPageHeroSection = () => {
                             {teethTagline}
                         </p>
                         <Link
-                            to="/patients-portal"
-                            className="inline-block border border-white text-white px-6 py-3 rounded-md hover:bg-white hover:text-purple-700 transition-colors duration-500 ease-in-out"
+                            to="/PatientRegistration"
+                            className="inline-block bg-blue-200 border-white text-black px-6 py-3 rounded-md hover:bg-blue-100 hover:text-purple-700 transition-colors duration-500 ease-in-out"
                         >
-                            Request Appointment
+                            Schedule An Appointment
                         </Link>
                     </div>
 

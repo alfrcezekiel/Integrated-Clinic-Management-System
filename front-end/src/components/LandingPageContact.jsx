@@ -42,8 +42,8 @@ const LandingPageContact = () => {
     }, [])
 
     const handleContactMessage = async (e) => {
+        e.preventDefault();
         try {
-            e.preventDefault();
                 
             const response = await CMS.post("/CMS/contactUs", contactFormData, {
                 headers: {
@@ -117,22 +117,22 @@ const LandingPageContact = () => {
                             </div>
                         </div>
                         <div className="col-lg-6">
-                            <form onSubmit={handleContactMessage} method="post" className="php-email-form" data-aos="fade-up" data-aos-delay="200">
+                            <form onSubmit={handleContactMessage} className="php-email-form" data-aos="fade-up" data-aos-delay="200">
                                 <div className="row gy-4">
                                     <div className="col-md-6">
-                                        <input type="text" id="name" className="form-control" placeholder="Your Name" value={contactFormData.contactName} onChange={(e) => setContactFormData({...contactFormData, contactName: e.target.value})}/>
+                                        <input name="contactName"type="text" id="name" className="form-control" placeholder="Your Name" value={contactFormData.contactName} onChange={(e) => setContactFormData({...contactFormData, contactName: e.target.value})}/>
                                         {fieldErrors.contactName && <p className="text-red-500">{fieldErrors.contactName}</p>}
                                     </div>
                                     <div className="col-md-6 ">
-                                        <input type="text" className="form-control" id="email" placeholder="Your Email" value={contactFormData.contactEmailAddress} onChange={(e) => setContactFormData({...contactFormData, contactEmailAddress: e.target.value})}/>
+                                        <input name="contactEmailAddress" type="text" className="form-control" id="email" placeholder="Your Email" value={contactFormData.contactEmailAddress} onChange={(e) => setContactFormData({...contactFormData, contactEmailAddress: e.target.value})}/>
                                         {fieldErrors.contactEmail && <p className="text-red-500">{fieldErrors.contactEmail}</p>}
                                     </div>
                                     <div className="col-12">
-                                        <input type="text" className="form-control" id="subject"  placeholder="Subject" value={contactFormData.contactSubject} onChange={(e) => setContactFormData({...contactFormData, contactSubject: e.target.value})}/>
+                                        <input name="contactSubject" type="text" className="form-control" id="subject"  placeholder="Subject" value={contactFormData.contactSubject} onChange={(e) => setContactFormData({...contactFormData, contactSubject: e.target.value})}/>
                                         {fieldErrors.contactSubject && <p className="text-red-500">{fieldErrors.contactSubject}</p>}
                                     </div>
                                     <div className="col-12">
-                                        <textarea className="form-control" id="message" rows="6" placeholder="Message" value={contactFormData.contactMessage} onChange={(e) => setContactFormData({...contactFormData, contactMessage: e.target.value})}></textarea>
+                                        <textarea name="contactMessage" className="form-control" id="message" rows="6" placeholder="Message" value={contactFormData.contactMessage} onChange={(e) => setContactFormData({...contactFormData, contactMessage: e.target.value})}></textarea>
                                         {fieldErrors.contactMessage && <p className="text-red-500">{fieldErrors.contactMessage}</p>}
                                     </div>
                                     <div className="col-12 text-center">

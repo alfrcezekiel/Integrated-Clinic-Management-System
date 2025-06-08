@@ -22,6 +22,8 @@ import DeclinedAppointmentStatusClinicTable from "./layouts/ClinicUtils/Declined
 import AppointmentHistoryTable from "./layouts/ClinicUtils/AppointmentHistoryTable";
 import ConsultPatientPage from "./layouts/ClinicUtils/ConsultationPage/ConsultPatientPage";
 import AddBookAppointment from "./layouts/ClinicUtils/AddBookedAppointment";
+import ClinicAppointments from "./layouts/ClinicUtils/ClinicBookedAppointmentTables/ClinicAppointments";
+import PendingBookedAppointment from "./layouts/ClinicUtils/ClinicBookedAppointmentTables/PendingBookedAppointment";
 
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import RegisterPatientsAccountTable from "./layouts/adminUtils/RegisterPatientsAccountTable";
@@ -35,7 +37,7 @@ import ViewClinicDetails from "./layouts/adminUtils/ViewClinicDetails";
 
 const iconStyle = {
     fontSize: 20,
-    color: "inherit",
+    color: "black",
 };
 
 const routes = [
@@ -144,6 +146,21 @@ export const doctorRoutes = [
                 name: "Add Book Appointment",
                 path: "/AddBookAppointment",
                 element: <AddBookAppointment />
+            },{
+                id: 9,
+                icon: <EventIcon style={iconStyle} />,
+                name: "Clinic Book Appointment",
+                path: "/ClinicViewBookedAppointment",
+                subgroup: "Appointments",
+                element: <ClinicAppointments />
+            },
+            {
+                id: 10,
+                icon: <HourglassTopIcon style={iconStyle} />,
+                name: "Clinic Pending Booked Appointment",
+                subgroup: "Pending Booked Appointment",
+                path: "/PendingBookedAppointment",
+                element: <PendingBookedAppointment />
             }
         ]
     }

@@ -7,6 +7,7 @@ import bcrypt from "bcrypt";
 import dayjs from "dayjs";
 import Clinic from '../models/Clinic.Model.js';
 import validatePatientConsultation from '../middleware/ValidatePatientConsulation.js';
+import logger from "../config/winston.js";
 dotenv.config();
 
 // controller logic for a global route
@@ -115,7 +116,12 @@ export const registerPatientAccount = async (req, res) => {
 // controller logic for contact message in landing page
 export const contactMessageManagement = async (req, res) => {
     try {
-        const { contactName, contactEmailAddress, contactSubject, contactMessage } = req.body;
+        const {
+            contactName,
+            contactEmailAddress,
+            contactSubject,
+            contactMessage
+        } = req.body;
 
         const query = `INSERT INTO contactmanagement (
             contactName,
@@ -360,6 +366,7 @@ export const requireLogin = (req, res, next) => {
     try {
         // Check if the user is authenticated
         if (req.session.user) {
+            console.log(`Authorization Accepted. Verified Session`)
             return next();
         }
 
@@ -389,14 +396,14 @@ export const requireLogin = (req, res, next) => {
 
         const decoded = jwt.verify(token, SECRET_KEY);
 
-        req.user = decoded;
-        req.session.user = {
-            patientID: decoded.patientID,
-            sfn: decoded.firstName,
-            sln: decoded.lastName,
-            sem: decoded.email,
-            sprefix: decoded.prefix// Default prefix if not provided
-        }
+        req.session.user = decoded;
+        // req.session.user = {
+        //     patientID: decoded.patientID,
+        //     sfn: decoded.firstName,
+        //     sln: decoded.lastName,
+        //     sem: decoded.email,
+        //     sprefix: decoded.prefix// Default prefix if not provided
+        // }
 
         next();
     } catch (error) {
@@ -511,6 +518,28 @@ export const patientsBookedAppointments = async (req, res) => {
         const clinic_id = parseInt(clinicID, 10);
         const appointmentDateFormat = dayjs(appointmentDate).format("YYYY-MM-DD");
         const status = String("Pending");
+        const appointment_time = String(preferredTime)
+
+        // Convert to 24-hour format before inserting into DB
+        const normalizeTime = (timeStr) => {
+            if (!timeStr || typeof timeStr !== "string") {
+                throw new Error("Invalid time format");
+            }
+
+            const timeParts = timeStr.trim().match(/^(\d{1,2}):(\d{2})\s?(AM|PM)$/i);
+            if (!timeParts) {
+                throw new Error("Invalid time format");
+            }
+
+            let hours = parseInt(timeParts[1], 10);
+            let minutes = parseInt(timeParts[2], 10);
+            const modifier = timeParts[3].toUpperCase();
+
+            if (modifier === "PM" && hours !== 12) hours += 12;
+            if (modifier === "AM" && hours === 12) hours = 0;
+
+            return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:00`;
+        };
 
         const query = `INSERT INTO patientsappointment (
             patientID,
@@ -536,7 +565,7 @@ export const patientsBookedAppointments = async (req, res) => {
             phoneNumber,
             gender,
             status,
-            preferredTime,
+            normalizeTime(appointment_time),
             purposeOfAppointment,
             clinic_id,
             createdAt
@@ -587,6 +616,27 @@ export const patientsBookedAppointments = async (req, res) => {
     }
 }
 
+// controller logic to confirm the verification of token
+export const confirmTokenVerification = (req, res) => {
+    try {
+        if (!req.user) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                message: "Access Denied! Invalid token"
+            })
+        }
+
+        return res.status(StatusCodes.OK).json({
+            message: "Authorization Accepted and token verified successfully",
+            user: req.user
+        })
+    } catch (jwtError) {
+        console.error(`Failed to verify a token in controller: ${jwtError}`)
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to verify a token"
+        })
+    }
+}
+
 // verify a token to protect routes
 export const verifyToken = (req, res, next) => {
     try {
@@ -612,20 +662,22 @@ export const verifyToken = (req, res, next) => {
             });
         }
 
-        try {
-            const decoded = jwt.verify(token, SECRET_KEY);
-            req.user = decoded;
-            next();
-        } catch (jwtError) {
-            console.error(`Invalid or Expired token in verify token controller : ${jwtError}`);
-            return res.status(StatusCodes.UNAUTHORIZED).json({
-                message: "Invalid or Expired token"
-            });
-        }
+        // try {
+        const decoded = jwt.verify(token, SECRET_KEY);
+        req.user = decoded;
+        logger.info(`Authorization Accepted. Verified token: ${decoded.id}`);
+        next();
+
+        // } catch (jwtError) {
+        //     console.error(`Invalid or Expired token in verify token controller : ${jwtError}`);
+        //     return res.status(StatusCodes.UNAUTHORIZED).json({
+        //         message: "Invalid or Expired token"
+        //     });
+        // }
     } catch (error) {
         console.error(`Error in verifyToken middleware: ${error}`);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            message: "Internal server error"
+            message: "Error in verifying token"
         });
     }
 }
@@ -1280,7 +1332,8 @@ export const loggedInClinicAccount = async (req, res) => {
 
         const token = jwt.sign({
             id: clinicUsers.clinic_id,
-            email: clinicUsers.email
+            email: clinicUsers.email,
+            cn: clinicUsers.clinic_name
         }, SECRET_KEY);
 
         const sid = req.session.user = {
@@ -1622,7 +1675,7 @@ export const updateRegisteredPatientsAccountInAdmin = async (req, res) => {
         const email_address = String(email);
         const patient_address = String(address);
         const civil_status = String(civilStatus);
-        const date_of_birth = String(dateOfBirth);
+        const date_of_birth = dayjs(dateOfBirth).format("YYYY-MM-DD");
         const phone_number = String(phoneNumber);
         const patient_status = String(status);
 
@@ -1642,14 +1695,13 @@ export const updateRegisteredPatientsAccountInAdmin = async (req, res) => {
             WHERE p1.patientID = ?;
         `
 
-        const formattedDate = new Date(date_of_birth).toISOString().split('T')[0];
         const values = [
             first_name,
             last_name,
             email_address,
             patient_address,
             civil_status,
-            formattedDate,
+            date_of_birth,
             phone_number,
             patient_status,
             patientID
@@ -2513,7 +2565,7 @@ export const addBookAppointmentInClinic = async (req, res) => {
             phoneNumber: phone_number,
             appointmentDate: appointment_date,
             appointmentTime: appointment_time,
-            gender: sex,    
+            gender: sex,
             purposeOfAppointment: purpose_of_appointment,
             clinicID: clinic_id,
             clinicName: clinic_name,
@@ -2536,5 +2588,164 @@ export const addBookAppointmentInClinic = async (req, res) => {
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             message: "Failed to add book appointment"
         })
+    }
+}
+
+// controller logic for retrieving the clinic all appointments 
+export const retrieveAllBookedAppointmentsOfClinic = async (req, res) => {
+    try {
+        const { clinicID } = req.params;
+
+        if (!clinicID) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid clinic id format"
+            })
+        }
+
+        const clinic_id = parseInt(clinicID, 10)
+        if (isNaN(clinic_id)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Clinic ID is not a number format"
+            })
+        }
+
+        const booked_appointments = await new Clinic().retrieveBookedAppointmentOfClinicAppointments(clinic_id);
+
+        if (!booked_appointments || booked_appointments.length === 0) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No booked appointments found for this clinic"
+            })
+        }
+
+        return res.status(StatusCodes.OK).json({
+            bookedAppointments: booked_appointments
+        })
+    } catch (error) {
+        console.error(`Failed to retrieve clinic booked appointments in controller: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to retrieve clinic book appointments"
+        });
+    }
+}
+
+// controller loic for calculating the total number of all booked appointments in clinic side stats
+export const calculateTotalBookedAppointmentsOfClinic = async (req, res) => {
+    try {
+        // param of clinicID in route
+        const { clinicID } = req.query;
+
+        if (!clinicID || typeof clinicID !== "string") {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Please enter a valid clinic ID"
+            });
+        };
+
+        // convert the clinic id to an integer
+        const clinic_id = parseInt(clinicID, 10);
+
+        if (isNaN(clinic_id)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid clinic ID is not a number"
+            });
+        }
+
+        // instance of clinic model with a method to calculate the total number of booked appointments
+        const total_booked_appointments = await new Clinic().calculateTotalNumberOfBookedAppointemnts(clinic_id);
+        if (total_booked_appointments.length === 0) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No booked appointments found for this clinic"
+            });
+        }
+
+        return res.status(StatusCodes.OK).json({
+            totalBookedAppointments: total_booked_appointments[0].total_all_booked_appointments
+        });
+    } catch (error) {
+        console.error(`Failed to calculate total booked appointments in clinic in controller: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to calculate total booked appointments"
+        });
+    }
+}
+
+// controller logic for calculating the total number of pending booked appointments in specific clinic
+export const calculatePendingBookedAppointments = async (req, res) => {
+    try {
+        const { clinicID } = req.query;
+
+        //  check if clinicID is provided and is a string
+        if (!clinicID || typeof clinicID !== "string") {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Please enter a valid clinic ID"
+            });
+        }
+
+        // convert te clinic id to number
+        const clinic_id = parseInt(clinicID, 10);
+        if (isNaN(clinic_id)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid clinic ID is not a number"
+            });
+        }
+
+        const booked_appointment_status = String("Pending");
+
+        // instance of clinic model with a method to calculate the pending booked appointments
+        const pending_booked_appointments_result = await new Clinic().calculateTotalNumberOfPendingBookedAppointments(clinic_id, booked_appointment_status);
+        if (pending_booked_appointments_result.length === 0) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No pending booked appointments found for this clinic"
+            });
+        }
+
+        return res.status(StatusCodes.OK).json({
+            totalPendingBookedAppointments: pending_booked_appointments_result[0].total_pending_booked_appointments
+        });
+    } catch (error) {
+        console.error(`Failed to calculate pending booked appointments in clinic in controller: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to calculate pending booked appointments"
+        });
+    }
+}
+
+// controller logic for calculating the total approved booked appointemnts of specific clinic
+export const calculateApprovedBookedAppointments = async (req, res) => {
+    try {
+        const { clinicID } = req.query;
+
+        // check if clinicID is provided and is a string
+        if (!clinicID || typeof clinicID !== "string") {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Please enter a valid clinic ID"
+            });
+        }
+
+        // convert the clinic id to number
+        const clinic_id = parseInt(clinicID, 10);
+        if (isNaN(clinic_id)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid clinic ID is not a number"
+            });
+        }
+
+        const booked_appointment_status = String("Approved");
+
+        // instance of clinic model with a method to calculate the approved booked appointments
+        const approved_booked_appointments_result = await new Clinic().calculateTotalNumberOfApprovedBookedAppointments(clinic_id, booked_appointment_status);
+        if (approved_booked_appointments_result.length === 0) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No approved booked appointments found for this clinic"
+            });
+        }
+
+        return res.status(StatusCodes.OK).json({
+            totalApprovedBookedAppointments: approved_booked_appointments_result[0].total_approved_booked_appointments
+        });
+    } catch (error){
+        console.error(`Failed to calculate approved booked appointments in clinic in controller: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to calculate approved booked appointments"
+        });
     }
 }

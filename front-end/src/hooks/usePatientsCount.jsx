@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import CMS from "../API/CMS";
 
-function usePatientsCount() {
+function PatientsCount() {
     const [getPatientsData, setPatientsData] = useState(0);
 
     useEffect(() => {
@@ -27,4 +27,5 @@ function usePatientsCount() {
 
     return getPatientsData;
 }
-export default usePatientsCount;
+
+export default PatientsCount;

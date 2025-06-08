@@ -25,10 +25,6 @@ const PatientsViewAppointmentCalendar = () => {
   const patient_email = user?.sem;
   const tokenContext = token || localStorage.getItem("authToken");
 
-  if (!tokenContext) {
-    console.error("No token found in context or localStorage");
-  }
-
   const localizer = dateFnsLocalizer({
     format,
     parse,
@@ -45,6 +41,10 @@ const PatientsViewAppointmentCalendar = () => {
   };
 
   useEffect(() => {
+    if(!patient_email || !tokenContext) {
+      console.error("Patient email or token is not available in context state or local storage.");
+    }
+
     const retrievePatientsAppointments = async () => {
       try {
         const response = await CMS.get(`/CMS/patientsDashboard/bookedAppointments/${patient_email}`, {

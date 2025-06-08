@@ -29,6 +29,7 @@ import {
 } from "react-router-dom";
 import ConfirmAppointmentModal from "./ConfirmBookedAppointment";
 import { useAuthorization } from "../../context/auth/useAuthorization";
+import dayjs from "dayjs";
 
 const ClinicCards = () => {
     const [clinics, setClinics] = useState([]);
@@ -41,8 +42,8 @@ const ClinicCards = () => {
         email: "",
         phoneNumber: "",
         gender: "",
-        appointmentDate: "",
-        preferredTime: "",
+        appointmentDate: null,
+        preferredTime: null,
         purposeOfAppointment: ""
     });
     const [appointmentID, setAppointmentID] = useState("");
@@ -52,8 +53,8 @@ const ClinicCards = () => {
         email: "",
         phoneNumber: "",
         gender: "",
-        appointmentDate: "",
-        preferredTime: "",
+        appointmentDate: null,
+        preferredTime: null,
         purposeOfAppointment: ""
     });
     const [confirmedAppointmentData, setConfirmedAppointmentData] = useState(null)
@@ -173,8 +174,8 @@ const ClinicCards = () => {
         setAppointmentData((prev) => ({
             ...prev,
             gender: "",
-            appointmentDate: "",
-            preferredTime: "",
+            appointmentDate: null,
+            preferredTime: null,
             purposeOfAppointment: ""
         }))
     };
@@ -222,6 +223,7 @@ const ClinicCards = () => {
             e.preventDefault();
             const payload = {
                 ...appointmentData,
+                appointmentDate: appointmentData.appointmentDate ? dayjs(appointmentData.appointmentDate).format("YYYY-MM-DD") : null,
                 patientID: appointmentID,
                 clinicID: selectedClinic.clinic_id,
             }
@@ -244,8 +246,8 @@ const ClinicCards = () => {
                     email: "",
                     phoneNumber: "",
                     gender: "",
-                    appointmentDate: "",
-                    preferredTime: "",
+                    appointmentDate: null,
+                    preferredTime: null,
                     purposeOfAppointment: ""
                 });
                 handleCloseModal(); // close the modal
@@ -259,7 +261,11 @@ const ClinicCards = () => {
             }
         } catch (error) {
             if (error.response || error.response.data.status === 400) {
-                setFieldErrors(error.response.data.errors);
+                const errors = error.response.data.errors;
+                setFieldErrors((prev) => ({
+                    ...prev,
+                    ...errors
+                }));
             } else if (error.response || error.response.data.status === 500) {
                 setFieldErrors({ preferredTime: error.response.data.errors.preferredTime });
             } else {

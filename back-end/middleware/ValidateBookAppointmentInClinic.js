@@ -1,6 +1,7 @@
 import { body, validationResult } from "express-validator";
 import { StatusCodes } from "http-status-codes";
 import dayjs from "dayjs";
+import Clinic from "../models/Clinic.Model.js";
 
 const validateBookAppointmentInClinic = [
     body("firstName")
@@ -28,8 +29,8 @@ const validateBookAppointmentInClinic = [
             }
             return true;
         }),
-        // .isLength({ min: 11, max: 11 })
-        // .withMessage("Phone number should be 11 digits"),
+    // .isLength({ min: 11, max: 11 })
+    // .withMessage("Phone number should be 11 digits"),
     body("appointmentDate")
         .notEmpty()
         .withMessage("Appointment date is required")
@@ -51,11 +52,46 @@ const validateBookAppointmentInClinic = [
     body("appointmentTime")
         .notEmpty()
         .withMessage("Appointment time is required")
-        .custom((value) => {
+        .custom(async (value, { req }) => {
+            const { appointmentDate } = req.body;
             const appointmentTime = dayjs(value, "HH:mm", true);
             if (!appointmentTime.isValid()) {
                 throw new Error("Invalid appointment time");
             }
+
+            // convert the appointment date into YYYY-MM-DD format
+            const formatted_appointment_date = dayjs(appointmentDate).format("YYYY-MM-DD");
+
+            // format the appointment time into HH:mm format
+            const formattedAppointmentTime = appointmentTime.format("HH:mm");
+            const book_appointment_status = ["Pending", "Approved"];
+
+            const check_book_appointment_status = await new Clinic().isBookAppointmentIsAlreadyBookedOrAwaitingForApproval(
+                formatted_appointment_date,
+                formattedAppointmentTime,
+                book_appointment_status
+            );
+
+            // Function to normalize and format time to AM/PM
+            const normalizeAndFormatTimeToAMPM = (time) => {
+                const parsedTime = dayjs(time, ["HH:mm", "h:mm A", "hh:mm A", dayjs.ISO8601], true)
+
+                if(!parsedTime.isValid()) {
+                    throw new Error("Invalid appointment time format");
+                }
+
+                return parsedTime.format("hh:mm A");
+
+            }
+
+            //  check if the appointment time is already booked or awaiting approval
+            if (check_book_appointment_status) {
+                const formattedAppointmentTime = normalizeAndFormatTimeToAMPM(value);
+                const formattedAppointmentDate = dayjs(formatted_appointment_date).format("MMMM D, YYYY");
+
+                throw new Error(`Appointment time ${formattedAppointmentTime} is already booked or awaiting approval on  ${formattedAppointmentDate}.`);
+            }
+
             return true;
         }),
     body("gender")

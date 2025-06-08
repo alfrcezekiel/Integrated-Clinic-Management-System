@@ -21,8 +21,8 @@ const validatePatientBookAppointment = [
         .notEmpty()
         .withMessage("Appointment date is required")
         .custom((value) => {
-            const appointmentDate = dayjs(value, "YYYY-MM-DD", true);
-            if (!appointmentDate.isValid()) {
+            const appointmentDate = dayjs(value);
+            if (!dayjs(appointmentDate).isValid()) {
                 throw new Error("Invalid appointment date format");
             }
 
@@ -53,6 +53,10 @@ const validatePatientBookAppointment = [
         .withMessage("Preferred time is required")
         .custom(async (value, { req }) => {
             try {
+                if (!value || typeof value !== "string") {
+                    throw new Error("Preferred time must be a valid string");
+                }
+
                 const { appointmentDate, clinicID } = req.body;
 
                 const appointmentDateValue = dayjs(appointmentDate, "YYYY-MM-DD", true);
@@ -67,23 +71,44 @@ const validatePatientBookAppointment = [
 
                 // Normalize the time to 24-hour format for comparison
                 const normalizeTime = (timeStr) => {
-                    const [time, modifier] = timeStr.split(" ");
-                    let [hours, minutes] = time.split(":").map(Number);
+                    if (!timeStr || typeof timeStr !== "string") {
+                        throw new Error("Invalid appointment time format")
+                    }
+
+                    // Match pattern like 08:32 AM, 1:05 PM, 12:00 AM
+                    const timeParts = timeStr.trim().match(/^(\d{1,2}):(\d{2})\s?(AM|PM)$/i);
+                    if (!timeParts) {
+                        throw new Error("Preferred time must be in the format HH:mm AM/PM");
+                    }
+
+                    let hours = parseInt(timeParts[1], 10);
+                    let minutes = parseInt(timeParts[2], 10);
+                    const modifier = timeParts[3].toUpperCase();
+
+                    if (isNaN(hours) || isNaN(minutes) || hours < 1 || hours > 12 || minutes < 0 || minutes > 59) {
+                        throw new Error("Preferred time has invalid hour or minute value");
+                    }
 
                     if (modifier === "PM" && hours !== 12) hours += 12;
                     if (modifier === "AM" && hours === 12) hours = 0;
 
-                    return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
+                    return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:00`;
                 };
 
                 const formatTo12Hour = (timeStr) => {
                     let [hours, minutes] = timeStr.split(":").map(Number);
-                    const ampm = hours >= 12 ? "PM" : "AM";
+                    
+                    const parseHours = parseInt(hours, 10);
+                    const parseMinutes = parseInt(minutes, 10);
+                    
+                    if(isNaN(parseHours) || isNaN(parseMinutes)){
+                        return "Invalid time format";
+                    }
+                    
+                    const ampm = parseHours >= 12 ? "PM" : "AM";
+                    const adjustedHours = parseHours % 12 || 12; // Convert 0 to 12 for 12 AM
 
-                    hours = hours % 12;
-                    hours = hours ? hours : 12; // hour '0' should be '12'
-
-                    return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")} ${ampm}`;
+                    return `${adjustedHours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")} ${ampm}`;
                 };
 
                 // Normalize the preferred time to 24-hour format
@@ -100,7 +125,7 @@ const validatePatientBookAppointment = [
 
                 // Check if the preferred time is within the clinic's opening hours
                 const timeToMinutes = (time) => {
-                    const [hours, minutes] = time.split(":").map(Number);
+                    const [hours, minutes] = time.split(":").slice(0, 2).map(Number);
                     return hours * 60 + minutes;
                 }
 
@@ -109,9 +134,17 @@ const validatePatientBookAppointment = [
                 const openingMinutes = timeToMinutes(clinic_time);
                 const closingMinutes = timeToMinutes(clinic_close_time);
 
+                let isWithInOperatingHours = false;
+                
+                if(closingMinutes > openingMinutes) {
+                    isWithInOperatingHours = preferredMinutes >= openingMinutes && preferredMinutes < closingMinutes;
+                } else {
+                    isWithInOperatingHours = preferredMinutes >= openingMinutes || preferredMinutes < closingMinutes;
+                }
+
                 // Validate that the preferred time is within the clinic's operating hours
-                if (preferredMinutes < openingMinutes || preferredMinutes >= closingMinutes) {
-                    throw new Error(`Appointment time (${formatTo12Hour(value)}) is outside clinic operating hours (${formatTo12Hour(clinic_time)} - ${formatTo12Hour(clinic_close_time)})`);
+                if (!isWithInOperatingHours) {
+                    throw new Error(`Appointment time (${formatTo12Hour(normalizedTime)}) is outside clinic operating hours (${formatTo12Hour(clinic_time)} - ${formatTo12Hour(clinic_close_time)})`);
                 }
 
                 // Check if the appointment time is already booked
@@ -140,7 +173,7 @@ const validatePatientBookAppointment = [
                 ]);
 
                 if (rows.length > 0) {
-                    throw new Error(`Appointment time ${formatTo12Hour(normalizedTime)} is already booked on ${appointmentDateValue.format("MMMM D, YYYY")}`);
+                    throw new Error(`Appointment time ${formatTo12Hour(normalizedTime)} is already booked or awaiting approval on ${appointmentDateValue.format("MMMM D, YYYY")}`);
                 }
             } catch (error) {
                 throw new Error(error.message || "An error occurred during appointment time validation");

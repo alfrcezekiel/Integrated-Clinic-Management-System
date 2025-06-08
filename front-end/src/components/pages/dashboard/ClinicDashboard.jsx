@@ -17,6 +17,7 @@ const DoctorsDashboard = () => {
     const clinicName = user?.scn || localStorage.getItem("scn");
     const navigate = useNavigate();
     const [userSession, setUserSession] = useState(null);
+    const [confirmToken, setConfirmToken] = useState(null);
     const tokenContext = token || localStorage.getItem("authToken");
 
     useEffect(() => {
@@ -27,12 +28,10 @@ const DoctorsDashboard = () => {
     }, [tokenContext, navigate]);
 
     useEffect(() => {
-        const doctorTitleHeader = () => {
-            document.title = "Clinic Dashboard | CMS"
-        }
-        doctorTitleHeader();
+        document.title = "Clinic Dashboard | CMS"
 
         const navigateBackToHome = () => navigate("/cms");
+
         const fetchUserSession = async () => {
             try {
                 const response = await CMS.get("CMS/retrieveSession", {
@@ -57,14 +56,41 @@ const DoctorsDashboard = () => {
                 }
             }
         }
-        
+
+        const confirmedTokenVerification = async () => {
+            try {
+                const response = await CMS.get("/CMS/confirmVerificationToken", {
+                    withCredentials: true,
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${tokenContext}`
+                    }
+                })
+
+                if (response.status === 200) {
+                    const data = response.data.user;
+                    setConfirmToken(data);
+                } else {
+                    throw new Error(`Failed to verify token: ${response.status}`);
+                }
+            } catch (jwtError) {
+                console.error(`Code functionality error for JWT verification: ${jwtError}`);
+                if (jwtError.response && jwtError.response.status === 401) {
+                    navigateBackToHome();
+                } else {
+                    console.error("Error verifying JWT token:", jwtError);
+                }
+            }
+        }
+
         if (tokenContext) {
             fetchUserSession();
+            confirmedTokenVerification();
         }
     }, [location.pathname, navigate, tokenContext]);
 
     return (
-        userSession && (
+        userSession && confirmToken && (
             <>
                 <div className="min-h-screen bg-blue-gray-50/50">
                     <DoctorsSideNav routes={doctorRoutes} brandName={clinicName} />

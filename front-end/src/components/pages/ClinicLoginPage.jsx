@@ -105,8 +105,8 @@ function ClinicLoginPortal() {
                     console.error("No token found in response data and session data");
                     alert("No token found in response data and session data");
                 }
-            } else if (response.data && response.data.errors) {
-                setFieldErrors(response.data.errors);
+            } else {
+                throw new Error(`No response data found: ${response.status}`);
             }
 
         } catch (error) {

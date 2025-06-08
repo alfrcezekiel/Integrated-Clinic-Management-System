@@ -10,6 +10,7 @@ import { StatusCodes } from "http-status-codes";
 import session from "express-session";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
+import requestLogger from "./middleware/logger/requestLogger.js";
 dotenv.config();
 
 const app = express();
@@ -36,7 +37,7 @@ app.use(session({
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(morgan("dev"));
+// app.use(morgan("dev"));
 app.use(express.static(path.join(__dirname, "public")));
 // security middleware to set various HTTP headers
 app.use(helmet());
@@ -46,6 +47,9 @@ app.use(rateLimit({
     max: 2000, // Limit each IP to 100 requests per windowMs
     message: "Too many requests from this IP, please try again later."
 }))
+
+// logging middleware for requests
+app.use(requestLogger);
 
 // set custom headers for static file image for clinic images
 app.use("/uploads/clinic_images", (req, res, next) => {

@@ -289,6 +289,7 @@ const AddBookAppointment = () => {
                                         textField: {
                                             margin: "dense",
                                             autoComplete: "off",
+                                            fullWidth: true,
                                             error: !!fieldErrors.appointmentTime,
                                             helperText: fieldErrors.appointmentTime || "",
                                         }

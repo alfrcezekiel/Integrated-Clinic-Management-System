@@ -819,6 +819,236 @@ class Clinic {
             connection.release();
         }
     }
+
+    // method for retrieving all clinic booked appointment
+    retrieveBookedAppointmentOfClinicAppointments = async (clinicID) => {
+        const connection = await conn.getConnection();
+        try {
+            await connection.beginTransaction(); // starts a transaction in retrieving all clinic booked appointment
+
+            if (!clinicID || typeof clinicID !== "number") {
+                throw new Error("Invalid clinic id")
+            }
+
+            const clinicId = Number(clinicID);
+            if (isNaN(clinicId)) {
+                throw new Error("Clinic id is not a number in method")
+            }
+
+            const fields = [
+                "firstName",
+                "lastName",
+                "address",
+                "email",
+                "phoneNumber",
+                "appointmentDate",
+                "appointmentTime",
+                "gender",
+                "purposeOfAppointment",
+                "clinic_id",
+                "id",
+                "clinic_name",
+                "status"
+            ]
+
+            const value = [
+                clinicId,
+            ]
+
+            const query = `
+                SELECT 
+                    ${fields.join(", ")}
+                FROM clinic_appointments
+                WHERE clinic_id = ?;
+            `
+
+            const [rows] = await connection.query(query, value);
+            const commitQuery = await connection.commit(); // commits the transaction in retrieving all clinic booked appointment
+            if (!commitQuery) {
+                throw new Error("Failed to commit transaction in retrieving all clinic booked appointment");
+            }
+
+            return rows;
+        } catch (error) {
+            const rollbackQuery = await connection.rollback(); // rollback the transaction in retrieving all clinic booked appointment
+            if (!rollbackQuery) {
+                console.error(`Error rolling back transaction in retrieving all clinic booked appointment: ${error}`);
+            }
+
+            console.error(`Error in retrieving all clinic booked appointment in method model: ${error}`);
+            throw error;
+        } finally {
+            connection.release(); // release the connection back to the pool
+        }
+    }
+
+    // method for checking if the book appointment is already booked or awaits for approval
+    isBookAppointmentIsAlreadyBookedOrAwaitingForApproval = async (appointmentDate, appointmentTime, status) => {
+        const connection = await conn.getConnection();
+        try {
+            const fields = [
+                "appointmentDate",
+                "appointmentTime",
+                "status"
+            ]
+
+            const statusPlaceholder = status.map(() => "?").join(", ");
+
+            const query = `
+                SELECT 
+                    ${fields.join(", ")}
+                FROM clinic_appointments
+                WHERE 
+                    appointmentDate = ?
+                AND 
+                    appointmentTime = ? 
+                AND 
+                    status IN (${statusPlaceholder})
+            `;
+
+            const value = [
+                appointmentDate,
+                appointmentTime,
+                ...status
+            ];
+
+            const [rows] = await connection.execute(query, value);
+
+            return rows.length > 0; // returns true if there are rows found, indicating the appointment is booked or awaiting approval
+        } catch (error) {
+            console.error(`Error in checking if the book appointment is already booked or awaiting for approval in method model: ${error}`);
+            throw error;
+        } finally {
+            connection.release(); // release the connection back to the pool
+        }
+    }
+
+    // method for calculating the total number of all booked appointments for a specific clinic
+    calculateTotalNumberOfBookedAppointemnts = async (clinicID) => {
+        const connection = await conn.getConnection();
+        try {
+            await connection.beginTransaction(); // starts transcation to total the sum of booked appointments
+
+            if (!clinicID || typeof clinicID !== "number") {
+                throw new Error("Invalid clinic ID");
+            }
+
+            const query = `
+                SELECT COUNT(*) AS total_all_booked_appointments
+                FROM (
+                    SELECT appointmentID FROM patientsappointment WHERE clinic_id = ?
+                    UNION ALL
+                    SELECT id FROM clinic_appointments WHERE clinic_id = ?
+                ) AS combined_appointments;
+            `
+
+            const values = [
+                clinicID,
+                clinicID
+            ]
+
+            const [rows] = await connection.query(query, values);
+
+            await connection.commit(); // commits the transaction in calculating the total number of booked appointments
+
+            return rows;
+        } catch (error){
+            await connection.rollback(); // rollback the transaction in calculating the total number of booked appointments
+
+            console.error(`Error in calculating the total number of booked appointments in method model: ${error}`);
+            throw error;
+        } finally {
+            connection.release(); // release the connection back to the pool
+        }
+    }
+
+    // method for calculating the total number of pending booked appoinments in specific clinic
+    calculateTotalNumberOfPendingBookedAppointments = async (clinicID, bookAppointmentStatus) => {
+        const connection = await conn.getConnection();
+        try {
+            if(!clinicID || typeof clinicID !== "number") {
+                throw new Error("Invalid! clinic id must be a number");
+            }
+
+            if(!bookAppointmentStatus || typeof bookAppointmentStatus !== "string") {
+                throw new Error("Invalid! book appointment status must be a string");
+            }
+
+            const query = `
+                SELECT COUNT(*) AS total_pending_booked_appointments
+                FROM (
+                    SELECT appointmentID FROM patientsappointment
+                    WHERE clinic_id = ? 
+                    AND status = ?
+                    UNION ALL
+                    SELECT id FROM clinic_appointments
+                    WHERE clinic_id = ?
+                    AND 
+                    status = ?
+                ) AS combined_pending_appointments;
+            `
+
+            const values = [
+                clinicID,
+                bookAppointmentStatus,
+                clinicID,
+                bookAppointmentStatus
+            ]
+
+            const [rows] = await connection.query(query, values);   
+            
+            return rows;
+        } catch (error){
+            console.error(`Error in calculating the total number of pending booked appointments in method model: ${error}`);
+            throw error;
+        } finally {
+            connection.release();
+        }
+    }
+
+    // method for calculating the total number of approved booked appointments in specific clinic
+    calculateTotalNumberOfApprovedBookedAppointments = async (clinicID, booked_appointment_status) => {
+        const connection = await conn.getConnection();
+        try {
+            if(!clinicID || typeof clinicID !== "number"){
+                throw new Error("Invalid! clinic is must me a number")
+            } 
+
+            if(!booked_appointment_status || typeof booked_appointment_status !== "string"){
+                throw new Error("Invalid! booked appointment status must be a string")
+            }
+
+            const query = `
+                SELECT COUNT (*) AS total_approved_booked_appointments
+                FROM (
+                    SELECT appointmentID FROM patientsappointment
+                    WHERE clinic_id = ?
+                    AND status = ?
+                    UNION ALL
+                    SELECT id FROM clinic_appointments
+                    WHERE clinic_id = ?
+                    AND
+                    status = ?
+                ) AS combined_approved_appointments;
+            `
+
+            const values = [
+                clinicID,
+                booked_appointment_status,
+                clinicID,
+                booked_appointment_status
+            ]
+
+            const [rows] = await connection.execute(query, values)
+
+            return rows;
+        } catch (methodError) {
+            console.error(`Error in calculating the total number of approved booked appointment in method model: ${methodError}`)
+            throw methodError;
+        } finally {
+            connection.release();
+        }
+    }
 }
 
 export default Clinic;

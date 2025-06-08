@@ -31,6 +31,7 @@ const DoctorsSideNav = ({ brandName, routes }) => {
     const [appointmentDropDownOpen, setAppointmentDropDownOpen] = useState(false);
     const [appointmentHistoryDropDownOpen, setAppointmentHistoryDropDownOpen] = useState(false);
     const [patientManagementDropDownOpen, setPatientManagementDropDownOpen] = useState(false);
+    const [clinicBookAppointmentDropDownOpen, setClinicBookAppointmentDropDownOpen] = useState(false);
 
     // Function to handle the click event for the appointment dropdown
     const handleAppointmentDropDownClick = useCallback(() => {
@@ -46,11 +47,15 @@ const DoctorsSideNav = ({ brandName, routes }) => {
     const handleAppointmentHistoryDropDownClick = useCallback(() => {
         appointmentHistoryDropDown(appointmentHistoryDropDownOpen);
     }, [appointmentHistoryDropDownOpen])
-    
+
 
     const handlePatientManagementDropDownClick = useCallback(() => {
         setPatientManagementDropDownOpen(!patientManagementDropDownOpen);
     }, [patientManagementDropDownOpen])
+
+    const handleClinicBookAppointmentDropDownClick = useCallback(() => {
+        setClinicBookAppointmentDropDownOpen((prev) => !prev);
+    }, [])
 
     return (
         <Drawer
@@ -72,7 +77,7 @@ const DoctorsSideNav = ({ brandName, routes }) => {
                 {routes.map(({ layout, pages }, index) => (
                     <div key={layout || index} className="mb-4">
                         {pages
-                            .filter((page) => page.name !== "Appointments" && page.name !== "Pending Appointments" && page.name !== "Approved Appointments" && page.name !== "Declined Appointments" && page.name !== "Appointment History" && page.name !== "Consult Patient" && page.name !== "Add Book Appointment")
+                            .filter((page) => page.name !== "Appointments" && page.name !== "Pending Appointments" && page.name !== "Approved Appointments" && page.name !== "Declined Appointments" && page.name !== "Appointment History" && page.name !== "Consult Patient" && page.name !== "Add Book Appointment" && page.name !== "Clinic Book Appointment" && page.name !== "Clinic Pending Booked Appointment")
                             .map(({ icon, name, path }) => (
                                 <NavLink
                                     key={name}
@@ -91,6 +96,56 @@ const DoctorsSideNav = ({ brandName, routes }) => {
                         <ListItemText primary="Appointment Management" />
                         {appointmentDropDownOpen ? <ExpandLess /> : <ExpandMore />}
                     </ListItemButton>
+                    <Collapse in={appointmentDropDownOpen} timeout="auto" unmountOnExit className="p-2">
+                        <List component="div" disablePadding>
+                            <ListItemButton onClick={handleClinicBookAppointmentDropDownClick}>
+                                <ListItemText primary="Clinic Appointment Management" />
+                                {clinicBookAppointmentDropDownOpen ? <ExpandLess /> : <ExpandMore />}
+                            </ListItemButton>
+                            <Collapse in={clinicBookAppointmentDropDownOpen} timeout="auto" unmountOnExit className="p-2">
+                                <List component="div" disablePadding>
+                                    {routes.map(({layout, pages}, index) => (
+                                        pages
+                                            .filter((page) => page.subgroup === "Appointments")
+                                            .map(({icon, subgroup, path}) => (
+                                                <NavLink 
+                                                    key={index}
+                                                    to={`${layout}${path}`}
+                                                    className={({isActive}) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-white" : "text-gray-700:bg-gray-100"}`}
+                                                >
+                                                    {icon}
+                                                    <ListItem button="true">
+                                                        <ListItemText primary={subgroup} className="text-black"/>
+                                                    </ListItem>
+                                                </NavLink>
+                                            ))
+                                    ))}
+                                </List>
+                            </Collapse>
+                            <Collapse in={clinicBookAppointmentDropDownOpen} timeout="auto" unmountOnExit className="p-2">
+                                <List component="div" disablePadding>
+                                    {routes
+                                        .map(({layout, pages}, index) => (
+                                            pages
+                                                .filter((page) => page.subgroup === "Pending Booked Appointment")
+                                                .map(({icon, subgroup, path}) => (
+                                                    <NavLink
+                                                        key={index}
+                                                        to={`${layout}${path}`}
+                                                        className={({isActive}) => `flex items-center rounded-lg transition px-4 py-2 ${isActive ? "bg-blue-500 text-white" : "text-gray-700:bg-gray-100"}`}
+                                                    >
+                                                        {icon}
+                                                        <ListItem button="true">
+                                                            <ListItemText primary={subgroup} className="text-black"/>
+                                                        </ListItem>
+                                                    </NavLink>
+                                                ))
+                                        ))
+                                    }
+                                </List>
+                            </Collapse>
+                        </List>
+                    </Collapse>
                     <Collapse in={appointmentDropDownOpen} timeout="auto" unmountOnExit className="p-2">
                         <List component="div" disablePadding>
                             {routes.map(({ layout, pages }, index) => (
@@ -172,8 +227,8 @@ const DoctorsSideNav = ({ brandName, routes }) => {
                         </List>
                     </Collapse>
                     <Collapse in={appointmentDropDownOpen} timeout="auto" unmountOnExit className="p-2">
-                        <List component="div" disablePadding>\
-                            {routes.map(({layout, pages}, index) => (
+                        <List component="div" disablePadding>
+                            {routes.map(({ layout, pages }, index) => (
                                 pages
                                     .filter((page) => page.name === "Add Book Appointment")
                                     .map(({ icon, name, path }) => (
@@ -221,7 +276,7 @@ const DoctorsSideNav = ({ brandName, routes }) => {
                     </Collapse>
                 </List>
                 <div className="h-4"></div>
-                {/* Component of Patient Management */} 
+                {/* Component of Patient Management */}
                 <List className="bg-white shadow-lg rounded-2xl">
                     <ListItemButton onClick={handlePatientManagementDropDownClick}>
                         <ListItemText primary="Patient Management" />
