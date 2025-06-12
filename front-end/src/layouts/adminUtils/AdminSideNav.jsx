@@ -27,12 +27,18 @@ const AdminSideNav = ({ brandName, routes }) => {
 
     const [createClinicOpen, setCreateClinicOpen] = useState(false);
     const [doctorOpen, setDoctorOpen] = useState(false);
+    const [adminManagementDropdownOpen, setAdminManagementDropdownOpen] = useState(false);
+
     const handleClinicClick = () => {
-        setCreateClinicOpen(!createClinicOpen);
+        setCreateClinicOpen((prev) => !prev);
     }
     const handleDoctorClick = () => {
-        setDoctorOpen(!doctorOpen);
-    };
+        setDoctorOpen((prev) => !prev);
+    }
+
+    const adminDropdownManagementClick = async () => {
+        setAdminManagementDropdownOpen((prev) => !prev);
+    }
 
     return (
         <Drawer
@@ -54,7 +60,7 @@ const AdminSideNav = ({ brandName, routes }) => {
                 {routes.map(({ layout, pages }, index) => (
                     <div key={layout || index} className="mb-4">
                         {pages
-                            .filter(((page) => page.name !== "Add Clinic" && page.name !== "Add Doctor" && page.name !== "Registered Patients Account" && page.name !== "View Clinic"))
+                            .filter(((page) => page.name !== "Add Clinic" && page.name !== "Add Doctor" && page.name !== "Registered Patients Account" && page.name !== "View Clinic" && page.name !== "Create Admin Account" && page.name !== "Create Clinic Account"))
                             .map(({ icon, name, path }) => (
                                 <NavLink
                                     key={name}
@@ -84,7 +90,7 @@ const AdminSideNav = ({ brandName, routes }) => {
                                             className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-black" : "hover:bg-gray-100 p-2"}`}
                                         >
                                             {icon}
-                                            <ListItem button>
+                                            <ListItem button="true">
                                                 <ListItemText primary={name} className="text-black" />
                                             </ListItem>
                                         </NavLink>
@@ -132,6 +138,26 @@ const AdminSideNav = ({ brandName, routes }) => {
                             ))}
                         </List>
                     </Collapse>
+                    <Collapse in={createClinicOpen} timeout="auto" unmountOnExit className="p-3">
+                        <List component="div" disablePadding>
+                            {routes.map(({ layout, pages }, index) => (
+                                pages
+                                    .filter((page) => page.name === "Create Clinic Account")
+                                    .map(({ path, icon, name }) => (
+                                        <NavLink
+                                            key={index}
+                                            to={`${layout}${path}`}
+                                            className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-black" : "hover:bg-gray-100 p-2"}`}
+                                        >
+                                            {icon}
+                                            <ListItem button="true">
+                                                <ListItemText primary={name} className="text-black" />
+                                            </ListItem>
+                                        </NavLink>
+                                    ))
+                            ))}
+                        </List>
+                    </Collapse>
                 </List>
                 <div className="h-4"></div>
                 <List className="bg-white shadow-lg rounded-2xl">
@@ -144,6 +170,45 @@ const AdminSideNav = ({ brandName, routes }) => {
                             {routes.map(({ layout, pages }, index) =>
                                 pages
                                     .filter((page) => page.name === "Add Doctor")
+                                    .map(({ path, name, icon }) => (
+                                        <NavLink
+                                            key={index}
+                                            to={`${layout}${path}`}
+                                            className={({ isActive }) =>
+                                                `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-black" : "hover:bg-gray-100 p-2"}`
+                                            }
+                                        >
+                                            {icon}
+                                            <ListItem button="true">
+                                                <ListItemText primary={name} className="text-black" />
+                                            </ListItem>
+                                        </NavLink>
+                                    ))
+                            )}
+                        </List>
+                    </Collapse>
+                </List>
+                <div className="h-4"></div>
+                <List className="bg-white shadow-lg rounded-2xl">
+                    <ListItemButton
+                        onClick={adminDropdownManagementClick}
+                    >
+                        <ListItemText primary="Admin Account Management" />
+                        {adminManagementDropdownOpen ? <ExpandLess /> : <ExpandMore />}
+                    </ListItemButton>
+                    <Collapse
+                        in={adminManagementDropdownOpen}
+                        timeout="auto"
+                        unmountOnExit
+                        className="p-3"
+                    >
+                        <List
+                            component="div"
+                            disablePadding
+                        >
+                            {routes.map(({ layout, pages }, index) =>
+                                pages
+                                    .filter((page) => page.name === "Create Admin Account")
                                     .map(({ path, name, icon }) => (
                                         <NavLink
                                             key={index}

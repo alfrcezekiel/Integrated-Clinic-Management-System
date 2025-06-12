@@ -92,11 +92,10 @@ const AppointmentHistoryTable = () => {
 
         const clinicID = user?.sid;
         const tokenContext = token;
-        if (!tokenContext) {
-            console.error("No token found in context or localStorage");
-        }
-        if (!clinicID) {
-            console.error("Clinic ID is not available in user session.");
+        if (!tokenContext && !clinicID) {
+            console.error("No token and clinic id found in context or localStorage");
+            setAppointmentHistoryData([]);
+            return;
         }
 
         const retrieveAppointmentHistory = async () => {

@@ -27,13 +27,19 @@ import PendingBookedAppointment from "./layouts/ClinicUtils/ClinicBookedAppointm
 
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import RegisterPatientsAccountTable from "./layouts/adminUtils/RegisterPatientsAccountTable";
-import PersonIcon from '@mui/icons-material/Person';	
-import EventIcon from '@mui/icons-material/Event';	
-import HourglassTopIcon from '@mui/icons-material/HourglassTop';	
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';	
-import CancelIcon from '@mui/icons-material/Cancel';	
-import HistoryIcon from '@mui/icons-material/History';	
+import PersonIcon from '@mui/icons-material/Person';
+import EventIcon from '@mui/icons-material/Event';
+import HourglassTopIcon from '@mui/icons-material/HourglassTop';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
+import HistoryIcon from '@mui/icons-material/History';
 import ViewClinicDetails from "./layouts/adminUtils/ViewClinicDetails";
+
+/**
+ * @import the admin components
+ */
+import AdminRegisterationAccount from "./layouts/adminUtils/AdminAccount/AdminRegistrationAccount";
+import CreateClinicAccount from "./layouts/adminUtils/CreateClinicAccount";
 
 const iconStyle = {
     fontSize: 20,
@@ -146,7 +152,7 @@ export const doctorRoutes = [
                 name: "Add Book Appointment",
                 path: "/AddBookAppointment",
                 element: <AddBookAppointment />
-            },{
+            }, {
                 id: 9,
                 icon: <EventIcon style={iconStyle} />,
                 name: "Clinic Book Appointment",
@@ -186,7 +192,7 @@ export const adminRoutes = [
             },
             {
                 id: 3,
-                icon: <AddClinicIcon style={iconStyle} />, 
+                icon: <AddClinicIcon style={iconStyle} />,
                 name: "Add Clinic",
                 path: "/AddClinic",
                 element: <AddClinic />
@@ -197,12 +203,26 @@ export const adminRoutes = [
                 name: "Registered Patients Account",
                 path: "/RegisterPatientsAccount",
                 element: <RegisterPatientsAccountTable />
-            },{
+            }, {
                 id: 5,
                 icon: <ClinicIcon style={iconStyle} />,
-                name:"View Clinic",
+                name: "View Clinic",
                 path: "/ViewClinic",
-                element: <ViewClinicDetails />  
+                element: <ViewClinicDetails />
+            },
+            {
+                id: 6,
+                icon: <AccountCircle style={iconStyle} />,
+                name: "Create Admin Account",
+                path: "/AdminAccountRegistration",
+                element: <AdminRegisterationAccount />
+            },
+            {
+                id: 7,
+                icon: <AddIcon style={iconStyle} />,
+                name: "Create Clinic Account",
+                path: "/CreateClinicAccount",
+                element: <CreateClinicAccount />
             }
         ]
     }

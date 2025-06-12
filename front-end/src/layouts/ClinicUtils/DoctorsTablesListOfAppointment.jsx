@@ -251,7 +251,7 @@ const DoctorsTablesListOfAppointments = () => {
         try {
             const updatedData = {
                 ...memoizedFormDataValue,
-                appointmentDate: memoizedFormDataValue.status === "Approved" ? dayjs(memoizedFormDataValue.appointmentDate) : memoizedFormDataValue.appointmentDate,
+                appointmentDate: memoizedFormDataValue.appointmentDate ? dayjs(memoizedFormDataValue.appointmentDate).format("YYYY-MM-DD") : memoizedFormDataValue.appointmentDate,
                 preferredTime: memoizedFormDataValue.preferredTime ? memoizedFormDataValue.preferredTime : null
             };
 

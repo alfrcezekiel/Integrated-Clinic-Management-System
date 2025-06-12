@@ -6,7 +6,8 @@ import {
 import fs from "fs";
 import DailyRotateFile from "winston-daily-rotate-file";
 
-const LOG_DIR = process.env.LOG_DIR; // Directory for log files
+const LOG_DIR = process.env.LOG_DIR || "logs"; // Directory for log files
+const LOG_LEVEL = process.env.LOG_LEVEL || "info"; // Default log level
 
 // Ensure the log directory exists
 if (!fs.existsSync(LOG_DIR)) {
@@ -14,7 +15,6 @@ if (!fs.existsSync(LOG_DIR)) {
 }
 
 const logger = createLogger({
-    level: process.env.LOG_LEVEL,
     format: format.combine(
         format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
         format.printf(({ timestamp, level, message }) => {
@@ -28,6 +28,7 @@ const logger = createLogger({
                 format.colorize(),
                 format.simple(),
             ),
+            level: LOG_LEVEL,
         }),
         // DailyRotateFile transport for logging info level messages
         new DailyRotateFile({
@@ -36,7 +37,7 @@ const logger = createLogger({
             zippedArchive: true,
             maxSize: "20m",
             maxFiles: "14d",
-            level: process.env.LOG_LEVEL,
+            level: LOG_LEVEL,
         }),
         // DailyRotateFile transport for logging log level messages
         new DailyRotateFile({
@@ -45,7 +46,7 @@ const logger = createLogger({
             zippedArchive: true,
             maxSize: "20m",
             maxFiles: "14d",
-            level: process.env.LOG_LEVEL_LOG,
+            level: process.env.LOG_LEVEL_LOG || "info",
         }),
         // DailyRotateFile transport for logging error level messages
         new DailyRotateFile({
@@ -54,7 +55,7 @@ const logger = createLogger({
             zippedArchive: true,
             maxSize: "20m",
             maxFiles: "14d",
-            level: process.env.LOG_LEVEL_ERROR,
+            level: process.env.LOG_LEVEL_ERROR || "error",
         }),
         // DailyRotateFile transport for logging debug level messages
         new DailyRotateFile({
@@ -63,7 +64,16 @@ const logger = createLogger({
             zippedArchive: true,
             maxSize: "20m",
             maxFiles: "14d",
-            level: process.env.LOG_LEVEL_DEBUG,
+            level: process.env.LOG_LEVEL_DEBUG || "debug",
+        }),
+        // DailyRotateFile transport for logging warn level messages
+        new DailyRotateFile({
+            filename: `${LOG_DIR}/warn/%DATE%.log`,
+            datePattern: "YYYY-MM-DD",
+            zippedArchive: true,
+            maxSize: "20m",
+            maxFiles: "14d",
+            level: process.env.LOG_LEVEL_WARN || "warn",
         }),
     ]
 })

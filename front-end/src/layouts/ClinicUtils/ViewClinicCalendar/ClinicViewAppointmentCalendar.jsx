@@ -40,7 +40,12 @@ const ClinicViewAppointmentCalendar = () => {
   };
 
   useEffect(() => {
-    const clinicID = user?.sid
+    const clinicID = user?.sid;
+    if(!clinicID || !tokenContext) {
+      console.error("Clinic ID or token is not available in the context or local storage.");
+      setEvents([]);
+      return;
+    }
 
     const retrievePatientsAppointments = async () => {
       try {

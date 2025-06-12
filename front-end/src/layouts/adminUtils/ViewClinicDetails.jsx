@@ -7,6 +7,7 @@ import {
     useLocation
 } from 'react-router-dom';
 import CMS from "../../API/CMS";
+import { useAuthorization } from '../../context/auth/useAuthorization.jsx';
 
 const ViewClinicDetails = () => {
     const location = useLocation();
@@ -16,6 +17,10 @@ const ViewClinicDetails = () => {
     const [clinic, setClinic] = useState(clinicData);
     const [questionnaire, setQuestionnaire] = useState({});
     const [fieldErrors, setFieldErrors] = useState({});
+    const { token, user } = useAuthorization();
+
+    const tokenContext = token;
+    const admin_id = user?.sid;
 
     const navigateToAddClinicPage = async () => {
         navigate(`/admin-dashboard/AddClinic`)
@@ -92,8 +97,12 @@ const ViewClinicDetails = () => {
         const questionKeys = []
         try {
             e.preventDefault();
+            if(!admin_id || !tokenContext){
+                console.error("Admin ID or token is not available in context or local storage.");
+                return;
+            }
+            console.log(`Admin ID: ${admin_id}, Token: ${tokenContext}`);
             const sectionNames = Object.keys(dentalQuestionnaire);
-            const admin_id = localStorage.getItem("sid");
 
             const responses = []
 
@@ -119,7 +128,7 @@ const ViewClinicDetails = () => {
             const response = await CMS.post(`CMS/admin-dashboard/submittedConsultationQuestionnaire`, { responses }, {
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorage.getItem("authToken")}`
+                    "Authorization": `Bearer ${tokenContext}`
                 }
             })
 

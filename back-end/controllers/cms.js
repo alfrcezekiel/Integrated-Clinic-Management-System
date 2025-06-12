@@ -202,7 +202,13 @@ export const loginPatientsAccount = async (req, res) => {
         }
 
         // generate a token
-        const token = jwt.sign({ id: patients.patientID }, SECRET_KEY);
+        const token = jwt.sign({
+            id: patients.patientID,
+            fn: patients.firstName,
+            ln: patients.lastName,
+            em: patients.email,
+            prx: prefix
+        }, SECRET_KEY);
 
         // session token
         req.session.user = {
@@ -296,23 +302,25 @@ export const loginAdminAccount = async (req, res) => {
             email,
             password
             FROM cmsadmin 
-            WHERE email = ? AND password = ?;`;
+            WHERE email = ?;`;
 
-        const [rows] = await conn.query(query, [email, password]);
+        const [rows] = await conn.query(query, [email]);
 
-        if (!rows.find((row) => row.email === email)) {
+        if (rows.length === 0) {
             return res.status(StatusCodes.UNAUTHORIZED).json({
                 emailMessage: "Invalid Email"
             })
         }
 
-        if (!rows.find((row) => row.password === password)) {
+        const adminUsers = rows[0];
+
+        // Compare password using bcrypt
+        const isPasswordValid = await bcrypt.compare(password, adminUsers.password);
+        if (!isPasswordValid) {
             return res.status(StatusCodes.UNAUTHORIZED).json({
                 passwordMessage: "Invalid Password"
             })
         }
-
-        const adminUsers = rows[0];
 
         const SECRET_KEY = process.env.JWT_SECRET
         if (!SECRET_KEY) {
@@ -328,6 +336,7 @@ export const loginAdminAccount = async (req, res) => {
 
         const sid = req.session.user = {
             id: adminUsers.adminID,
+            email: adminUsers.email
         }
 
         return res.status(StatusCodes.OK).json({
@@ -337,6 +346,9 @@ export const loginAdminAccount = async (req, res) => {
         })
     } catch (error) {
         console.error(`Failed to login admin account: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to login admin account"
+        })
     }
 }
 
@@ -366,7 +378,7 @@ export const requireLogin = (req, res, next) => {
     try {
         // Check if the user is authenticated
         if (req.session.user) {
-            console.log(`Authorization Accepted. Verified Session`)
+            logger.log("info", `Authorization Accepted. Verified Session`)
             return next();
         }
 
@@ -397,6 +409,7 @@ export const requireLogin = (req, res, next) => {
         const decoded = jwt.verify(token, SECRET_KEY);
 
         req.session.user = decoded;
+        logger.info(`Authorization Accepted. Verified session: ${decoded.id}`);
         // req.session.user = {
         //     patientID: decoded.patientID,
         //     sfn: decoded.firstName,
@@ -662,20 +675,20 @@ export const verifyToken = (req, res, next) => {
             });
         }
 
-        // try {
-        const decoded = jwt.verify(token, SECRET_KEY);
-        req.user = decoded;
-        logger.info(`Authorization Accepted. Verified token: ${decoded.id}`);
-        next();
+        try {
+            const decoded = jwt.verify(token, SECRET_KEY);
+            req.user = decoded;
+            logger.info(`Authorization Accepted. Verified token: ${decoded.id}`);
+            next();
 
-        // } catch (jwtError) {
-        //     console.error(`Invalid or Expired token in verify token controller : ${jwtError}`);
-        //     return res.status(StatusCodes.UNAUTHORIZED).json({
-        //         message: "Invalid or Expired token"
-        //     });
-        // }
+        } catch (jwtError) {
+            console.error(`Invalid or Expired token in verify token controller : ${jwtError}`);
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                message: "Invalid or Expired token"
+            });
+        }
     } catch (error) {
-        console.error(`Error in verifyToken middleware: ${error}`);
+        logger.error(`Error in verifyToken middleware: ${error}`);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             message: "Error in verifying token"
         });
@@ -1025,7 +1038,9 @@ export const deleteDoctorsDetails = async (req, res) => {
 
 // controller logic for creating a new clinic in admin dashboard
 export const createClinic = async (req, res) => {
+    const connection = await conn.getConnection();
     try {
+        await connection.beginTransaction();
         const {
             clinicName,
             clinicAddress,
@@ -1039,8 +1054,7 @@ export const createClinic = async (req, res) => {
             openingHours,
             closingHours,
             consultationFee,
-            clinicId,
-            adminID
+            adminID,
         } = req.body;
 
         const formatTimeTo24HR = (time) => {
@@ -1075,20 +1089,25 @@ export const createClinic = async (req, res) => {
         const clinic_type = String(clinicType);
         const clinic_close_date = String(closingDays);
         const clinic_close_time = formatTimeTo24HR(closingHours);
-        const clinic_id_field = Number(clinicId);
-        const admin_id = String(adminID);
+        const admin_id = parseInt(adminID);
 
         const saltRound = 10;
         const hashedPassword = await bcrypt.hash(clinic_password, saltRound);
         const hashedConfirmPassword = await bcrypt.hash(clinic_confirm_password, saltRound);
+        const lto_document = req.files?.ltoFile?.[0]?.filename;
+        const clinic_image = req.files?.clinicImage?.[0]?.filename;
 
-        if (!req.file || !req.file.filename) {
+        if (!lto_document) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: 'Please upload a valid LTO document'
+            });
+        }
+
+        if (!clinic_image) {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 message: 'Please upload a valid clinic image'
             });
         }
-
-        const clinic_image = req.file.filename;
 
         const query = `INSERT INTO clinic (
             clinic_name,
@@ -1104,8 +1123,8 @@ export const createClinic = async (req, res) => {
             clinic_image,
             clinic_close_date,
             clinic_close_time,
-            clinic_id_field,
-            created_by
+            created_by,
+            lto_document
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
 
         const [result] = await conn.query(query, [
@@ -1122,8 +1141,8 @@ export const createClinic = async (req, res) => {
             clinic_image,
             clinic_close_date,
             clinic_close_time,
-            clinic_id_field,
-            admin_id
+            admin_id,
+            lto_document
         ]);
 
         if (result.affectedRows === 0) {
@@ -1132,12 +1151,31 @@ export const createClinic = async (req, res) => {
             });
         }
 
+        const commitQuery = await connection.commit();
+        if (!commitQuery) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "Failed to commit transaction"
+            });
+        }
+
         return res.status(StatusCodes.OK).json({
             message: "Clinic created successfully"
         });
     } catch (error) {
+        const rollbackQuery = await connection.rollback();
+        if (!rollbackQuery) {
+            console.error(`Failed to rollback transaction: ${error}`);
+        }
+
         console.error(`Failed to create clinic: ${error}`);
-        return res.status(500).json({ message: "Internal server error", error: error.message });
+        return res.status(500).json({
+            message: "Internal server error",
+            error: error.message
+        });
+    } finally {
+        if (connection) {
+            connection.release(); // Release the connection back to the pool
+        }
     }
 }
 
@@ -2742,10 +2780,135 @@ export const calculateApprovedBookedAppointments = async (req, res) => {
         return res.status(StatusCodes.OK).json({
             totalApprovedBookedAppointments: approved_booked_appointments_result[0].total_approved_booked_appointments
         });
-    } catch (error){
+    } catch (error) {
         console.error(`Failed to calculate approved booked appointments in clinic in controller: ${error}`);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             message: "Failed to calculate approved booked appointments"
+        });
+    }
+}
+
+// controller logic for calculating the declined booked appointment of specific clinic
+export const calculateDeclinedBookedAppointments = async (req, res) => {
+    try {
+        const { clinicID } = req.query;
+
+        if (!clinicID || typeof clinicID !== "string") {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Clinic id must be a string"
+            });
+        }
+
+        // convert the clinic id to number
+        const clinic_id = parseInt(clinicID, 10);
+        if (isNaN(clinic_id)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid clinic ID is not a number"
+            });
+        }
+
+        const booked_appointment_status = String("Declined");
+
+        // instance of clinic model with a method to calculate the declined booked appointments
+        const declined_booked_appointments_result = await new Clinic().calculateTotalNumberOfDeclinedBookedAppointments(clinic_id, booked_appointment_status);
+
+        if (declined_booked_appointments_result.length === 0) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No declined booked appointments found for this clinic"
+            });
+        }
+
+        return res.status(StatusCodes.OK).json({
+            totalDeclinedBookedAppointments: declined_booked_appointments_result[0].total_declined_booked_appointments
+        });
+    } catch (error) {
+        logger.error(`Failed to calculate declined booked appointments of specific clinic in controller: ${error}`)
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to calculate declined booked appointments"
+        })
+    }
+}
+
+// controller logic for retrieving the pending booked appointments of specific clinic side
+export const retrievePendingBookedAppointments = async (req, res) => {
+    try {
+        const { clinicID } = req.query;
+
+        if (!clinicID || typeof clinicID !== "string") {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid! Clinic id must be a string"
+            })
+        }
+
+        // convert the clinic id to number
+        const clinic_id = parseInt(clinicID, 10);
+        if (isNaN(clinic_id)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid! clinic ID is not a number"
+            });
+        }
+
+        const booked_appointment_status = String("Pending");
+
+        // instance of clinic model with a method to retrieve the pending booked appointments54
+        const pending_booked_appointments_result = await new Clinic().retrieveClinicPendingBookedAppointments(clinic_id, booked_appointment_status);
+        if (pending_booked_appointments_result.length === 0) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No pending booked appointments found for this clinic"
+            });
+        }
+
+        return res.status(StatusCodes.OK).json({
+            pendingBookedAppointments: pending_booked_appointments_result
+        });
+    } catch (error) {
+        logger.log("error", `Failed to retrieve the pending booked appointment in specific clinic in controller: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to retrieve pending booked appointments"
+        });
+    }
+}
+
+// controller logic for creating admin account in admin side 
+export const createAdminAccount = async (req, res) => {
+    try {
+        const {
+            email,
+            password,
+        } = req.body;
+
+        const email_address = String(email)
+        const password_hash = String(password);
+
+        const admin_account_data = {
+            email: email_address,
+            password: password_hash
+        }
+
+        // instance of clinic model with a method to create admin account
+        const created_admin_account_result = await new Clinic().createAdminAccount(admin_account_data);
+        if (created_admin_account_result.affectedRows === 0) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Failed to create admin account"
+            });
+        }
+
+        const tokenPayload = {
+            id: created_admin_account_result.insertId,
+            email: created_admin_account_result.email,
+        }
+
+        const token = jwt.sign(tokenPayload, process.env.JWT_SECRET)
+
+        return res.status(StatusCodes.CREATED).json({
+            message: "Admin account created successfully",
+            token: token,
+            adminAccountID: created_admin_account_result.insertId
+        });
+    } catch (error) {
+        logger.log("error", `Failed to create admin account in controller: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to create admin account"
         });
     }
 }

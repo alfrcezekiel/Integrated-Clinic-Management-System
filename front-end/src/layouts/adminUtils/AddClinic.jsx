@@ -21,6 +21,9 @@ import { useState, useEffect } from "react";
 import ClinicRegistrationModal from "./AddClinicModal";
 import CMS from "../../API/CMS";
 import ClinicCard from "./ClinicCards";
+import { useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { resetForm } from "../../features/clinicForm/CreateClinicAccountSlice";
 
 const AddClinic = () => {
     const theme = useTheme();
@@ -61,6 +64,9 @@ const AddClinic = () => {
         password: "",
         confirmPassword: ""
     })
+    const navigate = useNavigate();
+    const clinicFormState = useSelector((state) => state.createClinicAccount);
+    const dispatch = useDispatch();
 
     // Fetch clinics from API
     const fetchClinics = async () => {
@@ -91,10 +97,16 @@ const AddClinic = () => {
         fetchClinics();
     }, []);
 
-    // Handle modal open/close
-    const handleOpenModal = () => {
-        setIsModalOpen(true);
+    // function to navigate in create clinic account page
+    const navigateToCreateClinicAccount = () => {
+        navigate("/admin-dashboard/CreateClinicAccount", {
+            state: {
+                dispatch: clinicFormState
+            }
+        });
+        dispatch(resetForm()); // Reset the form state when navigating
     }
+
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setFieldErrors({
@@ -200,7 +212,7 @@ const AddClinic = () => {
                             variant="contained"
                             size="large"
                             startIcon={<AddIcon />}
-                            onClick={handleOpenModal}
+                            onClick={navigateToCreateClinicAccount}
                             sx={{
                                 bgcolor: 'white',
                                 color: theme.palette.primary.main,
@@ -273,7 +285,7 @@ const AddClinic = () => {
                             variant="contained"
                             size="large"
                             startIcon={<AddIcon />}
-                            onClick={handleOpenModal}
+                            onClick={navigateToCreateClinicAccount}
                             className="mt-2"
                         >
                             Register Your First Clinic

@@ -106,7 +106,7 @@ const ClinicAppointments = () => {
         <div className="p-6 max-h-screen">
             <div className="max-w-dvw mx-auto bg-white shadow-xl rounded-2xl overflow-hidden">
                 <div className="p-6 bg-blue-600 text-white font-semibold text-lg text-center">
-                    Clinic Appointments
+                    <span className="text-2xl text-center p-4 font-bold">Clinic Appointments</span>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="min-w-full text-sm text-center text-gray-700">
@@ -165,14 +165,22 @@ const ClinicAppointments = () => {
                                         </td>
                                         <td className="px-6 py-4">
                                             {/* Edit button placeholder */}
-                                            <IconButton aria-label="edit" onClick={console.log(`Edit appointment ID: ${appointment.id}`)} className="cursor-pointer">
-                                                <Edit className="h-5 w-5 inline" color="primary"/>  
+                                            <IconButton
+                                                aria-label="edit"
+                                                onClick={() => console.log(`Edit appointment ID: ${appointment.id}`)}
+                                                className="cursor-pointer"
+                                            >
+                                                <Edit className="h-5 w-5 inline" color="primary" />
                                             </IconButton>
                                         </td>
                                         <td className="px-6 py-4">
                                             {/* Delete button placeholder */}
-                                            <IconButton aria-label="delete" onClick={console.log(`Delete appointment ID: ${appointment.id}`)} className="cursor-pointer">
-                                                <Delete className="h-5 w-5 inline" color="error"/>
+                                            <IconButton
+                                                aria-label="delete"
+                                                onClick={() => console.log(`Delete appointment ID: ${appointment.id}`)}
+                                                className="cursor-pointer"
+                                            >
+                                                <Delete className="h-5 w-5 inline" color="error" />
                                             </IconButton>
                                         </td>
                                     </tr>

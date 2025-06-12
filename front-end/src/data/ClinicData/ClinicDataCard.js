@@ -10,6 +10,7 @@ import CalculateBookedAppointments from "../../hooks/ClinicStatsHooks/useCalcula
 import PatientsCount from "../../hooks/usePatientsCount";
 import CalculatePendingBookedAppointments from "../../hooks/ClinicStatsHooks/useCalculatePendingBookedAppointments";
 import TotalApprovedBookedAppointments  from "../../hooks/ClinicStatsHooks/useTotalApprovedBookedAppointments";
+import CalculateDeclinedBookedAppointments from "../../hooks/ClinicStatsHooks/CalculateDeclinedBookeAppoinments";
 
 // this data is used to display the clinic stats in the dashboard
 const useClinicStatsData = () => {
@@ -17,6 +18,7 @@ const useClinicStatsData = () => {
     const totalAllPatientsRegistered = PatientsCount();
     const totalPendingBookedAppointments = CalculatePendingBookedAppointments();
     const totalApprovedBookedAppointments = TotalApprovedBookedAppointments();
+    const totalDeclinedBookedAppointments = CalculateDeclinedBookedAppointments();
 
     return [
         {
@@ -45,7 +47,7 @@ const useClinicStatsData = () => {
         },
         {
             label: "Declined Appointments",
-            value: 15,
+            value: totalDeclinedBookedAppointments,
             Icon: XCircleIcon,
             bgColor: "bg-red-100",
         },

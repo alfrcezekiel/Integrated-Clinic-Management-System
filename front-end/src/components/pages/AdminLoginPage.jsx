@@ -21,6 +21,9 @@ import Typography from "@mui/material/Typography"
 import FormControlLabel from "@mui/material/FormControlLabel"
 import { useNavigate, useLocation } from "react-router-dom";
 import pattern from "../../assets/img/hero-bg.jpg"
+import {
+    useAuthorization
+} from "../../context/auth/useAuthorization";
 
 function AdminLoginPage() {
     const [showPassword, setShowPassword] = useState(false);
@@ -34,6 +37,7 @@ function AdminLoginPage() {
     })
 
     const location = useLocation();
+    const { login, userData } = useAuthorization();
 
     useEffect(() => {
         const titleElement = () => {
@@ -81,7 +85,6 @@ function AdminLoginPage() {
             const response = await CMS.post("/CMS/adminAccount", adminLoginFormData, {
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
                 },
                 withCredentials: true,
             });
@@ -89,8 +92,13 @@ function AdminLoginPage() {
             if (response.data && response.status === 200) {
                 setFieldErrors({})
                 if (response.data.token && response.data.sid) {
-                    localStorage.setItem("authToken", response.data.token);
-                    localStorage.setItem("sid", response.data.sid.id);
+                    // localStorage.setItem("authToken", response.data.token);
+                    // localStorage.setItem("sid", response.data.sid.id);
+                    login(response.data.token);
+                    userData({
+                        sid: response.data.sid.id,
+                        email: response.data.sid.email,
+                    })
                     navigate("/admin-dashboard/home");
                 } else {
                     console.error("No token found in response data and session data");

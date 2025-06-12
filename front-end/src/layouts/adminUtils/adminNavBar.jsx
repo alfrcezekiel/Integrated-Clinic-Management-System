@@ -11,6 +11,7 @@ import { useState } from "react";
 import CMS from "../../API/CMS";
 import LogoutDialog from "../../components/loguoutConfirmation";
 import "../../assets/css/main.css";
+import { useAuthorization } from "../../context/auth/useAuthorization";
 
 // this is the navbar component for the dashboard
 const AdminDashboardNavbar = () => {
@@ -21,23 +22,36 @@ const AdminDashboardNavbar = () => {
     const [layout = "Home", page = "", path = "Home", name = "Admin Dashboard"] = pathParts;
     const [anchorEl, setAnchorEl] = useState(null);
     const [settingsAnchorEl, setSettingsAnchorEl] = useState(null);
+    const { token, logout } = useAuthorization();
     const handleMenuOpen = (e) => {
         setAnchorEl(e.currentTarget);
     }
     const [logoutDialog, setLogoutDialog] = useState(false);
 
     const navigate = useNavigate();
+    const tokenContext = token;
+    if (!tokenContext) {
+        console.error("No token found in context or localStorage");
+    }
 
     const handleLogoutConfirm = async () => {
         try {
-            const response = await CMS.get("/CMS/admin-dashboard/logout");
+            const response = await CMS.get("/CMS/admin-dashboard/logout", {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${tokenContext}`,
+                },
+            });
+
             if (!response.data || !response.data.message) {
                 throw new Error("No response data or no success message");
-            } else {
-                localStorage.removeItem("authToken");
-                localStorage.removeItem("sid")
+            } 
+
+            if(response.status === 200) {
+                logout();
                 navigate("/cms");
             }
+            
         } catch (error) {
             console.error(`Code functionality error for logging out in admin: ${error}`);
         } finally {

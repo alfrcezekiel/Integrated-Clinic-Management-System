@@ -1,7 +1,228 @@
+import {
+    useState,
+    useEffect
+} from "react";
+import CMS from "../../../API/CMS";
+import { useAuthorization } from "../../../context/auth/useAuthorization";
+import dayjs from "dayjs";
+import {
+    Edit,
+    Delete
+} from "@mui/icons-material";
+import {
+    IconButton
+} from "@mui/material";
+
 const PendingBookedAppointment = () => {
+    const { user, token } = useAuthorization();
+    const clinic_id = user?.sid;
+    const tokenContext = token;
+    const [pendingBookedAppointments, setPendingBookedAppointments] = useState([]);
+
+    useEffect(() => {
+        const retrievedClinicPendingBookedAppointments = async () => {
+            try {
+                if (!clinic_id || isNaN(clinic_id)) {
+                    console.warn("Invalid or missing clinic_id", clinic_id);
+                }
+
+                if (!tokenContext) {
+                    console.warn("Token is not available in context state or local storage.");
+                }
+
+                const response = await CMS.get(`/CMS/clinicDashboard/clinic/retrievePendingBookedAppointments`, {
+                    params: {
+                        clinicID: clinic_id
+                    }
+                }, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${tokenContext}`
+                    }
+                });
+
+                if (response.status === 200) {
+                    const data = response.data.pendingBookedAppointments;
+                    setPendingBookedAppointments(data);
+                } else {
+                    throw new Error(`Error retrieving pending appointments: ${response.statusText}`);
+                }
+            } catch (error) {
+                console.error(`Failed to retrieve pending appointments: ${error}`);
+            }
+        }
+
+        if(clinic_id && tokenContext) {
+            retrievedClinicPendingBookedAppointments();
+        }
+    }, [clinic_id, tokenContext]);
+    
+    const clinic_columns = [
+        "First Name",
+        "Last Name",
+        "Address",
+        "Email",
+        "Phone Number",
+        "Appointment Date",
+        "Appointment Time",
+        "Gender",
+        "Purpose of Appointment",
+        "Clinic Name",
+        "Status",
+        "Edit",
+        "Delete"
+    ]
+
+    const statusColor = (status) => {
+        switch (status) {
+            case "Pending":
+                return "text-black bg-white"
+            case "Approved":
+                return "text-black bg-green-200"
+            case "Declined":
+                return "text-black bg-red-200"
+            case "Cancelled":
+                return "text-black bg-yellow-200"
+            default:
+                return "text-black bg-gray-200";
+        }
+    }
+
+    const dateFormat = (dateString) => {
+        if (!dateString) return "N/A";
+        return dayjs(dateString).format("MMMM D, YYYY");
+    };
+
+    // this function is used to format the time to AM/PM
+    const formatTimeToAMPM = (time) => {
+        if (!time) return "N/A";
+        if (time.includes("AM") || time.includes("PM")) return time;
+
+        try {
+            const [hours, minutes] = time.split(":");
+            let hour = parseInt(hours, 10);
+            const ampm = hour >= 12 ? "PM" : "AM";
+            hour = hour % 12 || 12;
+            return `${hour}:${minutes || "00"} ${ampm}`;
+        } catch {
+            return time;
+        }
+    };
+
     return (
-        <div>
-            <h1>yut</h1>
+        <div className="p-6 max-h-screen">
+            <div className="max-w-dvw mx-auto bg-white shadow-xl rounded-2xl overflow-hidden">
+                <div className="p-6 bg-blue-600 text-white font-semibold text-lg text-center">
+                    <span className="text-2xl font-bold text-center p-4">Pending Booked Appointments</span>
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="max-w-full text-sm text-center text-gray-700">
+                        <thead className="bg-blue-100 text-black uppercase text-xs sticky top-0 z-10">
+                            <tr>
+                                {clinic_columns.map((column, i) => (
+                                    <th
+                                        key={i}
+                                        className="px-6 py-4"
+                                        scope="col"
+                                    >
+                                        {column}
+                                    </th>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200 bg-white">
+                            {pendingBookedAppointments && pendingBookedAppointments.length > 0 ? (
+                                pendingBookedAppointments.map((pendingBookedAppointments, index) => (
+                                    <tr
+                                        key={index}
+                                        className={`hover:bg-blue-50 transition-colors duration-200 ${statusColor(pendingBookedAppointments.status)}`}
+                                    >
+                                        <td className="px-6 py-4">
+                                            <span className="text-center">
+                                                {pendingBookedAppointments.firstName}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="text-center">
+                                                {pendingBookedAppointments.lastName}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="text-center">
+                                                {pendingBookedAppointments.address}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="text-center">
+                                                {pendingBookedAppointments.email}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="text-center">
+                                                {pendingBookedAppointments.phoneNumber}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="text-center">
+                                                {dateFormat(pendingBookedAppointments.appointmentDate)}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="text-center">
+                                                {formatTimeToAMPM(pendingBookedAppointments.appointmentTime)}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="text-center">
+                                                {pendingBookedAppointments.gender}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="text-center">
+                                                {pendingBookedAppointments.purposeOfAppointment}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="text-center">
+                                                {pendingBookedAppointments.clinic_name}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 font-medium">
+                                            <span className="text-center">
+                                                {pendingBookedAppointments.status}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <IconButton
+                                                aria-label="Edit Appointment"
+                                                onClick={() => console.log(`Edit appointment ID: ${pendingBookedAppointments.id}`)}
+                                                className="cursor-pointer"
+                                            >
+                                                <Edit className="h-5 w-5 inline" color="primary" />
+                                            </IconButton>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <IconButton
+                                                aria-label="Delete Appointment"
+                                                onClick={() => console.log(`Delete appointment ID: ${pendingBookedAppointments.id}`)}
+                                                className="cursor-pointer"
+                                            >
+                                                <Delete className="h-5 w-5 inline" color="error" />
+                                            </IconButton>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr className="hover:bg-blue-50 transition-colors duration-200">
+                                    <td colSpan={clinic_columns.length} className="px-6 py-4 text-center text-gray-500">
+                                        No pending appointments found.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     )
 }

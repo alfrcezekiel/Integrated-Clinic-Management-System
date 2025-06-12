@@ -37,6 +37,7 @@ app.use(session({
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true , limit: "20mb" }));
 // app.use(morgan("dev"));
 app.use(express.static(path.join(__dirname, "public")));
 // security middleware to set various HTTP headers

@@ -52,7 +52,10 @@ import {
     calculateTotalBookedAppointmentsOfClinic,
     calculatePendingBookedAppointments,
     confirmTokenVerification,
-    calculateApprovedBookedAppointments
+    calculateApprovedBookedAppointments,
+    calculateDeclinedBookedAppointments,
+    retrievePendingBookedAppointments,
+    createAdminAccount
 } from "../controllers/cms.js";
 import validateRegister from "../middleware/validation.js";
 import patientsLoginValidation from "../middleware/patientsLoginValidation.js";
@@ -70,6 +73,8 @@ import validatePaymentFields from "../middleware/PaymentValidation/PaymentFieldV
 import validateQuestionnaires from "../middleware/ValidateQuestionnaires.js";
 import validateBookAppointmentInClinic from "../middleware/ValidateBookAppointmentInClinic.js";
 import validatePatientRegisteredAccount from "../middleware/ValidateRegisteredAccount/validate.patientregisteredaccount.js";
+import validateCreatingAdminAccount from "../middleware/ValidateCreatingAdminAccount.js";
+import { handleMulterError } from "../middleware/lto_documents/lto_document_middleware.js";
 
 const router = express.Router();
 
@@ -131,7 +136,10 @@ router.put("/admin-dashboard/updateDoctor/:doctorsID", [validateUpdatingDoctor],
 router.delete("/admin-dashboard/deleteDoctor/:doctorsID", deleteDoctorsDetails);
 
 // router for creating a clinic in admin dashboard
-router.post("/admin-dashboard/create-clinic", upload.single("clinicImage"), [validateCreateClinicDetails], createClinic);
+router.post("/adminDashboard/createClinicAccount", handleMulterError(upload.fields([
+    { name: "clinicImage", maxCount: 1 },
+    { name: "ltoFile", maxCount: 1 }
+])), [validateCreateClinicDetails], createClinic);
 
 // router for getting the clinic details in admin dashboard
 router.get("/admin-dashboard/clinics", verifyToken, getClinics);
@@ -233,5 +241,14 @@ router.get("/confirmVerificationToken", verifyToken, confirmTokenVerification);
 
 // router for calculating the approved booked appointments of specific clinic 
 router.get("/clinicDashboard/calculateTotalNumberOfApprovedBookedAppointments", verifyToken, calculateApprovedBookedAppointments);
+
+// router for calculating the declined booked appointments of specific clinic
+router.get("/clinicDashboard/calculateTotalNumberOfDeclinedBookedAppointments", verifyToken, calculateDeclinedBookedAppointments);
+
+// router for retrieving the pending booked appointments of specific clinic 
+router.get("/clinicDashboard/clinic/retrievePendingBookedAppointments", verifyToken, retrievePendingBookedAppointments);
+
+// router for creating a new admin account in admin side
+router.post("/adminDashboard/createAdminAccount", [validateCreatingAdminAccount], createAdminAccount);
 
 export default router;

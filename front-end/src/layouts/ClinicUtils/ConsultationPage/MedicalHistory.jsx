@@ -52,7 +52,7 @@ const MedicalHistoryStepper = ({ patientFormData, handleChange, fieldErrors, set
             console.error("Clinic ID or token is not available in the context or local storage.");
             setLoading(false);
         }
-        
+
         const retrievedMedicalHistoryQuestions = async () => {
             try {
                 const response = await CMS.get(`CMS/clinic-dashboard/retrievedMedicalHistoryConsultationQuestionnaires/${clinicID}`, {
@@ -107,59 +107,70 @@ const MedicalHistoryStepper = ({ patientFormData, handleChange, fieldErrors, set
         }
     }, [loading, medicalHistoryQuestions, questionFieldNamesMemo, setDynamicFieldNames, allowedFieldNamesMemo]);
 
-    if (loading) {
-        return (
-            <>
+    // if (loading) {
+    //     return (
+    //         <>
+    //             <div className="flex justify-center items-center flex-col h-full mt-4">
+    //                 <CircularProgress />
+    //                 <p>Loading</p>
+    //             </div>
+    //         </>
+    //     )
+    // }
+
+    return (
+        <div className="space-y-6">
+            {loading ? (
                 <div className="flex justify-center items-center flex-col h-full mt-4">
                     <CircularProgress />
                     <p>Loading</p>
                 </div>
-            </>
-        )
-    }
+            ) : medicalHistoryQuestions.length === 0 ? (
+                <div className="text-center mt-4 text-gray-600">
+                    No medical history questions retrieved.
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {medicalHistoryQuestions
+                        .filter((question) => {
+                            const matchedEntries = Object.entries(questionFieldNamesMemo).find(
+                                ([, questionText]) => questionText === question.question
+                            )
+                            return matchedEntries && allowedFieldNamesMemo.includes(matchedEntries[0]);
+                        })
+                        .map((question, i) => {
+                            const consultationQuestion = question.question
 
-    return (
-        <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {medicalHistoryQuestions
-                    .filter((question) => {
-                        const matchedEntries = Object.entries(questionFieldNamesMemo).find(
-                            ([, questionText]) => questionText === question.question
-                        )
-                        return matchedEntries && allowedFieldNamesMemo.includes(matchedEntries[0]);
-                    })
-                    .map((question, i) => {
-                        const consultationQuestion = question.question
+                            const matchedEntry = Object.entries(questionFieldNamesMemo).find(
+                                ([, questionText]) => questionText === consultationQuestion
+                            )
 
-                        const matchedEntry = Object.entries(questionFieldNamesMemo).find(
-                            ([, questionText]) => questionText === consultationQuestion
-                        )
+                            const fieldName = matchedEntry ? matchedEntry[0] : `question_${question.id}`
 
-                        const fieldName = matchedEntry ? matchedEntry[0] : `question_${question.id}`
-
-                        return (
-                            <div className="flex flex-col w-full space-y-1 justify-between" key={i}>
-                                <label className="text-sm text-gray-700 font-medium mb-1">
-                                    {consultationQuestion}
-                                </label>
-                                <TextField
-                                    name={fieldName}
-                                    label={`Question ${i + 1}`}
-                                    placeholder={`Enter Details`}
-                                    value={patientFormData[fieldName] || ""}
-                                    onChange={handleChange}
-                                    error={!!fieldErrors[fieldName]}
-                                    helperText={fieldErrors[fieldName] || ""}
-                                    fullWidth
-                                    className="w-full"
-                                    margin="dense"
-                                    autoComplete="off"
-                                />
-                            </div>
-                        )
-                    })
-                }
-            </div>
+                            return (
+                                <div className="flex flex-col w-full space-y-1 justify-between" key={i}>
+                                    <label className="text-sm text-gray-700 font-medium mb-1">
+                                        {consultationQuestion}
+                                    </label>
+                                    <TextField
+                                        name={fieldName}
+                                        label={`Question ${i + 1}`}
+                                        placeholder={`Enter Details`}
+                                        value={patientFormData[fieldName] || ""}
+                                        onChange={handleChange}
+                                        error={!!fieldErrors[fieldName]}
+                                        helperText={fieldErrors[fieldName] || ""}
+                                        fullWidth
+                                        className="w-full"
+                                        margin="dense"
+                                        autoComplete="off"
+                                    />
+                                </div>
+                            )
+                        })
+                    }
+                </div>
+            )}
         </div>
     )
 }
