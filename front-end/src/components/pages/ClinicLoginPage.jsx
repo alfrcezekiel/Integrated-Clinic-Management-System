@@ -93,8 +93,8 @@ function ClinicLoginPortal() {
 
             if (response.data && response.status === 200) {
                 setFieldErrors({})
-                if (response.data.token && response.data.sid) {
-                    login(response.data.token)
+                if (response.data.accessToken && response.data.sid) {
+                    login(response.data.accessToken)
                     userData({
                         sid: response.data.sid.id,
                         scn: response.data.sid.scn,

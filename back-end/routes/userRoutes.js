@@ -55,7 +55,8 @@ import {
     calculateApprovedBookedAppointments,
     calculateDeclinedBookedAppointments,
     retrievePendingBookedAppointments,
-    createAdminAccount
+    createAdminAccount,
+    refreshAccessToken
 } from "../controllers/cms.js";
 import validateRegister from "../middleware/validation.js";
 import patientsLoginValidation from "../middleware/patientsLoginValidation.js";
@@ -250,5 +251,8 @@ router.get("/clinicDashboard/clinic/retrievePendingBookedAppointments", verifyTo
 
 // router for creating a new admin account in admin side
 router.post("/adminDashboard/createAdminAccount", [validateCreatingAdminAccount], createAdminAccount);
+
+// router for refreshing the access token
+router.get("/refreshAccessToken", refreshAccessToken);
 
 export default router;

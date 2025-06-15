@@ -8,6 +8,7 @@ import dayjs from "dayjs";
 import Clinic from '../models/Clinic.Model.js';
 import validatePatientConsultation from '../middleware/ValidatePatientConsulation.js';
 import logger from "../config/winston.js";
+import { promisify } from "util";
 dotenv.config();
 
 // controller logic for a global route
@@ -103,7 +104,15 @@ export const registerPatientAccount = async (req, res) => {
             status
         ]);
 
-        const token = jwt.sign({ id: patientID, email: email }, SECRET_KEY);
+        const payload = {
+            id: patientID,
+            email: email
+        }
+
+        const token = jwt.sign(payload, SECRET_KEY, {
+            expiresIn: "15mins"
+        });
+
         return res.status(StatusCodes.OK).json({
             message: "Patient account registered successfully. Your Account is Pending. Please wait for the admin approval",
             token
@@ -170,13 +179,22 @@ export const loginPatientsAccount = async (req, res) => {
         }
 
         const patients = rows[0];
+
         const SECRET_KEY = process.env.JWT_SECRET;
+        const REFRESH_KEY_SECRET = process.env.REFRESH_KEY_SECRET;
+        if (!SECRET_KEY || !REFRESH_KEY_SECRET) {
+            logger.log("error", `Enviroment variables for refresh and access token are missing`);
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "Failed to login patient account due to missing environment variables"
+            })
+        }
+
         const isPasswordValid = await bcrypt.compare(password, patients.password);
 
         if (!isPasswordValid) {
             return res.status(StatusCodes.UNAUTHORIZED).json({
                 passwordMessage: "Incorrect Password"
-            })
+            });
         }
 
         if (patients.status === "Pending") {
@@ -201,17 +219,27 @@ export const loginPatientsAccount = async (req, res) => {
             }
         }
 
-        // generate a token
-        const token = jwt.sign({
+        // payload for jwt authentication
+        const payload = {
             id: patients.patientID,
             fn: patients.firstName,
             ln: patients.lastName,
             em: patients.email,
             prx: prefix
-        }, SECRET_KEY);
+        }
+
+        // generate a access token
+        const accessToken = jwt.sign(payload, SECRET_KEY, {
+            expiresIn: "15mins"
+        });
+
+        // generate a refresh token
+        const refreshToken = jwt.sign(payload, REFRESH_KEY_SECRET, {
+            expiresIn: "7d"
+        })
 
         // session token
-        req.session.user = {
+        const sid = req.session.user = {
             patientID: patients.patientID,
             sfn: patients.firstName,
             sln: patients.lastName,
@@ -219,10 +247,17 @@ export const loginPatientsAccount = async (req, res) => {
             sprefix: prefix
         }
 
+        res.cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+            secure: false, // Set to true if using HTTPS
+            sameSite: "strict",
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        })
+
         return res.status(StatusCodes.OK).json({
             message: "Login successful",
-            token: token,
-            sid: req.session.user,
+            token: accessToken,
+            sid: sid
         })
     } catch (error) {
         console.error(`Failed to login patient account: ${error}`);
@@ -323,25 +358,48 @@ export const loginAdminAccount = async (req, res) => {
         }
 
         const SECRET_KEY = process.env.JWT_SECRET
+        const REFRESH_KEY_SECRET = process.env.REFRESH_KEY_SECRET;
+
         if (!SECRET_KEY) {
             return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
                 message: "Failed to login admin account"
             });
         }
 
-        const token = jwt.sign({
+        if (!REFRESH_KEY_SECRET) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "Refresh key enviroment variables is not defined"
+            });
+        }
+
+        const payload = {
             id: adminUsers.adminID,
             email: adminUsers.email
-        }, SECRET_KEY);
+        }
+
+        const accessToken = jwt.sign(payload, SECRET_KEY, {
+            expiresIn: "15mins"
+        })
+
+        const refreshToken = jwt.sign(payload, REFRESH_KEY_SECRET, {
+            expiresIn: "7d"
+        })
 
         const sid = req.session.user = {
             id: adminUsers.adminID,
             email: adminUsers.email
         }
 
+        res.cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+            secure: false, // Set to true if using HTTPS
+            sameSite: "strict",
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        })
+
         return res.status(StatusCodes.OK).json({
             message: "Admin Login Successful",
-            token,
+            token: accessToken,
             sid: sid
         })
     } catch (error) {
@@ -442,7 +500,11 @@ export const logout = (req, res) => {
             });
         }
 
-        res.clearCookie("connect.sid"); // remove session details
+        res.clearCookie("refreshToken", {
+            httpOnly: true,
+            secure: false, // Set to true if using HTTPS
+            sameSite: "strict"
+        }); // remove session details
 
         return res.status(StatusCodes.OK).json({
             message: "Logged out successfully"
@@ -682,7 +744,7 @@ export const verifyToken = (req, res, next) => {
             next();
 
         } catch (jwtError) {
-            console.error(`Invalid or Expired token in verify token controller : ${jwtError}`);
+            logger.error(`Invalid or Expired token in verify token controller : ${jwtError}`);
             return res.status(StatusCodes.UNAUTHORIZED).json({
                 message: "Invalid or Expired token"
             });
@@ -1361,6 +1423,13 @@ export const loggedInClinicAccount = async (req, res) => {
             });
         }
 
+        const REFRESH_KEY = process.env.REFRESH_KEY_SECRET;
+        if (!REFRESH_KEY) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "Failed to login clinic account"
+            });
+        }
+
         const isPasswordValid = await bcrypt.compare(password, clinicUsers.password);
         if (!isPasswordValid) {
             return res.status(StatusCodes.UNAUTHORIZED).json({
@@ -1368,11 +1437,19 @@ export const loggedInClinicAccount = async (req, res) => {
             })
         }
 
-        const token = jwt.sign({
+        const payload = {
             id: clinicUsers.clinic_id,
             email: clinicUsers.email,
-            cn: clinicUsers.clinic_name
-        }, SECRET_KEY);
+            clinic_name: clinicUsers.clinic_name
+        }
+
+        const accessToken = jwt.sign(payload, SECRET_KEY, {
+            expiresIn: "15mins"
+        });
+
+        const refreshToken = jwt.sign(payload, REFRESH_KEY, {
+            expiresIn: "7d"
+        });
 
         const sid = req.session.user = {
             id: clinicUsers.clinic_id,
@@ -1380,9 +1457,16 @@ export const loggedInClinicAccount = async (req, res) => {
             sem: clinicUsers.email
         }
 
+        res.cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+            secure: false,
+            sameSite: "strict",
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        })
+
         return res.status(StatusCodes.OK).json({
             message: "Clinic Login Successful",
-            token,
+            accessToken: accessToken,
             sid: sid
         })
     } catch (error) {
@@ -2197,7 +2281,9 @@ export const retrievedPaymentConfirmedDetails = async (req, res) => {
 // controller logic to delete the payment details when the patient clicked the cancel payment
 export const cancelledPaymentDetails = async (req, res) => {
     try {
-        // @param 
+        /**
+         * @param {string} paymentID - The ID of the payment to be cancelled
+         */
         const { paymentID } = req.params;
 
         const payment_id = parseInt(paymentID, 10);
@@ -2791,6 +2877,9 @@ export const calculateApprovedBookedAppointments = async (req, res) => {
 // controller logic for calculating the declined booked appointment of specific clinic
 export const calculateDeclinedBookedAppointments = async (req, res) => {
     try {
+        /**
+         * @param {string} clinicID - The ID of the clinic to calculate declined booked appointments
+         */
         const { clinicID } = req.query;
 
         if (!clinicID || typeof clinicID !== "string") {
@@ -2832,6 +2921,9 @@ export const calculateDeclinedBookedAppointments = async (req, res) => {
 // controller logic for retrieving the pending booked appointments of specific clinic side
 export const retrievePendingBookedAppointments = async (req, res) => {
     try {
+        /**
+         * @param {string} clinicID - The ID of the clinic to retrieve pending booked appointments
+         */
         const { clinicID } = req.query;
 
         if (!clinicID || typeof clinicID !== "string") {
@@ -2909,6 +3001,65 @@ export const createAdminAccount = async (req, res) => {
         logger.log("error", `Failed to create admin account in controller: ${error}`);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             message: "Failed to create admin account"
+        });
+    }
+}
+
+// controller logic for refresh token in all sides in admin, clinic and patient
+export const refreshAccessToken = async (req, res) => {
+    try {
+        /**
+         * @param {string} refreshToken - The refresh token from the cookies
+         */
+        const refreshToken = req.cookies?.refreshToken;
+        logger.info(`Received refresh token: ${refreshToken}`);
+
+        if (!refreshToken) {
+            logger.warn(`Refresh token is missing in cookies`)
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                message: "No refresh token provided",
+                errors: {
+                    refreshToken: "Refresh token is missing in cookies"
+                }
+            });
+        }
+
+        const REFRESH_KEY_SECRET = process.env.REFRESH_KEY_SECRET;
+        const ACCESS_KEY_SECRET = process.env.JWT_SECRET;
+
+        if (!REFRESH_KEY_SECRET || !ACCESS_KEY_SECRET) {
+            logger.error("Environment variables for refresh and access key secrets are not set");
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "Server configuration error"
+            });
+        }
+
+        const verifyAsynncJWT = promisify(jwt.verify);
+
+        // Verify the refresh token
+        const decoded = await verifyAsynncJWT(refreshToken, REFRESH_KEY_SECRET)
+
+        const payload = {
+            id: decoded.id,
+            email: decoded.email,
+        }
+
+        const newAccessToken = jwt.sign(payload, ACCESS_KEY_SECRET, {
+            expiresIn: "15mins"
+        })
+
+        logger.log("info", `Access token refreshed successfully for user ID: ${decoded.id}`);
+
+        return res.status(StatusCodes.OK).json({
+            message: "Access token refreshed successfully",
+            accessToken: newAccessToken
+        })
+
+    } catch (refreshTokenError) {
+        logger.error(`Failed to refresh access token in controller: ${refreshTokenError}`);
+
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to refresh access token"
         });
     }
 }

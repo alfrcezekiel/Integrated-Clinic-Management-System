@@ -364,7 +364,7 @@ const CreateClinicAccount = () => {
                                 <input
                                     className="block w-full text-sm text-gray-700 border mt-2 border-gray-300 rounded-lg cursor-pointer focus:outline-none p-4"
                                     type="file"
-                                    accept=".pdf, .doc,.docx, xlxs"
+                                    accept=".pdf,.doc,.docx,.xlsx"
                                     name="ltoFile"
                                     ref={uploadLtoFileRef}
                                     onChange={handleLTOFileChange}

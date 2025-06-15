@@ -12,7 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuthorization } from "../../../context/auth/useAuthorization.jsx";
 
 const DoctorsDashboard = () => {
-    const { user, token } = useAuthorization();
+    const { user, token, login } = useAuthorization();
     const location = useLocation();
     const clinicName = user?.scn || localStorage.getItem("scn");
     const navigate = useNavigate();
@@ -32,6 +32,7 @@ const DoctorsDashboard = () => {
 
         const navigateBackToHome = () => navigate("/cms");
 
+        // function to retrieve the clinic session data after logged in
         const fetchUserSession = async () => {
             try {
                 const response = await CMS.get("CMS/retrieveSession", {
@@ -57,6 +58,7 @@ const DoctorsDashboard = () => {
             }
         }
 
+        // function to confirm the verification token
         const confirmedTokenVerification = async () => {
             try {
                 const response = await CMS.get("/CMS/confirmVerificationToken", {
@@ -83,11 +85,38 @@ const DoctorsDashboard = () => {
             }
         }
 
+        // funnction to refresh a new access token when the token is expired
+        const refreshAccessToken = async () => {
+            try {
+                const refreshResponse = await CMS.get(`CMS/refreshAccessToken`, {
+                    withCredentials: true,
+                })
+
+                if(refreshResponse.status === 200){
+                    const newAccessToken = refreshResponse.data.accessToken;
+                    login(newAccessToken);
+                }
+            } catch (error) {
+                console.log(`Error in refreshing access token: ${error}`);
+                if(error.response && error.response.status === 401) {
+                    navigateBackToHome();
+                }
+            }
+        }
+        
         if (tokenContext) {
             fetchUserSession();
             confirmedTokenVerification();
         }
-    }, [location.pathname, navigate, tokenContext]);
+
+        const tokenExpirationTime = 15 * 60 * 1000; // 15 minutes
+
+        const interval = setInterval(() => {
+            refreshAccessToken();
+        }, tokenExpirationTime);
+
+        return () => clearInterval(interval);
+    }, [location.pathname, navigate, tokenContext, login]);
 
     return (
         userSession && confirmToken && (

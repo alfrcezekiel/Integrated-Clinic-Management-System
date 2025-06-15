@@ -11,6 +11,8 @@ import session from "express-session";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import requestLogger from "./middleware/logger/requestLogger.js";
+import cookieParser from "cookie-parser";
+
 dotenv.config();
 
 const app = express();
@@ -48,6 +50,9 @@ app.use(rateLimit({
     max: 2000, // Limit each IP to 100 requests per windowMs
     message: "Too many requests from this IP, please try again later."
 }))
+
+// cookie parser middleware to parse cookies
+app.use(cookieParser());
 
 // logging middleware for requests
 app.use(requestLogger);

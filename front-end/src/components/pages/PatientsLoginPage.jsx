@@ -149,6 +149,7 @@ function PatientsLoginPortal() {
             } else {
                 console.error(`Error in logging in patient: ${error}`);
             }
+            console.error("Error in logging in patient:", error);
         }
     }
 
@@ -168,7 +169,7 @@ function PatientsLoginPortal() {
                                 fullWidth
                                 autoComplete="off"
                                 name="email"
-                                helperText={fieldErrors.email ? fieldErrors.email : ""}
+                                helperText={fieldErrors.email || ""}
                                 value={memoizedPatientsLoginDataValue.email}
                                 error={Boolean(fieldErrors.email)}
                                 onChange={handleInputChange}

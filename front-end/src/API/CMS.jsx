@@ -23,10 +23,71 @@ CMS.interceptors.request.use(
     (error) => Promise.reject(error)
 )
 
-CMS.interceptors.response.use(
-    (response) => response,
-    (error) => {
-        const { response } = error;
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+    failedQueue.forEach((prom) => {
+        if (error) {
+            prom.reject(error);
+        } else {
+            prom.resolve(token);
+        }
+    });
+    failedQueue = [];
+}
+
+CMS.interceptors.response.use((response) => response,
+    async (error) => {
+        const { config, response} = error;
+
+        const originalRequest = config;
+        if(response && response.status === 401 && !originalRequest._retry) {
+            if(isRefreshing){
+                return new Promise((resolve, reject) => {
+                    failedQueue.push({resolve, reject})
+                })
+                .then((token) => {
+                    originalRequest.headers.Authorization = `Bearer ${token}`;
+                    return CMS(originalRequest);
+                })
+                .catch((error) => Promise.reject(error));
+            }
+
+            originalRequest._retry = true;
+            isRefreshing = true;
+
+            try {
+                const refreshTokenResponse = await CMS.get(`/CMS/refreshAccessToken`, {
+                    withCredentials: true,
+                });
+
+                if(response.status === 401 && refreshTokenResponse.status === 200) {
+                    const newAccessToken = refreshTokenResponse.data.token;
+                    localStorage.setItem("authToken", newAccessToken);
+                    originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+                    
+                    // Process the queue with the new token
+                    processQueue(null, newAccessToken);
+                    
+                    return CMS(originalRequest);
+                } else {    
+                    // If the refresh token request fails, reject the queue
+                    processQueue(new Error("Refresh token request failed"), null);
+                    return Promise.reject(new Error("Refresh token request failed"));
+                }
+            } catch (refreshTokenError)  {
+                isRefreshing = false;
+                processQueue(refreshTokenError, null);
+                localStorage.removeItem("authToken");
+                window.location.href = "/cms"
+                return Promise.reject(refreshTokenError);
+            } finally {
+                isRefreshing = false;
+            }
+        }
+
+        // return Promise.reject(error);
 
         if (response && response.status === 401) {
             console.warn(`Unauthorized access - ${response.statusText}`);
@@ -43,4 +104,5 @@ CMS.interceptors.response.use(
         return Promise.reject(error);
     }
 )
+
 export default CMS;
