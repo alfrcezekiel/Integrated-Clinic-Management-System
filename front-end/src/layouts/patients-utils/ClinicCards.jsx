@@ -322,13 +322,13 @@ const ClinicCards = () => {
                             component="div"
                         >
                             <div className="text-center p-4">
-                                <ImageList cols={3} rowHeight={164} className="w-7xl h-screen">
+                                <ImageList cols={3} rowHeight={164} className="h-screen">
                                     <ImageListItem>
                                         <img
                                             src={`http://localhost:7506/uploads/clinic_images/${clinic.clinic_image}`}
                                             alt="Clinic Image"
                                             loading="lazy"
-                                            className="w-full h-full object-cover rounded-lg"
+                                            className="min-w-sm h-full object-cover rounded-lg"
                                         />
                                     </ImageListItem>
                                 </ImageList>

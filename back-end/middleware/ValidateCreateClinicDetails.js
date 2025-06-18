@@ -25,11 +25,11 @@ const validateCreateClinicDetails = [
     body("clinicImage")
         .custom((_value, { req }) => {
             if (!req.files || !req.files.clinicImage) {
-                throw new Error("Clinic image is required");
+                throw new Error("Clinic Image is required");
             }
             const clinicImageArray = req.files.clinicImage;
             if (!Array.isArray(clinicImageArray) || clinicImageArray.length === 0) {
-                throw new Error("Clinic image is required");
+                throw new Error("Clinic Image is required");
             }
 
             const file = clinicImageArray[0];
@@ -44,7 +44,7 @@ const validateCreateClinicDetails = [
             }
             
             if (file.size >= maxSize) {
-                throw new Error("File size exceeds 5MB");
+                throw new Error(`File size exceeds 5MB.`);
             }
             return true;
         }),
@@ -78,7 +78,7 @@ const validateCreateClinicDetails = [
             }
 
             if (file.size >= maxSize) {
-                throw new Error("File size exceeds 10MB");
+                throw new Error(`File size exceeds 10MB.`);
             }
             return true;
         }),

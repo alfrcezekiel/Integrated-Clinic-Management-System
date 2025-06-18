@@ -166,7 +166,9 @@ const AddClinic = () => {
 
     // Group clinics by type for better organization
     const getClinicTypes = () => {
-        return [...new Set(clinics.map(clinic => clinic.clinic_type))];
+        return [
+            ...new Set(clinics.map(clinic => clinic.clinic_type))
+        ];
     };
 
     return (

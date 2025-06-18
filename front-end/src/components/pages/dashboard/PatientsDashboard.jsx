@@ -22,7 +22,7 @@ const PatientsDashboard = () => {
     const { token, login } = useAuthorization();
 
     const tokenContext = useMemo(() => token || localStorage.getItem("authToken"), [token]);
-
+    
     useEffect(() => {
         if (!tokenContext) {
             console.error("No token found in context or localStorage");

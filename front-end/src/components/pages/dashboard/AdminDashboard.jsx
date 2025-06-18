@@ -13,7 +13,8 @@ const AdminDashboard = () => {
     const { login, token } = useAuthorization();
     const [confirmToken, setConfirmToken] = useState(null);
 
-    const tokenContext = token;
+    const tokenContext = token || localStorage.getItem("authToken");
+    
     useEffect(() => {
         if (!tokenContext) {
             console.error("No token found in context or localStorage");

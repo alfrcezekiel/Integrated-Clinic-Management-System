@@ -84,6 +84,7 @@ CMS.interceptors.response.use((response) => response,
                 return Promise.reject(refreshTokenError);
             } finally {
                 isRefreshing = false;
+                failedQueue = [];
             }
         }
 

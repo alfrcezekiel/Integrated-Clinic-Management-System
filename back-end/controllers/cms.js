@@ -712,7 +712,9 @@ export const confirmTokenVerification = (req, res) => {
     }
 }
 
-// verify a token to protect routes
+/**
+ * @function controller logic for protecting a route to verify the token
+ */
 export const verifyToken = (req, res, next) => {
     try {
         const authHeader = req.headers.authorization;
@@ -3060,6 +3062,250 @@ export const refreshAccessToken = async (req, res) => {
 
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             message: "Failed to refresh access token"
+        });
+    }
+}
+
+/**
+ * @function controller logic to calculate the number of registered clinics in admin side
+ */
+
+export const totalNumberOfRegisteredClinics = async (req, res) => {
+    try {
+        const total_number_of_registered_clinics = await new Clinic().calculateTotalNumberOfRegisteredClinics();
+        if (total_number_of_registered_clinics.length === 0) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No registered clinics found"
+            });
+        }
+
+        return res.status(StatusCodes.OK).json({
+            totalNumberOfRegisteredClinics: total_number_of_registered_clinics[0].total_number_of_clinics
+        });
+    } catch (error) {
+        logger.error(`Failed to calculate the number of registered clinics in controller: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to calculate the number of registered clinics"
+        });
+    }
+}
+
+/**
+ * @function controller logic to calculate the registered patients accounts in admin side
+ */
+
+export const calculateRegisteredPatientsAccounts = async (req, res) => {
+    try {
+        const total_number_of_registered_patients_accounts = await new Clinic().calculateRegisteredPatientsAccounts();
+        if (total_number_of_registered_patients_accounts.length === 0) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No registered patients accounts found"
+            });
+        }
+
+        return res.status(StatusCodes.OK).json({
+            totalNumberOfRegisteredPatientsAccounts: total_number_of_registered_patients_accounts[0].total_number_of_patients
+        });
+    } catch (error) {
+        logger.error(`Failed to calculate the registered patients accounts in controller: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to calculate the registered patients accounts"
+        });
+    }
+}
+
+/**
+ * @function controller logic to calculate the number of admin account in admin side
+ */
+
+export const calculateNumberOfAdminAccounts = async (req, res) => {
+    try {
+        const clinicInstance = new Clinic();
+        const total_number_of_admin_accounts = await clinicInstance.calculateNumberOfAdminAccounts();
+
+        if (!total_number_of_admin_accounts || total_number_of_admin_accounts.length === 0) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No admin accounts found"
+            });
+        }
+
+        return res.status(StatusCodes.OK).json({
+            totalNumberOfAdminAccounts: total_number_of_admin_accounts[0].total_number_of_admin_accounts
+        });
+    } catch (error) {
+        logger.error(`Failed to calculate the number of admin accounts in controller: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to calculate the number of admin accounts"
+        });
+    }
+}
+
+/**
+ * @ function controller logic  to calculate the consulted patients in specific clinic side
+ */
+
+export const calculateConsultedPatients = async (req, res) => {
+    try {
+        /**
+         * @param for specific clinic id
+         */
+        const { clinicID } = req.query;
+
+        if (!clinicID || typeof clinicID !== "string") {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid! Clinic ID must be a string"
+            })
+        }
+
+        //  convert the clinic id to number
+        const clinic_id = parseInt(clinicID);
+        if (isNaN(clinic_id)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid! Clinic ID must be a number"
+            })
+        }
+
+        const booked_appointment_status = String("Consulted");
+
+        const total_consulted_patients = await new Clinic().calculateConsultedPatients(clinic_id, booked_appointment_status);
+        if (!total_consulted_patients || total_consulted_patients.length === 0) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No consulted patients found"
+            })
+        }
+
+        return res.status(StatusCodes.OK).json({
+            totalConsultedPatients: total_consulted_patients[0].total_consulted_patients
+        })
+    } catch (error) {
+        logger.error(`Failed to calculate the consulted patients in controller: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to calculate the consulted patients"
+        });
+    }
+}
+
+/**
+ * @function controller logic to calculate the cancelled booked appointments in specific clinic side
+ */
+
+export const calculateCancelledBookedAppointments = async (req, res) => {
+    try {
+        /**
+         * @param for specific clinic id
+         */
+
+        const { clinicID } = req.query;
+
+        if (!clinicID || typeof clinicID !== "string") {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid! Clinic ID must be a string"
+            })
+        }
+
+        // convert the clinic id into number
+        const clinic_id = parseInt(clinicID);
+        if (isNaN(clinic_id)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid! Clinic ID must be a number"
+            })
+        }
+
+        const booked_appointment_status = String("Cancelled");
+
+        const total_cancelled_booked_appointments = await new Clinic().calculateCancelledBookedAppointments(clinic_id, booked_appointment_status);
+        if (!total_cancelled_booked_appointments || total_cancelled_booked_appointments.length === 0) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No cancelled booked appointments found"
+            })
+        }
+
+        return res.status(StatusCodes.OK).json({
+            totalCancelledBookedAppointments: total_cancelled_booked_appointments[0].total_cancelled_booked_appointments
+        })
+    } catch (error) {
+        logger.error(`Failed to calculate the cancelled booked appointments in controller: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to calculate the cancelled booked appointments"
+        });
+    }
+}
+
+/**
+ * @function controller logic to calculate the all booked appointments in specific patient account 
+ */
+
+export const calculateTotalBookedAppointmentsOfPatient = async (req, res) => {
+    try {
+
+        /**
+         * @param for specific patient email
+         */
+        const { patientEmail } = req.query;
+
+        if (!patientEmail || typeof patientEmail !== "string") {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid! Patient email must be a string"
+            })
+        }
+
+        const all_booked_appointments = await new Clinic().calculateAllBookedAppointmentsOfPatient(patientEmail);
+        if (!all_booked_appointments || all_booked_appointments.length === 0) {
+            logger.warn("No booked appointments found");
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No booked appointments found"
+            })
+        }
+
+        logger.log("info", `Total booked appointments of patient: ${all_booked_appointments[0].all_booked_appointments}`);
+        return res.status(StatusCodes.OK).json({
+            totalBookedAppointmentsOfPatient: all_booked_appointments[0].all_booked_appointments
+        })
+    } catch (error) {
+        logger.error(`Failed to calculate the total booked appointments of patient in controller: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to calculate the total booked appointments of patient"
+        });
+    }
+}
+
+/**
+ * @function controller to calculate the pending booked appointment of specifc patient account
+ * @description controller logic to calculate the pending booked appointment of specifc patient account
+ */
+
+export const calculatePendingBookedAppointmentsOfPatient = async (req, res) => {
+    try {
+        /**
+         * @param of specific patient account email
+         * @description retrieves the patient email address to calculate the pending booked appointments
+         */
+        const { patientEmail } = req.query;
+
+        if (!patientEmail || typeof patientEmail !== "string"){
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid! Patient email must be a string"
+            })
+        }
+
+        const booked_appointment_status = String("Pending");
+        
+        const pending_booked_appointment_result = await new Clinic().calculatePendingBookedAppointmentOfPatient(patientEmail, booked_appointment_status);
+        if (!pending_booked_appointment_result || pending_booked_appointment_result.length === 0) {
+            logger.warn("No pending booked appointments found");
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No pending booked appointments found"
+            })
+        }
+
+        logger.log("info", `Total pending booked appointments of patient: ${pending_booked_appointment_result[0].pending_booked_appointment}`);
+        return res.status(StatusCodes.OK).json({
+            totalPendingBookedAppointmentsOfPatient: pending_booked_appointment_result[0].pending_booked_appointment
+        })  
+    } catch (error) {
+        logger.log("error", `Failed to calculate the pending booked appointments of patient in controller: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to calculate the pending booked appointments of patient"
         });
     }
 }

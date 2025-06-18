@@ -95,40 +95,79 @@ const CreateClinicAccount = () => {
         const file = e.target.files && e.target.files.length > 0 ? e.target.files[0] : null;
         const MAX_SIZE = 5 * 1024 * 1024; // 5MB
 
-        if(file && file.size > MAX_SIZE) {
-            setFieldErrors((prevState) => ({
-                ...prevState,
-                clinicImage: "File size exceeds 5MB",
-            }));
+        const allowedMimeTypes = ["image/jpeg", "image/png", "image/jpg", "image/webp"];
+        if (!file) {
+            setFieldErrors((prev) => ({
+                ...prev,
+                clinicImage: "Clinic image is required",
+            }))
             return;
-        } else {
-            setFieldErrors((prevState) => ({
-                ...prevState,
-                clinicImage: ""
-            }));
         }
+
+        if (!allowedMimeTypes.includes(file.type)) {
+            setFieldErrors((prev) => ({
+                ...prev,
+                clinicImage: "Invalid file type. Only JPEG, PNG, JPG, and WEBP are allowed.",
+            }))
+            return;
+        }
+
+        if (file.size > MAX_SIZE) {
+            setFieldErrors((prev) => ({
+                ...prev,
+                clinicImage: "File size exceeds 5MB",
+            }))
+            return;
+        }
+
         setClinicImage(file);
+        setFieldErrors((prev) => ({
+            ...prev,
+            clinicImage: "",
+        }))
     }
 
     // function to handle changes in uploading LTO document file
     const handleLTOFileChange = async (e) => {
         const file = e.target.files && e.target.files.length > 0 ? e.target.files[0] : null;
         const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+        const allowedMimeType = [
+            "application/pdf",
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "application/vnd.ms-excel"
+        ]
 
-        if(file && file.size > MAX_SIZE) {
-            setFieldErrors((prevState) => ({
-                ...prevState,
-                ltoFile: "File size exceeds 10MB",
-            }));
+        if (!file) {
+            setFieldErrors((prev) => ({
+                ...prev,
+                ltoFile: "Please select an LTO document"
+            }))
             return;
-        } else {
-            setFieldErrors((prevState) => ({
-                ...prevState,
-                ltoFile: ""
-            }));
+        }
+
+        if (!allowedMimeType.includes(file.type)) {
+            setFieldErrors((prev) => ({
+                ...prev,
+                ltoFile: "Invalid file type. Only PDF, DOC, DOCX, XLS, and XLSX are allowed."
+            }))
+            return;
+        }
+
+        if (file.size > MAX_SIZE) {
+            setFieldErrors((prev) => ({
+                ...prev,
+                ltoFile: "File size exceeds 10MB"
+            }))
+            return;
         }
 
         setClinicLtoFile(file);
+        setFieldErrors((prev) => ({
+            ...prev,
+            ltoFile: ""
+        }))
     };
 
     const handleMouseUpConfirmPassword = (e) => {
@@ -173,7 +212,7 @@ const CreateClinicAccount = () => {
     const submitCreatedClinicAccount = async (e) => {
         try {
             e.preventDefault();
-            if(fieldErrors.clinicImage || fieldErrors.ltoFile) {
+            if (fieldErrors.clinicImage || fieldErrors.ltoFile) {
                 return;
             }
 
@@ -204,21 +243,48 @@ const CreateClinicAccount = () => {
             if (response.status === 200) {
                 alert("Clinic account created successfully!");
                 dispatch(resetForm());
-                if(uploadClinicImageRef.current) uploadClinicImageRef.current.value = "";
-                if(uploadLtoFileRef.current) uploadLtoFileRef.current.value = "";
+                if (uploadClinicImageRef.current) uploadClinicImageRef.current.value = "";
+                if (uploadLtoFileRef.current) uploadLtoFileRef.current.value = "";
 
                 navigate("/admin-dashboard/CreateClinicAccount");
             } else {
                 throw new Error(`Failed to create clinic account: ${response.statusText}`);
             }
         } catch (error) {
-            if (error.response && error.response.status === 400) {
-                const errors = error.response.data.errors || {};
-                setFieldErrors((prev) => ({
-                    ...prev,
-                    ...errors
-                }));
-            } 
+            if (error.response && error.response.data.errors && error.response.data && error.response.status === 400) {
+                const errors = error.response.data.errors;
+
+                if (errors.file) {
+                    if (errors.file === "File size exceeds 5MB." && clinicImage) {
+                        setFieldErrors((prev) => ({
+                            ...prev,
+                            clinicImage: errors.file
+                        }))
+                    } else if (errors.file === "Invalid file type. Only JPEG, PNG, JPG, and WEBP are allowed." && clinicImage) {
+                        setFieldErrors((prev) => ({
+                            ...prev,
+                            clinicImage: errors.file
+                        }))
+                    }
+
+                    if (errors.file === "File size exceeds 10MB." && clinicLtoFile) {
+                        setFieldErrors((prev) => ({
+                            ...prev,
+                            ltoFile: errors.file
+                        }))
+                    } else if (errors.file === "Invalid file type. Only PDF, DOC, DOCX, XLS, and XLSX are allowed." && clinicLtoFile) {
+                        setFieldErrors((prev) => ({
+                            ...prev,
+                            ltoFile: errors.file
+                        }))
+                    }
+                } else {
+                    setFieldErrors((prev) => ({
+                        ...prev,
+                        ...errors
+                    }))
+                }
+            }
             console.error("Error creating clinic account in this component:", error);
         }
     }
@@ -340,13 +406,13 @@ const CreateClinicAccount = () => {
                                 />
                             </div>
                             <div className="flex-col">
-                                <label className="font-semibold text-gray-700">
+                                <label htmlFor="clinicImage" className="font-semibold text-gray-700">
                                     Upload Image
                                 </label>
                                 <input
                                     className="block w-full text-sm text-gray-700 border mt-2 border-gray-300 rounded-lg cursor-pointer focus:outline-none p-4"
                                     type="file"
-                                    accept="image/*"
+                                    accept="image/jpeg,image/png,image/jpg,image/webp"
                                     onChange={handleFileImageChange}
                                     name="clinicImage"
                                     ref={uploadClinicImageRef}
@@ -354,17 +420,19 @@ const CreateClinicAccount = () => {
                                     autoComplete="off"
                                 />
                                 {fieldErrors.clinicImage && (
-                                    <FormHelperText error>{fieldErrors.clinicImage}</FormHelperText>
+                                    <FormHelperText error className="mt-1 text-sm text-red-600">
+                                        {fieldErrors.clinicImage}
+                                    </FormHelperText>
                                 )}
                             </div>
                             <div className="flex-col">
-                                <label className="font-semibold text-gray-700">
+                                <label htmlFor="ltoFile" className="font-semibold text-gray-700">
                                     License To Operate (LTO) Document
                                 </label>
                                 <input
                                     className="block w-full text-sm text-gray-700 border mt-2 border-gray-300 rounded-lg cursor-pointer focus:outline-none p-4"
                                     type="file"
-                                    accept=".pdf,.doc,.docx,.xlsx"
+                                    accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
                                     name="ltoFile"
                                     ref={uploadLtoFileRef}
                                     onChange={handleLTOFileChange}
@@ -372,7 +440,9 @@ const CreateClinicAccount = () => {
                                     placeholder="Upload License To Operate (LTO) Document"
                                 />
                                 {fieldErrors.ltoFile && (
-                                    <FormHelperText error>{fieldErrors.ltoFile}</FormHelperText>
+                                    <FormHelperText error className="mt-1 text-sm text-red-600">
+                                        {fieldErrors.ltoFile}
+                                    </FormHelperText>
                                 )}
                             </div>
                         </div>

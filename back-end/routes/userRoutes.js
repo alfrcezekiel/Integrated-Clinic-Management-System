@@ -56,7 +56,14 @@ import {
     calculateDeclinedBookedAppointments,
     retrievePendingBookedAppointments,
     createAdminAccount,
-    refreshAccessToken
+    refreshAccessToken,
+    totalNumberOfRegisteredClinics,
+    calculateRegisteredPatientsAccounts,
+    calculateNumberOfAdminAccounts,
+    calculateConsultedPatients,
+    calculateCancelledBookedAppointments,
+    calculateTotalBookedAppointmentsOfPatient,
+    calculatePendingBookedAppointmentsOfPatient
 } from "../controllers/cms.js";
 import validateRegister from "../middleware/validation.js";
 import patientsLoginValidation from "../middleware/patientsLoginValidation.js";
@@ -254,5 +261,43 @@ router.post("/adminDashboard/createAdminAccount", [validateCreatingAdminAccount]
 
 // router for refreshing the access token
 router.get("/refreshAccessToken", refreshAccessToken);
+
+/**
+ * @exports router for calculating the total number of registered clinics in admin side
+ */
+router.get("/adminDashboard/totalNumberOfRegisteredClinics", verifyToken, totalNumberOfRegisteredClinics);
+
+/**
+ * @exports router for calculating the number of registered patients account in admin side
+ */
+router.get("/adminDashboard/totalNumberOfRegisteredPatientsAccounts", verifyToken, calculateRegisteredPatientsAccounts);
+
+/**
+ * @exports router for calculating the admin accounts in admin side
+ */
+
+router.get("/adminDashboard/totalNumberOfAdminAccounts", verifyToken, calculateNumberOfAdminAccounts);
+
+/**
+ * @exports router for calculating the consulted patients in specific clinic side
+ */
+router.get(`/clinicDashboard/calculatedConsultedPatients`, verifyToken, calculateConsultedPatients);
+
+/**
+ * @exports router for calculating the cancelled booked appointment in specific clinic side
+ */
+
+router.get("/clinicDashboard/calculateCancelledBookedAppointments", verifyToken, calculateCancelledBookedAppointments);
+
+/**
+ * exports router for calculating all booked appointments of specific patient account
+ */
+
+router.get("/patient/dashboard/calculateAllBookedAppointments", verifyToken, calculateTotalBookedAppointmentsOfPatient);
+
+/**
+ * @exports router for calculating the pending booked appontments of specific patient account
+ */
+router.get("/patient/dashboard/calculatePendingBookedAppointments", verifyToken, calculatePendingBookedAppointmentsOfPatient);
 
 export default router;

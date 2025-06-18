@@ -1,31 +1,17 @@
 import PropTypes from 'prop-types';
-import statisticsCardsData from "../../data/statistics-cards-data";
-import StatisticsCard from "../cards/statistics-card";
-import Typography from "@mui/material/Typography";
 import PatientsViewAppointmentCalendar from '../../layouts/patients-utils/ViewPatientCalendar/PatientViewApoointmentsCalendar';
+import PatientAppointmentsCard from '../cards/patient_side_cards/PatientAppointmentsCard';
+
 function DashboardHome() {
     return (
         <>
-            <div className="mt-12 p-2">
-                <div className="mb-12 grid gap-y-10 gap-x-6 md:grid-cols-2 xl:grid-cols-4">
-                    {statisticsCardsData.map(({ icon: Icon, title, footer, ...rest }) => (
-                        <StatisticsCard
-                            key={title}
-                            {...rest}
-                            title={title}
-                            icon={<Icon/>}
-                            footer={
-                                <Typography className="font-normal text-blue-gray-600">
-                                    <strong className={footer.color}>{footer.value}</strong>
-                                    &nbsp;{footer.label}
-                                </Typography>
-                            }
-                        />
-                    ))}
+            <div className="p-4">
+                <div className="p-2 rounded-lg overflow-auto">
+                    <PatientAppointmentsCard />
                 </div>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow-md overflow-auto">
-                <PatientsViewAppointmentCalendar />
+                <div className="p-2 rounded-lg shadow-lg overflow-auto">
+                    <PatientsViewAppointmentCalendar />
+                </div>
             </div>
         </>
     )

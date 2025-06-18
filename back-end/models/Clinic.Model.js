@@ -1,9 +1,11 @@
 import conn from "../db/mysql/conn.js";
 import logger from "../config/winston.js";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 
-// created a new instance of class Clinic Models
+/**
+ * @class Clinic Model
+ * @description This class represents the clinic model and provides methods for interacting with the clinic table in the database.
+ */
 class Clinic {
     constructor() {
         this.conn = conn;
@@ -1102,11 +1104,11 @@ class Clinic {
     retrieveClinicPendingBookedAppointments = async (clinicID, booked_appointment_status) => {
         this.connection = await this.conn.getConnection();
         try {
-            if(!clinicID || typeof clinicID !== "number"){
+            if (!clinicID || typeof clinicID !== "number") {
                 throw new Error("Invalid! clinic id must be a number");
             }
 
-            if(!booked_appointment_status || typeof booked_appointment_status !== "string"){
+            if (!booked_appointment_status || typeof booked_appointment_status !== "string") {
                 throw new Error("Invalid! booked appointment status must be a string");
             }
 
@@ -1156,7 +1158,7 @@ class Clinic {
         try {
             this.connection.beginTransaction(); // starts a transaction in creating admin account
 
-            if(!admin_data || typeof admin_data !== "object") {
+            if (!admin_data || typeof admin_data !== "object") {
                 throw new Error("Invalid admin data");
             }
 
@@ -1168,17 +1170,17 @@ class Clinic {
             const email_address = String(email);
             const admin_password = String(password);
 
-            if(!email_address || !admin_password) {
+            if (!email_address || !admin_password) {
                 throw new Error("Email and password are required to create an admin account");
             }
-            
-            const fields =[
+
+            const fields = [
                 "email",
                 "password"
             ]
-            
+
             const admin_password_hash = await bcrypt.hash(admin_password, 10);
-            
+
             const values = [
                 email_address,
                 admin_password_hash
@@ -1201,18 +1203,298 @@ class Clinic {
             const [result] = await this.connection.query(query, values);
 
             const commitQuery = await this.connection.commit(); // commits the transaction in creating admin account
-            if(!commitQuery) {
+            if (!commitQuery) {
                 throw new Error("Failed to commit transaction in creating admin account");
             }
 
             return result;
         } catch (error) {
             const rollbackQuery = await this.connection.rollback(); // rollback the transaction in creating admin account
-            if(!rollbackQuery){
+            if (!rollbackQuery) {
                 logger.log("error", `Error rolling back transaction in creating admin account: ${error}`);
             }
-            
+
             logger.error(`Error in creating admin account in method model: ${error}`);
+            throw error;
+        } finally {
+            this.connection.release();
+        }
+    }
+
+    /**
+     * @method for calculating the total number of registered clinics in admin side
+     */
+
+    calculateTotalNumberOfRegisteredClinics = async () => {
+        this.connection = await this.conn.getConnection();
+        try {
+            const query = `
+                SELECT COUNT(clinic_id) AS total_number_of_clinics
+                FROM clinic;
+            `
+
+            const [rows] = await this.connection.query(query);
+
+            return rows;
+        } catch (error) {
+            logger.error(`Error in calculating the total number of registered clinics in method model: ${error}`);
+            throw error;
+        } finally {
+            this.connection.release();
+        }
+    }
+
+    /**
+     * @method for calculating the number of registered patients accounts in admin side
+     */
+
+    calculateRegisteredPatientsAccounts = async () => {
+        this.connection = await this.conn.getConnection();
+        try {
+            const query = `
+                SELECT COUNT(patientID) AS total_number_of_patients
+                FROM patientsregisteraccount1;
+            `
+
+            const [rows] = await this.connection.query(query);
+
+            return rows;
+        } catch (error) {
+            logger.error(`Error in calculating the number of registered patients accounts in method model: ${error}`);
+            throw error;
+        } finally {
+            this.connection.release();
+        }
+    }
+
+    /**
+     * @method for calculating the number of admin accounts in admin side
+     */
+
+    calculateNumberOfAdminAccounts = async () => {
+        this.connection = await this.conn.getConnection();
+        try {
+            const query = `
+                SELECT COUNT(adminID) AS total_number_of_admin_accounts
+                FROM cmsadmin;
+            `
+
+            const [rows] = await this.connection.query(query);
+
+            return rows;
+        } catch (error) {
+            logger.error(`Error in calculating the number of admin accounts in method model: ${error}`);
+            throw error;
+        } finally {
+            this.connection.release();
+        }
+    }
+
+    /**
+     * @method for calculating the number of consulted patients in specific clinic side
+     */
+
+    calculateConsultedPatients = async (clinicID, bookedAppointmentStatus) => {
+        this.connection = await this.conn.getConnection();
+        try {
+            if (!clinicID || typeof clinicID !== "number") {
+                throw new Error("Invalid! clinic id must be a number");
+            }
+
+            if (!bookedAppointmentStatus || typeof bookedAppointmentStatus !== "string") {
+                throw new Error("Invalid! booked appointment status must be a string");
+            }
+
+            this.connection.beginTransaction();
+
+            const query = `
+                SELECT COUNT(*) AS total_consulted_patients 
+                FROM (
+                    SELECT appointmentID FROM patientsappointment 
+                    WHERE clinic_id = ?
+                    AND status = ?
+                    UNION ALL
+                    SELECT id FROM clinic_appointments
+                    WHERE clinic_id = ?
+                    AND
+                    status = ?
+                ) AS combined_consulted_patients;
+            `
+
+            const values = [
+                clinicID,
+                bookedAppointmentStatus,
+                clinicID,
+                bookedAppointmentStatus
+            ]
+
+            const [rows] = await this.connection.query(query, values);
+
+            const commitQuery = await this.connection.commit(); // commit the transaction in calculating consulted patients
+            if (!commitQuery) {
+                throw new Error("Failed to commit transaction in calculating consulted patients");
+            }
+
+            return rows;
+        } catch (error) {
+            const rollbackQuery = this.connection.rollback();
+            if (!rollbackQuery) {
+                logger.log("error", `Error rolling back transaction in calculating consulted patients: ${error}`);
+            }
+
+            logger.error(`Error in calculating the number of consulted patients in method model: ${error}`);
+            throw error;
+        } finally {
+            this.connection.release();
+        }
+    }
+
+    /**
+     * method for calculating the cancelled booked appointments in specific clinic side
+     */
+
+    calculateCancelledBookedAppointments = async (clinicID, bookedAppointmentStatus) => {
+        this.connection = await this.conn.getConnection();
+        try {
+            if (!clinicID || typeof clinicID !== "number") {
+                throw new Error("Invalid! Clinic ID must be a number");
+            }
+
+            if (!bookedAppointmentStatus || typeof bookedAppointmentStatus !== "string") {
+                throw new Error("Invalid! Booked appointment status must be a string");
+            }
+
+            this.connection.beginTransaction();
+
+            const query = `
+                SELECT COUNT(*) AS total_cancelled_booked_appointments
+                FROM (
+                    SELECT appointmentID FROM patientsappointment 
+                    WHERE clinic_id = ?
+                    AND status = ?
+                    UNION ALL
+                    SELECT id FROM clinic_appointments
+                    WHERE clinic_id = ?
+                    AND
+                    status = ?
+                ) AS combined_cancelled_booked_appointments;
+            `
+
+            const values = [
+                clinicID,
+                bookedAppointmentStatus,
+                clinicID,
+                bookedAppointmentStatus
+            ]
+
+            const [rows] = await this.connection.query(query, values);
+
+            const commitQuery = await this.connection.commit(); // commit the transaction in calculating cancelled booked appointments
+            if (!commitQuery) {
+                throw new Error("Failed to commit transaction in calculating cancelled booked appointments");
+            }
+
+            return rows;
+        } catch (error) {
+            const rollbackQuery = this.connection.rollback();
+            if (!rollbackQuery) {
+                logger.log("error", `Error rolling back transaction in calculating cancelled booked appointments: ${error}`);
+            }
+
+            logger.error(`Error in calculating the number of cancelled booked appointments in method model: ${error}`);
+            throw error;
+        } finally {
+            this.connection.release();
+        }
+    }
+
+    /**
+     * @method for calculating the number of total booked appointments of specific patient account
+     */
+    calculateAllBookedAppointmentsOfPatient = async (patientEmail) => {
+        this.connection = await this.conn.getConnection();
+        try {
+            if (!patientEmail || typeof patientEmail !== "string") {
+                throw new Error("Invalid! Patient email must be a string");
+            }
+
+            this.connection.beginTransaction();
+
+            const query = `
+                SELECT COUNT(*) AS all_booked_appointments FROM (
+                    SELECT appointmentID 
+                    FROM patientsappointment
+                    WHERE email = ? 
+                ) AS combined_all_booked_appointments;
+            `
+
+            const value = [
+                patientEmail
+            ]
+
+            const [rows] = await this.connection.query(query, value);
+
+            const commitQuery = this.connection.commit();
+            if (!commitQuery) {
+                throw new Error("Failed to commit transaction in calculating all booked appointments of patient");
+            }
+
+            return rows;
+        } catch (error) {
+            logger.error(`Error in calculating the number of total booked appointments of specific patient account in method model: ${error}`);
+            throw error;
+        } finally {
+            this.connection.release();
+        }
+    }
+
+    /**
+     * @method for calculating the pending booked appointment of specifc patient account
+     */
+
+    calculatePendingBookedAppointmentOfPatient = async (patientEmail, bookedAppointmentStatus) => {
+        this.connection = await this.conn.getConnection();
+        try {
+            if (!patientEmail || typeof patientEmail !== "string") {
+                throw new Error("Invalid! Patient email must be a string");
+            }
+
+            if (!bookedAppointmentStatus || typeof bookedAppointmentStatus !== "string") {
+                throw new Error("Invalid! Booked appointment status must be a string")
+            }
+
+            this.connection.beginTransaction();
+
+            const query = `
+                SELECT COUNT(*) AS pending_booked_appointment
+                FROM (
+                    SELECT appointmentID FROM patientsappointment
+                    WHERE email = ?
+                    AND
+                    status = ?
+                ) AS combined_pending_booked_appointment;
+            `
+
+            const values = [
+                patientEmail,
+                bookedAppointmentStatus
+            ]
+
+            const [rows] = await this.connection.query(query, values);
+
+            const commitQuery = this.connection.commit();
+            if (!commitQuery) {
+                throw new Error("Failed to commit transaction in calculating pending booked appointment of patient");
+            }
+
+            return rows;
+        } catch (error) {
+            const rollbackQuery = this.connection.rollback();
+            if (!rollbackQuery) {
+                logger.log("error", `Error rolling back transaction in calculating pending booked appointment of patient: ${error}`);
+            }
+
+            logger.error(`Error in calculating the number of pending booked appointments of specific patient account in method model: ${error}`);
             throw error;
         } finally {
             this.connection.release();

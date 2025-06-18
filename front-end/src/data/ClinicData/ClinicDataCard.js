@@ -11,6 +11,8 @@ import PatientsCount from "../../hooks/usePatientsCount";
 import CalculatePendingBookedAppointments from "../../hooks/ClinicStatsHooks/useCalculatePendingBookedAppointments";
 import TotalApprovedBookedAppointments  from "../../hooks/ClinicStatsHooks/useTotalApprovedBookedAppointments";
 import CalculateDeclinedBookedAppointments from "../../hooks/ClinicStatsHooks/CalculateDeclinedBookeAppoinments";
+import CalculateConsultedPatients from "../../hooks/ClinicStatsHooks/CalculateConsultedPatients";
+import CalculateCancelledBookedAppointments from "../../hooks/ClinicStatsHooks/CalculateCancelledBookedAppointments";
 
 // this data is used to display the clinic stats in the dashboard
 const useClinicStatsData = () => {
@@ -19,6 +21,8 @@ const useClinicStatsData = () => {
     const totalPendingBookedAppointments = CalculatePendingBookedAppointments();
     const totalApprovedBookedAppointments = TotalApprovedBookedAppointments();
     const totalDeclinedBookedAppointments = CalculateDeclinedBookedAppointments();
+    const totalNumberOfConsultedPatients = CalculateConsultedPatients();
+    const totalCancelledBookedAppointments = CalculateCancelledBookedAppointments();
 
     return [
         {
@@ -53,13 +57,13 @@ const useClinicStatsData = () => {
         },
         {
             label: "Consulted Patients",
-            value: 100,
+            value: totalNumberOfConsultedPatients,
             Icon: ChatBubbleLeftIcon,
             bgColor: "bg-purple-100",
         },
         {
             label: "Cancelled Appointments",
-            value: 0,
+            value: totalCancelledBookedAppointments,
             Icon: XCircleIcon,
             bgColor: "bg-orange-100",
         }
