@@ -12,6 +12,7 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import requestLogger from "./middleware/logger/requestLogger.js";
 import cookieParser from "cookie-parser";
+import * as errorHandler from "./middleware/errorHandler/errorHandler.js";
 
 dotenv.config();
 
@@ -86,6 +87,11 @@ app.use((req, res) => {
 
 // error handling for server error
 app.options("*", cors());
+
+/**
+ * error handler
+ */
+app.use(errorHandler.internalServerError)
 
 // function for statrting the server
 const startServer = async () => {

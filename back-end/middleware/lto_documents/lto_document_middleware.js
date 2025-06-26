@@ -1,61 +1,53 @@
 import multer from 'multer';
+import fs from "fs"
+import logger from "../../config/winston.js"
 
-export const handleMulterError = (multerUpload) => {
-    return (req, res, next) => {
-        multerUpload(req, res, (err) => {
-            if (err instanceof multer.MulterError) {
-                // Handle file size errors
-                if (err.code === 'LIMIT_FILE_SIZE') {
-                    // Check which file caused the error
-                    if (req.files && req.files.clinicImage) {
-                        return res.status(400).json({
-                            errors: {
-                                file: "File size exceeds 5MB."
-                            }
-                        });
-                    } else if (req.files && req.files.ltoFile) {
-                        return res.status(400).json({
-                            errors: {
-                                file: "File size exceeds 10MB."
-                            }
-                        });
-                    }
-                    return res.status(400).json({
-                        errors: {
-                            file: "File size exceeds the limit"
-                        }
-                    });
-                }
+/**
+ * @description handles uploading middleware for LTO documents
+ */
+const storage = multer.diskStorage({
+    destination: (req, _file, cb) => {
+        const uploadPath = "uploads/lto_documents"
 
-                // Handle file type errors
-                if (err.message.includes('Only JPEG, PNG, JPG, and WEBP are allowed')) {
-                    return res.status(400).json({
-                        errors: {
-                            file: "Invalid file type. Only JPEG, PNG, JPG, and WEBP are allowed."
-                        }
-                    });
-                } else if (err.message.includes('Only PDF, DOC, DOCX, XLS, and XLSX are allowed')) {
-                    return res.status(400).json({
-                        errors: {
-                            file: "Invalid file type. Only PDF, DOC, DOCX, XLS, and XLSX are allowed."
-                        }
-                    });
-                }
+        if (!fs.existsSync(uploadPath)) {
+            fs.mkdirSync(uploadPath, { recursive: true })
+        }
 
-                return res.status(400).json({
-                    errors: {
-                        file: "An error occurred while uploading the file. Please try again."
-                    }
-                });
-            } else if (err) {
-                return res.status(500).json({
-                    errors: {
-                        file: "An unexpected error occurred. Please try again."
-                    }
-                });
-            }
+        cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+        const dateSuffix = Date.now();
+        const randomString = Math.random().toString(36).substring(2, 8); // Generate a random string
+        const sanitizedOriginalName = file.originalname.replace(/\s+/g, "_");
+        cb(null, `${dateSuffix}_${randomString}_${sanitizedOriginalName}`);
+    }
+});
 
-            next();
-        });
-    };
+const ltoFileFilter = (_req, file, cb) => {
+    const documentTypes = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    ];
+
+    logger.info(`Received file: ${file.originalname} | Field: ${file.fieldname} | MIME: ${file.mimetype}`);
+
+    if (file.fieldname === "ltoFile" && documentTypes.includes(file.mimetype)) {
+        cb(null, true);
+    } else {
+        cb(new Error(`Invalid file for ${file.fieldname}`), false);
+    }
 }
+
+const ltoUpload = multer({
+    storage: storage,
+    fileFilter: ltoFileFilter,
+    limits: {
+        fileSize: 1024 * 1024 * 10, // 10MB
+        files: 1
+    },
+})
+
+export default ltoUpload;

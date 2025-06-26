@@ -9,6 +9,7 @@ import Clinic from '../models/Clinic.Model.js';
 import validatePatientConsultation from '../middleware/ValidatePatientConsulation.js';
 import logger from "../config/winston.js";
 import { promisify } from "util";
+import asyncHandler from "../middleware/asyncHandler/asyncHandler.js";
 dotenv.config();
 
 // controller logic for a global route
@@ -1445,8 +1446,12 @@ export const loggedInClinicAccount = async (req, res) => {
             clinic_name: clinicUsers.clinic_name
         }
 
+        /**
+         * @description generate a access token for the clinic account
+         * expires in 1 hour
+         */
         const accessToken = jwt.sign(payload, SECRET_KEY, {
-            expiresIn: "15mins"
+            expiresIn: "1hr"
         });
 
         const refreshToken = jwt.sign(payload, REFRESH_KEY, {
@@ -3282,14 +3287,14 @@ export const calculatePendingBookedAppointmentsOfPatient = async (req, res) => {
          */
         const { patientEmail } = req.query;
 
-        if (!patientEmail || typeof patientEmail !== "string"){
+        if (!patientEmail || typeof patientEmail !== "string") {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 message: "Invalid! Patient email must be a string"
             })
         }
 
         const booked_appointment_status = String("Pending");
-        
+
         const pending_booked_appointment_result = await new Clinic().calculatePendingBookedAppointmentOfPatient(patientEmail, booked_appointment_status);
         if (!pending_booked_appointment_result || pending_booked_appointment_result.length === 0) {
             logger.warn("No pending booked appointments found");
@@ -3301,7 +3306,7 @@ export const calculatePendingBookedAppointmentsOfPatient = async (req, res) => {
         logger.log("info", `Total pending booked appointments of patient: ${pending_booked_appointment_result[0].pending_booked_appointment}`);
         return res.status(StatusCodes.OK).json({
             totalPendingBookedAppointmentsOfPatient: pending_booked_appointment_result[0].pending_booked_appointment
-        })  
+        })
     } catch (error) {
         logger.log("error", `Failed to calculate the pending booked appointments of patient in controller: ${error}`);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
@@ -3309,3 +3314,355 @@ export const calculatePendingBookedAppointmentsOfPatient = async (req, res) => {
         });
     }
 }
+
+/**
+ * @function controller logic to calculate the approved booked appointment of specific patient account
+ */
+
+export const calculateApprovedBookedAppointmentOfPatient = async (req, res) => {
+    try {
+        /**
+         * @param to retrieve the patient account email
+         */
+
+        const { patientEmail } = req.query;
+
+        if (!patientEmail || typeof patientEmail !== "string") {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid! Patient email must be a string"
+            })
+        }
+
+        const booked_appointment_status = String("Approved");
+        const calculated_approved_booked_appointment_result = await new Clinic().calculateApprovedBookedAppointmentOfPatientAccount(patientEmail, booked_appointment_status);
+
+        if (!calculated_approved_booked_appointment_result || calculated_approved_booked_appointment_result.length === 0) {
+            logger.warn("No approved booked appointments found");
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No approved booked appointments found"
+            })
+        }
+
+        logger.log("info", `Total approved booked appointments of patient: ${calculated_approved_booked_appointment_result[0].approved_booked_appointment}`);
+        return res.status(StatusCodes.OK).json({
+            totalApprovedBookedAppointmentsOfPatient: calculated_approved_booked_appointment_result[0].approved_booked_appointment
+        })
+    } catch (error) {
+        logger.log("error", `Failed to calculate the approved booked appointment of patient in controller: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to calculate the approved booked appointment of patient"
+        })
+    }
+}
+
+/**
+ * @function controller logic to calculate the consulted booked appointment of specific patient account
+ */
+
+export const calculateConsultedBookedAppointmentOfPatient = async (req, res) => {
+    try {
+        /**
+         * @param for specific patient account email
+         */
+
+        const { patientEmail } = req.query;
+
+        if (!patientEmail || typeof patientEmail !== "string") {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid! Patient email must be a string"
+            })
+        }
+
+        const booked_appointment_status = String("Consulted");
+        const calculated_consulted_booked_appointment_result = await new Clinic().calculateConsultedBookedAppointmentOfPatientAccount(patientEmail, booked_appointment_status);
+        if (!calculated_consulted_booked_appointment_result || calculated_consulted_booked_appointment_result.length === 0) {
+            logger.warn("No consulted booked appointments found");
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No consulted booked appointments found"
+            })
+        }
+
+        logger.log("info", `Total consulted booked appointments of patient: ${calculated_consulted_booked_appointment_result[0].consulted_booked_appointment}`);
+        return res.status(StatusCodes.OK).json({
+            totalConsultedBookedAppointmentsOfPatient: calculated_consulted_booked_appointment_result[0].consulted_booked_appointment
+        })
+    } catch (error) {
+        logger.log("error", `Failed to calculate the consulted booked appointment of patient in controller: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to calculate the consulted booked appointment of patient"
+        })
+    }
+}
+
+/**
+ * @function controller logic to calculate the cancelled booked appointments of specific patient account
+ */
+
+export const calculateCancelledBookedAppointmentsOfPatient = async (req, res) => {
+    try {
+        /**
+         * @param for specific patient email account
+         */
+
+        const { patientEmail } = req.query;
+
+        if (!patientEmail || typeof patientEmail !== "string") {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid! Patient email must be a string"
+            })
+        }
+
+        const booked_appointment_status = String("Cancelled");
+
+        const calculated_cancelled_booked_appointment_result = await new Clinic().calculateCancelledBookedAppointmentOfPatientAccount(patientEmail, booked_appointment_status);
+
+        if (!calculated_cancelled_booked_appointment_result || calculated_cancelled_booked_appointment_result.length === 0) {
+            logger.warn("No cancelled booked appointments found");
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No cancelled booked appointments found"
+            })
+        }
+
+        logger.log("info", `Total cancelled booked appointments of patient: ${calculated_cancelled_booked_appointment_result[0].cancelled_booked_appointment}`);
+        return res.status(StatusCodes.OK).json({
+            totalCancelledBookedAppointmentsOfPatient: calculated_cancelled_booked_appointment_result[0].cancelled_booked_appointment
+        })
+    } catch (error) {
+        logger.log("error", `Failed to calculate the cancelled booked appointment of specific patient account in controller: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to calculate the cancelled booked appointment of specific patient account"
+        })
+    }
+}
+
+/**
+ * @function controller logic to calculate the declined booked appointment of specific patient account
+ */
+
+export const calculateDeclinedBookedAppointmentsOfPatient = async (req, res) => {
+    try {
+        /**
+         * @param for specific patient email account
+         */
+
+        const { patientEmail } = req.query;
+
+        if (!patientEmail || typeof patientEmail !== "string") {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid! Patient email must be a string"
+            })
+        }
+
+        const booked_appointment_status = String("Declined");
+
+        const calculated_declined_booked_appointment_result = await new Clinic().calculateDeclinedBookedAppointmentOfPatientAccount(patientEmail, booked_appointment_status);
+
+        if (!calculated_declined_booked_appointment_result || calculated_declined_booked_appointment_result.length === 0) {
+            logger.warn("No declined booked appointments found");
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No declined booked appointments found"
+            })
+        }
+
+        logger.log("info", `Total declined booked appointments of patient: ${calculated_declined_booked_appointment_result[0].declined_booked_appointment}`);
+        return res.status(StatusCodes.OK).json({
+            totalDeclinedBookedAppointmentsOfPatient: calculated_declined_booked_appointment_result[0].declined_booked_appointment
+        })
+    } catch (error) {
+        logger.log("error", `Failed to calculate the declined booked appointment of specific patient account in controller: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to calculate the declined booked appointment of specific patient account"
+        })
+    }
+}
+
+/**
+ * @function controller logic to retrieve the approved booked appointment to render in clinic side table
+ */
+
+export const retrieveClinicByIdApprovedBookedAppointments = asyncHandler(async (req, res) => {
+    /**
+     * @param {string} clinicID - The ID of the clinic to retrieve approved booked appointments
+     */
+    const { clinicID } = req.query;
+
+    if (!clinicID || typeof clinicID !== "string") {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+            message: "Invalid! Clinic ID must be a string"
+        })
+    }
+
+    /**
+     * convert the clinic id to number
+     */
+
+    const clinic_id = parseInt(clinicID);
+    if (isNaN(clinic_id)) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+            message: "Invalid clinic ID is not a number"
+        })
+    }
+
+    const booked_appointment_status = "Approved";
+
+    /**
+     * @argument (clinicID, bookedAppointmentStatus) passed an object
+     * @description instantiate the clinic class and call the retrieve clinic by id approved booked appointment model
+     */
+
+    const retrieve_approved_booked_appointment_result = await new Clinic().retrieveClinicByIdApprovedBookedAppointments({
+        clinicID: clinic_id,
+        bookedAppointmentStatus: booked_appointment_status
+    });
+
+    if (!retrieve_approved_booked_appointment_result || retrieve_approved_booked_appointment_result.length === 0) {
+        logger.log("warn", "No approved booked appointments found");
+        return res.status(StatusCodes.NOT_FOUND).json({
+            message: "No approved booked appointments found"
+        })
+    }
+
+    logger.log("info", `Retrieve Approved Booked Appointment in clinic side table: ${retrieve_approved_booked_appointment_result}`)
+    return res.status(StatusCodes.OK).json({
+        retrievedApprovedBookedAppointments: retrieve_approved_booked_appointment_result
+    });
+})
+
+/**
+ * @function controller logic to retrieve declined booked appointment to render in clinic side table
+ */
+export const retrieveClinicByIdDeclinedBookedAppointments = asyncHandler(
+    async (req, res) => {
+        /**
+         * @params {clinicID}
+         */
+        const { clinicID } = req.query;
+
+        if (!clinicID || typeof clinicID !== "string") {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid! Clinic ID must be a string"
+            })
+        }
+
+        /**
+         * convert the clinic id to number
+         */
+
+        const clinic_id = parseInt(clinicID);
+
+        if (isNaN(clinic_id)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid clinic ID is not a number"
+            })
+        }
+
+        const booked_appointment_status = "Declined";
+
+        const retrieve_declined_booked_appointment_result = await new Clinic().retrieveClinicByIdDeclinedBookedAppointments({
+            clinicID: clinic_id,
+            bookedAppointmentStatus: booked_appointment_status
+        })
+
+        if (!retrieve_declined_booked_appointment_result || retrieve_declined_booked_appointment_result.length === 0) {
+            logger.log("warn", "No declined booked appointments found");
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No declined booked appointments found"
+            })
+        }
+
+        logger.log("info", `Retrieve Declined Booked Appointment in clinic side table: ${retrieve_declined_booked_appointment_result}`)
+        return res.status(StatusCodes.OK).json({
+            retrievedDeclinedBookedAppointments: retrieve_declined_booked_appointment_result
+        })
+    }
+)
+
+/**
+ * @function controller logic to modify the booked appointment details of patient in all booked appointments in clinic side table
+ */
+export const findBookedAppointmentByIdToModifyBookedAppointmentDetails = asyncHandler(
+    async (req, res) => {
+        const { bookedAppointmentID } = req.query;
+
+        if (!bookedAppointmentID || typeof bookedAppointmentID !== "string") {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid! Booked appointment ID must be a string"
+            })
+        }
+
+        /**
+         * convert the booked appointment ID to number
+         */
+
+        const clinic_booked_appointment_id = parseInt(bookedAppointmentID);
+
+        if (isNaN(clinic_booked_appointment_id)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid! Booked appointment ID must be a number"
+            })
+        }
+
+        const {
+            firstName,
+            lastName,
+            address,
+            email,
+            phoneNumber,
+            appointmentDate,
+            appointmentTime,
+            gender,
+            status,
+            purposeOfAppointment
+        } = req.body;
+
+        const first_name = String(firstName);
+        const last_name = String(lastName);
+        const present_address = String(address);
+        const email_address = String(email);
+        const phone_number = String(phoneNumber);
+        const selected_appointment_date = dayjs(appointmentDate).format("YYYY-MM-DD");
+        const selected_appointment_time = dayjs(appointmentTime).format("hh:mm");
+        const selected_gender = String(gender);
+        const selected_status = String(status);
+        const selected_purpose_of_appointment = String(purposeOfAppointment);
+
+        /**
+         * @argument booked appointment details to passed in instance of clinic class
+         * @description to modify the booked appointment details of patient in clinic side table
+         */
+        const clinic_modify_booked_appointment_details = {
+            bookedAppointmentID: clinic_booked_appointment_id,
+            firstName: first_name,
+            lastName: last_name,
+            address: present_address,
+            email: email_address,
+            phoneNumber: phone_number,
+            appointmentDate: selected_appointment_date,
+            appointmentTime: selected_appointment_time,
+            gender: selected_gender,
+            status: selected_status,
+            purposeOfAppointment: selected_purpose_of_appointment
+        }
+
+        /**
+         * @instance of clinic class
+         * @description to modify the booked appointment details of patient in clinic side table
+         */
+        const clinic_instance = new Clinic();
+        const all_appointments_modify_booked_appointments_result = await clinic_instance.findBookedAppointmentByIdToModifyBookedAppointmentsInAllAppointments({
+            clinic_modify_booked_appointment_details: clinic_modify_booked_appointment_details
+        });
+
+        if(!all_appointments_modify_booked_appointments_result || all_appointments_modify_booked_appointments_result.length === 0) {
+            logger.log("warn", "No booked appointments found");
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No booked appointments found"
+            })
+        }
+
+        logger.log("info", `Modify Booked Appointment Details in All Appointments Clinic Side Table: ${all_appointments_modify_booked_appointments_result}`);
+        return res.status(StatusCodes.OK).json({
+            message: "Booked Appointment Details Modified Successfully!"
+        })
+    }
+)

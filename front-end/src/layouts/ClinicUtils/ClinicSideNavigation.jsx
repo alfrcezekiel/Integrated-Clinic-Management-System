@@ -77,7 +77,7 @@ const DoctorsSideNav = ({ brandName, routes }) => {
                 {routes.map(({ layout, pages }, index) => (
                     <div key={layout || index} className="mb-4">
                         {pages
-                            .filter((page) => page.name !== "Appointments" && page.name !== "Pending Appointments" && page.name !== "Approved Appointments" && page.name !== "Declined Appointments" && page.name !== "Appointment History" && page.name !== "Consult Patient" && page.name !== "Add Book Appointment" && page.name !== "Clinic Book Appointment" && page.name !== "Clinic Pending Booked Appointment")
+                            .filter((page) => page.name !== "Appointments" && page.name !== "Pending Appointments" && page.name !== "Approved Appointments" && page.name !== "Declined Appointments" && page.name !== "Appointment History" && page.name !== "Consult Patient" && page.name !== "Add Book Appointment" && page.name !== "Clinic Book Appointment" && page.name !== "Clinic Pending Booked Appointment" && page.name !== "Clinic Approved Booked Appointment" && page.name !== "Clinic Declined Booked Appointment" && page.name !== "Modify Booked Appointment")
                             .map(({ icon, name, path }) => (
                                 <NavLink
                                     key={name}
@@ -128,6 +128,50 @@ const DoctorsSideNav = ({ brandName, routes }) => {
                                         .map(({layout, pages}, index) => (
                                             pages
                                                 .filter((page) => page.subgroup === "Pending Booked Appointment")
+                                                .map(({icon, subgroup, path}) => (
+                                                    <NavLink
+                                                        key={index}
+                                                        to={`${layout}${path}`}
+                                                        className={({isActive}) => `flex items-center rounded-lg transition px-4 py-2 ${isActive ? "bg-blue-500 text-white" : "text-gray-700:bg-gray-100"}`}
+                                                    >
+                                                        {icon}
+                                                        <ListItem button="true">
+                                                            <ListItemText primary={subgroup} className="text-black"/>
+                                                        </ListItem>
+                                                    </NavLink>
+                                                ))
+                                        ))
+                                    }
+                                </List>
+                            </Collapse>
+                            <Collapse in={clinicBookAppointmentDropDownOpen} timeout="auto" unmountOnExit className="p-2">
+                                <List component="div" disablePadding>
+                                    {routes
+                                        .map(({layout, pages}, index) => (
+                                            pages
+                                                .filter((page) => page.subgroup === "Approved Booked Appointment")
+                                                .map(({icon, subgroup, path}) => (
+                                                    <NavLink
+                                                        key={index}
+                                                        to={`${layout}${path}`}
+                                                        className={({isActive}) => `flex items-center rounded-lg transition px-4 py-2 ${isActive ? "bg-blue-500 text-white" : "text-gray-700:bg-gray-100"}`}
+                                                    >
+                                                        {icon}
+                                                        <ListItem button="true">
+                                                            <ListItemText primary={subgroup} className="text-black"/>
+                                                        </ListItem>
+                                                    </NavLink>
+                                                ))
+                                        ))
+                                    }
+                                </List>
+                            </Collapse>
+                            <Collapse in={clinicBookAppointmentDropDownOpen} timeout="auto" unmountOnExit className="p-2">
+                                <List component="div" disablePadding>
+                                    {routes
+                                        .map(({layout, pages}, index) => (
+                                            pages
+                                                .filter((page) => page.subgroup === "Declined Booked Appointment")
                                                 .map(({icon, subgroup, path}) => (
                                                     <NavLink
                                                         key={index}
@@ -292,6 +336,26 @@ const DoctorsSideNav = ({ brandName, routes }) => {
                                             key={index}
                                             to={`${layout}${path}`}
                                             className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-white" : "text-gray-700 hover:bg-gray-100"}`}
+                                        >
+                                            {icon}
+                                            <ListItem button="true">
+                                                <ListItemText primary={name} className="text-black" />
+                                            </ListItem>
+                                        </NavLink>
+                                    ))
+                            ))}
+                        </List>
+                    </Collapse>
+                    <Collapse in={patientManagementDropDownOpen} timeout="auto" unmountOnExit className="p-2">
+                        <List component="div" disablePadding>
+                            {routes.map(({layout, pages}, index) => (
+                                pages
+                                    .filter((page) => page.name === "Modify Booked Appointment")
+                                    .map(({icon, name, path}) => (
+                                        <NavLink
+                                            key={index}
+                                            to={`${layout}${path}`}
+                                            className={({isActive}) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-white" : "text-gray-700 hover:bg-gray-100"}`}
                                         >
                                             {icon}
                                             <ListItem button="true">

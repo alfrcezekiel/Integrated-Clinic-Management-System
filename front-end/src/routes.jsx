@@ -7,14 +7,15 @@ import AddIcon from "@mui/icons-material/Add";
 import AddDoctor from "./layouts/adminUtils/Doctors";
 import AdminDashboardHome from "./layouts/adminUtils/AdminHome";
 import ClinicIcon from "@mui/icons-material/LocalHospital";
+import EditIcon from '@mui/icons-material/Edit';
 import ClinicCard from "./layouts/patients-utils/ClinicCards";
 import AddClinicIcon from "@mui/icons-material/LocalHospital"; // Add this import
 import AddClinic from "./layouts/adminUtils/AddClinic";
 import PendingAppointmentTable from "./layouts/patients-utils/PendingAppointmentTable";
 import ApprovedAppointmentsTable from "./layouts/patients-utils/ApprovedAppointmentTable";
-/*
-    modules of clinics dashboard
-*/
+/**
+ * @modules of clinics dashboard
+ */
 import DeclinedAppointmentStatusTable from "./layouts/patients-utils/DeclinedAppointmentTable";
 import PendingAppointmentClinicTable from "./layouts/ClinicUtils/PendingAppointmentClinicTable";
 import ApprovedAppointmentClinicTable from "./layouts/ClinicUtils/ApprovedAppointmentClinicTable";
@@ -24,6 +25,9 @@ import ConsultPatientPage from "./layouts/ClinicUtils/ConsultationPage/ConsultPa
 import AddBookAppointment from "./layouts/ClinicUtils/AddBookedAppointment";
 import ClinicAppointments from "./layouts/ClinicUtils/ClinicBookedAppointmentTables/ClinicAppointments";
 import PendingBookedAppointment from "./layouts/ClinicUtils/ClinicBookedAppointmentTables/PendingBookedAppointment";
+import ApprovedBookedAppointment from "./layouts/ClinicUtils/ClinicBookedAppointmentTables/ApprovedBookedAppointmentTable";
+import DeclinedBookedAppointmentTable from "./layouts/ClinicUtils/ClinicBookedAppointmentTables/DeclinedBookedAppointmentTable";
+import ModifyClinicBookedAppointment from "./layouts/ClinicUtils/ClinicBookedAppointmentTables/ModifyClinicBookedAppointment";
 
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import RegisterPatientsAccountTable from "./layouts/adminUtils/RegisterPatientsAccountTable";
@@ -167,6 +171,29 @@ export const doctorRoutes = [
                 subgroup: "Pending Booked Appointment",
                 path: "/PendingBookedAppointment",
                 element: <PendingBookedAppointment />
+            },
+            {
+                id: 11,
+                icon: <CheckCircleIcon style={iconStyle} />,
+                name: "Clinic Approved Booked Appointment",
+                subgroup: "Approved Booked Appointment",
+                path: "/ApprovedBookedAppointment",
+                element: <ApprovedBookedAppointment />
+            },
+            {
+                id: 12,
+                icon: <CancelIcon style={iconStyle} />,
+                name: "Clinic Declined Booked Appointment",
+                subgroup: "Declined Booked Appointment",
+                path: "/DeclinedBookedAppointment",
+                element: <DeclinedBookedAppointmentTable />
+            },
+            {
+                id: 13,
+                icon: <EditIcon style={iconStyle} />,
+                name: "Modify Booked Appointment",
+                path: "/ModifyBookedAppointment",
+                element: <ModifyClinicBookedAppointment />
             }
         ]
     }

@@ -254,36 +254,10 @@ const CreateClinicAccount = () => {
             if (error.response && error.response.data.errors && error.response.data && error.response.status === 400) {
                 const errors = error.response.data.errors;
 
-                if (errors.file) {
-                    if (errors.file === "File size exceeds 5MB." && clinicImage) {
-                        setFieldErrors((prev) => ({
-                            ...prev,
-                            clinicImage: errors.file
-                        }))
-                    } else if (errors.file === "Invalid file type. Only JPEG, PNG, JPG, and WEBP are allowed." && clinicImage) {
-                        setFieldErrors((prev) => ({
-                            ...prev,
-                            clinicImage: errors.file
-                        }))
-                    }
-
-                    if (errors.file === "File size exceeds 10MB." && clinicLtoFile) {
-                        setFieldErrors((prev) => ({
-                            ...prev,
-                            ltoFile: errors.file
-                        }))
-                    } else if (errors.file === "Invalid file type. Only PDF, DOC, DOCX, XLS, and XLSX are allowed." && clinicLtoFile) {
-                        setFieldErrors((prev) => ({
-                            ...prev,
-                            ltoFile: errors.file
-                        }))
-                    }
-                } else {
-                    setFieldErrors((prev) => ({
-                        ...prev,
-                        ...errors
-                    }))
-                }
+                setFieldErrors((prev) => ({
+                    ...prev,
+                    ...errors
+                }))
             }
             console.error("Error creating clinic account in this component:", error);
         }

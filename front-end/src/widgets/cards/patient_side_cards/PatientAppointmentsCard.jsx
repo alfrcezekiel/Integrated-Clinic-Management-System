@@ -1,17 +1,28 @@
-import { patientAppointmentsData } from '../../../data/patient_side_data/patientAppointmentsData';
 import {
     Assignment as PendingIcon,
     CheckCircle as ApprovedIcon,
     Cancel as CancelledIcon,
     Clear as DeclinedIcon,
-    Event as AllIcon
+    Event as AllIcon,
+    Person as ConsultedIcon
 } from '@mui/icons-material';
 import CalculateAllBookedAppointments from '../../../hooks/patients_data_hooks/CalculateAllBookedAppointment';
 import CalculatePendingBookedAppointments from '../../../hooks/patients_data_hooks/CalculatePendingBookedAppointments';
+import CalculateApprovedBookedAppointments from '../../../hooks/patients_data_hooks/CalculateApprovedBookedAppointment';
+import CalculateConsultedPatients from '../../../hooks/patients_data_hooks/CalculateConsultedPatients';
+import CalculateCancelledBookedAppointments from '../../../hooks/patients_data_hooks/CalculateCancelledBookedAppointments';
+import CalculateDeclinedBookedAppointment from '../../../hooks/patients_data_hooks/CalculateDeclinedBookedAppointment';
 
+/**
+ * @function component for patient appointments card
+ */
 const PatientAppointmentsCard = () => {
     const allBookedAppointments = CalculateAllBookedAppointments();
     const pendingBookedAppointments = CalculatePendingBookedAppointments();
+    const approvedBookedAppointments = CalculateApprovedBookedAppointments();
+    const consultedPatients = CalculateConsultedPatients();
+    const cancelledBookedAppointments = CalculateCancelledBookedAppointments();
+    const declinedBookedAppointments = CalculateDeclinedBookedAppointment();
 
     const patientsData = [
         {
@@ -30,24 +41,31 @@ const PatientAppointmentsCard = () => {
         },
         {
             title: "Approved Booked Appointments",
-            value: patientAppointmentsData.approvedAppointments,
+            value: approvedBookedAppointments,
             Icon: ApprovedIcon,
             gradient: 'from-green-500 to-green-700',
             iconBg: 'bg-green-500'
         },
         {
             title: "Declined Booked Appointments",
-            value: patientAppointmentsData.declinedAppointments,
+            value: declinedBookedAppointments,
             Icon: DeclinedIcon,
             gradient: 'from-red-500 to-red-700',
             iconBg: 'bg-red-500'
         },
         {
             title: "Cancelled Booked Appointments",
-            value: patientAppointmentsData.cancelledAppointments,
+            value: cancelledBookedAppointments,
             Icon: CancelledIcon,
             gradient: 'from-gray-400 to-gray-600',
             iconBg: 'bg-gray-400'
+        },
+        {
+            title: "Consulted Patients",
+            value: consultedPatients,
+            Icon: ConsultedIcon,
+            gradient: 'from-blue-400 to-blue-800',
+            iconBg: 'bg-blue-500'
         }
     ];
 

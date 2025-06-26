@@ -109,7 +109,10 @@ const DoctorsDashboard = () => {
             confirmedTokenVerification();
         }
 
-        const tokenExpirationTime = 15 * 60 * 1000; // 15 minutes
+        /**
+         * set to 1 hour token expiration time
+         */
+        const tokenExpirationTime = 60 * 60 * 1000;
 
         const interval = setInterval(() => {
             refreshAccessToken();

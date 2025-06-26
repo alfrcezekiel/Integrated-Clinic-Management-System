@@ -11,7 +11,6 @@ const CalculateAdminAccounts = () => {
     const { token } = useAuthorization();
 
     const tokenContext = token;
-    console.log(tokenContext);
     useEffect(() => {
         if (!tokenContext) {
             console.error("Token is not available in context state or local storage.");

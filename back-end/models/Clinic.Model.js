@@ -1,7 +1,8 @@
 import conn from "../db/mysql/conn.js";
 import logger from "../config/winston.js";
 import bcrypt from "bcrypt";
-
+import modelErrorHandling from "../middleware/asyncHandler/modelHandler.js";
+import dayjs from "dayjs";
 /**
  * @class Clinic Model
  * @description This class represents the clinic model and provides methods for interacting with the clinic table in the database.
@@ -1500,6 +1501,536 @@ class Clinic {
             this.connection.release();
         }
     }
+
+    /**
+     * @method for calculating the approved booked appointment of specific patient account
+     * @param of specific patient account email
+     * @param of booked appointment status
+     */
+
+    calculateApprovedBookedAppointmentOfPatientAccount = async (patientEmail, bookedAppointmentStatus) => {
+        this.connection = await this.conn.getConnection();
+        try {
+            if (!patientEmail || typeof patientEmail !== "string") {
+                throw new Error("Invalid! Patient email must be a string");
+            }
+
+            if (!bookedAppointmentStatus || typeof bookedAppointmentStatus !== "string") {
+                throw new Error("Invalid! Booked appointment status must be a string");
+            }
+
+            this.connection.beginTransaction();
+
+            const query = `
+                SELECT COUNT(*) AS approved_booked_appointment
+                FROM (
+                    SELECT appointmentID FROM patientsappointment
+                    WHERE email = ?
+                    AND
+                    status = ?
+                ) AS combined_approved_booked_appointment;
+            `
+
+            const values = [
+                patientEmail,
+                bookedAppointmentStatus
+            ]
+
+            const [rows] = await this.connection.query(query, values);
+
+            const commitQuery = this.connection.commit();
+            if (!commitQuery) {
+                throw new Error("Failed to commit transaction in calculating approved booked appointment of patient");
+            }
+
+            return rows;
+        } catch (error) {
+            const rollbackQuery = this.connection.rollback();
+            if (!rollbackQuery) {
+                logger.log("error", `Error rollling back transaction in calculating the approved booked appointment of patient: ${error}`);
+            }
+
+            logger.log("error", `Error in calculating the number of approved booked appointments of specific patient account in method model: ${error}`);
+            throw error;
+        } finally {
+            this.connection.release();
+        }
+    }
+
+    /**
+     * @method for calculating the consulted booked appointment of specific patient account
+     * @param of specific patient account email
+     * @param of booked appointment status
+     */
+
+    calculateConsultedBookedAppointmentOfPatientAccount = async (patientEmail, bookedAppointmentStatus) => {
+        this.connection = await this.conn.getConnection();
+        try {
+            if (!patientEmail || typeof patientEmail !== "string") {
+                throw new Error("Invalid! Patient email must be a string");
+            }
+
+            if (!bookedAppointmentStatus || typeof bookedAppointmentStatus !== "string") {
+                throw new Error("Invalid! Booked appointment status must be a string");
+            }
+
+            this.connection.beginTransaction();
+
+            const fieldsQuery = [
+                "COUNT(*) AS consulted_booked_appointment"
+            ]
+
+            const query = `
+                SELECT ${fieldsQuery}
+                FROM (
+                    SELECT appointmentID
+                    FROM patientsappointment
+                    WHERE email = ?
+                    AND
+                    status = ?
+                ) AS combined_consulted_booked_appointment;
+            `
+
+            const values = [
+                patientEmail,
+                bookedAppointmentStatus
+            ]
+
+            const [rows] = await this.connection.query(query, values);
+
+            const commitQuery = this.connection.commit();
+            if (!commitQuery) {
+                throw new Error("Failed to commit transaction in calculating the number of consulted booked appointments of specific patient account");
+            }
+
+            return rows;
+        } catch (error) {
+            const rollbackQuery = await this.connection.rollback();
+            if (!rollbackQuery) {
+                logger.log("error", `Error rolling back transaction in calculating the number of consulted booked appointments of specific patient account: ${error}`);
+            }
+
+            logger.log("error", `Error in calculating the number of consulted booked appointments of specific patient account in method model: ${error}`);
+            throw error;
+        } finally {
+            this.connection.release();
+        }
+    }
+
+    /**
+     * @method for calculating the cancelled booked appointment chose by specific patient account 
+     * @param of specific patient email account
+     * @param of booked appointmnet status
+     */
+
+    calculateCancelledBookedAppointmentOfPatientAccount = async (patientEmail, bookedAppointmentStatus) => {
+        this.connection = await this.conn.getConnection();
+        try {
+            if (!patientEmail || typeof patientEmail !== "string") {
+                throw new Error("Invalid! Patient email must be a string");
+            }
+
+            if (!bookedAppointmentStatus || typeof bookedAppointmentStatus !== "string") {
+                throw new Error("Invalid! Booked appointment status must be a string");
+            }
+
+            this.connection.beginTransaction();
+
+            const fieldsQuery = [
+                "COUNT(*) AS cancelled_booked_appointment"
+            ]
+
+            const wrapQuery = [
+                `SELECT appointmentID
+                FROM patientsappointment
+                WHERE email = ?
+                AND
+                status = ?
+                `
+            ];
+
+            const query = `
+                SELECT ${fieldsQuery} 
+                FROM (
+                    ${wrapQuery}
+                ) AS combined_cancelled_booked_appointment;
+            `
+
+            const values = [
+                patientEmail,
+                bookedAppointmentStatus
+            ]
+
+            const [rows] = await this.connection.query(query, values);
+
+            const commitQuery = await this.connection.commit();
+            if (!commitQuery) {
+                throw new Error("Failed to commit transaction in calculating the number of cancelled booked appointments of specific patient account");
+            }
+
+            return rows;
+        } catch (error) {
+            const rollbackQuery = await this.connection.rollback();
+            if (!rollbackQuery) {
+                logger.log("error", `Error rolling back transaction in calculating the number of cancelled booked appointments of specific patient account: ${error}`);
+            }
+
+            logger.log("error", `Error in calculating the number of cancelled booked appointments of specific patient account in method model: ${error}`);
+            throw error;
+        } finally {
+            this.connection.release();
+        }
+    }
+
+    /**
+     * @method for calculating the declined booked appointment of specific patient account
+     * @param of specific patient email account
+     * @param of booked appointment status
+     */
+
+    calculateDeclinedBookedAppointmentOfPatientAccount = async (patientEmail, bookedAppointmentStatus) => {
+        this.connection = await this.conn.getConnection();
+        try {
+            if (!patientEmail || typeof patientEmail !== "string") {
+                throw new Error("Invalid! Patient email must be a string");
+            }
+
+            if (!bookedAppointmentStatus || typeof bookedAppointmentStatus !== "string") {
+                throw new Error("Invalid! Booked appointment status must be a string");
+            }
+
+            this.connection.beginTransaction();
+
+            const selectFieldsQuery = [
+                "COUNT(*) AS declined_booked_appointment"
+            ]
+
+            const wrapQuery = [
+                `
+                    SELECT appointmentID
+                    FROM patientsappointment
+                    WHERE email = ?
+                    AND
+                    status = ?
+                `
+            ];
+
+            const query = `
+                SELECT ${selectFieldsQuery}
+                FROM (
+                    ${wrapQuery}
+                ) AS combined_declined_booked_appointment;
+            `
+
+            const values = [
+                patientEmail,
+                bookedAppointmentStatus
+            ]
+
+            const [rows] = await this.connection.query(query, values);
+
+            const commitQuery = this.connection.commit();
+            if (!commitQuery) {
+                throw new Error("Failed to commit transaction in calculating the number of declined booked appointments of specific patient account");
+            }
+
+            return rows;
+        } catch (error) {
+            const rollbackQuery = this.connection.rollback();
+            if (!rollbackQuery) {
+                logger.log("error", `Error rolling back transaction in calculating the number of declined booked appointments of specific patient account: ${error}`);
+            }
+
+            logger.log("error", `Error in calculating the number of declined booked appointments of specific patient account in method model: ${error}`);
+            throw error;
+        } finally {
+            this.connection.release();
+        }
+    }
+
+    /**
+     * @method model to retrieve the approved booked appointment to render in clinic side table
+     */
+    retrieveClinicByIdApprovedBookedAppointments = modelErrorHandling(
+        async (params) => {
+            this.connection = await this.conn.getConnection();
+            try {
+                let { clinicID, bookedAppointmentStatus } = params;
+
+                if (params && typeof params === "object" && !Array.isArray(params)) {
+                    /**
+                     * if params is an object extract the passed params
+                     */
+                    clinicID = params.clinicID;
+                    bookedAppointmentStatus = params.bookedAppointmentStatus;
+                } else {
+                    /**
+                     * if params is array or passed as direct values 
+                     */
+                    clinicID = params;
+                    bookedAppointmentStatus = "Approved";
+                }
+
+                clinicID = Number(clinicID);
+
+                if (!clinicID || isNaN(clinicID)) {
+                    throw new Error("Invalid! Clinic ID must be a number")
+                }
+
+                if (!bookedAppointmentStatus || typeof bookedAppointmentStatus !== "string") {
+                    throw new Error("Invalid! Booked Appointment Status must be a string");
+                }
+
+                await this.connection.beginTransaction();
+
+                const fields = [
+                    "firstName",
+                    "lastName",
+                    "address",
+                    "id",
+                    "email",
+                    "phoneNumber",
+                    "appointmentDate",
+                    "appointmentTime",
+                    "gender",
+                    "purposeOfAppointment",
+                    "clinic_name",
+                    "status"
+                ]
+
+                const query = `
+                    SELECT 
+                        ${fields.join(", ")}
+                    FROM clinic_appointments
+                    WHERE clinic_id = ? 
+                    AND 
+                    status = ?;
+                `
+
+                const values = [
+                    clinicID,
+                    bookedAppointmentStatus
+                ]
+
+                const [rows] = await this.connection.query(query, values);
+
+                const commitQuery = await this.connection.commit();
+                if (!commitQuery) {
+                    throw new Error("Failed to commit transaction in retrieving the approved booked appointment in clinic side")
+                }
+
+                return rows;
+            } catch (error) {
+                if (this.connection) {
+                    const rollbackQuery = await this.connection.rollback();
+                    if (!rollbackQuery) {
+                        logger.log("error", `Failed to rollback the transaction in retrieving approved booked appointment in clinic side table`)
+                    }
+                }
+
+                logger.log("error", `Failed to retrieved approved booked appointment in clinic side table in method: ${error}`);
+                throw error;
+            } finally {
+                if (this.connection) {
+                    await this.connection.release();
+                }
+            }
+        },
+        "Retrieve Approved Appointment in Clinic Side Table"
+    )
+
+    /**
+     * @method model to retrieve the declined booked appointment to render in clinic side table
+     */
+    retrieveClinicByIdDeclinedBookedAppointments = modelErrorHandling(
+        async (params) => {
+            this.connection = await this.conn.getConnection();
+            try {
+                let { clinicID, bookedAppointmentStatus } = params;
+
+                if (params && typeof params === "object" && !Array.isArray(params)) {
+                    /**
+                     * if the passed argument is object its extract the values of params
+                     */
+                    clinicID = params.clinicID;
+                    bookedAppointmentStatus = params.bookedAppointmentStatus;
+                } else {
+                    /**
+                     * if the passed argument is array or passed as direct values 
+                     */
+
+                    clinicID = params;
+                    bookedAppointmentStatus = "Declined";
+                }
+
+                if (!clinicID || isNaN(clinicID)) {
+                    throw new Error("Invalid! Clinic ID must be a number")
+                }
+
+                if (!bookedAppointmentStatus || typeof bookedAppointmentStatus !== "string") {
+                    throw new Error("Invalid! Booked Appointment Status must be a string")
+                }
+
+                await this.connection.beginTransaction();
+
+                const fields = [
+                    "firstName",
+                    "lastName",
+                    "address",
+                    "id",
+                    "email",
+                    "phoneNumber",
+                    "appointmentDate",
+                    "appointmentTime",
+                    "gender",
+                    "purposeOfAppointment",
+                    "clinic_name",
+                    "status"
+                ]
+
+                const query = `
+                    SELECT ${fields.join(",")}
+                    FROM clinic_appointments
+                    WHERE clinic_id = ?
+                    AND
+                    status = ?;
+                `
+
+                const values = [
+                    clinicID,
+                    bookedAppointmentStatus
+                ]
+
+                const [rows] = await this.connection.query(query, values);
+
+                const commitQuery = await this.connection.commit();
+                if (!commitQuery) {
+                    throw new Error("Failed to commit transaction in retrieving the declined booked appointment in clinic side")
+                }
+
+                return rows;
+            } catch (error) {
+                const rollbackQuery = await this.connection.rollback();
+                if (!rollbackQuery) {
+                    logger.log("error", `Failed to rollback the transaction in retrieving declined booked appointment in clinic side table`)
+                }
+
+                logger.log("error", `Failed to retrieved declined booked appointment in clinic side table in method: ${error}`);
+                throw error;
+            } finally {
+                if (this.connection) {
+                    await this.connection.release();
+                }
+            }
+        },
+        "Retrieve Declined Appointment in Clinic Side Table"
+    )
+
+    /**
+     * @method model to modify the clinic booked appointment details in all appointments clinic side table
+     */
+    findBookedAppointmentByIdToModifyBookedAppointmentsInAllAppointments = modelErrorHandling(
+        async (params) => {
+            this.connection = await this.conn.getConnection();
+            try {
+                let { clinic_modify_booked_appointment_details } = params;
+
+                if (params && typeof params === "object" && !Array.isArray(params)) {
+                    /**
+                     * if the passed argument is object its extract the values of params
+                     */
+                    clinic_modify_booked_appointment_details = params.clinic_modify_booked_appointment_details;
+                } else {
+                    /**
+                     * if the passed argument is array or passed as direct values 
+                     */
+                    clinic_modify_booked_appointment_details = params;
+                }
+
+                if (!clinic_modify_booked_appointment_details || typeof clinic_modify_booked_appointment_details !== "object" || Array.isArray(clinic_modify_booked_appointment_details)) {
+                    throw new Error("Invalid! Clinic Modify Booked Appointment Details must be an object")
+                }
+
+                await this.connection.beginTransaction();
+
+                const {
+                    bookedAppointmentID,
+                    firstName,
+                    lastName,
+                    address,
+                    email,
+                    phoneNumber,
+                    appointmentDate,
+                    appointmentTime,
+                    gender,
+                    status,
+                    purposeOfAppointment
+                } = clinic_modify_booked_appointment_details;
+
+                const formattedAppointmentDate = dayjs(appointmentDate).format("YYYY-MM-DD");
+                const formattedAppointmentTime = appointmentTime ? appointmentTime.slice(0, 5) : null;
+
+                const table_name = String("clinic_appointments");
+                const update_fields = [
+                    "firstName = ?",
+                    "lastName = ?",
+                    "address = ?",
+                    "email = ?",
+                    "phoneNumber = ?",
+                    "appointmentDate = ?",
+                    "appointmentTime = ?",
+                    "gender = ?",
+                    "status = ?",
+                    "purposeOfAppointment = ?"
+                ]
+
+                const query = `
+                    UPDATE ${table_name}
+                    SET ${update_fields.join(", ")}
+                    WHERE id = ?;
+                `
+
+                const values = [
+                    firstName,
+                    lastName,
+                    address,
+                    email,
+                    phoneNumber,
+                    formattedAppointmentDate,
+                    formattedAppointmentTime,
+                    gender,
+                    status,
+                    purposeOfAppointment,
+                    bookedAppointmentID
+                ]
+
+                const [result] = await this.connection.query(query, values);
+
+                const commitQuery = await this.connection.commit();
+                if (!commitQuery) {
+                    throw new Error("Failed to commit transaction in modifying the clinic booked appointment details in all appointments clinic side table")
+                }
+
+                return result;
+            } catch (error) {
+                const rollbackQuery = await this.connection.rollback();
+                if (!rollbackQuery) {
+                    logger.log("error", `Failed to rollback the transaction in modifying the clinic booked appointment details in all appointments clinic side table`)
+                }
+
+                logger.log("error", `Failed to modify the clinic booked appointment details in all appointments clinic side table in method: ${error}`);
+                throw error;
+            } finally {
+                if (this.connection) {
+                    /**
+                     * release the connection back to the pool connection
+                     */
+                    await this.connection.release();
+                }
+            }
+        },
+        "Modify Booked Appointment Details in All Appointments Clinic Side Table"
+    )
 }
 
 export default Clinic;

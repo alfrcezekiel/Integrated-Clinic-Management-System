@@ -63,7 +63,14 @@ import {
     calculateConsultedPatients,
     calculateCancelledBookedAppointments,
     calculateTotalBookedAppointmentsOfPatient,
-    calculatePendingBookedAppointmentsOfPatient
+    calculatePendingBookedAppointmentsOfPatient,
+    calculateApprovedBookedAppointmentOfPatient,
+    calculateConsultedBookedAppointmentOfPatient,
+    calculateCancelledBookedAppointmentsOfPatient,
+    calculateDeclinedBookedAppointmentsOfPatient,
+    retrieveClinicByIdApprovedBookedAppointments,
+    retrieveClinicByIdDeclinedBookedAppointments,
+    findBookedAppointmentByIdToModifyBookedAppointmentDetails
 } from "../controllers/cms.js";
 import validateRegister from "../middleware/validation.js";
 import patientsLoginValidation from "../middleware/patientsLoginValidation.js";
@@ -76,13 +83,13 @@ import validateUpdatingDoctor from "../middleware/updatingDoctor.validation.js";
 import validatePatientBookAppointment from "../middleware/patientBookAppointmentValidation.js";
 import validatePatientsDetails from "../middleware/updatePatientsDetailsValidation.js";
 import validateCreateClinicDetails from "../middleware/ValidateCreateClinicDetails.js";
-import upload from "../middleware/fileImage/clinicImage.js";
 import validatePaymentFields from "../middleware/PaymentValidation/PaymentFieldValidation.js";
 import validateQuestionnaires from "../middleware/ValidateQuestionnaires.js";
 import validateBookAppointmentInClinic from "../middleware/ValidateBookAppointmentInClinic.js";
 import validatePatientRegisteredAccount from "../middleware/ValidateRegisteredAccount/validate.patientregisteredaccount.js";
 import validateCreatingAdminAccount from "../middleware/ValidateCreatingAdminAccount.js";
-import { handleMulterError } from "../middleware/lto_documents/lto_document_middleware.js";
+import clinicUploadedFiles from "../middleware/combinedUploads/clinicUploadedFiles.js";
+import validateUploadedFiles from "../middleware/validateUploadedFiles.js";
 
 const router = express.Router();
 
@@ -144,10 +151,7 @@ router.put("/admin-dashboard/updateDoctor/:doctorsID", [validateUpdatingDoctor],
 router.delete("/admin-dashboard/deleteDoctor/:doctorsID", deleteDoctorsDetails);
 
 // router for creating a clinic in admin dashboard
-router.post("/adminDashboard/createClinicAccount", handleMulterError(upload.fields([
-    { name: "clinicImage", maxCount: 1 },
-    { name: "ltoFile", maxCount: 1 }
-])), [validateCreateClinicDetails], createClinic);
+router.post("/adminDashboard/createClinicAccount",clinicUploadedFiles, validateUploadedFiles, [validateCreateClinicDetails], createClinic);
 
 // router for getting the clinic details in admin dashboard
 router.get("/admin-dashboard/clinics", verifyToken, getClinics);
@@ -299,5 +303,43 @@ router.get("/patient/dashboard/calculateAllBookedAppointments", verifyToken, cal
  * @exports router for calculating the pending booked appontments of specific patient account
  */
 router.get("/patient/dashboard/calculatePendingBookedAppointments", verifyToken, calculatePendingBookedAppointmentsOfPatient);
+
+/**
+ * @exports router for calculating the approved booked appointmnet of specific patient account
+ */
+router.get("/patient/dashboard/calculateApprovedBookedAppointment", verifyToken, calculateApprovedBookedAppointmentOfPatient);
+
+/**
+ * @exports router for calculating the consulted patients in specifc patient account
+ */
+
+router.get("/patient/dashboard/calculateConsultedPatients", verifyToken, calculateConsultedBookedAppointmentOfPatient);
+
+/**
+ * @exports router for calculating the cancelled booked appointment in specific patient account
+ */
+
+router.get("/patient/dashboard/calculateCancelledBookedAppointments", verifyToken, calculateCancelledBookedAppointmentsOfPatient);
+
+/**
+ * @exports router for calculating the declined booked appointment in specific patient account
+ */
+
+router.get("/patient/dashboard/calculateDeclinedBookedAppointments", verifyToken, calculateDeclinedBookedAppointmentsOfPatient);
+
+/**
+ * @exports router for retrieving the approved booked appointment to render in clinic side table
+ */
+router.get("/clinic/dashboard/retrieveApprovedBookedAppointments", verifyToken, retrieveClinicByIdApprovedBookedAppointments);
+
+/**
+ * @exports router for retrieving the declined booked appointment to render in clinic side table
+ */
+router.get("/clinic/dashboard/retrieveDeclinedBookedAppointments", verifyToken, retrieveClinicByIdDeclinedBookedAppointments);
+
+/**
+ * @exports router to modify booked appointments details in clinic side table in specific booked appointment details
+ */
+router.put("/cms.api.com/clinic/dashboard/modifyBookedAppointmentDetails", verifyToken, findBookedAppointmentByIdToModifyBookedAppointmentDetails);
 
 export default router;

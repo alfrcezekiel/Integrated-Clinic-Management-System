@@ -10,13 +10,23 @@ import { Edit } from "@mui/icons-material";
 import {
     IconButton
 } from "@mui/material"
+import {
+    useNavigate,
+    useLocation
+} from "react-router-dom";
 
+/**
+ * @function ClinicAppointments
+ * @description This component is used to display the clinic appointments
+ */
 const ClinicAppointments = () => {
     const { user, token } = useAuthorization();
 
     const clinic_id = user?.sid;
     const tokenContext = token;
 
+    const navigate = useNavigate();
+    const location = useLocation();
     const [clinicBookedAppointments, setClinicBookedAppointments] = useState([]);
 
     useEffect(() => {
@@ -48,7 +58,7 @@ const ClinicAppointments = () => {
         if (clinic_id) {
             retrieveClinicBookedAppointments();
         }
-    }, [clinic_id, tokenContext]);
+    }, [clinic_id, tokenContext, location.pathname]);
 
     const clinic_columns = [
         "First Name",
@@ -81,10 +91,28 @@ const ClinicAppointments = () => {
         }
     }
 
+    /**
+     * This function is used to format the date to a more readable format
+     * @param {string} dateString 
+     * @returns {string}
+     */
     const dateFormat = (dateString) => {
         if (!dateString) return "N/A";
         return dayjs(dateString).format("MMMM D, YYYY");
     };
+
+    /**
+     * This function is used to navigate to the modify booked appointment page
+     * @param {number} appointmentID 
+     */
+    const navigateToModifyBookedAppointment = async (appointment) => {
+        console.log(`Edit appointment of ID: ${appointment.id}`)
+        navigate("/doctor-portal/dashboard/ModifyBookedAppointment", {
+            state: {
+                bookedAppointment: appointment
+            }
+        })
+    }
 
     // this function is used to format the time to AM/PM
     const formatTimeToAMPM = (time) => {
@@ -167,7 +195,7 @@ const ClinicAppointments = () => {
                                             {/* Edit button placeholder */}
                                             <IconButton
                                                 aria-label="edit"
-                                                onClick={() => console.log(`Edit appointment ID: ${appointment.id}`)}
+                                                onClick={() => navigateToModifyBookedAppointment(appointment)}
                                                 className="cursor-pointer"
                                             >
                                                 <Edit className="h-5 w-5 inline" color="primary" />
