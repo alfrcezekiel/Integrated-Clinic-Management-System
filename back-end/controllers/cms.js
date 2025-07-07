@@ -3,13 +3,15 @@ import conn from "../db/mysql/conn.js";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import "../main.js";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import dayjs from "dayjs";
 import Clinic from '../models/Clinic.Model.js';
 import validatePatientConsultation from '../middleware/ValidatePatientConsulation.js';
 import logger from "../config/winston.js";
 import { promisify } from "util";
 import asyncHandler from "../middleware/asyncHandler/asyncHandler.js";
+import sendResetPasswordEmail from '../utils/resetPassword.js';
+import crypto from "crypto";
 dotenv.config();
 
 // controller logic for a global route
@@ -57,6 +59,8 @@ export const registerPatientAccount = async (req, res) => {
 
         const saltRounds = 10;
         const status = "Pending"
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const resetTokenExpiry = dayjs().add(10, 'minutes').toISOString();
 
         const hashedPassword = await bcrypt.hash(password, saltRounds);
         const hashedConfirmPassword = await bcrypt.hash(confirmPassword, saltRounds);
@@ -73,8 +77,10 @@ export const registerPatientAccount = async (req, res) => {
             address,
             gender,
             civilStatus,
-            dateOfBirth
-        ) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+            dateOfBirth,
+            resetToken,
+            resetTokenExpiry
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
         // 2nd table of patients register account
         const query2 = `INSERT INTO patientsregisteraccount2 (
@@ -83,8 +89,7 @@ export const registerPatientAccount = async (req, res) => {
             confirmPassword,
             patientID,
             status
-        ) VALUES (?, ?, ?, ?, ?)
-        `;
+        ) VALUES (?, ?, ?, ?, ?)`;
 
         const [result] = await conn.query(query1, [
             firstName,
@@ -93,7 +98,9 @@ export const registerPatientAccount = async (req, res) => {
             address_field,
             gender_field,
             civil_status,
-            formattedDate
+            formattedDate,
+            resetToken,
+            resetTokenExpiry
         ]);
         const patientID = result.insertId;
 
@@ -501,6 +508,7 @@ export const logout = (req, res) => {
             });
         }
 
+        res.clearCookie("connect.sid")
         res.clearCookie("refreshToken", {
             httpOnly: true,
             secure: false, // Set to true if using HTTPS
@@ -3653,7 +3661,7 @@ export const findBookedAppointmentByIdToModifyBookedAppointmentDetails = asyncHa
             clinic_modify_booked_appointment_details: clinic_modify_booked_appointment_details
         });
 
-        if(!all_appointments_modify_booked_appointments_result || all_appointments_modify_booked_appointments_result.length === 0) {
+        if (!all_appointments_modify_booked_appointments_result || all_appointments_modify_booked_appointments_result.length === 0) {
             logger.log("warn", "No booked appointments found");
             return res.status(StatusCodes.NOT_FOUND).json({
                 message: "No booked appointments found"
@@ -3664,5 +3672,217 @@ export const findBookedAppointmentByIdToModifyBookedAppointmentDetails = asyncHa
         return res.status(StatusCodes.OK).json({
             message: "Booked Appointment Details Modified Successfully!"
         })
+    }
+)
+
+/**
+ * @function controller logic to delete all booked appointments details in specific booked appointment details in clinic side table
+ */
+export const deleteBookedAppointmentDetailsInClinicSideTable = asyncHandler(
+    async (req, res) => {
+        const { bookedAppointmentID } = req.query;
+
+        if (!bookedAppointmentID || typeof bookedAppointmentID !== "string") {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid! Booked appointment ID must be a string"
+            })
+        }
+
+        /**
+         * convert the booked appointment id to number
+         */
+        const clinic_booked_appointment_id = parseInt(bookedAppointmentID);
+
+        if (isNaN(clinic_booked_appointment_id)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid Booked Appointment ID must be a number"
+            })
+        }
+
+        /**
+         * instantiate  a clinic instance model
+         */
+        const clinic_instance = new Clinic();
+        if (!clinic_instance instanceof Clinic) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "Failed to instantiate clinic instance model"
+            })
+        }
+
+        const delete_booked_appointment_result = await clinic_instance.deleteBookedAppointmentDetailsInClinicSideTable({
+            bookedAppointmentID: clinic_booked_appointment_id
+        });
+
+        if (!delete_booked_appointment_result || delete_booked_appointment_result.length === 0) {
+            logger.log("warn", "No booked appointments found");
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No booked appointments found"
+            })
+        }
+
+        logger.log("info", `Delete Booked Appointment Details in Clinic Side Table: ${delete_booked_appointment_result}`);
+        return res.status(StatusCodes.OK).json({
+            message: "Booked Appointment Details Deleted Successfully!"
+        })
+    }
+)
+
+/**
+ * function controller logic to send a reset email in patient and clinic side
+ */
+export const sendResetEmail = asyncHandler(
+    async (req, res) => {
+        try {
+            const { email, userType = "Patient" } = req.body;
+
+            if (!email || typeof email !== "string") {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    message: "Invalid! Email must be a string"
+                })
+            }
+
+            if (userType !== "Patient" && userType !== "Clinic") {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    message: "Invalid! User type must be Patient or Clinic"
+                })
+            }
+
+            const email_address = String(email);
+
+            /**
+             * instantiate a clinic class model
+             */
+            const clinicInstance = new Clinic();
+            if (!(clinicInstance instanceof Clinic)) {
+                return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                    message: "Failed to instantiate clinic instance model"
+                })
+            }
+
+            /**
+             * @argument email and user type to passed in instance of clinic class
+             * @description to send a reset email in patient and clinic side
+             */
+            const checkEmailResult = await clinicInstance.sendResetEmail({
+                email: email_address,
+                userType: userType
+            })
+
+            const reset_link = `${process.env.FRONTEND_ENDPOINT}/ResetPassword?token=${checkEmailResult.data.resetToken}&type=${userType}`;
+
+            if (!checkEmailResult || checkEmailResult.length === 0) {
+                logger.log("warn", "No existing email found in the table")
+                return res.status(StatusCodes.NOT_FOUND).json({
+                    message: "No existing email found in the table"
+                })
+            }
+
+            try {
+                /**
+                 * SMTP email to send a link  to reset the password
+                */
+                await sendResetPasswordEmail(
+                    email_address,
+                    checkEmailResult.data.name,
+                    reset_link
+                )
+
+                return res.status(StatusCodes.OK).json({
+                    message: "Reset Email has been sent successfully"
+                })
+            } catch (error) {
+                await clinicInstance.resetPassword({
+                    token: checkEmailResult.data.resetToken,
+                    userType: userType
+                });
+
+                logger.log("error", `Failed to send reset password link: ${error}`)
+                return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                    message: "Failed to send reset password link"
+                })
+            }
+
+        } catch (error) {
+            logger.log("error", `Failed to send reset link in controller: ${error}`)
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "Failed to send reset link in controller"
+            })
+        }
+    }
+)
+
+/**
+ * function controlelr logic to reset the password in clinic and patient side
+ */
+export const resetPassword = asyncHandler(
+    async (req, res) => {
+        try {
+            const { token } = req.query;
+            const { newPassword, confirmPassword, userType } = req.body;
+
+            if (!token || !newPassword || !confirmPassword) {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    success: false,
+                    message: "Token, new password and confirm password are required"
+                });
+            }
+
+            if (newPassword !== confirmPassword) {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    success: false,
+                    message: "Passwords do not match"
+                });
+            }
+
+            const reset_token = String(token);
+            const new_password = String(newPassword);
+            const confirm_password = String(confirmPassword);
+            const user_type = String(userType);
+
+            /**
+             * instantiate a clinic class model
+             */
+            const clinicInstance = new Clinic();
+            if (!(clinicInstance instanceof Clinic)) {
+                return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                    message: "Failed to instantiate clinic instance model"
+                })
+            }
+
+            /**
+             * clinic class with a method of reset password
+             * @returns {object}
+             * @param {string} token
+             * @param {string} newPassword
+             * @param {string} confirmPassword
+             * @param {string} userType
+             */
+            const resetPasswordResult = await clinicInstance.resetPassword({
+                token: reset_token,
+                newPassword: new_password,
+                confirmPassword: confirm_password,
+                userType: user_type
+            })
+
+            /**
+             * checks if the reset password result is empty
+             */
+            if (!resetPasswordResult || resetPasswordResult.length === 0) {
+                logger.log("warn", "No existing email found in the table")
+                return res.status(StatusCodes.NOT_FOUND).json({
+                    message: "No existing email found in the table"
+                })
+            }
+
+            logger.log("info", `Reset Password: ${resetPasswordResult}`);
+            return res.status(StatusCodes.OK).json({
+                message: "Password reset successfully"
+            })
+        } catch (error) {
+            logger.log("error", `Failed to reset password in controller: ${error}`)
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "Failed to reset password in controller"
+            })
+        }
     }
 )

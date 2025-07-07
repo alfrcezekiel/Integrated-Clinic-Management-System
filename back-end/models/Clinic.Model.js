@@ -1,8 +1,10 @@
 import conn from "../db/mysql/conn.js";
 import logger from "../config/winston.js";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import modelErrorHandling from "../middleware/asyncHandler/modelHandler.js";
 import dayjs from "dayjs";
+import crypto from "crypto";
+
 /**
  * @class Clinic Model
  * @description This class represents the clinic model and provides methods for interacting with the clinic table in the database.
@@ -2030,6 +2032,324 @@ class Clinic {
             }
         },
         "Modify Booked Appointment Details in All Appointments Clinic Side Table"
+    )
+
+    /**
+     * @method model to delete all booked appointment details in a specific booked appointment details in clinic side table
+     */
+    deleteBookedAppointmentDetailsInClinicSideTable = modelErrorHandling(
+        async (params) => {
+            this.connection = await this.conn.getConnection();
+            try {
+                let { bookedAppointmentID } = params;
+
+                if (params && typeof params === "object" && !Array.isArray(params)) {
+                    /**
+                     * if the passed argument is object its extract the values of params
+                     */
+                    bookedAppointmentID = params.bookedAppointmentID;
+                } else {
+                    /**
+                     * if the passed argument is array or passed as direct values 
+                     */
+                    bookedAppointmentID = params;
+                }
+
+                /**
+                 * check if the booked appointment is a valid number
+                 */
+                if (!bookedAppointmentID || typeof bookedAppointmentID !== "number") {
+                    throw new Error("Invalid! Booked appointment ID must be a number")
+                }
+
+                await this.connection.beginTransaction();
+
+                const table_name = String("clinic_appointments");
+                const delete_fields = [
+                    "id = ?"
+                ]
+
+                const delete_values = [
+                    bookedAppointmentID
+                ]
+
+                const delete_query = `
+                    DELETE FROM ${table_name}
+                    WHERE ${delete_fields};
+                `
+
+                const [rows] = await this.connection.query(delete_query, delete_values);
+
+                const commitQuery = await this.connection.commit();
+                if (!commitQuery) {
+                    throw new Error("Failed to commit transaction in deleting the clinic booked appointment details in all appointments clinic side table")
+                }
+
+                return rows;
+            } catch (error) {
+                const rollbackQuery = await this.connection.rollback();
+                if (!rollbackQuery) {
+                    logger.log("error", `Failed to rollback the transaction in deleting the clinic booked appointment details in all appointments clinic side table`)
+                }
+
+                logger.log("error", `Failed to delete the clinic booked appointment details in all appointments clinic side table in method: ${error}`);
+                throw error;
+            } finally {
+                if (this.connection) {
+                    /**
+                     * release the connection back to the pool connection
+                     */
+                    await this.connection.release();
+                }
+            }
+        },
+        "Delete Booked Appointment Details in specific booked appointment in all appointments clinic side table"
+    )
+
+    /**
+     * method model to send a reset email to the patient and clinic side
+     */
+    sendResetEmail = modelErrorHandling(
+        async (params) => {
+            this.connection = await this.conn.getConnection();
+            try {
+                let { email, userType = "Patient" } = params;
+
+                if (params && typeof params === "object" && !Array.isArray(params)) {
+                    /**
+                     * if the passed argument is object its extract the values of params
+                     */
+                    email = params.email;
+                    userType = params.userType;
+                } else {
+                    /**
+                     * if the passed argument is array or passed as direct values 
+                     */
+                    email = params;
+                }
+
+                if (!email || typeof email !== "string") {
+                    throw new Error("Invalid! Email must be a string")
+                }
+
+                await this.connection.beginTransaction();
+
+                let query, table, idField, emailField;
+
+                if (userType === "Clinic") {
+                    query = `
+                        SELECT clinic_id AS id, email, clinic_name AS name
+                        FROM clinic 
+                        WHERE email = ?;
+                    `
+
+                    table = "clinic";
+                    idField = "clinic_id";
+                    emailField = "email"
+                } else {
+                    query = `
+                        SELECT patientID AS id, email, CONCAT(firstName, ' ', lastName) AS name 
+                        FROM patientsregisteraccount1
+                        WHERE email = ?;
+                    `
+                    table = "patientsregisteraccount1";
+                    idField = "patientID";
+                    emailField = "email";
+                }
+
+                const value = [
+                    email
+                ]
+
+                const [rows] = await this.connection.query(query, value);
+
+                const users = rows[0];
+
+                const resetToken = crypto.randomBytes(32).toString("hex");
+                const resetTokenExpiry = Date.now() + 10 * 60 * 1000; // 10mins
+
+                const resetTokenHashed = crypto
+                    .createHash("sha256")
+                    .update(resetToken)
+                    .digest("hex")
+
+                const updateQuery = `
+                    UPDATE ${table}
+                    SET resetToken = ?, resetTokenExpiry = ?
+                    WHERE ${idField} = ?;
+                `
+
+                const updateValue = [
+                    resetTokenHashed,
+                    new Date(resetTokenExpiry),
+                    users.id
+                ]
+
+                await this.connection.query(updateQuery, updateValue);
+
+                const commitQuery = await this.connection.commit();
+
+                if (!commitQuery) {
+                    throw new Error("Failed to commit transaction in sending the reset email to the patient and clinic side")
+                }
+
+                return {
+                    success: true,
+                    data: {
+                        id: users.id,
+                        name: users.name,
+                        resetToken: resetToken,
+                        resetTokenExpiry: resetTokenExpiry
+                    }
+                }
+            } catch (error) {
+                const rollbackQuery = await this.connection.rollback();
+                if (!rollbackQuery) {
+                    logger.log("error", `Failed to rollback the transaction in sending the reset email to the patient and clinic side`)
+                }
+
+                logger.log("error", `Failed to send the reset email to the patient and clinic side in method: ${error}`);
+                throw error;
+            } finally {
+                if (this.connection) {
+                    /**
+                     * release the connection back to the pool connection
+                     */
+                    await this.connection.release();
+                }
+            }
+        },
+        "Send Reset Email to the patient and clinic side"
+    )
+
+    /**
+     * @method model logic to reset password either clinic or patient side
+     */
+    resetPassword = modelErrorHandling(
+        async (params) => {
+            this.connection = await this.conn.getConnection();
+            try {
+                await this.connection.beginTransaction();
+                let { token, newPassword, confirmPassword, userType } = params;
+
+                if (params && typeof params === "object" && !Array.isArray(params)) {
+                    params = params;
+                } else {
+                    throw new Error("Invalid! Parameters must be an object")
+                }
+
+                if (!token || !newPassword || !confirmPassword) {
+                    throw new Error("Invalid! Token, new password and confirm password are required")
+                }
+
+                const resetTokenHashed = crypto
+                    .createHash("sha256")
+                    .update(token)
+                    .digest("hex")
+
+                let query, table, idField;
+
+                if (userType === "Clinic") {
+                    query = `
+                        SELECT resetToken, resetTokenExpiry, clinic_id
+                        FROM clinic
+                        WHERE resetToken = ? AND resetTokenExpiry > NOW();
+                    `
+
+                    table = "clinic";
+                    idField = "clinic_id";
+                } else {
+                    query = `
+                        SELECT p1.resetToken, p1.resetTokenExpiry, p1.patientID
+                        FROM patientsregisteraccount1 AS p1
+                        WHERE p1.resetToken = ? AND p1.resetTokenExpiry > NOW();
+                    `
+
+                    table = "patientsregisteraccount1";
+                    idField = "patientID";
+                }
+
+                const value = [
+                    resetTokenHashed
+                ]
+
+                const [rows] = await this.connection.query(query, value);
+
+                const user = rows[0];
+
+                if (!user) {
+                    throw new Error("Invalid! User not found")
+                }
+
+                const hashedResetPassword = await bcrypt.hash(newPassword, 10);
+                const hashedConfirmPassword = await bcrypt.hash(confirmPassword, 10);
+
+                let updateQuery, updateValue;
+                if(userType === "Clinic") {
+                    updateQuery = `
+                        UPDATE clinic
+                        SET 
+                        password = ?,
+                        confirmPassword = ?,
+                        resetToken = NULL,
+                        resetTokenExpiry = NULL
+                        WHERE clinic_id = ?;
+                    `
+                    updateValue = [
+                        hashedResetPassword,
+                        hashedConfirmPassword,
+                        user.clinic_id
+                    ]
+
+                } else {
+                    updateQuery = `
+                        UPDATE patientsregisteraccount1 AS p1
+                        INNER JOIN patientsregisteraccount2 AS p2
+                        ON p1.patientID = p2.patientID
+                        SET 
+                        p2.password = ?,
+                        p2.confirmPassword = ?,
+                        p1.resetToken = NULL,
+                        p1.resetTokenExpiry = NULL
+                        WHERE p1.patientID = ?;
+                    `
+
+                    updateValue = [
+                        hashedResetPassword,
+                        hashedConfirmPassword,
+                        user.patientID
+                    ]
+                }
+
+                await this.connection.query(updateQuery, updateValue);
+
+                const commitQuery = await this.connection.commit();
+
+                if (!commitQuery) {
+                    throw new Error("Failed to commit transaction in resetting the password either clinic or patient side")
+                }
+
+                return {
+                    message: "Password reset successfully"
+                }
+            } catch (error) {
+                const rollbackQuery = await this.connection.rollback();
+                if (!rollbackQuery) {
+                    logger.log("error", `Failed to rollback the transaction in resetting the password either clinic or patient side`)
+                }
+
+                logger.log("error", `Failed to reset password either clinic or patient side in method: ${error}`);
+                throw error;
+            } finally {
+                if (this.connection) {
+                    /**
+                     * release the connection back to the pool connection
+                     */
+                    await this.connection.release();
+                }
+            }
+        },
+        "Reset Password either clinic or patient side"
     )
 }
 

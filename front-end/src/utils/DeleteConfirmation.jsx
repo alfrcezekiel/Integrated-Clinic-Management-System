@@ -1,5 +1,9 @@
 import PropTypes from "prop-types";
 
+/**
+ * @function component DeleteConfirmationDialog
+ * @description This component is used to confirm the deletion of a user in all sides
+ */
 const DeleteConfirmationDialog = ({ open, onClose, onConfirm, users }) => {
     if (!open) return null;
 

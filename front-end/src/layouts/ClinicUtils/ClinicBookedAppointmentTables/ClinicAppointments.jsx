@@ -14,6 +14,7 @@ import {
     useNavigate,
     useLocation
 } from "react-router-dom";
+import DeleteBookedAppointmentDialog from "../../../utils/DeleteConfirmation";
 
 /**
  * @function ClinicAppointments
@@ -28,6 +29,8 @@ const ClinicAppointments = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [clinicBookedAppointments, setClinicBookedAppointments] = useState([]);
+    const [openDeleteBookedAppointmentDialog, setOpenDeleteBookedAppointmentDialog] = useState(false);
+    const [selectedBookedAppointment, setSelectedBookedAppointment] = useState(null);
 
     useEffect(() => {
         const retrieveClinicBookedAppointments = async () => {
@@ -89,6 +92,60 @@ const ClinicAppointments = () => {
             default:
                 return "text-black bg-gray-200";
         }
+    }
+
+    /**
+     * @function that handles to delete specific booked appointnment details
+     */
+
+    const deleteBookedAppointmentDetails = async (e) => {
+        try {
+            e.preventDefault();
+
+            if (!selectedBookedAppointment) {
+                console.error(`No booked appointment selected`);
+                return;
+            }
+
+            const response = await CMS.delete(`/CMS/cms.api.com/clinic/dashboard/deleteBookedAppointmentInClinicSideTable`, {
+                params: {
+                    bookedAppointmentID: selectedBookedAppointment.id
+                }
+            }, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${tokenContext}`
+                }
+            });
+
+            if (response.status === 200) {
+                setClinicBookedAppointments((prevClinicBookedAppointments) => prevClinicBookedAppointments.filter((clinicBookedAppointment) => clinicBookedAppointment.id !== selectedBookedAppointment.id));
+                closeDeleteBookedAppointmentDialog();
+            } else {
+                throw new Error(`Failed to delete specific booked appointment details in all appointments in clinic side table: ${response.status}`);
+            }
+        } catch (error) {
+            console.error(`Failed to delete specific booked appointment details in all appointments in clinic side table: ${error}`)
+        }
+    }
+
+    /**
+     * @function openConfirmedDeleteBookedAppointmentDialog
+     * @description This function is used to open the delete booked appointment dialog
+     * @param {object} bookedAppointmentDetails 
+     */
+    const openConfirmedDeleteBookedAppointmentDialog = async (bookedAppointmentDetails) => {
+        setSelectedBookedAppointment(bookedAppointmentDetails);
+        setOpenDeleteBookedAppointmentDialog(true);
+    }
+
+    /**
+     * @function closeDeleteBookedAppointmentDialog
+     * @description This function is used to close the delete booked appointment dialog
+     */
+    const closeDeleteBookedAppointmentDialog = async () => {
+        setSelectedBookedAppointment(null);
+        setOpenDeleteBookedAppointmentDialog(false);
     }
 
     /**
@@ -159,37 +216,59 @@ const ClinicAppointments = () => {
                                         className={`hover:bg-blue-50 transition-colors duration-200 ${statusColor(appointment.status)}`}
                                     >
                                         <td className="px-6 py-4">
-                                            {appointment.firstName}
+                                            <span className="text-center">
+                                                {appointment.firstName}
+                                            </span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            {appointment.lastName}
+                                            <span className="text-center">
+                                                {appointment.lastName}
+                                            </span>
                                         </td>
                                         <td className="px-6 py-4 ">
-                                            {appointment.address}
+                                            <span className="text-center">
+                                                {appointment.address}
+                                            </span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            {appointment.email}
+                                            <span className="text-center">
+                                                {appointment.email}
+                                            </span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            {appointment.phoneNumber}
+                                            <span className="text-center">
+                                                {appointment.phoneNumber}
+                                            </span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            {dateFormat(appointment.appointmentDate)}
+                                            <span className="text-center">
+                                                {dateFormat(appointment.appointmentDate)}
+                                            </span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            {formatTimeToAMPM(appointment.appointmentTime)}
+                                            <span className="text-center">
+                                                {formatTimeToAMPM(appointment.appointmentTime)}
+                                            </span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            {appointment.gender}
+                                            <span className="text-center">
+                                                {appointment.gender}
+                                            </span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            {appointment.purposeOfAppointment}
+                                            <span className="text-center">
+                                                {appointment.purposeOfAppointment}
+                                            </span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            {appointment.clinic_name}
+                                            <span className="text-center">
+                                                {appointment.clinic_name}
+                                            </span>
                                         </td>
                                         <td className="px-6 py-4 font-medium">
-                                            {appointment.status}
+                                            <span className="text-center">
+                                                {appointment.status}
+                                            </span>
                                         </td>
                                         <td className="px-6 py-4">
                                             {/* Edit button placeholder */}
@@ -205,7 +284,7 @@ const ClinicAppointments = () => {
                                             {/* Delete button placeholder */}
                                             <IconButton
                                                 aria-label="delete"
-                                                onClick={() => console.log(`Delete appointment ID: ${appointment.id}`)}
+                                                onClick={() => openConfirmedDeleteBookedAppointmentDialog(appointment)}
                                                 className="cursor-pointer"
                                             >
                                                 <Delete className="h-5 w-5 inline" color="error" />
@@ -224,6 +303,13 @@ const ClinicAppointments = () => {
                     </table>
                 </div>
             </div>
+            {/* this component is used to confirrmed the deletion of booked appointment details in specific booked appointment */}
+            <DeleteBookedAppointmentDialog
+                open={openDeleteBookedAppointmentDialog}
+                users={selectedBookedAppointment}
+                onClose={closeDeleteBookedAppointmentDialog}
+                onConfirm={deleteBookedAppointmentDetails}
+            />
         </div>
     )
 }

@@ -61,6 +61,18 @@ const ModifyClinicBookedAppointment = () => {
         purposeOfAppointment: "",
         status: ""
     })
+    const [fieldErrors, setFieldErrors] = useState({
+        firstName: "",
+        lastName: "",
+        address: "",
+        email: "",
+        phoneNumber: "",
+        appointmentDate: "",
+        appointmentTime: "",
+        gender: "",
+        purposeOfAppointment: "",
+        status: ""
+    })
 
     useEffect(() => {
         if (!bookedAppointment || !bookedAppointment.id) {
@@ -83,7 +95,7 @@ const ModifyClinicBookedAppointment = () => {
             status: bookedAppointment.status
         }))
     }, [bookedAppointment, location.pathname, navigate]);
-
+    
     /**
      * this function handles the changes of input in selecting appointment date
      */
@@ -94,9 +106,34 @@ const ModifyClinicBookedAppointment = () => {
                 ...prev,
                 appointmentDate: dayjs(selectedAppointmentDate)
             }))
+        } else {
+            setModifyBookedAppointmentDetails((prev) => ({
+                ...prev,
+                appointmentDate: null
+            }))
+        }
+
+        if(fieldErrors.appointmentDate){
+            setFieldErrors((prev) => ({
+                ...prev,
+                appointmentDate: ""
+            }))
         }
     }
 
+    /**
+     * @function to navigate in the respective appointmetns after modifiying the booked appointment
+     */
+    const navigateToRespectiveAppointmentsPage = async () => {
+        if(modifyBookedAppointmentDetails.status === "Pending") {
+            navigate("/doctor-portal/dashboard/PendingBookedAppointment")
+        } else if (modifyBookedAppointmentDetails.status === "Approved") {
+            navigate("/doctor-portal/dashboard/ApprovedBookedAppointment")
+        } else if (modifyBookedAppointmentDetails.status === "Declined") {
+            navigate("/doctor-portal/dashboard/DeclinedBookedAppointment")
+        }
+    }
+    
     /**
      * this function handles the changes of text fields inputs
      */
@@ -106,6 +143,13 @@ const ModifyClinicBookedAppointment = () => {
             ...prev,
             [name]: value
         }))
+
+        if(fieldErrors[name]){
+            setFieldErrors((prev) => ({
+                ...prev,
+                [name]: ""
+            }))
+        }
     }
 
     /**
@@ -117,6 +161,18 @@ const ModifyClinicBookedAppointment = () => {
             setModifyBookedAppointmentDetails((prev) => ({
                 ...prev,
                 appointmentTime: selectedAppointmentTime ? dayjs(selectedAppointmentTime, "hh:mm A") : null
+            }))
+        } else {
+            setModifyBookedAppointmentDetails((prev) => ({
+                ...prev,
+                appointmentTime: null
+            }))
+        }
+
+        if(fieldErrors.appointmentTime){
+            setFieldErrors((prev) => ({
+                ...prev,
+                appointmentTime: ""
             }))
         }
     }
@@ -136,8 +192,9 @@ const ModifyClinicBookedAppointment = () => {
             const payload = {
                 ...modifyBookedAppointmentDetails,
                 appointmentDate: modifyBookedAppointmentDetails.appointmentDate ? dayjs(modifyBookedAppointmentDetails.appointmentDate).format('YYYY-MM-DD') : null,
+                appointmentTime: modifyBookedAppointmentDetails.appointmentTime ? modifyBookedAppointmentDetails.appointmentTime : null
             }
-            
+
             const response = await CMS.put("/CMS/cms.api.com/clinic/dashboard/modifyBookedAppointmentDetails", payload, {
                 params: {
                     bookedAppointmentID: bookedAppointment.id
@@ -150,12 +207,31 @@ const ModifyClinicBookedAppointment = () => {
             })
 
             if(response.status === 200) {
+                setFieldErrors({
+                    firstName: "",
+                    lastName: "",
+                    address: "",
+                    email: "",
+                    phoneNumber: "",
+                    appointmentDate: "",
+                    appointmentTime: "",
+                    gender: "",
+                    purposeOfAppointment: "",
+                    status: ""
+                })
                 alert("Booked Appointment Details Modified Successfully!")
-                navigate("/doctor-portal/dashboard/ClinicViewBookedAppointment")
+                navigateToRespectiveAppointmentsPage()
             } else {
                 throw new Error(`Failed to submit the modified booked appointment details: ${response.statusText}`)
             }
         } catch (error) {
+            if(error.response && error.response.status === 400) {
+                const errors = error.response.data.errors;
+                setFieldErrors((prev) => ({
+                    ...prev,
+                    ...errors
+                }))
+            }
             console.error(`Failed to modify booked appointment details: ${error}`)
         }
     }
@@ -178,6 +254,8 @@ const ModifyClinicBookedAppointment = () => {
                             label="First Name"
                             fullWidth
                             margin="normal"
+                            error={!!fieldErrors.firstName}
+                            helperText={fieldErrors.firstName || ""}
                         />
                     </div>
                     <div className="flex flex-col">
@@ -190,6 +268,8 @@ const ModifyClinicBookedAppointment = () => {
                             onChange={handlesTextFieldsChanges}
                             label="Last Name"
                             fullWidth
+                            error={!!fieldErrors.lastName}
+                            helperText={fieldErrors.lastName || ""}
                             margin="normal"
                         />
                     </div>
@@ -203,6 +283,8 @@ const ModifyClinicBookedAppointment = () => {
                             onChange={handlesTextFieldsChanges}
                             label="Address"
                             fullWidth
+                            error={!!fieldErrors.address}
+                            helperText={fieldErrors.address || ""}
                             margin="normal"
                         />
                     </div>
@@ -216,6 +298,8 @@ const ModifyClinicBookedAppointment = () => {
                             onChange={handlesTextFieldsChanges}
                             label="Email"
                             fullWidth
+                            error={!!fieldErrors.email}
+                            helperText={fieldErrors.email || ""}
                             margin="normal"
                         />
                     </div>
@@ -229,6 +313,8 @@ const ModifyClinicBookedAppointment = () => {
                             onChange={handlesTextFieldsChanges}
                             label="Phone Number"
                             fullWidth
+                            error={!!fieldErrors.phoneNumber}
+                            helperText={fieldErrors.phoneNumber || ""}
                             margin="normal"
                         />
                     </div>
@@ -240,12 +326,14 @@ const ModifyClinicBookedAppointment = () => {
                                     value={modifyBookedAppointmentDetails?.appointmentDate ? dayjs(modifyBookedAppointmentDetails.appointmentDate) : null}
                                     label="Select Appointment Date"
                                     onChange={handleAppointmentDateChange}
+                                    name="appointmentDate"
                                     slotProps={{
                                         textField: {
-                                            name: "appointmentDate",
                                             autoComplete: "off",
                                             fullWidth: true,
                                             margin: "normal",
+                                            error: !!fieldErrors.appointmentDate,
+                                            helperText: fieldErrors.appointmentDate || "",
                                             variant: "outlined"
                                         }
                                     }}
@@ -258,15 +346,17 @@ const ModifyClinicBookedAppointment = () => {
                         <LocalizationProvider dateAdapter={AdapterDayjs}>
                             <DemoContainer components={['TimePicker']}>
                                 <TimePicker
-                                    value={modifyBookedAppointmentDetails?.appointmentTime ? dayjs(modifyBookedAppointmentDetails.appointmentTime, "hh:mm A") : null}
+                                    value={modifyBookedAppointmentDetails?.appointmentTime ? dayjs(modifyBookedAppointmentDetails.appointmentTime) : null}
                                     label="Select Appointment Time"
                                     onChange={handleCallBackTimePickerChange}
+                                    name="appointmentTime"
                                     slotProps={{
                                         textField: {
-                                            name: "appointmentTime",
                                             autoComplete: "off",
                                             fullWidth: true,
                                             margin: "normal",
+                                            error: !!fieldErrors.appointmentTime,
+                                            helperText: fieldErrors.appointmentTime || "",
                                             variant: "outlined"
                                         }
                                     }}
@@ -283,6 +373,8 @@ const ModifyClinicBookedAppointment = () => {
                             onChange={handlesTextFieldsChanges}
                             label="Select Gender"
                             fullWidth
+                            error={!!fieldErrors.gender}
+                            helperText={fieldErrors.gender || ""}
                             margin="normal"
                         >
                             {selectedGender.map((gender, i) => (
@@ -300,6 +392,8 @@ const ModifyClinicBookedAppointment = () => {
                             value={modifyBookedAppointmentDetails?.status}
                             onChange={handlesTextFieldsChanges}
                             label="Select Status"
+                            error={!!fieldErrors.status}
+                            helperText={fieldErrors.status || ""}
                             fullWidth
                             margin="normal"
                         >
@@ -319,6 +413,8 @@ const ModifyClinicBookedAppointment = () => {
                             onChange={handlesTextFieldsChanges}
                             label="Select Purpose Of Appointment"
                             fullWidth
+                            error={!!fieldErrors.purposeOfAppointment}
+                            helperText={fieldErrors.purposeOfAppointment || ""}
                             margin="normal"
                         >
                             {purposeOfAppointment.map((purpose, i) => (
@@ -331,7 +427,7 @@ const ModifyClinicBookedAppointment = () => {
                     <div className="flex p-4 justify-center">
                         <button
                             type="submit"
-                            className="bg-blue-500 text-white px-4 py-2 rounded"
+                            className="bg-blue-500 text-white px-4 py-2 rounded cursor-pointer"
                         >
                             Modify Booked Appointment
                         </button>

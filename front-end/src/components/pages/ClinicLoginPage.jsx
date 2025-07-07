@@ -23,11 +23,16 @@ import {
 } from "react"
 import CMS from "../../API/CMS";
 import FormHelperText from "@mui/material/FormHelperText"
-import doctor from "../../assets/img/page-title-bg.jpg";
 import { useAuthorization } from "../../context/auth/useAuthorization";
+import {
+    setLocalStorage,
+    getLocalStorage,
+    removeLocalStorage
+} from "../../utils/storage/localStorage"
 
 function ClinicLoginPortal() {
     const [showPassword, setShowPassword] = useState(false);
+    const [rememberMe, setRememberMe] = useState(false);
     const [doctorsLoginFormData, setDoctorsLoginFormData] = useState({
         email: "",
         password: ""
@@ -38,13 +43,27 @@ function ClinicLoginPortal() {
     })
 
     const location = useLocation();
-    const { login, userData } = useAuthorization(); 
+    const { login, userData } = useAuthorization();
 
     useEffect(() => {
         const titleElement = () => {
             document.title = "Clinic's Login Portal - CMS";
         }
         titleElement();
+
+        const rememberClinicCredentials = async () => {
+            const rembemberClinicCredentials = getLocalStorage("rememberClinicCredentials") === true;
+            const storedEmail = getLocalStorage("rememberEmail");
+
+            if (storedEmail) {
+                setDoctorsLoginFormData((prev) => ({
+                    ...prev,
+                    email: storedEmail
+                }))
+            }
+            setRememberMe(rembemberClinicCredentials)
+        }
+        rememberClinicCredentials();
     }, [location.pathname])
 
     const handleClickShowPassword = () => {
@@ -59,6 +78,13 @@ function ClinicLoginPortal() {
         e.preventDefault();
     }
 
+    /**
+     * @function to track the changes in remember me checkbox
+     */
+    const handleRememberMeChange = async (e) => {
+        setRememberMe(e.target.checked);
+    }
+
     const navigate = useNavigate();
 
     const handleInputChange = useCallback((e) => {
@@ -68,7 +94,7 @@ function ClinicLoginPortal() {
             [name]: value,
         }));
 
-        if(fieldErrors[name]) {
+        if (fieldErrors[name]) {
             setFieldErrors((prevState) => ({
                 ...prevState,
                 [name]: "",
@@ -76,10 +102,16 @@ function ClinicLoginPortal() {
         }
     }, [fieldErrors])
 
+    /**
+     * @function to memoize the clinic login form data
+     */
     const memoizedClinicLoginFormData = useMemo(() => {
         return doctorsLoginFormData;
     }, [doctorsLoginFormData])
 
+    /**
+     * function handles the clinic login to navigate in clinic dashboard
+     */
     const handleLoggedInPatient = async (e) => {
         try {
             e.preventDefault();
@@ -93,6 +125,14 @@ function ClinicLoginPortal() {
 
             if (response.data && response.status === 200) {
                 setFieldErrors({})
+                if (rememberMe) {
+                    setLocalStorage("rememberClinicCredentials", true);
+                    setLocalStorage("rememberEmail", memoizedClinicLoginFormData.email);
+                } else {
+                    removeLocalStorage("rememberClinicCredentials");
+                    removeLocalStorage("rememberEmail");
+                }
+
                 if (response.data.accessToken && response.data.sid) {
                     login(response.data.accessToken)
                     userData({
@@ -110,6 +150,12 @@ function ClinicLoginPortal() {
             }
 
         } catch (error) {
+            /**
+             * clear the remember me credentials if the login fails
+             */
+            removeLocalStorage("rememberClinicCredentials");
+            removeLocalStorage("rememberEmail");
+
             if (error.response && error.response.status === 400) {
                 setFieldErrors(error.response.data.errors);
             } else if (error.response && error.response.status === 401) {
@@ -177,7 +223,12 @@ function ClinicLoginPortal() {
                         </FormControl>
                     </div>
                     <FormControlLabel
-                        control={<Checkbox />}
+                        control={
+                            <Checkbox
+                                checked={rememberMe}
+                                onChange={handleRememberMeChange}
+                            />
+                        }
                         label={
                             <>
                                 <Typography variant="body2" className="text-black">
@@ -188,7 +239,7 @@ function ClinicLoginPortal() {
                     />
                     <div className="flex justify-end items-center">
                         <Typography variant="body2" className="text-black">
-                            <a href="#">Forgot Password</a>
+                            <a href="/ForgotPassword" className="text-black no-underline">Forgot Password</a>
                         </Typography>
                     </div>
                     <div className="mt-6 flex flex-col gap-6 bg-black p-[0.30rem] rounded-[3rem] text-white">
@@ -199,7 +250,7 @@ function ClinicLoginPortal() {
                 </form>
             </div>
             <div className="w-2/5 h-screen hidden lg:block">
-                <img src={doctor} className="h-full w-full object-cover rounded-3xl" alt="Doctor" />
+                <img src="/img/clinic-bg-2.jpg" className="h-full w-full object-cover rounded-3xl" alt="Doctor" />
             </div>
         </section>
     );

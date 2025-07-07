@@ -120,7 +120,7 @@ const LandingPageHeader = () => {
                                         className="block px-4 py-3 hover:bg-gray-100 text-black"
                                         onClick={() => setIsOpen(false)}
                                     >
-                                        CMS Admin Portal
+                                        Admin Portal
                                     </Link>
                                 </li>
                             </ul>

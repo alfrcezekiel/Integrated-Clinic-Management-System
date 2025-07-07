@@ -29,6 +29,11 @@ import DialogTitle from "@mui/material/DialogTitle"
 import DialogContent from "@mui/material/DialogContent"
 import DialogActions from "@mui/material/DialogActions"
 import { useAuthorization } from "../../context/auth/useAuthorization"
+import {
+    getLocalStorage,
+    setLocalStorage,
+    removeLocalStorage
+} from "../../utils/storage/localStorage";
 
 function PatientsLoginPortal() {
     const [showPassword, setShowPassword] = useState(false);
@@ -40,6 +45,7 @@ function PatientsLoginPortal() {
         email: "",
         password: ""
     })
+    const [rememberMe, setRememberMe] = useState(false);
     const [openModal, setOpenModal] = useState(false);
     const [accountStatus, setAccountStatus] = useState("");
 
@@ -61,7 +67,28 @@ function PatientsLoginPortal() {
             document.title = "Patients Login Portal - CMS";
         }
         titleElement();
+
+        const loadRememberMe = async () => {
+            const rememberPatientCredentials = getLocalStorage("rememberPatientCredentials") === true;
+            const storedEmail = getLocalStorage("rememberPatientEmail");
+            if (storedEmail) {
+                setPatientsLoginFormData((prev) => ({
+                    ...prev,
+                    email: storedEmail
+                }))
+            }
+            setRememberMe(rememberPatientCredentials)
+        }
+        loadRememberMe();
+
     }, [location.pathname])
+
+    /**
+    * @function to track the changes in remember me checkbox
+    */
+    const handleRememberMeChange = async (e) => {
+        setRememberMe(e.target.checked);
+    }
 
     const handleClickShowPassword = () => {
         setShowPassword((show) => !show);
@@ -118,6 +145,14 @@ function PatientsLoginPortal() {
                     handleAccountStatus(response);
                 }
 
+                if (rememberMe) {
+                    setLocalStorage("rememberPatientCredentials", true);
+                    setLocalStorage("rememberPatientEmail", memoizedPatientsLoginDataValue.email);
+                } else {
+                    removeLocalStorage("rememberPatientCredentials");
+                    removeLocalStorage("rememberPatientEmail");
+                }
+
                 if (response.data.token && response.data.sid) {
                     login(response.data.token);
                     userData({
@@ -135,6 +170,12 @@ function PatientsLoginPortal() {
                 throw new Error(`No response data or no success message: ${response.data}`);
             }
         } catch (error) {
+            /**
+             * clear the remember me credentials if the login fails
+             */
+            removeLocalStorage("rememberPatientCredentials");
+            removeLocalStorage("rememberPatientEmail");
+
             if (error.response && error.response.status === 400) {
                 setFieldErrors(error.response.data.errors);
             } else if (error.response && error.response.status === 401) {
@@ -207,7 +248,12 @@ function PatientsLoginPortal() {
                             </FormControl>
                         </div>
                         <FormControlLabel
-                            control={<Checkbox />}
+                            control={
+                                <Checkbox
+                                    checked={rememberMe}
+                                    onChange={handleRememberMeChange}
+                                />
+                            }
                             label={
                                 <>
                                     <Typography variant="body2" color="textSecondary" className="text-black">
@@ -223,7 +269,7 @@ function PatientsLoginPortal() {
                         </div>
                         <div className="flex items-center justify-between gap-2 mt-6">
                             <Typography variant="body2" className="text-black">
-                                <a href="#" className="no-underline text-black">Forgot Password</a>
+                                <a href="/ForgotPassword" className="no-underline text-black">Forgot Password</a>
                             </Typography>
                         </div>
                         <div className="text-center text-gray-500 font-medium mt-4">
@@ -233,7 +279,7 @@ function PatientsLoginPortal() {
                     </form>
                 </div>
                 <div className="w-2/5 h-screen hidden lg:block">
-                    <img src="img/pattern.png" className="h-full w-full object-cover rounded-3xl" alt="Pattern" />
+                    <img src="img/stethoscope.jpg" className="h-full w-full object-cover rounded-3xl" alt="Stethoscope" />
                 </div>
             </section>
             <Dialog open={openModal} onClose={handleCloseModal} className="flex items-center justify-center">

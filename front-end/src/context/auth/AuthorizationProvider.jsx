@@ -4,6 +4,9 @@ import {
 } from "react";
 import PropTypes from "prop-types";
 import { AuthContext } from "./AuthContext.jsx";
+import {
+    removeLocalStorage,
+} from "../../utils/storage/localStorage";
 
 export const AuthorizationProvider = ({ children }) => {
     const [token, setToken] = useState(null);
@@ -30,26 +33,38 @@ export const AuthorizationProvider = ({ children }) => {
         setLoading(false);
     }, [])
 
-    // functions to manage authentication state
+    /**
+     * functions to manage authentication state
+     */
     const login = (authToken) => {
         localStorage.setItem("authToken", authToken);
         setToken(authToken);
     }
 
-    // function to removed the authrization token and user data from localStorage
-    const logout = () => {
-        localStorage.removeItem("authToken");
-        localStorage.removeItem("userData");
+    /**
+     * function to removed the authrization token and user data from localStorage
+     */
+    const logout = (clearRememberMe = true) => {
+        if (clearRememberMe) {
+            removeLocalStorage("rememberClinicCredentials");
+            removeLocalStorage("rememberEmail");
+        }
+        removeLocalStorage("authToken");
+        removeLocalStorage("userData");
         setToken(null);
         setUser(null);
     }
 
-    // function to check if the user is authenticated
+    /**
+     * function to check if the user is authenticated
+     */
     const isAuthenticated = () => {
         return token !== null;
     }
 
-    // function to set user data in localStorage and state
+    /**
+     * function to set user data in localStorage and state
+     */
     const userData = (userObj) => {
         localStorage.setItem("userData", JSON.stringify(userObj));
         setUser(userObj);

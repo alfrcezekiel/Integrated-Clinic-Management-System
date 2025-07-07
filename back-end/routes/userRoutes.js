@@ -70,7 +70,10 @@ import {
     calculateDeclinedBookedAppointmentsOfPatient,
     retrieveClinicByIdApprovedBookedAppointments,
     retrieveClinicByIdDeclinedBookedAppointments,
-    findBookedAppointmentByIdToModifyBookedAppointmentDetails
+    findBookedAppointmentByIdToModifyBookedAppointmentDetails,
+    deleteBookedAppointmentDetailsInClinicSideTable,
+    sendResetEmail,
+    resetPassword
 } from "../controllers/cms.js";
 import validateRegister from "../middleware/validation.js";
 import patientsLoginValidation from "../middleware/patientsLoginValidation.js";
@@ -90,6 +93,7 @@ import validatePatientRegisteredAccount from "../middleware/ValidateRegisteredAc
 import validateCreatingAdminAccount from "../middleware/ValidateCreatingAdminAccount.js";
 import clinicUploadedFiles from "../middleware/combinedUploads/clinicUploadedFiles.js";
 import validateUploadedFiles from "../middleware/validateUploadedFiles.js";
+import validateAllBookedAppointmentSpecificDetails from "../middleware/ModifyBookedAllBookedAppointmentValidation.js";
 
 const router = express.Router();
 
@@ -340,6 +344,21 @@ router.get("/clinic/dashboard/retrieveDeclinedBookedAppointments", verifyToken, 
 /**
  * @exports router to modify booked appointments details in clinic side table in specific booked appointment details
  */
-router.put("/cms.api.com/clinic/dashboard/modifyBookedAppointmentDetails", verifyToken, findBookedAppointmentByIdToModifyBookedAppointmentDetails);
+router.put("/cms.api.com/clinic/dashboard/modifyBookedAppointmentDetails", verifyToken, [validateAllBookedAppointmentSpecificDetails], findBookedAppointmentByIdToModifyBookedAppointmentDetails);
+
+/**
+ * @exports router to delete specific booked appointments details in all booked appointment clinic side table
+ */
+router.delete("/cms.api.com/clinic/dashboard/deleteBookedAppointmentInClinicSideTable", verifyToken, deleteBookedAppointmentDetailsInClinicSideTable);
+
+/**
+ * @exports router to send a reset password link in the patient and clinic side
+ */
+router.post("/cms.api.com/sendResetEmail", sendResetEmail);
+
+/**
+ * @exports router to reset password in the patient and clinic side
+ */
+router.post("/cms.api.com/resetPassword", resetPassword);
 
 export default router;

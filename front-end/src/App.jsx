@@ -14,6 +14,8 @@ const ClinicLoginPortal = lazy(() => import("./components/pages/ClinicLoginPage.
 const ClinicDashboard = lazy(() => import("./components/pages/dashboard/ClinicDashboard.jsx"));
 const AdminLoginPortal = lazy(() => import("./components/pages/AdminLoginPage.jsx"));
 const AdminDashboard = lazy(() => import("./components/pages/dashboard/AdminDashboard.jsx"));
+const ForgotPassword = lazy(() => import("./components/forgot-password/ForgotPassword.jsx"));
+const ResetPassword = lazy(() => import("./components/forgot-password/ResetPassword.jsx"));
 
 const RouteLoader = ({ children }) => {
   const [loading, setLoading] = useState(false);
@@ -88,6 +90,18 @@ const App = () => {
               path="/PatientLogin"
               element={
                 <PatientsLoginPortal />
+              }
+            />
+            <Route
+              path="/ForgotPassword"
+              element={
+                <ForgotPassword />
+              }
+            />
+            <Route
+              path="/ResetPassword"
+              element={
+                <ResetPassword />
               }
             />
             <Route
