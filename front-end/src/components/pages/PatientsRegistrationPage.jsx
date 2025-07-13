@@ -410,7 +410,7 @@ const PatientsRegistrationPortal = () => {
                         </div>
                         <div className="text-center text-blue-gray-500 font-medium mt-3">
                             Already have an account?
-                            <Link to={"/patients-login"} className="text-black ml-1">Sign in</Link>
+                            <Link to={"/PatientLogin"} className="text-black ml-1">Sign in</Link>
                         </div>
                     </form>
                 </div>

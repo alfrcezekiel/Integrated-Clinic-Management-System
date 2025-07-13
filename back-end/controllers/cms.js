@@ -3733,7 +3733,7 @@ export const deleteBookedAppointmentDetailsInClinicSideTable = asyncHandler(
 export const sendResetEmail = asyncHandler(
     async (req, res) => {
         try {
-            const { email, userType = "Patient" } = req.body;
+            const { email, userType } = req.body;
 
             if (!email || typeof email !== "string") {
                 return res.status(StatusCodes.BAD_REQUEST).json({
@@ -3741,7 +3741,7 @@ export const sendResetEmail = asyncHandler(
                 })
             }
 
-            if (userType !== "Patient" && userType !== "Clinic") {
+            if (userType !== "patient" && userType !== "clinic") {
                 return res.status(StatusCodes.BAD_REQUEST).json({
                     message: "Invalid! User type must be Patient or Clinic"
                 })
@@ -3768,15 +3768,14 @@ export const sendResetEmail = asyncHandler(
                 userType: userType
             })
 
-            const reset_link = `${process.env.FRONTEND_ENDPOINT}/ResetPassword?token=${checkEmailResult.data.resetToken}&type=${userType}`;
-
             if (!checkEmailResult || checkEmailResult.length === 0) {
-                logger.log("warn", "No existing email found in the table")
+                logger.log("warn", "No existing email found in our records")
                 return res.status(StatusCodes.NOT_FOUND).json({
-                    message: "No existing email found in the table"
+                    message: "No existing email found in our records"
                 })
             }
 
+            const reset_link = `${process.env.FRONTEND_ENDPOINT}/ResetPassword?token=${checkEmailResult.data.resetToken}&type=${userType}`;
             try {
                 /**
                  * SMTP email to send a link  to reset the password
@@ -3817,8 +3816,25 @@ export const sendResetEmail = asyncHandler(
 export const resetPassword = asyncHandler(
     async (req, res) => {
         try {
-            const { token } = req.query;
-            const { newPassword, confirmPassword, userType } = req.body;
+            const { token, type } = req.query;
+            const { newPassword, confirmPassword, userType: bodyUserType } = req.body;
+
+            const userType = type || bodyUserType;
+
+            if (!userType) {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    success: false,
+                    message: "User type is required"
+                });
+            }
+
+            const normalizedUserType = userType.toLowerCase();
+            if (normalizedUserType !== 'clinic' && normalizedUserType !== 'patient') {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    success: false,
+                    message: "Invalid user type. Must be 'clinic' or 'patient'"
+                });
+            }
 
             if (!token || !newPassword || !confirmPassword) {
                 return res.status(StatusCodes.BAD_REQUEST).json({

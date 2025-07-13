@@ -2113,7 +2113,7 @@ class Clinic {
         async (params) => {
             this.connection = await this.conn.getConnection();
             try {
-                let { email, userType = "Patient" } = params;
+                let { email, userType } = params;
 
                 if (params && typeof params === "object" && !Array.isArray(params)) {
                     /**
@@ -2125,18 +2125,22 @@ class Clinic {
                     /**
                      * if the passed argument is array or passed as direct values 
                      */
-                    email = params;
+                    throw new Error("Invalid! Email Address and User type must be a string")
                 }
 
                 if (!email || typeof email !== "string") {
                     throw new Error("Invalid! Email must be a string")
                 }
 
+                if (!userType || typeof userType !== "string") {
+                    throw new Error("Invalid! User type must be a string")
+                }
+
                 await this.connection.beginTransaction();
 
                 let query, table, idField, emailField;
 
-                if (userType === "Clinic") {
+                if (userType === "clinic") {
                     query = `
                         SELECT clinic_id AS id, email, clinic_name AS name
                         FROM clinic 
@@ -2145,8 +2149,8 @@ class Clinic {
 
                     table = "clinic";
                     idField = "clinic_id";
-                    emailField = "email"
-                } else {
+                    emailField = "email";
+                } else if (userType === "patient") {
                     query = `
                         SELECT patientID AS id, email, CONCAT(firstName, ' ', lastName) AS name 
                         FROM patientsregisteraccount1
@@ -2155,6 +2159,8 @@ class Clinic {
                     table = "patientsregisteraccount1";
                     idField = "patientID";
                     emailField = "email";
+                } else {
+                    throw new Error("Invalid! User type must be 'clinic' or 'patient'")
                 }
 
                 const value = [
@@ -2163,7 +2169,14 @@ class Clinic {
 
                 const [rows] = await this.connection.query(query, value);
 
+                if (!rows || rows.length === 0) {
+                    throw new Error("No existing email found in the records")
+                }
+
                 const users = rows[0];
+                if (!users || !users.id) {
+                    throw new Error("No existing email id found in the records")
+                }
 
                 const resetToken = crypto.randomBytes(32).toString("hex");
                 const resetTokenExpiry = Date.now() + 10 * 60 * 1000; // 10mins
@@ -2238,8 +2251,12 @@ class Clinic {
                     throw new Error("Invalid! Parameters must be an object")
                 }
 
-                if (!token || !newPassword || !confirmPassword) {
-                    throw new Error("Invalid! Token, new password and confirm password are required")
+                if (!token || !newPassword || !confirmPassword || !userType) {
+                    throw new Error("Invalid! Token, user type, new password and confirm password are required")
+                }
+
+                if (!["clinic", "patient"].includes(userType)) {
+                    throw new Error("Invalid! User type must be 'clinic' or 'patient'")
                 }
 
                 const resetTokenHashed = crypto
@@ -2249,7 +2266,7 @@ class Clinic {
 
                 let query, table, idField;
 
-                if (userType === "Clinic") {
+                if (userType === "clinic") {
                     query = `
                         SELECT resetToken, resetTokenExpiry, clinic_id
                         FROM clinic
@@ -2274,6 +2291,18 @@ class Clinic {
                 ]
 
                 const [rows] = await this.connection.query(query, value);
+                if (!rows || rows.length === 0) {
+                    let checkTokenQuery = userType === "clinic" ?
+                        `SELECT resetToken FROM clinic WHERE resetToken = ?` :
+                        `SELECT p1.resetToken FROM patientsregisteraccount1 AS p1 WHERE p1.resetToken = ?`;
+
+                    const [checkTokenRows] = await this.connection.query(checkTokenQuery, value);
+                    if (!checkTokenRows || checkTokenRows.length === 0) {
+                        throw new Error("Invalid! Token not found")
+                    } else {
+                        throw new Error("Invalid! Token expired")
+                    }
+                }
 
                 const user = rows[0];
 
@@ -2285,12 +2314,12 @@ class Clinic {
                 const hashedConfirmPassword = await bcrypt.hash(confirmPassword, 10);
 
                 let updateQuery, updateValue;
-                if(userType === "Clinic") {
+                if (userType === "clinic") {
                     updateQuery = `
                         UPDATE clinic
                         SET 
                         password = ?,
-                        confirmPassword = ?,
+                        confirm_password = ?,
                         resetToken = NULL,
                         resetTokenExpiry = NULL
                         WHERE clinic_id = ?;

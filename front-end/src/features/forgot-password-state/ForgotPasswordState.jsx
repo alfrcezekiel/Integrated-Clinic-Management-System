@@ -6,9 +6,9 @@ import CMS from "../../API/CMS";
  */
 const forgotPasswordInitialState = {
     email: "",
+    userType: "",
     newPassword: "",
     confirmPassword: "",
-    isLoading: false,
     error: null,
     success: false
 }
@@ -18,17 +18,31 @@ const forgotPasswordInitialState = {
  */
 export const submitResetEmail = createAsyncThunk(
     'forgotPassword/sendResetEmail',
-    async ({email, userType}, { rejectWithValue }) => {
+    async ({ email, userType }, { rejectWithValue }) => {
         try {
-            const response = await CMS.post(`/CMS/cms.api.com/sendResetEmail`, { email, userType });
+            const response = await CMS.post(`/CMS/cms.api.com/sendResetEmail`, { email, userType }, {
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            });
 
-            if(response.status === 200){
+            if (response.status === 200) {
                 return response.data.message;
             } else {
                 throw new Error(`Failed to send reset password email`)
             }
         } catch (error) {
-            return rejectWithValue(error.response?.data?.message || 'Something went wrong');
+            if (error.response) {
+                if (error.response && error.response.status === 400) {
+                    const errors = error.response.data.errors;
+                    return rejectWithValue(errors);
+                }
+
+                return rejectWithValue({
+                    message: error.response.data?.message || 'No account found with this email address'
+                });
+            }
+            return rejectWithValue(`Failed to send reset password email`);
         }
     }
 );
@@ -38,19 +52,20 @@ export const submitResetEmail = createAsyncThunk(
  */
 export const resetPassword = createAsyncThunk(
     'forgotPassword/resetPassword',
-    async ({ token, newPassword, confirmPassword }, { rejectWithValue }) => {
+    async ({ token, newPassword, confirmPassword, userType }, { rejectWithValue }) => {
         try {
             const response = await CMS.post(`/CMS/cms.api.com/resetPassword`, {
                 newPassword,
-                confirmPassword
+                confirmPassword,
+                userType
             }, {
                 params: {
                     token: token,
-                    type: "Patient"
+                    type: userType
                 }
             });
 
-            if(response.status === 200){
+            if (response.status === 200) {
                 return response.data.message;
             } else {
                 throw new Error(`Failed to reset password`)
@@ -88,33 +103,29 @@ const forgotPaswordSlice = createSlice({
              * reducer function for submitting the reset email
              */
             .addCase(submitResetEmail.pending, (state) => {
-                state.isLoading = true;
                 state.error = null;
+                state.success = false;
             })
             .addCase(submitResetEmail.fulfilled, (state) => {
-                state.isLoading = false;
                 state.success = true;
                 state.error = null;
             })
             .addCase(submitResetEmail.rejected, (state, action) => {
-                state.isLoading = false;
-                state.error = action.payload;
+                state.error = action.payload?.message || action.error?.message;
+                state.success = false;
             })
 
             /**
              * reducer function for resetting the password
              */
             .addCase(resetPassword.pending, (state) => {
-                state.isLoading = true;
                 state.error = null;
             })
             .addCase(resetPassword.fulfilled, (state) => {
-                state.isLoading = false;
                 state.success = true;
                 state.error = null;
             })
             .addCase(resetPassword.rejected, (state, action) => {
-                state.isLoading = false;
                 state.error = action.payload;
             })
     }

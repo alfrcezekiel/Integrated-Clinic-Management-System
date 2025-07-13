@@ -1,4 +1,15 @@
-import TextField from "@mui/material/TextField";
+import {
+    FormControl,
+    InputLabel,
+    OutlinedInput,
+    InputAdornment,
+    IconButton,
+    FormHelperText
+} from "@mui/material";
+import {
+    Visibility,
+    VisibilityOff
+} from "@mui/icons-material";
 import {
     useSelector,
     useDispatch
@@ -16,7 +27,9 @@ import {
 } from "react";
 
 const ResetPassword = () => {
-    const { newPassword, confirmPassword, isLoading, error } = useSelector((state) => state.forgotPassword);
+    const resetPasswordState = useSelector((state) => state.forgotPassword);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const [fieldErrors, setFieldErrors] = useState({
@@ -49,15 +62,30 @@ const ResetPassword = () => {
             }))
         }
     }
+    /**
+     * function handles to toggle the visibility of the new password
+     */
+    const handleClickShowNewPassword = async () => {
+        setShowNewPassword((show) => !show);
+    }
 
+    /**
+     * function handles to toggle the visibility of the confirm password
+     */
+    const handleClickShowConfirmPassword = async () => {
+        setShowConfirmPassword((show) => !show);
+    }
+    /**
+     * function that handles the submission of the reset password form
+     */
     const submitResetPassword = async (e) => {
         try {
             e.preventDefault();
             const response = await dispatch(resetPassword({
                 token: new URLSearchParams(window.location.search).get("token"),
-                newPassword,
-                confirmPassword,
-                userType: "Patient"
+                newPassword: resetPasswordState.newPassword,
+                confirmPassword: resetPasswordState.confirmPassword,
+                userType: new URLSearchParams(window.location.search).get("type")
             }))
 
             if (resetPassword.fulfilled.match(response)) {
@@ -82,48 +110,75 @@ const ResetPassword = () => {
                             Enter your new password and confirm it to complete the password reset process.
                         </p>
                     </div>
-                    {error && (
-                        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-                            {error}
-                        </div>
-                    )}
                     <div className="space-y-4 p-4 rounded-lg">
                         <form onSubmit={submitResetPassword}>
                             <div className="space-y-4">
                                 <div className="flex flex-col">
-                                    <label className="font-semibold text-black">New Password</label>
-                                    <TextField
-                                        label="Enter New Password"
-                                        type="password"
-                                        margin="dense"
-                                        name="newPassword"
-                                        autoComplete="off"
-                                        value={newPassword}
-                                        onChange={handleResetPasswordChanges}
-                                        error={!!fieldErrors.newPassword}
-                                        helperText={fieldErrors.newPassword || ""}
-                                        variant="outlined"
-                                        fullWidth
-                                        disabled={isLoading}
-                                    />
+                                    <label className="mb-2 font-semibold text-black">New Password</label>
+                                    <FormControl variant="outlined" sx={{ width: "100%" }}>
+                                        <InputLabel htmlFor="new-password">New Password</InputLabel>
+                                        <OutlinedInput
+                                            id="new-password"
+                                            type={showNewPassword ? 'text' : 'password'}
+                                            name="newPassword"
+                                            autoComplete="off"
+                                            value={resetPasswordState.newPassword}
+                                            onChange={handleResetPasswordChanges}
+                                            endAdornment={
+                                                <InputAdornment position="end">
+                                                    <IconButton
+                                                        aria-label={
+                                                            showNewPassword ? 'hide the password' : 'display the password'
+                                                        }
+                                                        onClick={handleClickShowNewPassword}
+                                                        edge="end"
+                                                    >
+                                                        {showNewPassword ? <VisibilityOff /> : <Visibility />}
+                                                    </IconButton>
+                                                </InputAdornment>
+                                            }
+                                            label="New Password"
+                                        />
+                                    </FormControl>
+                                    {fieldErrors.newPassword && (
+                                        <FormHelperText className="text-red-500">
+                                            {fieldErrors.newPassword}
+                                        </FormHelperText>
+                                    )}
                                 </div>
 
                                 <div className="flex flex-col">
-                                    <label className="font-semibold text-black">Confirm Password</label>
-                                    <TextField
-                                        label="Confirm New Password"
-                                        type="password"
-                                        margin="dense"
-                                        name="confirmPassword"
-                                        autoComplete="off"
-                                        value={confirmPassword}
-                                        onChange={handleResetPasswordChanges}
-                                        error={!!fieldErrors.confirmPassword}
-                                        helperText={fieldErrors.confirmPassword || ""}
-                                        variant="outlined"
-                                        disabled={isLoading}
-                                        fullWidth
-                                    />
+                                    <label className="mb-2 font-semibold text-black">Confirm Password</label>
+                                    <FormControl variant="outlined" sx={{ width: "100%" }}>
+                                        <InputLabel htmlFor="confirm-password">Confirm Password</InputLabel>
+                                        <OutlinedInput
+                                            id="confirm-password"
+                                            type={showConfirmPassword ? 'text' : 'password'}
+                                            name="confirmPassword"
+                                            autoComplete="off"
+                                            value={resetPasswordState.confirmPassword}
+                                            onChange={handleResetPasswordChanges}
+                                            endAdornment={
+                                                <InputAdornment position="end">
+                                                    <IconButton
+                                                        aria-label={
+                                                            showConfirmPassword ? 'hide the password' : 'display the password'
+                                                        }
+                                                        onClick={handleClickShowConfirmPassword}
+                                                        edge="end"
+                                                    >
+                                                        {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                                                    </IconButton>
+                                                </InputAdornment>
+                                            }
+                                            label="Confirm Password"
+                                        />
+                                    </FormControl>
+                                    {fieldErrors.confirmPassword && (
+                                        <FormHelperText className="text-red-500">
+                                            {fieldErrors.confirmPassword}
+                                        </FormHelperText>
+                                    )}
                                 </div>
                             </div>
 
@@ -131,10 +186,9 @@ const ResetPassword = () => {
                                 <div className="ml-auto">
                                     <button
                                         type="submit"
-                                        disabled={isLoading}
-                                        className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 ${isLoading ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"}`}
+                                        className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200`}
                                     >
-                                        {isLoading ? "Loading..." : "Reset Password"}
+                                        Reset Password
                                     </button>
                                 </div>
                             </div>

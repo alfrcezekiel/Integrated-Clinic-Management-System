@@ -94,6 +94,7 @@ import validateCreatingAdminAccount from "../middleware/ValidateCreatingAdminAcc
 import clinicUploadedFiles from "../middleware/combinedUploads/clinicUploadedFiles.js";
 import validateUploadedFiles from "../middleware/validateUploadedFiles.js";
 import validateAllBookedAppointmentSpecificDetails from "../middleware/ModifyBookedAllBookedAppointmentValidation.js";
+import validateEmailAddressInForgotPassword from "../middleware/validate_email_address_in_forgot_pass.js";
 
 const router = express.Router();
 
@@ -354,7 +355,7 @@ router.delete("/cms.api.com/clinic/dashboard/deleteBookedAppointmentInClinicSide
 /**
  * @exports router to send a reset password link in the patient and clinic side
  */
-router.post("/cms.api.com/sendResetEmail", sendResetEmail);
+router.post("/cms.api.com/sendResetEmail", [validateEmailAddressInForgotPassword], sendResetEmail);
 
 /**
  * @exports router to reset password in the patient and clinic side
