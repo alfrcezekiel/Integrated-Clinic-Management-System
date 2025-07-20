@@ -2170,12 +2170,12 @@ class Clinic {
                 const [rows] = await this.connection.query(query, value);
 
                 if (!rows || rows.length === 0) {
-                    throw new Error("No existing email found in the records")
+                    throw new Error("No existing email address found in our records")
                 }
 
                 const users = rows[0];
                 if (!users || !users.id) {
-                    throw new Error("No existing email id found in the records")
+                    throw new Error("No existing email address found in our records")
                 }
 
                 const resetToken = crypto.randomBytes(32).toString("hex");

@@ -18,7 +18,6 @@ import {
     updateField,
     resetForm,
     resetPassword,
-    clearError
 } from "../../features/forgot-password-state/ForgotPasswordState";
 import { useNavigate } from "react-router-dom";
 import {
@@ -91,8 +90,15 @@ const ResetPassword = () => {
             if (resetPassword.fulfilled.match(response)) {
                 dispatch(resetForm())
                 navigate("/cms");
-            } else {
-                dispatch(clearError())
+            } else if (resetPassword.rejected.match(response)) {
+                const error = response.payload;
+
+                if (error && error.errors) {
+                    setFieldErrors((prev) => ({
+                        ...prev,
+                        ...error.errors
+                    }))
+                }
             }
         } catch (error) {
             console.error(`Failed to reset password: ${error}`);
@@ -115,7 +121,7 @@ const ResetPassword = () => {
                             <div className="space-y-4">
                                 <div className="flex flex-col">
                                     <label className="mb-2 font-semibold text-black">New Password</label>
-                                    <FormControl variant="outlined" sx={{ width: "100%" }}>
+                                    <FormControl variant="outlined" sx={{ width: "100%" }} error={!!fieldErrors.newPassword}>
                                         <InputLabel htmlFor="new-password">New Password</InputLabel>
                                         <OutlinedInput
                                             id="new-password"
@@ -141,7 +147,7 @@ const ResetPassword = () => {
                                         />
                                     </FormControl>
                                     {fieldErrors.newPassword && (
-                                        <FormHelperText className="text-red-500">
+                                        <FormHelperText error>
                                             {fieldErrors.newPassword}
                                         </FormHelperText>
                                     )}
@@ -149,7 +155,7 @@ const ResetPassword = () => {
 
                                 <div className="flex flex-col">
                                     <label className="mb-2 font-semibold text-black">Confirm Password</label>
-                                    <FormControl variant="outlined" sx={{ width: "100%" }}>
+                                    <FormControl variant="outlined" sx={{ width: "100%" }} error={!!fieldErrors.confirmPassword}>
                                         <InputLabel htmlFor="confirm-password">Confirm Password</InputLabel>
                                         <OutlinedInput
                                             id="confirm-password"
@@ -175,7 +181,7 @@ const ResetPassword = () => {
                                         />
                                     </FormControl>
                                     {fieldErrors.confirmPassword && (
-                                        <FormHelperText className="text-red-500">
+                                        <FormHelperText error>
                                             {fieldErrors.confirmPassword}
                                         </FormHelperText>
                                     )}

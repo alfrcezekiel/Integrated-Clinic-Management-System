@@ -95,6 +95,7 @@ import clinicUploadedFiles from "../middleware/combinedUploads/clinicUploadedFil
 import validateUploadedFiles from "../middleware/validateUploadedFiles.js";
 import validateAllBookedAppointmentSpecificDetails from "../middleware/ModifyBookedAllBookedAppointmentValidation.js";
 import validateEmailAddressInForgotPassword from "../middleware/validate_email_address_in_forgot_pass.js";
+import validateResetPassword from "../middleware/validate_reset_password.js";
 
 const router = express.Router();
 
@@ -360,6 +361,6 @@ router.post("/cms.api.com/sendResetEmail", [validateEmailAddressInForgotPassword
 /**
  * @exports router to reset password in the patient and clinic side
  */
-router.post("/cms.api.com/resetPassword", resetPassword);
+router.post("/cms.api.com/resetPassword", [validateResetPassword], resetPassword);
 
 export default router;

@@ -3060,7 +3060,7 @@ export const refreshAccessToken = async (req, res) => {
         }
 
         const newAccessToken = jwt.sign(payload, ACCESS_KEY_SECRET, {
-            expiresIn: "15mins"
+            expiresIn: "1hr"
         })
 
         logger.log("info", `Access token refreshed successfully for user ID: ${decoded.id}`);
@@ -3758,47 +3758,61 @@ export const sendResetEmail = asyncHandler(
                     message: "Failed to instantiate clinic instance model"
                 })
             }
-
-            /**
-             * @argument email and user type to passed in instance of clinic class
-             * @description to send a reset email in patient and clinic side
-             */
-            const checkEmailResult = await clinicInstance.sendResetEmail({
-                email: email_address,
-                userType: userType
-            })
-
-            if (!checkEmailResult || checkEmailResult.length === 0) {
-                logger.log("warn", "No existing email found in our records")
-                return res.status(StatusCodes.NOT_FOUND).json({
-                    message: "No existing email found in our records"
-                })
-            }
-
-            const reset_link = `${process.env.FRONTEND_ENDPOINT}/ResetPassword?token=${checkEmailResult.data.resetToken}&type=${userType}`;
             try {
                 /**
-                 * SMTP email to send a link  to reset the password
-                */
-                await sendResetPasswordEmail(
-                    email_address,
-                    checkEmailResult.data.name,
-                    reset_link
-                )
-
-                return res.status(StatusCodes.OK).json({
-                    message: "Reset Email has been sent successfully"
-                })
-            } catch (error) {
-                await clinicInstance.resetPassword({
-                    token: checkEmailResult.data.resetToken,
+                 * @argument email and user type to passed in instance of clinic class
+                 * @description to send a reset email in patient and clinic side
+                 */
+                const checkEmailResult = await clinicInstance.sendResetEmail({
+                    email: email_address,
                     userType: userType
-                });
-
-                logger.log("error", `Failed to send reset password link: ${error}`)
-                return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-                    message: "Failed to send reset password link"
                 })
+    
+                if (!checkEmailResult || !checkEmailResult.success) {
+                    logger.log("warn", `No existing ${userType} email found ${email_address}`)
+                    return res.status(StatusCodes.NOT_FOUND).json({
+                        message: `No ${userType} account found with this email address`
+                    })
+                }
+    
+                const reset_link = `${process.env.FRONTEND_ENDPOINT}/ResetPassword?token=${checkEmailResult.data.resetToken}&type=${userType}`;
+                /**
+                 * try catch block to send a reset email
+                 */
+                try {
+                    /**
+                     * SMTP email to send a link  to reset the password
+                    */
+                    await sendResetPasswordEmail(
+                        email_address,
+                        checkEmailResult.data.name,
+                        reset_link
+                    )
+    
+                    return res.status(StatusCodes.OK).json({
+                        message: "Reset Email has been sent successfully"
+                    })
+                } catch (error) {
+                    await clinicInstance.resetPassword({
+                        token: checkEmailResult.data.resetToken,
+                        userType: userType
+                    });
+    
+                    logger.log("error", `Failed to send reset password link: ${error}`)
+                    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                        message: "Failed to send reset password link"
+                    })
+                }
+            } catch (error) {
+                if (error.message === "No existing email address found in our records") {
+                    logger.log("warn", `No existing ${userType} email found ${email_address}`)
+                    return res.status(StatusCodes.NOT_FOUND).json({
+                        message: `No ${userType} account found with this email address`
+                    })
+                }
+
+                logger.log("error", `Error in no existing email address found in our records: ${error}`)
+                throw error;
             }
 
         } catch (error) {

@@ -37,6 +37,11 @@ const ForgotPassword = () => {
         try {
             e.preventDefault();
 
+            setFieldErrors({
+                email: "",
+                userType: ""
+            })
+
             /**
              * handles the submission of reset email if it's exists in the server
              */
@@ -50,16 +55,15 @@ const ForgotPassword = () => {
             } else if (submitResetEmail.rejected.match(response)) {
                 const error = response.payload;
 
-                if (error && error.message === "No existing email found in our records") {
+                if (error && error.errors) {
+                    setFieldErrors((prev) => ({
+                        ...prev,
+                        ...error.errors
+                    }))
+                } else if (error?.message) {
                     setFieldErrors((prev) => ({
                         ...prev,
                         email: error.message
-                    }))
-                } else {
-                    const errorField = Object.keys(error)[0];
-                    setFieldErrors((prev) => ({
-                        ...prev,
-                        [errorField]: error[errorField]
                     }))
                 }
             }
@@ -133,7 +137,7 @@ const ForgotPassword = () => {
                                         helperText={fieldErrors.userType || ""}
                                         variant="outlined"
                                         fullWidth
-                                    >   
+                                    >
                                         {selectType.map((type) => (
                                             <MenuItem
                                                 key={type}
