@@ -7,7 +7,7 @@ import {
     Typography,
 } from "@mui/material";
 
-// This component is used to rende  r the table rows for the appointments table
+// This component is used to render the table rows for the appointments table
 const PendingStatusAppointmentTable = ({ retrievedAppointmentsData, appointmentTableColumn }) => {
 
     // This function is used to format the date string to a more readable format
@@ -24,32 +24,15 @@ const PendingStatusAppointmentTable = ({ retrievedAppointmentsData, appointmentT
     const getStatusColor = (status) => {
         switch (status) {
             case "Approved":
-                return "text-green-600 bg-green-100";
+                return "text-black bg-green-200";
             case "Declined":
-                return "text-red-600 bg-red-100";
-            case "Pending":
-                return "text-black bg-yellow-300";
+                return "text-black bg-red-200";
             case "Consulted":
-                return "text-black bg-blue-100";
-            default:
-                return "text-gray-600 bg-gray-100";
-        }
-    }
-
-
-    // function to determine the color of the appointment date to match the status
-    const getAppointmentDateColor = (status) => {
-        switch (status) {
-            case "Approved":
-                return "text-green-600 bg-green-100";
-            case "Declined":
-                return "text-red-600 bg-red-100";
+                return "text-black bg-blue-200";
             case "Pending":
-                return "text-black bg-yellow-300";
-            case "Consulted":
-                return "text-black bg-blue-100";
+                return "text-black bg-white"
             default:
-                return "text-gray-600 bg-gray-100";
+                return "text-black bg-white";
         }
     }
 
@@ -67,13 +50,12 @@ const PendingStatusAppointmentTable = ({ retrievedAppointmentsData, appointmentT
             return time;
         }
     };
-    
+
     const memoizedTableRows = useMemo(() => {
-        const statusMatch = ["Approved", "Declined", "Pending", "Consulted"];
 
         if (retrievedAppointmentsData && retrievedAppointmentsData.length > 0) {
             return retrievedAppointmentsData.map((appointment, i) => (
-                <TableRow key={i}>
+                <TableRow key={i} className={`hover:bg-gray-200 transition duration-200 ease-in-out ${getStatusColor(appointment.status)}`}>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
                         <Typography variant="body2" className="text-blue-gray-900">
                             {appointment.clinic_name}
@@ -95,8 +77,8 @@ const PendingStatusAppointmentTable = ({ retrievedAppointmentsData, appointmentT
                         </Typography>
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
-                        <Typography variant="body2" className={`rounded-lg p-2 ${getAppointmentDateColor(appointment.status)}`}>
-                            {statusMatch.includes(appointment.appointmentDate) ? formatDate(appointment.appointmentDate) : formatDate(appointment.appointmentDate)}
+                        <Typography variant="body2" className="text-blue-gray-900">
+                            {formatDate(appointment.appointmentDate)}
                         </Typography>
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
@@ -106,11 +88,11 @@ const PendingStatusAppointmentTable = ({ retrievedAppointmentsData, appointmentT
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
                         <Typography variant="body2" className="text-blue-gray-900">
-                            {formatTimeToAMPM(appointment.preferredTime) ? formatTimeToAMPM(appointment.preferredTime) : "N/A"}
+                            {formatTimeToAMPM(appointment.preferredTime)}
                         </Typography>
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
-                        <Typography variant="body2" className={`rounded-lg p-2 ${getStatusColor(appointment.status)}`}>
+                        <Typography variant="body2" className="text-blue-gray-900">
                             {appointment.status}
                         </Typography>
                     </TableCell>
@@ -125,7 +107,7 @@ const PendingStatusAppointmentTable = ({ retrievedAppointmentsData, appointmentT
             // If no data is found, render a no appointments found row
             return (
                 <TableRow key={0}>
-                    <TableCell colSpan={appointmentTableColumn?.length ?? 1} className="py-3 px-5 border-b border-blue-gray-50 text-center" align="center">
+                    <TableCell colSpan={(appointmentTableColumn && appointmentTableColumn.length) || 9} className="py-3 px-5 border-b border-blue-gray-50 text-center" align="center">
                         <Typography variant="body2" className="text-blue-gray-900">
                             {retrievedAppointmentsData ? "No appointments found" : "Please input credentials to view pending appointments"}
                         </Typography>

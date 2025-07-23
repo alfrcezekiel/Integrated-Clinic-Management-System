@@ -11,13 +11,33 @@ import {
     Card,
     CardContent
 } from "@mui/material";
-import { Menu as MenuIcon, Notifications, Settings, CreditCard, Logout } from "@mui/icons-material";
+import {
+    Menu as MenuIcon,
+    Notifications,
+    Settings,
+    CreditCard,
+    Logout
+} from "@mui/icons-material";
 import { useMaterialUIController } from "../../context/useController";
-import { Link, useLocation, Outlet, useNavigate } from "react-router-dom";
-import { setOpenConfigurator, setOpenSideNav } from "../../context/materialUIController";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+    Link,
+    useLocation,
+    Outlet,
+    useNavigate
+} from "react-router-dom";
+import {
+    setOpenConfigurator,
+    setOpenSideNav
+} from "../../context/materialUIController";
+import {
+    useCallback,
+    useEffect,
+    useMemo,
+    useState
+} from "react";
 import CMS from "../../API/CMS";
 import LogoutDialog from "../../components/loguoutConfirmation";
+import { useAuthorization } from "../../context/auth/useAuthorization";
 
 // this is the navbar component for the dashboard
 const DashboardNavbar = () => {
@@ -35,7 +55,8 @@ const DashboardNavbar = () => {
     const [filteredClinics, setFilteredClinics] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const navigate = useNavigate();
-
+    const [patientNameWithPrefix, setPatientNameWithPrefix] = useState("");
+    const { logout, user, token } = useAuthorization();
 
     useEffect(() => {
         const fetchClinicData = async () => {
@@ -61,7 +82,16 @@ const DashboardNavbar = () => {
         } else {
             setFilteredClinics([])
         }
-    }, [searchQuery])
+
+        const patientNameWithSuffix = () => {
+            const first_name = user?.sfn || "";
+            const prefix = user?.sprefix || "";
+
+            const patient_full_name = `${prefix} ${first_name}`;
+            setPatientNameWithPrefix(patient_full_name);
+        }
+        patientNameWithSuffix();
+    }, [searchQuery, user?.sfn, user?.sprefix])
 
     const memoizedSearchQueryValue = useMemo(() => searchQuery, [searchQuery])
     const handleSearchChange = useCallback(async (e) => {
@@ -70,20 +100,30 @@ const DashboardNavbar = () => {
     }, [])
 
     const handleLogoutConfirm = async () => {
+        const tokenContext = token || localStorage.getItem("authToken");
+        
+        if (!tokenContext) {
+            console.error("No token found in context or localStorage");
+        }
+
         try {
-            const response = await CMS.get("/CMS/patientsDashboard/logout");
+            const response = await CMS.get("/CMS/patientsDashboard/logout", {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${tokenContext}`,
+                }
+            });
+
             if (!response.data || !response.data.message) {
                 throw new Error("No response data or no success message");
             } else {
-                localStorage.removeItem("authToken");
-                localStorage.removeItem("sid")
-                localStorage.removeItem("sfn")
-                localStorage.removeItem("sln")
-                localStorage.removeItem("sem")
+                logout();
                 navigate("/cms");
             }
         } catch (error) {
             console.error(`Code functionality error for logging out: ${error}`);
+            logout();
+            navigate("/cms");
         } finally {
             setLogoutDialog(false);
         }
@@ -119,13 +159,13 @@ const DashboardNavbar = () => {
                         <MenuIcon />
                     </IconButton>
                     <Breadcrumbs className="text-gray-600">
-                        <Link to={`/${layout}/${path}`} className="text-blue-500">
+                        <Link to={`/${layout}/${path}`} className="text-black">
                             <Typography variant="body1">{name}</Typography>
                         </Link>
                     </Breadcrumbs>
                     <Outlet />
-                    <Typography variant="body2" className="text-gray-600">/</Typography>
-                    <Typography variant="body1" className="text-gray-600">
+                    <Typography variant="body2" className="text-black">/</Typography>
+                    <Typography variant="body1" className="text-black">
                         {page}
                     </Typography>
                 </div>
@@ -180,6 +220,9 @@ const DashboardNavbar = () => {
                         onClose={handleSettingsMenuClose}
                         keepMounted
                     >
+                        <MenuItem>
+                            <Typography variant="body1">{patientNameWithPrefix}</Typography>
+                        </MenuItem>
                         <MenuItem onClick={() => setOpenConfigurator(dispatch, true)}>
                             <Settings className="mr-2" />
                             <Typography>Settings</Typography>

@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef} from "react";
+import { useState, useEffect, useRef } from "react";
+import "../../App.css";
 
 export default function Loader() {
     const [loading, setLoading] = useState(true);
@@ -13,7 +14,7 @@ export default function Loader() {
                 document.body.style.overflow = "auto";
                 window.scrollTo(0, ref.current);
             }, 2000);
-    
+
             return () => {
                 clearTimeout(timer);
             }
@@ -24,22 +25,15 @@ export default function Loader() {
         return () => {
             clearTimeout(timer);
         }
-        
-
     }, [])
 
     return (
         <>
-            <div className="flex items-center justify-center h-screen bg-purple-400">
-                {loading ? (
+            <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-700 via-purple-500 to-purple-700 z-[2000]">
+                {loading && (
                     <div className="flex flex-col items-center">
-                        <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent border-solid rounded-full animate-spin"></div>
-                        <p className="mt-2 text-purple-500">Loading</p>
-                    </div>
-                ) : (
-                    <div className="flex flex-col items-center">
-                        <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent border-solid rounded-full"></div>
-                        <p className="mt-2 text-white-200">Loading</p>
+                        <div className="w-12 h-12 border-4 border-amber-50 border-t-transparent border-solid rounded-full animate-spin"></div>
+                        <p className="mt-2 text-white">Loading</p>
                     </div>
                 )}
             </div>

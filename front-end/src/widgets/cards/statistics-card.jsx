@@ -1,19 +1,26 @@
 import PropTypes from "prop-types";
-import { Card, CardHeader, CardContent, CardActions, Typography } from "@mui/material";
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  CardActions,
+  Typography,
+} from "@mui/material";
 
 const StatisticsCard = ({ color, icon, title, value, footer }) => {
-  
   return (
-    <Card className="border border-blue-gray-100 shadow-sm">
+    <Card className="shadow-lg bg-white">
       <CardHeader
         avatar={
-          <div className={`h-12 w-12 grid place-items-center rounded-full bg-${color}-500`}>
+          <div
+            className={`h-12 w-12 grid place-items-center rounded-full bg-${color}-500`}
+          >
             {icon}
           </div>
         }
-        className="p-0 flex items-center justify-between"
+        className="pt-4 flex items-center justify-between"
       />
-      <CardContent className="p-0">
+      <CardContent className="pt-1">
         <Typography variant="h5" className="text-blue-gray-600">
           {title}
         </Typography>
@@ -58,7 +65,7 @@ StatisticsCard.propTypes = {
     "pink",
     "red",
   ]),
-  icon: PropTypes.elementType.isRequired, 
+  icon: PropTypes.elementType.isRequired,
   title: PropTypes.string.isRequired,
   value: PropTypes.string.isRequired,
   footer: PropTypes.node,

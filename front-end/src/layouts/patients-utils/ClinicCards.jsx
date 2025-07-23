@@ -1,4 +1,7 @@
-import { useEffect, useState } from "react";
+import {
+    useEffect,
+    useState
+} from "react";
 import {
     Card,
     CardContent,
@@ -7,7 +10,7 @@ import {
     Button,
     CardMedia,
     ImageList,
-    ImageListItem
+    ImageListItem,
 } from "@mui/material";
 import CMS from "../../API/CMS";
 import LocationOn from "@mui/icons-material/LocationOn";
@@ -17,17 +20,21 @@ import {
     Mail,
     Stethoscope,
     Building,
-    DollarSign
+    PhilippinePesoIcon
 } from 'lucide-react';
 import BookingAppointmentModal from "./BookingAppointmentModal";
 import {
-    useNavigate,
-    useLocation
+    useLocation,
+    useNavigate
 } from "react-router-dom";
+import ConfirmAppointmentModal from "./ConfirmBookedAppointment";
+import { useAuthorization } from "../../context/auth/useAuthorization";
+import dayjs from "dayjs";
 
 const ClinicCards = () => {
     const [clinics, setClinics] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [showConfirmedBookAppointmentModal, setShowConfirmedBookAppointmentModal] = useState(false);
     const [selectedClinic, setSelectedClinic] = useState(null);
     const [appointmentData, setAppointmentData] = useState({
         firstName: "",
@@ -35,8 +42,8 @@ const ClinicCards = () => {
         email: "",
         phoneNumber: "",
         gender: "",
-        appointmentDate: "",
-        preferredTime: "",
+        appointmentDate: null,
+        preferredTime: null,
         purposeOfAppointment: ""
     });
     const [appointmentID, setAppointmentID] = useState("");
@@ -46,35 +53,25 @@ const ClinicCards = () => {
         email: "",
         phoneNumber: "",
         gender: "",
-        appointmentDate: "",
-        preferredTime: "",
+        appointmentDate: null,
+        preferredTime: null,
         purposeOfAppointment: ""
     });
+    const [confirmedAppointmentData, setConfirmedAppointmentData] = useState(null)
+    const [showSuccessConfirmedBookedAppointmentDialogBox, setShowSuccessConfirmedBookedAppointmentDialogBox] = useState(false);
 
-    const retrievePatientData = async (patientID) => {
-        try {
-            const response = await CMS.get(`/CMS/patientsDashboard/getBookedAppointments/${patientID}`, {
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            });
-
-            if (response.status === 200) {
-                setAppointmentData(prevData => ({
-                    ...prevData,
-                    firstName: response.data.firstName,
-                    lastName: response.data.lastName,
-                    email: response.data.email,
-                    phoneNumber: response.data.phoneNumber
-                }));
-            }
-        } catch (error) {
-            console.error(`Failed to retrieve patient data: ${error}`);
-        }
+    const navigate = useNavigate();
+    const { user, token } = useAuthorization();
+    const tokenContext = token || localStorage.getItem("authToken");
+    if (!tokenContext) {
+        console.error("No token found in context or localStorage");
     }
 
     const location = useLocation();
-    const navigate = useNavigate();
+
+    if (!tokenContext) {
+        console.error("No token found in context or localStorage");
+    }
 
     const formatTimeToAMPM = (time) => {
         if (!time) return "N/A";
@@ -104,7 +101,12 @@ const ClinicCards = () => {
     useEffect(() => {
         const fetchClinics = async () => {
             try {
-                const response = await CMS.get("/CMS/admin-dashboard/clinics");
+                const response = await CMS.get("/CMS/admin-dashboard/clinics", {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${tokenContext}`,
+                    }
+                });
 
                 if (response.status === 200) {
                     setClinics(response.data.clinics);
@@ -116,42 +118,127 @@ const ClinicCards = () => {
         }
         fetchClinics();
 
-        const retrievePatientId = localStorage.getItem("sid")
+        const retrievePatientId = user?.sid;
+
+        // function to retrieve the patient data based on the patiente id to automate the input fields
+        const retrievePatientData = async (patientID) => {
+            try {
+                const response = await CMS.get(`/CMS/patientsDashboard/getBookedAppointments/${patientID}`, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${tokenContext}`,
+                    },
+                });
+
+                if (response.status === 200) {
+                    setAppointmentData(prevData => ({
+                        ...prevData,
+                        firstName: response.data.firstName,
+                        lastName: response.data.lastName,
+                        email: response.data.email,
+                        phoneNumber: response.data.phoneNumber
+                    }));
+                }
+            } catch (error) {
+                console.error(`Failed to retrieve patient data: ${error}`);
+            }
+        }
 
         if (retrievePatientId) {
             setAppointmentID(retrievePatientId);
             retrievePatientData(retrievePatientId);
         }
 
-    }, [appointmentID, location.pathname]);
+        const confirmedBookedAppointment = () => {
+            if (showConfirmedBookAppointmentModal) {
+                const timer = setTimeout(() => {
+                    navigate("/patients-dashboard/ViewClinics");
+                }, 3000)
 
+                return () => clearTimeout(timer);
+            }
+        }
+        confirmedBookedAppointment()
+    }, [appointmentID, location.pathname, navigate, showConfirmedBookAppointmentModal, user?.sid, tokenContext]);
+
+    // function to open a booking appointment dialog
     const handleOpenModal = (clinic) => {
         setSelectedClinic(clinic);
         setAppointmentID(appointmentID)
     };
 
+    // function to close a booking appointment dialog
     const handleCloseModal = () => {
         setSelectedClinic(null);
         setFieldErrors({})
+        setAppointmentData((prev) => ({
+            ...prev,
+            gender: "",
+            appointmentDate: null,
+            preferredTime: null,
+            purposeOfAppointment: ""
+        }))
     };
 
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+        })
+    };
+
+    // function to get the confirmed booked appointment data
+    const getConfirmedBookedAppointment = () => {
+        if (!selectedClinic) return null;
+
+        return {
+            patient: {
+                firstName: appointmentData.firstName,
+                lastName: appointmentData.lastName,
+                email: appointmentData.email,
+                phoneNumber: appointmentData.phoneNumber,
+                appointmentDate: appointmentData.appointmentDate ? formatDate(appointmentData.appointmentDate) : null,
+                preferredTime: appointmentData.preferredTime ? formatTimeToAMPM(appointmentData.preferredTime) : null,
+            },
+            clinic: {
+                clinic_name: selectedClinic.clinic_name,
+                clinic_address: selectedClinic.clinic_address,
+                email: selectedClinic.email,
+                phoneNumber: selectedClinic.phoneNumber,
+                clinic_date_open: selectedClinic.clinic_date_open,
+                clinic_close_date: selectedClinic.clinic_close_date,
+                clinic_time: formatTimeToAMPM(selectedClinic.clinic_time),
+                clinic_close_time: formatTimeToAMPM(selectedClinic.clinic_close_time),
+                consultation_fee: selectedClinic.consultation_fee,
+                clinic_type: selectedClinic.clinic_type
+            }
+        }
+    }
+
+    // function to handle the booking appointment
     const handleBooking = async (e) => {
         try {
             e.preventDefault();
             const payload = {
                 ...appointmentData,
+                appointmentDate: appointmentData.appointmentDate ? dayjs(appointmentData.appointmentDate).format("YYYY-MM-DD") : null,
                 patientID: appointmentID,
                 clinicID: selectedClinic.clinic_id,
             }
 
-            const response = await CMS.post("/CMS/patientsDashboard/patientsBookedAppointments", payload);
-
-            if (!response.data) {
-                alert("Appointment booking failed. Please try again later");
-            }
+            const response = await CMS.post("/CMS/patientsDashboard/patientsBookedAppointments", payload, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${tokenContext}`,
+                }
+            });
 
             if (response.status === 200) {
-                alert("Appointment booked successfully");
+                const confirmedAppointment = getConfirmedBookedAppointment();
+                const apppointment = response.data.appointment;
+
                 setFieldErrors({})
                 setAppointmentData({
                     firstName: "",
@@ -159,23 +246,65 @@ const ClinicCards = () => {
                     email: "",
                     phoneNumber: "",
                     gender: "",
-                    appointmentDate: "",
-                    preferredTime: "",
+                    appointmentDate: null,
+                    preferredTime: null,
                     purposeOfAppointment: ""
                 });
-                handleCloseModal();
-                navigate("/patients-dashboard/Pending-Appointment")
+                handleCloseModal(); // close the modal
+                setShowConfirmedBookAppointmentModal(true); // show the confirmed booked appointment modal
+                setConfirmedAppointmentData({
+                    ...confirmedAppointment,
+                    appointmentID: apppointment?.appointmentID
+                }) // set the confirmed appointment data
             } else {
                 console.error(`Error in rendering the status code: ${response.status}`);
             }
         } catch (error) {
             if (error.response || error.response.data.status === 400) {
-                setFieldErrors(error.response.data.errors);
+                const errors = error.response.data.errors;
+                setFieldErrors((prev) => ({
+                    ...prev,
+                    ...errors
+                }));
+            } else if (error.response || error.response.data.status === 500) {
+                setFieldErrors({ preferredTime: error.response.data.errors.preferredTime });
             } else {
                 console.error(`Failed to book appointment: ${error}`);
             }
         }
     };
+
+    // function to close the confirmed booked appointment dialog
+    const handleCallbackCloseConfirmedBookedAppointmentModal = async (appointmentID) => {
+        // setShowConfirmedBookAppointmentModal(false);
+        try {
+            const response = await CMS.put(`/CMS/patients-dashboard/cancelBookedAppointment/${appointmentID}`, {
+                headers: {
+                    "Authorization": `Bearer ${tokenContext}`,
+                    "Content-Type": "application/json"
+                }
+            })
+
+            if (response.status === 200) {
+                setShowConfirmedBookAppointmentModal(false);
+                alert("Booked Appointment cancelled successfully.");
+            } else {
+                throw new Error(`Failed to cancel appointment: ${response.status}`);
+            }
+        } catch (error) {
+            console.error(`Error in cancelling an booked appointment ${error}`)
+        }
+    };
+
+    // function to close the success confirmed booked appointment dialog
+    const handleCloseConfirmedBookedAppointmentSuccessDialogBox = async () => {
+        setShowSuccessConfirmedBookedAppointmentDialogBox(false);
+    }
+
+    const proceedToConfirmedBookedAppointmentSuccessDialogBox = async () => {
+        setShowConfirmedBookAppointmentModal(false);
+        setShowSuccessConfirmedBookedAppointmentDialogBox(true);
+    }
 
     return (
         <div className="flex flex-row flex-wrap justify-center gap-6 p-6 from-blue-50 to-blue-100">
@@ -186,19 +315,20 @@ const ClinicCards = () => {
                     No clinics found.
                 </Typography>
             ) : (
-                clinics.map((clinic) => (
-                    <Card key={clinic} className="w-md mx-auto bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl shadow-lg overflow-hidden transform transition duration-300 hover:scale-105">
+                clinics.map((clinic, i) => (
+                    <Card key={i} className="w-md mx-auto bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl shadow-lg overflow-hidden transform transition duration-300 hover:scale-105">
                         <CardMedia
-                            className="h-48 w-full bg-blue-200 flex items-center justify-center"
+                            className="h-74 w-full bg-neutral-50 flex items-center justify-center"
                             component="div"
                         >
                             <div className="text-center p-4">
-                                <ImageList sx={{ width: '100%', height: 450 }} cols={3} rowHeight={164}>
+                                <ImageList cols={3} rowHeight={164} className="h-screen">
                                     <ImageListItem>
                                         <img
-                                            src={clinics.clinic_image}
+                                            src={`http://localhost:7506/uploads/clinic_images/${clinic.clinic_image}`}
                                             alt="Clinic Image"
                                             loading="lazy"
+                                            className="min-w-sm h-full object-cover rounded-lg"
                                         />
                                     </ImageListItem>
                                 </ImageList>
@@ -239,8 +369,8 @@ const ClinicCards = () => {
                                     <span className="text-gray-800">{formatTimeToAMPM(clinic.clinic_time)} - {formatTimeToAMPM(clinic.clinic_close_time)}</span>
                                 </div>
                                 <div className="flex items-center">
-                                    <DollarSign className="h-6 w-6 text-blue-600 mr-3" />
-                                    <span className="text-gray-800">₱ {clinic.consultation_fee}</span>
+                                    <PhilippinePesoIcon className="h-6 w-6 text-blue-600 mr-3" />
+                                    <span className="text-gray-800">{clinic.consultation_fee}</span>
                                 </div>
                                 <div className="flex items-center">
                                     <Stethoscope className="h-6 w-6 text-blue-600 mr-3" />
@@ -273,6 +403,49 @@ const ClinicCards = () => {
                     setFieldErrors={setFieldErrors}
                     appointmentID={appointmentID}
                 />
+            )}
+
+            {showConfirmedBookAppointmentModal && (
+                <ConfirmAppointmentModal
+                    open={showConfirmedBookAppointmentModal}
+                    onClose={handleCallbackCloseConfirmedBookedAppointmentModal}
+                    onNextStep={proceedToConfirmedBookedAppointmentSuccessDialogBox}
+                    patientsData={confirmedAppointmentData}
+                />
+            )}
+
+            {showSuccessConfirmedBookedAppointmentDialogBox && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 transition-opacity duration-300">
+                    <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 relative transform transition-all duration-300 scale-100 opacity-100 animate-fadeInScale">
+                        <div className="flex flex-col items-center text-center">
+                            <svg
+                                className="w-12 h-12 text-green-500 mb-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M9 12l2 2l4-4m5 2a9 9 0 11-18 0a9 9 0 0118 0z"
+                                />
+                            </svg>
+                            <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                                Appointment Confirmed!
+                            </h2>
+                            <p className="text-gray-600 mb-4">
+                                Thank you! Your appointment was booked successfully.
+                            </p>
+                            <button
+                                onClick={handleCloseConfirmedBookedAppointmentSuccessDialogBox}
+                                className="w-20 bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200"
+                            >
+                                Okay
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

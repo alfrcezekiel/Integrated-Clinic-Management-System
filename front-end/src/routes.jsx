@@ -1,29 +1,53 @@
 import HomeIcon from "@mui/icons-material/Home";
 import DashboardHome from "./widgets/layout/DashboardHome";
-import Schedule from "@mui/icons-material/Schedule";
 import PatientsTable from "./layouts/patients-utils/patients-table";
 import DoctorsDashboardHome from "./widgets/layout/doctors-dashboard/DoctorsDashboardHome";
-import DoctorsTablesListOfAppointments from "./layouts/doctor-utils/DoctorsTablesListOfAppointment";
+import DoctorsTablesListOfAppointments from "./layouts/ClinicUtils/DoctorsTablesListOfAppointment";
 import AddIcon from "@mui/icons-material/Add";
 import AddDoctor from "./layouts/adminUtils/Doctors";
 import AdminDashboardHome from "./layouts/adminUtils/AdminHome";
 import ClinicIcon from "@mui/icons-material/LocalHospital";
+import EditIcon from '@mui/icons-material/Edit';
 import ClinicCard from "./layouts/patients-utils/ClinicCards";
 import AddClinicIcon from "@mui/icons-material/LocalHospital"; // Add this import
 import AddClinic from "./layouts/adminUtils/AddClinic";
 import PendingAppointmentTable from "./layouts/patients-utils/PendingAppointmentTable";
 import ApprovedAppointmentsTable from "./layouts/patients-utils/ApprovedAppointmentTable";
-/*
-    modules of clinics dashboard
-*/
+/**
+ * @modules of clinics dashboard
+ */
 import DeclinedAppointmentStatusTable from "./layouts/patients-utils/DeclinedAppointmentTable";
-import PendingAppointmentClinicTable from "./layouts/doctor-utils/PendingAppointmentClinicTable";
-import ApprovedAppointmentClinicTable from "./layouts/doctor-utils/ApprovedAppointmentClinicTable";
-import DeclinedAppointmentStatusClinicTable from "./layouts/doctor-utils/DeclinedAppointmentStatusClinicTable";
+import PendingAppointmentClinicTable from "./layouts/ClinicUtils/PendingAppointmentClinicTable";
+import ApprovedAppointmentClinicTable from "./layouts/ClinicUtils/ApprovedAppointmentClinicTable";
+import DeclinedAppointmentStatusClinicTable from "./layouts/ClinicUtils/DeclinedAppointmentStatusClinicTable";
+import AppointmentHistoryTable from "./layouts/ClinicUtils/AppointmentHistoryTable";
+import ConsultPatientPage from "./layouts/ClinicUtils/ConsultationPage/ConsultPatientPage";
+import AddBookAppointment from "./layouts/ClinicUtils/AddBookedAppointment";
+import ClinicAppointments from "./layouts/ClinicUtils/ClinicBookedAppointmentTables/ClinicAppointments";
+import PendingBookedAppointment from "./layouts/ClinicUtils/ClinicBookedAppointmentTables/PendingBookedAppointment";
+import ApprovedBookedAppointment from "./layouts/ClinicUtils/ClinicBookedAppointmentTables/ApprovedBookedAppointmentTable";
+import DeclinedBookedAppointmentTable from "./layouts/ClinicUtils/ClinicBookedAppointmentTables/DeclinedBookedAppointmentTable";
+import ModifyClinicBookedAppointment from "./layouts/ClinicUtils/ClinicBookedAppointmentTables/ModifyClinicBookedAppointment";
+
+import AccountCircle from '@mui/icons-material/AccountCircle';
+import RegisterPatientsAccountTable from "./layouts/adminUtils/RegisterPatientsAccountTable";
+import PersonIcon from '@mui/icons-material/Person';
+import EventIcon from '@mui/icons-material/Event';
+import HourglassTopIcon from '@mui/icons-material/HourglassTop';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
+import HistoryIcon from '@mui/icons-material/History';
+import ViewClinicDetails from "./layouts/adminUtils/ViewClinicDetails";
+
+/**
+ * @import the admin components
+ */
+import AdminRegisterationAccount from "./layouts/adminUtils/AdminAccount/AdminRegistrationAccount";
+import CreateClinicAccount from "./layouts/adminUtils/CreateClinicAccount";
 
 const iconStyle = {
     fontSize: 20,
-    color: "inherit",
+    color: "black",
 };
 
 const routes = [
@@ -33,7 +57,7 @@ const routes = [
             {
                 id: 1,
                 icon: <HomeIcon style={iconStyle} />,
-                name: "Patients Dashboard",
+                name: "Patient Dashboard",
                 path: "Home",
                 element: <DashboardHome />,
             },
@@ -41,32 +65,32 @@ const routes = [
                 id: 2,
                 icon: <ClinicIcon style={iconStyle} />,
                 name: "View Clinics",
-                path: "View-Clinics",
+                path: "ViewClinics",
                 element: <ClinicCard />
             },
             {
                 id: 3,
-                icon: <Schedule style={iconStyle} />,
+                icon: <EventIcon style={iconStyle} />,
                 name: "Appointments",
-                path: "View-Appointment",
+                path: "ViewAppointment",
                 element: <PatientsTable />
-            },{
+            }, {
                 id: 4,
-                icon: <Schedule style={iconStyle} />,
+                icon: <HourglassTopIcon style={iconStyle} />,
                 name: "Pending Appointments",
-                path: "Pending-Appointment",
+                path: "PendingAppointment",
                 element: <PendingAppointmentTable />
-            },{
+            }, {
                 id: 5,
-                icon: <Schedule style={iconStyle} />,
+                icon: <CheckCircleIcon style={iconStyle} />,
                 name: "Approved Appointments",
-                path: "Approved-Appointment",
+                path: "ApprovedAppointment",
                 element: <ApprovedAppointmentsTable />
-            },{
+            }, {
                 id: 6,
-                icon: <Schedule style={iconStyle} />,
+                icon: <CancelIcon style={iconStyle} />,
                 name: "Declined Appointments",
-                path: "Declined-Appointment",
+                path: "DeclinedAppointment",
                 element: <DeclinedAppointmentStatusTable />
             }
         ],
@@ -80,37 +104,96 @@ export const doctorRoutes = [
             {
                 id: 1,
                 icon: <HomeIcon style={iconStyle} />,
-                name: "Clinics Dashboard",
+                name: "Clinic Dashboard",
                 path: "/home",
                 element: <DoctorsDashboardHome />,
             },
             {
                 id: 2,
-                icon: <Schedule style={iconStyle} />,
+                icon: <EventIcon style={iconStyle} />,
                 name: "Appointments",
-                path: "/patients-appointments",
+                path: "/Appointments",
                 element: <DoctorsTablesListOfAppointments />
             },
             {
                 id: 3,
-                icon: <Schedule style={iconStyle} />,
+                icon: <HourglassTopIcon style={iconStyle} />,
                 name: "Pending Appointments",
-                path: "/pending-appointments",
+                path: "/PendingAppointments",
                 element: <PendingAppointmentClinicTable />
             },
             {
                 id: 4,
-                icon: <Schedule style={iconStyle} />,
+                icon: <CheckCircleIcon style={iconStyle} />,
                 name: "Approved Appointments",
-                path: "/approved-appointments",
+                path: "/ApprovedAppointments",
                 element: <ApprovedAppointmentClinicTable />
             },
             {
                 id: 5,
-                icon: <Schedule style={iconStyle} />,
+                icon: <CancelIcon style={iconStyle} />,
                 name: "Declined Appointments",
-                path: "/declined-appointments",
+                path: "/DeclinedAppointments",
                 element: <DeclinedAppointmentStatusClinicTable />
+            },
+            {
+                id: 6,
+                icon: <HistoryIcon style={iconStyle} />,
+                name: "Appointment History",
+                path: "/AppointmentHistory",
+                element: <AppointmentHistoryTable />
+            },
+            {
+                id: 7,
+                icon: <PersonIcon style={iconStyle} />,
+                name: "Consult Patient",
+                path: "/ConsultPatient",
+                element: <ConsultPatientPage />
+            },
+            {
+                id: 8,
+                icon: <AddIcon style={iconStyle} />,
+                name: "Add Book Appointment",
+                path: "/AddBookAppointment",
+                element: <AddBookAppointment />
+            }, {
+                id: 9,
+                icon: <EventIcon style={iconStyle} />,
+                name: "Clinic Book Appointment",
+                path: "/ClinicViewBookedAppointment",
+                subgroup: "Appointments",
+                element: <ClinicAppointments />
+            },
+            {
+                id: 10,
+                icon: <HourglassTopIcon style={iconStyle} />,
+                name: "Clinic Pending Booked Appointment",
+                subgroup: "Pending Booked Appointment",
+                path: "/PendingBookedAppointment",
+                element: <PendingBookedAppointment />
+            },
+            {
+                id: 11,
+                icon: <CheckCircleIcon style={iconStyle} />,
+                name: "Clinic Approved Booked Appointment",
+                subgroup: "Approved Booked Appointment",
+                path: "/ApprovedBookedAppointment",
+                element: <ApprovedBookedAppointment />
+            },
+            {
+                id: 12,
+                icon: <CancelIcon style={iconStyle} />,
+                name: "Clinic Declined Booked Appointment",
+                subgroup: "Declined Booked Appointment",
+                path: "/DeclinedBookedAppointment",
+                element: <DeclinedBookedAppointmentTable />
+            },
+            {
+                id: 13,
+                icon: <EditIcon style={iconStyle} />,
+                name: "Modify Booked Appointment",
+                path: "/ModifyBookedAppointment",
+                element: <ModifyClinicBookedAppointment />
             }
         ]
     }
@@ -124,7 +207,7 @@ export const adminRoutes = [
                 id: 1,
                 icon: <HomeIcon style={iconStyle} />,
                 name: "Admin Dashboard",
-                path: "/home",
+                path: "/Home",
                 element: <AdminDashboardHome />
             },
             {
@@ -136,10 +219,37 @@ export const adminRoutes = [
             },
             {
                 id: 3,
-                icon: <AddClinicIcon style={iconStyle} />, // Use the new icon here
+                icon: <AddClinicIcon style={iconStyle} />,
                 name: "Add Clinic",
-                path: "/add-clinic",
+                path: "/AddClinic",
                 element: <AddClinic />
+            },
+            {
+                id: 4,
+                icon: <AccountCircle style={iconStyle} />,
+                name: "Registered Patients Account",
+                path: "/RegisterPatientsAccount",
+                element: <RegisterPatientsAccountTable />
+            }, {
+                id: 5,
+                icon: <ClinicIcon style={iconStyle} />,
+                name: "View Clinic",
+                path: "/ViewClinic",
+                element: <ViewClinicDetails />
+            },
+            {
+                id: 6,
+                icon: <AccountCircle style={iconStyle} />,
+                name: "Create Admin Account",
+                path: "/AdminAccountRegistration",
+                element: <AdminRegisterationAccount />
+            },
+            {
+                id: 7,
+                icon: <AddIcon style={iconStyle} />,
+                name: "Create Clinic Account",
+                path: "/CreateClinicAccount",
+                element: <CreateClinicAccount />
             }
         ]
     }

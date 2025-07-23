@@ -1,5 +1,5 @@
 import PropTypes from "prop-types"
-import "../../assets/css/main.css";
+import "../../App.css";
 import {
     Drawer,
     Typography,
@@ -46,8 +46,8 @@ const SideNav = ({ brandName, routes }) => {
             classes={{ paper: isMobile ? "bg-white w-72 shadow-md" : "w-72 bg-white shadow-md" }}
         >
             <div className="relative p-6">
-                <Link to={"/patients-dashboard/home"}>
-                    <Typography variant="h5" className="text-gray-900">
+                <Link to={"/patients-dashboard/Home"} className="text-black text-center">
+                    <Typography variant="h5" className="text-black">
                         {brandName}
                     </Typography>
                 </Link>
@@ -56,16 +56,18 @@ const SideNav = ({ brandName, routes }) => {
             <nav className="p-4">
                 {routes.map(({ layout, pages }, index) => (
                     <div key={index} className="mb-4">
-                        {pages.filter((page) => page.name !== "View Clinics" && page.name !== "Appointments" && page.name !== "Pending Appointments" && page.name !== "Approved Appointments" && page.name !== "Declined Appointments").map(({ icon, name, path }) => (
-                            <NavLink
-                                key={index}
-                                to={`${layout}${path}`}
-                                className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-white" : "text-gray-700 hover:bg-gray-100"}`}
-                            >
-                                {icon}
-                                <Typography sx={{ ml: 2 }} className="text-black">{name}</Typography>
-                            </NavLink>
-                        ))}
+                        {pages
+                            .filter((page) => page.name !== "View Clinics" && page.name !== "Appointments" && page.name !== "Pending Appointments" && page.name !== "Approved Appointments" && page.name !== "Declined Appointments")
+                            .map(({ icon, name, path }) => (
+                                <NavLink
+                                    key={index}
+                                    to={`${layout}${path}`}
+                                    className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-white" : "text-gray-700 hover:bg-gray-100"}`}
+                                >
+                                    {icon}
+                                    <Typography sx={{ marginLeft: 1 }} className="text-black">{name}</Typography>
+                                </NavLink>
+                            ))}
                     </div>
                 ))}
                 <List className="bg-white shadow-lg rounded-2xl">
@@ -77,24 +79,25 @@ const SideNav = ({ brandName, routes }) => {
                         <List component="div" disablePadding>
                             {routes.map(({ layout, pages }, index) => (
                                 pages
-                                .filter((page) => page.name === "View Clinics")
-                                .map(({ path, icon, name }) => (
-                                    <NavLink
-                                        key={index}
-                                        to={`${layout}${path}`}
-                                        className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-black" : "hover:bg-gray-100 p-2"}`}
-                                    >
-                                        {icon}
-                                        <ListItem button="true">
-                                            <ListItemText primary={name}className="text-black" />
-                                        </ListItem>
-                                    </NavLink>
-                                ))
+                                    .filter((page) => page.name === "View Clinics")
+                                    .map(({ path, icon, name }) => (
+                                        <NavLink
+                                            key={index}
+                                            to={`${layout}${path}`}
+                                            className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-black" : "hover:bg-gray-100 p-2"}`}
+                                        >
+                                            {icon}
+                                            <ListItem button="true">
+                                                <ListItemText primary={name} className="text-black" />
+                                            </ListItem>
+                                        </NavLink>
+                                    ))
                             ))}
                         </List>
                     </Collapse>
                 </List>
-                <div className="h-2"></div>
+                <div className="h-4"></div>
+                {/* Dropdown component of appointment management */}
                 <List className="bg-white shadow-lg rounded-2xl">
                     <ListItemButton onClick={handleDropdownAppointmentClick}>
                         <ListItemText primary="Appointment Management" />
@@ -104,19 +107,19 @@ const SideNav = ({ brandName, routes }) => {
                         <List component="div" disablePadding>
                             {routes.map(({ layout, pages }, index) => (
                                 pages
-                                .filter((page) => page.name === "Appointments")
-                                .map(({ path, name, icon }) => (
-                                    <NavLink
-                                        key={index}
-                                        to={`${layout}${path}`}
-                                        className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-black" : "hover:bg-gray-100 p-2"}`}
-                                    >
-                                        {icon}
-                                        <ListItem button="true">
-                                            <ListItemText primary={name} className="text-black" />
-                                        </ListItem>
-                                    </NavLink>
-                                ))
+                                    .filter((page) => page.name === "Appointments")
+                                    .map(({ path, name, icon }) => (
+                                        <NavLink
+                                            key={index}
+                                            to={`${layout}${path}`}
+                                            className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-black" : "hover:bg-gray-100 p-2"}`}
+                                        >
+                                            {icon}
+                                            <ListItem button="true">
+                                                <ListItemText primary={name} className="text-black" />
+                                            </ListItem>
+                                        </NavLink>
+                                    ))
                             ))}
                         </List>
                     </Collapse>
@@ -124,19 +127,19 @@ const SideNav = ({ brandName, routes }) => {
                         <List component="div" disablePadding>
                             {routes.map(({ layout, pages }, index) => (
                                 pages
-                                .filter((page) => page.name === "Pending Appointments")
-                                .map(({ path, name, icon }) => (
-                                    <NavLink
-                                        key={index}
-                                        to={`${layout}${path}`}
-                                        className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-black" : "hover:bg-gray-100 p-2"}`}
-                                    >
-                                        {icon}
-                                        <ListItem button="true">
-                                            <ListItemText primary={name} className="text-black" />
-                                        </ListItem>
-                                    </NavLink>
-                                ))
+                                    .filter((page) => page.name === "Pending Appointments")
+                                    .map(({ path, name, icon }) => (
+                                        <NavLink
+                                            key={index}
+                                            to={`${layout}${path}`}
+                                            className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-black" : "hover:bg-gray-100 p-2"}`}
+                                        >
+                                            {icon}
+                                            <ListItem button="true">
+                                                <ListItemText primary={name} className="text-black" />
+                                            </ListItem>
+                                        </NavLink>
+                                    ))
                             ))}
                         </List>
                     </Collapse>
@@ -144,19 +147,19 @@ const SideNav = ({ brandName, routes }) => {
                         <List component="div" disablePadding>
                             {routes.map(({ layout, pages }, index) => (
                                 pages
-                                .filter((page) => page.name === "Approved Appointments")
-                                .map(({ path, icon, name }) => (
-                                    <NavLink
-                                        key={index}
-                                        to={`${layout}${path}`}
-                                        className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-black" : "hover:bg-gray-100 p-2"}`}
-                                    >
-                                        {icon}
-                                        <ListItem button="true">
-                                            <ListItemText primary={name} className="text-black" />
-                                        </ListItem>
-                                    </NavLink>
-                                ))
+                                    .filter((page) => page.name === "Approved Appointments")
+                                    .map(({ path, icon, name }) => (
+                                        <NavLink
+                                            key={index}
+                                            to={`${layout}${path}`}
+                                            className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-black" : "hover:bg-gray-100 p-2"}`}
+                                        >
+                                            {icon}
+                                            <ListItem button="true">
+                                                <ListItemText primary={name} className="text-black" />
+                                            </ListItem>
+                                        </NavLink>
+                                    ))
                             ))}
                         </List>
                     </Collapse>
@@ -164,18 +167,18 @@ const SideNav = ({ brandName, routes }) => {
                         <List component="div" disablePadding>
                             {routes.map(({ layout, pages }, index) => (
                                 pages.filter((page) => page.name === "Declined Appointments")
-                                .map(({ path, icon, name }) => (
-                                    <NavLink
-                                        key={index}
-                                        to={`${layout}${path}`}
-                                        className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-black" : "hover:bg-gray-100 p-2"}`}
-                                    >
-                                        {icon}
-                                        <ListItem button="true">
-                                            <ListItemText primary={name} className="text-black" />
-                                        </ListItem>
-                                    </NavLink>
-                                ))
+                                    .map(({ path, icon, name }) => (
+                                        <NavLink
+                                            key={index}
+                                            to={`${layout}${path}`}
+                                            className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-black" : "hover:bg-gray-100 p-2"}`}
+                                        >
+                                            {icon}
+                                            <ListItem button="true">
+                                                <ListItemText primary={name} className="text-black" />
+                                            </ListItem>
+                                        </NavLink>
+                                    ))
                             ))}
                         </List>
                     </Collapse>

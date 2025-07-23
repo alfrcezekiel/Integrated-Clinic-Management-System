@@ -1,4 +1,4 @@
-import "../../assets/css/main.css";
+import "../../App.css"
 import FormControl from "@mui/material/FormControl"
 import InputLabel from "@mui/material/InputLabel"
 import OutlinedInput from "@mui/material/OutlinedInput"
@@ -6,7 +6,12 @@ import InputAdornment from "@mui/material/InputAdornment"
 import IconButton from "@mui/material/IconButton"
 import Visibility from "@mui/icons-material/Visibility"
 import VisibilityOff from "@mui/icons-material/VisibilityOff"
-import { useState, useEffect } from "react"
+import {
+    useState,
+    useEffect,
+    useMemo,
+    useCallback
+} from "react"
 import CMS from "../../API/CMS";
 import FormHelperText from "@mui/material/FormHelperText"
 import TextField from "@mui/material/TextField"
@@ -14,29 +19,64 @@ import Checkbox from "@mui/material/Checkbox"
 import Button from "@mui/material/Button"
 import Typography from "@mui/material/Typography"
 import FormControlLabel from "@mui/material/FormControlLabel"
-import {useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import pattern from "../../assets/img/hero-bg.jpg"
-
+import {
+    useAuthorization
+} from "../../context/auth/useAuthorization";
+import {
+    getLocalStorage,
+    setLocalStorage,
+    removeLocalStorage
+} from "../../utils/storage/localStorage";
 function AdminLoginPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [adminLoginFormData, setAdminLoginFormData] = useState({
         email: "",
         password: ""
     })
+    const [rememberMe, setRememberMe] = useState(false);
     const [fieldErrors, setFieldErrors] = useState({
         email: "",
         password: ""
     })
 
     const location = useLocation();
+    const { login, userData } = useAuthorization();
 
     useEffect(() => {
         const titleElement = () => {
             document.title = "Admin Login Portal | CMS";
         }
         titleElement();
+
+        /**
+         * Remember the admin account credentials
+         */
+        const rememberAdminCredentials = async () => {
+            const rememberAdminDetails = getLocalStorage("rememberAdminDetails") === true;
+            const storedEmail = getLocalStorage("rememberAdminEmail");
+            if (storedEmail) {
+                setAdminLoginFormData((prev) => ({
+                    ...prev,
+                    email: storedEmail
+                }))
+            }
+            setRememberMe(rememberAdminDetails)
+        }
+        rememberAdminCredentials()
     }, [location.pathname])
 
+    /**
+     * @function to handle changes in remember me checkbox
+     */
+    const handleRememberMeChanges = async (e) => {
+        setRememberMe(e.target.checked);
+    }
+
+    /**
+     * @function to handle show password
+     */
     const handleClickShowPassword = () => {
         setShowPassword((show) => !show);
     }
@@ -51,21 +91,55 @@ function AdminLoginPage() {
 
     const navigate = useNavigate();
 
+    const handleInputChange = useCallback((e) => {
+        const { name, value } = e.target;
+        setAdminLoginFormData((prevData) => ({
+            ...prevData,
+            [name]: value,
+        }));
+
+        if (fieldErrors[name]) {
+            setFieldErrors((prevErrors) => ({
+                ...prevErrors,
+                [name]: "",
+            }));
+        }
+    }, [fieldErrors]);
+
+    const memoizedClinicLoginDataValues = useMemo(() => {
+        return adminLoginFormData
+    }, [adminLoginFormData])
+
     const handleLoggedInAdmin = async (e) => {
         try {
             e.preventDefault();
+
+            removeLocalStorage("authToken");
+            removeLocalStorage("userData");
+            
             const response = await CMS.post("/CMS/adminAccount", adminLoginFormData, {
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
                 },
+                withCredentials: true,
             });
 
             if (response.data && response.status === 200) {
                 setFieldErrors({})
+                if (rememberMe) {
+                    setLocalStorage("rememberAdminDetails", true);
+                    setLocalStorage("rememberAdminEmail", adminLoginFormData.email);
+                } else {
+                    removeLocalStorage("rememberAdminDetails");
+                    removeLocalStorage("rememberAdminEmail");
+                }
+
                 if (response.data.token && response.data.sid) {
-                    localStorage.setItem("authToken", response.data.token);
-                    localStorage.setItem("sid", response.data.sid.id);
+                    login(response.data.token);
+                    userData({
+                        sid: response.data.sid.id,
+                        email: response.data.sid.email,
+                    })
                     navigate("/admin-dashboard/home");
                 } else {
                     console.error("No token found in response data and session data");
@@ -76,8 +150,19 @@ function AdminLoginPage() {
             }
 
         } catch (error) {
+            /**
+             * clear the remember me credentials if the login fails
+             */
+            removeLocalStorage("rememberAdminDetails");
+            removeLocalStorage("rememberAdminEmail");
+
             if (error.response && error.response.status === 400) {
                 setFieldErrors(error.response.data.errors);
+            } else if (error.response && error.response.status === 401) {
+                setFieldErrors({
+                    email: error.response.data.emailMessage,
+                    password: error.response.data.passwordMessage
+                })
             } else {
                 console.error(`Error in logging in admin: ${error}`);
             }
@@ -99,9 +184,11 @@ function AdminLoginPage() {
                             fullWidth
                             autoComplete="off"
                             helperText={fieldErrors.email ? fieldErrors.email : ""}
-                            value={adminLoginFormData.email}
+                            value={memoizedClinicLoginDataValues.email}
                             error={Boolean(fieldErrors.email)}
-                            onChange={(e) => setAdminLoginFormData({ ...adminLoginFormData, email: e.target.value })}
+                            name="email"
+                            type="text"
+                            onChange={handleInputChange}
                         />
                     </div>
                     <div className="mb-4 flex flex-col gap-6">
@@ -110,8 +197,9 @@ function AdminLoginPage() {
                             <InputLabel htmlFor="outlined-adornment-password">Enter your password</InputLabel>
                             <OutlinedInput
                                 fullWidth
-                                onChange={(e) => setAdminLoginFormData({ ...adminLoginFormData, password: e.target.value })}
-                                value={adminLoginFormData.password}
+                                name="password"
+                                onChange={handleInputChange}
+                                value={memoizedClinicLoginDataValues.password}
                                 autoComplete="off"
                                 type={showPassword ? "text" : "password"}
                                 endAdornment={
@@ -135,10 +223,15 @@ function AdminLoginPage() {
                         </FormControl>
                     </div>
                     <FormControlLabel
-                        control={<Checkbox />}
+                        control={
+                            <Checkbox
+                                checked={rememberMe}
+                                onChange={handleRememberMeChanges}
+                            />
+                        }
                         label={
                             <>
-                                <Typography variant="body2" color="textSecondary">
+                                <Typography variant="body2" className="text-black">
                                     Remember me
                                 </Typography>
                             </>
@@ -150,43 +243,9 @@ function AdminLoginPage() {
                         </Button>
                     </div>
                     <div className="flex items-center justify-between gap-2 mt-6">
-                        <Typography variant="body2" className="text-gray-900">
-                            <a href="#">Forgot Password</a>
+                        <Typography variant="body2" className="text-black">
+                            <a href="/ForgotPassword" className="text-black">Forgot Password</a>
                         </Typography>
-                    </div>
-                    <div className="mt-[1rem] flex flex-col gap-4">
-                        <Button
-                            variant="contained"
-                            color="inherit"
-                            startIcon={
-                                <svg width="17" height="16" viewBox="0 0 17 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <g clipPath="url(#clip0_1156_824)">
-                                        <path d="M16.3442 8.18429C16.3442 7.64047 16.3001 7.09371 16.206 6.55872H8.66016V9.63937H12.9813C12.802 10.6329 12.2258 11.5119 11.3822 12.0704V14.0693H13.9602C15.4741 12.6759 16.3442 10.6182 16.3442 8.18429Z" fill="#4285F4" />
-                                        <path d="M8.65974 16.0006C10.8174 16.0006 12.637 15.2922 13.9627 14.0693L11.3847 12.0704C10.6675 12.5584 9.7415 12.8347 8.66268 12.8347C6.5756 12.8347 4.80598 11.4266 4.17104 9.53357H1.51074V11.5942C2.86882 14.2956 5.63494 16.0006 8.65974 16.0006Z" fill="#34A853" />
-                                        <path d="M4.16852 9.53356C3.83341 8.53999 3.83341 7.46411 4.16852 6.47054V4.40991H1.51116C0.376489 6.67043 0.376489 9.33367 1.51116 11.5942L4.16852 9.53356Z" fill="#FBBC04" />
-                                        <path d="M8.65974 3.16644C9.80029 3.1488 10.9026 3.57798 11.7286 4.36578L14.0127 2.08174C12.5664 0.72367 10.6469 -0.0229773 8.65974 0.000539111C5.63494 0.000539111 2.86882 1.70548 1.51074 4.40987L4.1681 6.4705C4.8001 4.57449 6.57266 3.16644 8.65974 3.16644Z" fill="#EA4335" />
-                                    </g>
-                                    <defs>
-                                        <clipPath id="clip0_1156_824">
-                                            <rect width="16" height="16" fill="white" transform="translate(0.5)" />
-                                        </clipPath>
-                                    </defs>
-                                </svg>
-                            }
-                            fullWidth
-                            sx={{ boxShadow: 2, borderRadius: "2rem" }}
-                        >
-                            Sign in With Google
-                        </Button>
-                        <Button
-                            variant="contained"
-                            color="inherit"
-                            startIcon={<img src="/img/twitter-logo.svg" height={24} width={24} alt="Twitter" />}
-                            fullWidth
-                            sx={{ boxShadow: 2, borderRadius: "2rem" }}
-                        >
-                            Sign in With Twitter
-                        </Button>
                     </div>
                 </form>
             </div>

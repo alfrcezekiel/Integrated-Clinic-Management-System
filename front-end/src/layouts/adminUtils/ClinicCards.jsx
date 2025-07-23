@@ -1,4 +1,7 @@
-import { Card, CardContent, CardHeader, Typography, Chip, Box, Avatar, Button, IconButton, Tooltip } from '@mui/material';
+import {
+    IconButton,
+    Tooltip
+} from '@mui/material';
 import PropTypes from 'prop-types';
 import EmailIcon from '@mui/icons-material/Email';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
@@ -7,91 +10,95 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import PhoneIcon from '@mui/icons-material/Phone';
 import Business from '@mui/icons-material/Business';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import {
+    useNavigate
+} from 'react-router-dom';
 
 const ClinicCard = ({ clinic, onViewDetails, onEditClinic }) => {
     const firstLetter = clinic.clinic_name ? clinic.clinic_name.charAt(0).toUpperCase() : 'C';
 
     const getClinicTypeColor = (type) => {
         const colors = {
-            "General Practice": "#4caf50",
-            "Dental Clinic": "#2196f3",
-            "Pediatric": "#ff9800",
-            "Orthopedic": "#9c27b0",
-            "Dermatology": "#e91e63",
-            "Ophthalmology": "#00bcd4",
-            "Mental Health": "#8bc34a",
-            "Physical Therapy": "#ff5722",
-            "Urgent Care": "#f44336",
-            "Specialty Clinic": "#673ab7",
-            "General Clinic" :  "#607d8b",
-            "Specialist Clinic": "#3f51b5",
-            "Dermatology Clinic": "#9c27b0",
-            "Psychiatry Clinic": "#f44336",
+            "General Practice": "bg-green-500",
+            "Dental Clinic": "bg-blue-500",
+            "Orthopedic Clinic": "bg-purple-500",
+            "Dermatology": "bg-pink-500",
+            "Ophthalmology": "bg-cyan-500",
+            "Mental Health": "bg-lime-500",
+            "Physical Therapy": "bg-orange-500",
+            "Urgent Care": "bg-red-500",
+            "Specialty Clinic": "bg-indigo-500",
+            "General Clinic": "bg-gray-500",
+            "Specialist Clinic": "bg-blue-700",
+            "Dermatology Clinic": "bg-purple-700",
+            "Optometry Clinic": "bg-cyan-700",
+            "Pediatric Clinic": "bg-yellow-500",
+            "Gynecology Clinic": "bg-orange-700",
+            "Psychiatry Clinic": "bg-red-700",
+            "Physiotherapy Clinic": "bg-lime-700",
         };
-        return colors[type] || "#757575";
+        return colors[type] || "bg-gray-400";
     };
 
     const formatAddress = () => {
         return clinic.clinic_address ? clinic.clinic_address : 'No address provided';
     };
 
+    const formatTimeToAmPm = (time) => {
+        if (!time) return "";
+        const [hour, minute] = time.split(":");
+        const date = new Date();
+        date.setHours(+hour);
+        date.setMinutes(+minute);
+        return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
+    };
+    
+    const navigate = useNavigate();
+
+    const navigateToViewcClinic = () => {
+        navigate(`/admin-dashboard/ViewClinic`, {
+            state: {
+                clinic: clinic
+            }
+        })
+    }
+
+    const handleViewDetails = () => {
+        onViewDetails(clinic);
+        navigateToViewcClinic();
+    }
+
     return (
-        <Card
-            elevation={4}
-            className="h-full transition-all duration-300 hover:shadow-2xl rounded-xl overflow-hidden border border-gray-200"
-            sx={{
-                position: 'relative',
-                '&:hover': {
-                    transform: 'translateY(-5px)',
-                }
-            }}
-        >
-            {/* Gradient top bar */}
-            <Box
-                sx={{
-                    height: '6px',
-                    width: '100%',
-                    background: `linear-gradient(90deg, ${getClinicTypeColor(clinic.clinic_type)} 30%, #ffffff 100%)`,
-                }}
+        <div className="max-w-md mx-auto bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200 hover:shadow-xl transition-transform transform hover:-translate-y-2">
+            <img
+                className="w-full h-full object-cover p-4 rounded-3xl"
+                src={`http://localhost:7506/uploads/clinic_images/${clinic.clinic_image}`}
+                alt="Clinic"
             />
 
-            <CardHeader
-                avatar={
-                    <Avatar
-                        sx={{
-                            bgcolor: getClinicTypeColor(clinic.clinic_type),
-                            boxShadow: '0 3px 6px rgba(0,0,0,0.15)',
-                            width: 50,
-                            height: 50,
-                            fontSize: '1.3rem',
-                        }}
-                    >
-                        {firstLetter}
-                    </Avatar>
-                }
-                title={
-                    <Typography
-                        variant="h6"
-                        className="font-bold text-gray-800"
-                        sx={{ fontSize: '1.2rem' }}
-                    >
-                        {clinic.clinic_name}
-                    </Typography>
-                }
-                subheader={
-                    <Chip
-                        icon={<MedicalServicesIcon sx={{ fontSize: '1rem' }} />}
-                        label={clinic.clinic_type}
-                        size="small"
-                        sx={{
-                            backgroundColor: getClinicTypeColor(clinic.clinic_type),
-                            color: 'white',
-                            fontWeight: 'bold',
-                            mt: 1,
-                        }}
-                    />
-                }
-                action={
+            <div className="p-6">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                        <div
+                            className={`w-12 h-12 flex items-center justify-center rounded-full text-white font-bold text-lg shadow-md ${getClinicTypeColor(
+                                clinic.clinic_type
+                            )}`}
+                        >
+                            {firstLetter}
+                        </div>
+                        <div className="ml-4">
+                            <h2 className="text-2xl font-semibold text-gray-800 mb-1">{clinic.clinic_name}</h2>
+                            <div
+                                className={`inline-flex items-center px-2 py-1 text-xs font-semibold text-white rounded ${getClinicTypeColor(
+                                    clinic.clinic_type
+                                )}`}
+                            >
+                                <MedicalServicesIcon className="mr-1 text-sm" />
+                                {clinic.clinic_type}
+                            </div>
+                        </div>
+                    </div>
                     <Tooltip title="Edit Clinic">
                         <IconButton
                             size="small"
@@ -101,76 +108,57 @@ const ClinicCard = ({ clinic, onViewDetails, onEditClinic }) => {
                             <SettingsIcon fontSize="small" />
                         </IconButton>
                     </Tooltip>
-                }
-                className="pb-1"
-            />
+                </div>
 
-            <CardContent sx={{ pt: 0 }}>
-                <Box className="flex flex-col space-y-2 mb-4">
-                    <Box className="flex items-start">
+                <div className="mt-4 space-y-3">
+                    <div className="flex items-start">
                         <LocationOnIcon className="text-gray-500 mr-2 mt-1" fontSize="small" />
-                        <Typography variant="body2" className="text-gray-600">
-                            {formatAddress()}
-                        </Typography>
-                    </Box>
-
-                    <Box className="flex items-center">
-                        <Business className="text-gray-500 mr-2" fontSize="small" />
-                        <Typography variant="body2" className="text-gray-600">
-                            {clinic.clinic_date_open ? clinic.clinic_date_open : ''} - {clinic.clinic_close_date ? clinic.clinic_close_date : ''}
-                        </Typography>
-                    </Box>
-
-                    <Box className="flex items-center">
+                        <p className="text-sm text-gray-600">{formatAddress()}</p>
+                    </div>
+                    <div className="flex items-center">
                         <EmailIcon className="text-gray-500 mr-2" fontSize="small" />
-                        <Typography variant="body2" className="text-gray-600">
-                            {clinic.email}
-                        </Typography>
-                    </Box>
-
+                        <p className="text-sm text-gray-600">{clinic.email}</p>
+                    </div>
                     {clinic.phoneNumber && (
-                        <Box className="flex items-center">
+                        <div className="flex items-center">
                             <PhoneIcon className="text-gray-500 mr-2" fontSize="small" />
-                            <Typography variant="body2" className="text-gray-600">
-                                {clinic.phoneNumber}
-                            </Typography>
-                        </Box>
+                            <p className="text-sm text-gray-600">{clinic.phoneNumber}</p>
+                        </div>
                     )}
+                    <div className="flex items-center">
+                        <Business className="text-gray-500 mr-2" fontSize="small" />
+                        <p className="text-sm text-gray-600">
+                            {clinic.clinic_date_open ? clinic.clinic_date_open : ''} - {' '}
+                            {clinic.clinic_close_date ? clinic.clinic_close_date : ''}
+                        </p>
+                    </div>
+                    <div className="flex items-center">
+                        <AccessTimeIcon className="text-gray-500 mr-2" fontSize="small" />
+                        <p className="text-sm text-gray-600">
+                            {clinic.clinic_time ? formatTimeToAmPm(clinic.clinic_time) : ""}
+                            {clinic.clinic_close_time ? ` - ${formatTimeToAmPm(clinic.clinic_close_time)}` : ""}
+                        </p>
+                    </div>
+                </div>
 
-                    
-                </Box>
-
-                <Box className="flex justify-between items-center mt-4">
-                    <Typography variant="caption" className="italic text-gray-400">
-                        ID: {clinic.clinic_id ? clinic.clinic_id :   'Pending'}
-                    </Typography>
-
-                    <Button
-                        variant="contained"
-                        size="small"
-                        startIcon={<InfoOutlinedIcon />}
-                        onClick={() => onViewDetails && onViewDetails(clinic)}
-                        sx={{
-                            backgroundColor: getClinicTypeColor(clinic.clinic_type),
-                            color: 'white',
-                            fontWeight: 'bold',
-                            textTransform: 'none',
-                            '&:hover': {
-                                backgroundColor: `${getClinicTypeColor(clinic.clinic_type)}`,
-                            }
-                        }}
+                <div className="flex justify-between items-center mt-6">
+                    <button
+                        onClick={handleViewDetails}
+                        className={`px-4 py-2 text-sm font-semibold text-white rounded shadow-md transition-transform transform hover:scale-105 ${getClinicTypeColor(
+                            clinic.clinic_type
+                        )}`}
                     >
-                        Details
-                    </Button>
-                </Box>
-            </CardContent>
-        </Card>
+                        <InfoOutlinedIcon className="mr-1 text-sm" />
+                        View Clinic
+                    </button>
+                </div>
+            </div>
+        </div>
     );
 };
 
 ClinicCard.propTypes = {
     clinic: PropTypes.shape({
-        clinic_id: PropTypes.string.isRequired,
         clinic_name: PropTypes.string.isRequired,
         email: PropTypes.string.isRequired,
         phoneNumber: PropTypes.string,
@@ -180,15 +168,25 @@ ClinicCard.propTypes = {
         clinic_type: PropTypes.oneOf([
             "General Practice",
             "Dental Clinic",
-            "Pediatric",
-            "Orthopedic",
-            "Dermatology",
-            "Ophthalmology",
-            "Mental Health",
-            "Physical Therapy",
-            "Urgent Care",
-            "Specialty Clinic"
-        ]).isRequired
+            "Orthopedic Clinic",
+            "Dermatology Clinic",
+            "Ophthalmology Clinic",
+            "Mental Health Clinic",
+            "Physical Therapy Clinic",
+            "Urgent Care Clinic",
+            "Specialty Clinic",
+            "General Clinic",
+            "Specialist Clinic",
+            "Dermatology Clinic",
+            "Optometry Clinic",
+            "Pediatric Clinic",
+            "Gynecology Clinic",
+            "Psychiatry Clinic",
+            "Physiotherapy Clinic"
+        ]).isRequired,
+        clinic_image: PropTypes.string,
+        clinic_time: PropTypes.string,
+        clinic_close_time: PropTypes.string,
     }).isRequired,
     onViewDetails: PropTypes.func.isRequired,
     onEditClinic: PropTypes.func.isRequired

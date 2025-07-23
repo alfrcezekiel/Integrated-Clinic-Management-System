@@ -11,6 +11,7 @@ import {
 import PendingStatusAppointmentTable from "../../hooks/PendingTableAppointment";
 import { useState, useEffect } from "react";
 import CMS from "../../API/CMS";
+import { useAuthorization } from "../../context/auth/useAuthorization";
 
 const PendingAppointmentTable = () => {
     const appointmentsTableColumn = [
@@ -24,8 +25,10 @@ const PendingAppointmentTable = () => {
         'Status',
         'Purpose of Appointment',
     ]
+    const { user, token } = useAuthorization();
 
-    const patientEmail = localStorage.getItem("sem");
+    const patientEmail = user?.sem;
+    const tokenContext = token || localStorage.getItem("authToken");
 
     const [retrievedAppointmentsData, setRetrievedAppointmentsData] = useState([]);
 
@@ -35,21 +38,22 @@ const PendingAppointmentTable = () => {
                 const response = await CMS.get(`/CMS/patients-dashboard/getPatientPendingStatus/${patientEmail}`, {
                     headers: {
                         "Content-Type": "application/json",
+                        "Authorization": `Bearer ${tokenContext}`,
                     },
                 });
 
                 if (response.status === 200) {
                     setRetrievedAppointmentsData(response.data.patientsPendingStatus);
                 } else {
-                    console.log(`Failed to retrieve pending appointment status in server: ${response.status}`);
+                    console.error(`Failed to retrieve pending appointment status in server: ${response.status}`);
                 }
 
             } catch (error) {
-                console.log(`Failed to retrieve pending appointment status: ${error}`);
+                console.error(`Failed to retrieve pending appointment status: ${error}`);
             }
         }
         retrievePendingStatus();
-    }, [patientEmail]);
+    }, [patientEmail, tokenContext]);
 
     return (
         <>

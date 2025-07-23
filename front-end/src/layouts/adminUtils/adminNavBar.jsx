@@ -1,12 +1,17 @@
 import { AppBar, Toolbar, Typography, IconButton, Breadcrumbs, InputBase, Menu, MenuItem, Avatar } from "@mui/material";
 import { Menu as MenuIcon, Notifications, Settings, CreditCard, Logout } from "@mui/icons-material";
 import { useMaterialUIController } from "../../context/useController";
-import { Link, useLocation, Outlet, useNavigate } from "react-router-dom";
+import {
+    Link,
+    useLocation,
+    useNavigate,
+} from "react-router-dom";
 import { setOpenConfigurator, setOpenSideNav } from "../../context/materialUIController";
 import { useState } from "react";
 import CMS from "../../API/CMS";
 import LogoutDialog from "../../components/loguoutConfirmation";
 import "../../assets/css/main.css";
+import { useAuthorization } from "../../context/auth/useAuthorization";
 
 // this is the navbar component for the dashboard
 const AdminDashboardNavbar = () => {
@@ -14,26 +19,39 @@ const AdminDashboardNavbar = () => {
     const { fixedNavbar, openSideNav } = controller;
     const location = useLocation();
     const pathParts = location.pathname.substring(1).split("/").filter(Boolean);
-    const [layout = "home", page = "", path = "home"] = pathParts;
+    const [layout = "Home", page = "", path = "Home", name = "Admin Dashboard"] = pathParts;
     const [anchorEl, setAnchorEl] = useState(null);
     const [settingsAnchorEl, setSettingsAnchorEl] = useState(null);
+    const { token, logout } = useAuthorization();
     const handleMenuOpen = (e) => {
         setAnchorEl(e.currentTarget);
     }
     const [logoutDialog, setLogoutDialog] = useState(false);
 
     const navigate = useNavigate();
+    const tokenContext = token;
+    if (!tokenContext) {
+        console.error("No token found in context or localStorage");
+    }
 
     const handleLogoutConfirm = async () => {
         try {
-            const response = await CMS.get("/CMS/admin-dashboard/logout");
+            const response = await CMS.get("/CMS/admin-dashboard/logout", {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${tokenContext}`,
+                },
+            });
+
             if (!response.data || !response.data.message) {
                 throw new Error("No response data or no success message");
-            } else {
-                localStorage.removeItem("authToken");
-                localStorage.removeItem("sid")
+            } 
+
+            if(response.status === 200) {
+                logout();
                 navigate("/cms");
             }
+            
         } catch (error) {
             console.error(`Code functionality error for logging out in admin: ${error}`);
         } finally {
@@ -71,14 +89,13 @@ const AdminDashboardNavbar = () => {
                         <MenuIcon />
                     </IconButton>
                     <Breadcrumbs className="text-gray-600">
-                        <Link to={`/${layout}/${path}`} className="text-blue-500">
-                            <Typography variant="body1">{layout}</Typography>
+                        <Link to={`/${layout}/${path}`} className="text-black" >
+                            <Typography variant="body1" className="text-black">{name}</Typography>
                         </Link>
+                        <Typography variant="body1" className="text-gray-600">
+                            {page}
+                        </Typography>
                     </Breadcrumbs>
-                    <Outlet />
-                    <Typography variant="body1" className="text-gray-600">
-                        {page}
-                    </Typography>
                 </div>
                 <div className="flex items-center gap-4">
                     <InputBase placeholder="Search your desired clinic center" className="border px-2 py-1 rounded-md w-full" />

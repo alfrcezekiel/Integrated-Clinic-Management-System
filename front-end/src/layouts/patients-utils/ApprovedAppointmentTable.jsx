@@ -11,6 +11,7 @@ import {
 import { useState, useEffect } from "react";
 import CMS from "../../API/CMS";
 import ApprovedAppointmentsTableValue from "../../hooks/ApprovedAppointmentValues";
+import { useAuthorization } from "../../context/auth/useAuthorization";
 
 const ApprovedAppointmentsTable = () => {
     const appointmentsTableColumn = [
@@ -24,8 +25,10 @@ const ApprovedAppointmentsTable = () => {
         'Status',
         'Purpose of Appointment',
     ]
+    const { user, token } = useAuthorization();
 
-    const patientEmail = localStorage.getItem("sem");
+    const patientEmail = user?.sem;
+    const tokenContext = token || localStorage.getItem("authToken");
 
     const [retrievedAppointmentsData, setRetrievedAppointmentsData] = useState([]);
 
@@ -35,21 +38,22 @@ const ApprovedAppointmentsTable = () => {
                 const response = await CMS.get(`/CMS/patients-dashboard/getPatientApprovedStatus/${patientEmail}`, {
                     headers: {
                         "Content-Type": "application/json",
+                        "Authorization": `Bearer ${tokenContext}`,
                     },
                 });
 
                 if (response.status === 200) {
                     setRetrievedAppointmentsData(response.data.patientsApprovedStatus);
                 } else {
-                    console.log(`Failed to retrieve approved appointment status in server: ${response.status}`);
+                    console.error(`Failed to retrieve approved appointment status in server: ${response.status}`);
                 }
 
             } catch (error) {
-                console.log(`Failed to retrieve approved appointment status: ${error}`);
+                console.error(`Failed to retrieve approved appointment status: ${error}`);
             }
         }
         retrieveApprovedStatus();
-    }, [patientEmail]);
+    }, [patientEmail, tokenContext]);
 
     return (
         <>

@@ -1,22 +1,47 @@
 import multer from "multer";
-import path from "path"
-import { StatusCodes } from "http-status-codes";
+import fs from "fs";
+import path from "path";
+import logger from "../../config/winston.js";
 
 const storage = multer.diskStorage({
-    destination: (_req, _file, cb) => {
-        cb(null, "uploads/clinic_images/")
+    destination: (_req, file, cb) => {
+        // const uploadPath = "uploads/clinic_images"
+        let uploadPath = "";
+        if (file.fieldname === "clinicImage") {
+            uploadPath = path.join("uploads", "clinic_images");
+        } else {
+            return cb(new Error(`Invalid field name for file upload`), null);
+        }
+
+        if (!fs.existsSync(uploadPath)) {
+            fs.mkdirSync(uploadPath, { recursive: true });
+        }
+        cb(null, uploadPath);
     },
     filename: (_req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+        const dateSuffix = Date.now();
+        const randomString = Math.random().toString(36).substring(2, 8); // Generate a random string
+        const sanitizedOriginalName = file.originalname.replace(/\s+/g, "_");
+        cb(null, `${dateSuffix}_${randomString}_${sanitizedOriginalName}`);
     }
-})
+});
 
 const fileFilter = (_req, file, cb) => {
-    if(file.mimetype.startsWith('image/')){
+    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+    // const documentTypes = [
+    //     'application/pdf',
+    //     'application/msword',
+    //     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    //     'application/vnd.ms-excel',
+    //     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    // ];
+
+    logger.info(`Received file: ${file.originalname} | Field: ${file.fieldname} | MIME: ${file.mimetype}`);
+
+    if (file.fieldname === "clinicImage" && allowedMimeTypes.includes(file.mimetype)) {
         cb(null, true);
     } else {
-        cb(new Error("Please upload an image file"), false);
+        cb(new Error(`Invalid file for ${file.fieldname}`), false);
     }
 }
 
@@ -24,8 +49,9 @@ const upload = multer({
     storage: storage,
     fileFilter: fileFilter,
     limits: {
-        fileSize: 1024 * 1024 * 5 // 5MB
+        fileSize: 1024 * 1024 * 5, // 5MB
+        files: 1
     },
-})
+});
 
 export default upload;

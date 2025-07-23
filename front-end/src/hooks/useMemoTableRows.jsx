@@ -24,32 +24,17 @@ const AppointmentsTable = ({ retrievedAppointmentsData }) => {
     const getStatusColor = (status) => {
         switch (status) {
             case "Approved":
-                return "text-black bg-green-300";
+                return "text-black bg-green-200";
             case "Declined":
-                return "text-black bg-red-300";
-            case "Pending":
-                return "text-black bg-yellow-300";
+                return "text-black bg-red-200";
             case "Consulted":
-                return "text-black bg-blue-300";
-            default:
-                return "text-black bg-gray-300";
-        }
-    }
-
-
-    // function to determine the color of the appointment date to match the status
-    const getAppointmentDateColor = (status) => {
-        switch (status) {
-            case "Approved":
-                return "text-black bg-green-300";
-            case "Declined":
-                return "text-black bg-red-300";
+                return "text-black bg-blue-200";
+            case "Cancelled":
+                return "text-black bg-yellow-200";
             case "Pending":
-                return "text-black bg-yellow-300";
-            case "Consulted":
-                return "text-black bg-blue-300";
+                return "text-black bg-white"
             default:
-                return "text-black bg-gray-300";
+                return "text-black bg-white";
         }
     }
 
@@ -68,48 +53,46 @@ const AppointmentsTable = ({ retrievedAppointmentsData }) => {
         }
     };
     const memoizedTableRows = useMemo(() => {
-        const statusMatch = ["Approved", "Declined", "Pending", "Consulted"];
-
         if (retrievedAppointmentsData && retrievedAppointmentsData.length > 0) {
             return retrievedAppointmentsData.map((appointment, i) => (
-                <TableRow key={i}>
-                    <TableCell className="border-b border-blue-gray-50 text-center" align="center">
-                        <Typography variant="body2" className="text-blue-gray-900">
+                <TableRow key={i} className={`hover:bg-gray-200 transition duration-200 ease-in-out ${getStatusColor(appointment.status)}`}>
+                    <TableCell className={`border-b border-blue-gray-50 text-center`} align="center">
+                        <Typography variant="body2" className="text-gray-900">
                             {appointment.firstName}
                         </Typography>
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
-                        <Typography variant="body2" className="text-blue-gray-900">
+                        <Typography variant="body2" className="text-gray-900">
                             {appointment.lastName}
                         </Typography>
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
-                        <Typography variant="body2" className="text-blue-gray-900">
+                        <Typography variant="body2" className="text-gray-900">
                             {appointment.email}
                         </Typography>
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
-                        <Typography variant="body2" className={`rounded-lg p-2 ${getAppointmentDateColor(appointment.status)}`}>
-                            {statusMatch.includes(appointment.appointmentDate) ? "" : formatDate(appointment.appointmentDate)}
+                        <Typography variant="body2" className="text-gray-900">
+                            {formatDate(appointment.appointmentDate)}
                         </Typography>
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
-                        <Typography variant="body2" className="text-blue-gray-900">
+                        <Typography variant="body2" className="text-gray-900">
                             {appointment.phoneNumber}
                         </Typography>
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
-                        <Typography variant="body2" className="text-blue-gray-900">
+                        <Typography variant="body2" className="text-gray-900">
                             {formatTimeToAMPM(appointment.preferredTime) ? formatTimeToAMPM(appointment.preferredTime) : "N/A"}
                         </Typography>
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
-                        <Typography variant="body2" className={`rounded-lg p-2 ${getStatusColor(appointment.status)}`}>
+                        <Typography variant="body2" className="text-gray-900">
                             {appointment.status}
                         </Typography>
                     </TableCell>
                     <TableCell className="border-b border-blue-gray-50 text-center" align="center">
-                        <Typography variant="body2" className="text-blue-gray-900">
+                        <Typography variant="body2" className="text-gray-900">
                             {appointment.purposeOfAppointment}
                         </Typography>
                     </TableCell>
@@ -119,7 +102,7 @@ const AppointmentsTable = ({ retrievedAppointmentsData }) => {
             // If no data is found, render a no appointments found row
             return (
                 <TableRow key={0}>
-                    <TableCell colSpan={9} className="py-3 px-5 border-b border-blue-gray-50 text-center" align="center">
+                    <TableCell colSpan={8} className="py-3 px-5 border-b border-blue-gray-50 text-center" align="center">
                         <Typography variant="body2" className="text-blue-gray-900">
                             {retrievedAppointmentsData ? "No appointments found" : "Please input credentials to view appointments"}
                         </Typography>

@@ -11,6 +11,7 @@ import {
 import AppointmentsTable from "../../hooks/useMemoTableRows";
 import { useState, useEffect } from "react";
 import CMS from "../../API/CMS";
+import { useAuthorization } from "../../context/auth/useAuthorization";
 
 const PatientsTable = () => {
     const appointmentsTableColumn = [
@@ -23,15 +24,23 @@ const PatientsTable = () => {
         'Status',
         'Purpose of Appointment',
     ]
+    const { user, token } = useAuthorization();
+    const tokenContext = token || localStorage.getItem("authToken");
+    if (!tokenContext) {
+        console.error("No token found in context or localStorage");
+    }
 
     const [retrievedAppointmentsData, setRetrievedAppointmentsData] = useState([]);
 
     useEffect(() => {
         const retrieveAppointments = async () => {
             try {
-                const response = await CMS.get("/CMS/patientsDashboard/bookedAppointments", {
+                const email = user?.sem;
+
+                const response = await CMS.get(`/CMS/patientsDashboard/bookedAppointments/${email}`, {
                     headers: {
                         "Content-Type": "application/json",
+                        "Authorization": `Bearer ${tokenContext}`,
                     },
                 });
 
@@ -40,12 +49,12 @@ const PatientsTable = () => {
                 }
 
             } catch (error) {
-                console.log(`Failed to retrieve appointments: ${error}`);
+                console.error(`Failed to retrieve appointments: ${error}`);
             }
         }
         retrieveAppointments();
 
-    }, []);
+    }, [user?.sem, tokenContext]);
 
     return (
         <>

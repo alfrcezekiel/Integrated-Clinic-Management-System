@@ -1,7 +1,10 @@
 import mysql from "mysql2/promise";
 import dotenv from "dotenv";
 dotenv.config();
-
+/**
+ * Function to create a connection pool to the MySQL database
+ * @returns {Promise} - A promise that resolves to the connection pool
+ */
 async function createConnection() {
     try {
         const pool = mysql.createPool({
