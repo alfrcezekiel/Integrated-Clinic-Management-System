@@ -25,6 +25,15 @@ const validateCreatingAdminAccount = [
             }
             return true;
         }),
+    check("confirmPassword")
+        .notEmpty()
+        .withMessage("Confirm Password is required")
+        .custom((value, {req}) => {
+            if (value !== req.body.password) {
+                throw new Error("Confirm password does not match the password")
+            }
+            return true;
+        }),
     (req, res, next) => {
         const errors = validationResult(req);
 

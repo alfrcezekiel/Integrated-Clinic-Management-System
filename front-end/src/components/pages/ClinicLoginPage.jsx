@@ -115,10 +115,13 @@ function ClinicLoginPortal() {
     const handleLoggedInPatient = async (e) => {
         try {
             e.preventDefault();
+
+            removeLocalStorage("authToken");
+            removeLocalStorage("userData");
+
             const response = await CMS.post("/CMS/clinicLoggedInAccount", doctorsLoginFormData, {
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
                 },
                 withCredentials: true
             });

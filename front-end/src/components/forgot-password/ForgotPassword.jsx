@@ -13,6 +13,7 @@ import {
     submitResetEmail,
 } from "../../features/forgot-password-state/ForgotPasswordState";
 import MenuItem from '@mui/material/MenuItem';
+import ResetEmailDialog from "./ResetEmailDialog";
 
 const ForgotPassword = () => {
     const forgotPasswordState = useSelector((state) => state.forgotPassword);
@@ -20,8 +21,9 @@ const ForgotPassword = () => {
         email: "",
         userType: ""
     })
+    const [showSuccessResetEmailDialog, setShowSuccessResetEmailDialog] = useState(false);
     const dispatch = useDispatch();
-    const selectType = ["Patient", "Clinic"];
+    const selectType = ["Patient", "Clinic", "Admin"];
 
     useEffect(() => {
         document.title = "Forgot Password"
@@ -51,6 +53,7 @@ const ForgotPassword = () => {
             }));
 
             if (submitResetEmail.fulfilled.match(response)) {
+                setShowSuccessResetEmailDialog(true);
                 dispatch(resetForm())
             } else if (submitResetEmail.rejected.match(response)) {
                 const error = response.payload;
@@ -70,6 +73,13 @@ const ForgotPassword = () => {
         } catch (error) {
             console.error(`Error in handling the next step in forgot password: ${error}`);
         }
+    }
+
+    /**
+     * @function to close the success reset email dialog
+     */
+    const closeSuccessResetEmailDialog = () => {
+        setShowSuccessResetEmailDialog(false);
     }
 
     /**
@@ -163,6 +173,11 @@ const ForgotPassword = () => {
                     </div>
                 </div>
             </div>
+            {showSuccessResetEmailDialog && (
+                <ResetEmailDialog
+                    closeSuccessDialog={closeSuccessResetEmailDialog}
+                />
+            )}
             <div className="max-w-6/12 hidden lg:block">
                 <img src="img/stethoscope.jpg" className="max-w-full max-h-full object-cover rounded-3xl ml-60" alt="Stethoscope" />
             </div>

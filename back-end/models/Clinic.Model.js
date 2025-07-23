@@ -1167,26 +1167,37 @@ class Clinic {
 
             const {
                 email,
-                password
+                password,
+                confirmPassword,
+                resetToken,
+                resetTokenExpiry
             } = admin_data;
 
             const email_address = String(email);
             const admin_password = String(password);
+            const admin_confirm_password = String(confirmPassword);
 
-            if (!email_address || !admin_password) {
-                throw new Error("Email and password are required to create an admin account");
+            if (!email_address || !admin_password || !admin_confirm_password) {
+                throw new Error("Email, password and confirm password are required to create an admin account");
             }
 
             const fields = [
                 "email",
-                "password"
+                "password",
+                "confirmPassword",
+                "resetToken",
+                "resetTokenExpiry"
             ]
 
             const admin_password_hash = await bcrypt.hash(admin_password, 10);
+            const admin_confirm_password_hash = await bcrypt.hash(admin_confirm_password, 10);
 
             const values = [
                 email_address,
-                admin_password_hash
+                admin_password_hash,
+                admin_confirm_password_hash,
+                resetToken,
+                resetTokenExpiry
             ]
 
             const placeholders = fields.map(() => "?").join(", ");
@@ -2138,7 +2149,7 @@ class Clinic {
 
                 await this.connection.beginTransaction();
 
-                let query, table, idField, emailField;
+                let query, table, idField;
 
                 if (userType === "clinic") {
                     query = `
@@ -2149,7 +2160,6 @@ class Clinic {
 
                     table = "clinic";
                     idField = "clinic_id";
-                    emailField = "email";
                 } else if (userType === "patient") {
                     query = `
                         SELECT patientID AS id, email, CONCAT(firstName, ' ', lastName) AS name 
@@ -2158,9 +2168,17 @@ class Clinic {
                     `
                     table = "patientsregisteraccount1";
                     idField = "patientID";
-                    emailField = "email";
+                } else if (userType === "admin") {
+                    query = `
+                        SELECT adminID AS id, email
+                        FROM cmsadmin
+                        WHERE email = ?;
+                    `
+
+                    table = "cmsadmin";
+                    idField = "adminID"
                 } else {
-                    throw new Error("Invalid! User type must be 'clinic' or 'patient'")
+                    throw new Error("Invalid! User type must be 'clinic', 'admin' or 'patient'")
                 }
 
                 const value = [
@@ -2232,7 +2250,7 @@ class Clinic {
                 }
             }
         },
-        "Send Reset Email to the patient and clinic side"
+        "Send Reset Email to the patient, admin  and clinic side"
     )
 
     /**
@@ -2255,8 +2273,8 @@ class Clinic {
                     throw new Error("Invalid! Token, user type, new password and confirm password are required")
                 }
 
-                if (!["clinic", "patient"].includes(userType)) {
-                    throw new Error("Invalid! User type must be 'clinic' or 'patient'")
+                if (!["clinic", "patient", "admin"].includes(userType)) {
+                    throw new Error("Invalid! User type either 'admin', 'patient' or 'clinic''")
                 }
 
                 const resetTokenHashed = crypto
@@ -2275,6 +2293,15 @@ class Clinic {
 
                     table = "clinic";
                     idField = "clinic_id";
+                } else if (userType === "admin") {
+                    query = `
+                        SELECT resetToken, resetTokenExpiry, adminID
+                        FROM cmsadmin
+                        WHERE resetToken = ? AND resetTokenExpiry > NOW();
+                    `
+
+                    table = "cmsadmin";
+                    idField = "adminID";
                 } else {
                     query = `
                         SELECT p1.resetToken, p1.resetTokenExpiry, p1.patientID
@@ -2294,7 +2321,9 @@ class Clinic {
                 if (!rows || rows.length === 0) {
                     let checkTokenQuery = userType === "clinic" ?
                         `SELECT resetToken FROM clinic WHERE resetToken = ?` :
-                        `SELECT p1.resetToken FROM patientsregisteraccount1 AS p1 WHERE p1.resetToken = ?`;
+                        userType === "admin" ?
+                            `SELECT resetToken FROM cmsadmin WHERE resetToken = ?` :
+                            `SELECT p1.resetToken FROM patientsregisteraccount1 AS p1 WHERE p1.resetToken = ?`;
 
                     const [checkTokenRows] = await this.connection.query(checkTokenQuery, value);
                     if (!checkTokenRows || checkTokenRows.length === 0) {
@@ -2330,6 +2359,22 @@ class Clinic {
                         user.clinic_id
                     ]
 
+                } else if (userType === "admin") {
+                    updateQuery = `
+                        UPDATE cmsadmin
+                        SET 
+                        password = ?,
+                        confirmPassword = ?,
+                        resetToken = NULL,
+                        resetTokenExpiry = NULL
+                        WHERE adminID = ?;
+                    `
+
+                    updateValue = [
+                        hashedResetPassword,
+                        hashedConfirmPassword,
+                        user.adminID
+                    ]
                 } else {
                     updateQuery = `
                         UPDATE patientsregisteraccount1 AS p1
@@ -2367,7 +2412,7 @@ class Clinic {
                     logger.log("error", `Failed to rollback the transaction in resetting the password either clinic or patient side`)
                 }
 
-                logger.log("error", `Failed to reset password either clinic or patient side in method: ${error}`);
+                logger.log("error", `Failed to reset password either admin, clinic or patient side in method: ${error}`);
                 throw error;
             } finally {
                 if (this.connection) {
@@ -2378,8 +2423,81 @@ class Clinic {
                 }
             }
         },
-        "Reset Password either clinic or patient side"
+        "Reset Password either admin, clinic or patient side"
     )
+
+    /**
+     * @method model logic to delete the pending booked appointment details in clinic side table
+     */
+    deletePendingBookedAppointmentDetailsByFindingId = modelErrorHandling(
+        async (params) => {
+            this.connection = await this.conn.getConnection();
+            try {
+                await this.connection.beginTransaction();
+
+                let { pendingBookedAppointmentId } = params;
+                if (params && typeof params === "object" && !Array.isArray(params)) {
+                    params = params.pendingBookedAppointmentId;
+                } else {
+                    throw new Error("Invalid! Parameters must be an object")
+                }
+
+                if (!pendingBookedAppointmentId || isNaN(pendingBookedAppointmentId)) {
+                    throw new Error("Invalid! Pending booked appointment ID is required")
+                }
+
+                const table_name = String("clinic_appointments");
+
+                const delete_id_field = [
+                    "id = ?"
+                ]
+
+                const delete_id_value = [
+                    pendingBookedAppointmentId
+                ]
+
+                const delete_query = `
+                    DELETE FROM ${table_name}
+                    WHERE ${delete_id_field}
+                `
+
+                const [rows] = await this.connection.query(delete_query, delete_id_value);
+
+                if (!rows || rows.length === 0) {
+                    throw new Error("Invalid! Pending booked appointment ID not found")
+                }
+
+                const commitQuery = await this.connection.commit();
+
+                if (!commitQuery) {
+                    throw new Error("Failed to commit transaction in deleting the pending booked appointment details in clinic side table")
+                }
+
+                return rows;
+            } catch (error) {
+                /**
+                 * @description rollback the transaction in deleting the pending booked appointment details in clinic side table
+                 */
+                const rollbackQuery = await this.connection.rollback();
+
+                if (!rollbackQuery) {
+                    logger.log("error", `Failed to rollback the transaction in deleting the pending booked appointment details in clinic side table`)
+                }
+
+                logger.log("error", `Failed to delete the pending booked appointment details in clinic side table in method: ${error}`);
+                throw error;
+            } finally {
+                /**
+                 * check the connection in this conditon if true then release the connection back to the pool connection
+                 */
+                if (this.connection) {
+                    await this.connection.release();
+                }
+            }
+        },
+        "Delete Pending Booked Appointment Details By Finding Id"
+    )
+
 }
 
 export default Clinic;

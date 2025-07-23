@@ -24,13 +24,18 @@ import pattern from "../../assets/img/hero-bg.jpg"
 import {
     useAuthorization
 } from "../../context/auth/useAuthorization";
-
+import {
+    getLocalStorage,
+    setLocalStorage,
+    removeLocalStorage
+} from "../../utils/storage/localStorage";
 function AdminLoginPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [adminLoginFormData, setAdminLoginFormData] = useState({
         email: "",
         password: ""
     })
+    const [rememberMe, setRememberMe] = useState(false);
     const [fieldErrors, setFieldErrors] = useState({
         email: "",
         password: ""
@@ -44,8 +49,34 @@ function AdminLoginPage() {
             document.title = "Admin Login Portal | CMS";
         }
         titleElement();
+
+        /**
+         * Remember the admin account credentials
+         */
+        const rememberAdminCredentials = async () => {
+            const rememberAdminDetails = getLocalStorage("rememberAdminDetails") === true;
+            const storedEmail = getLocalStorage("rememberAdminEmail");
+            if (storedEmail) {
+                setAdminLoginFormData((prev) => ({
+                    ...prev,
+                    email: storedEmail
+                }))
+            }
+            setRememberMe(rememberAdminDetails)
+        }
+        rememberAdminCredentials()
     }, [location.pathname])
 
+    /**
+     * @function to handle changes in remember me checkbox
+     */
+    const handleRememberMeChanges = async (e) => {
+        setRememberMe(e.target.checked);
+    }
+
+    /**
+     * @function to handle show password
+     */
     const handleClickShowPassword = () => {
         setShowPassword((show) => !show);
     }
@@ -82,6 +113,10 @@ function AdminLoginPage() {
     const handleLoggedInAdmin = async (e) => {
         try {
             e.preventDefault();
+
+            removeLocalStorage("authToken");
+            removeLocalStorage("userData");
+            
             const response = await CMS.post("/CMS/adminAccount", adminLoginFormData, {
                 headers: {
                     "Content-Type": "application/json",
@@ -91,9 +126,15 @@ function AdminLoginPage() {
 
             if (response.data && response.status === 200) {
                 setFieldErrors({})
+                if (rememberMe) {
+                    setLocalStorage("rememberAdminDetails", true);
+                    setLocalStorage("rememberAdminEmail", adminLoginFormData.email);
+                } else {
+                    removeLocalStorage("rememberAdminDetails");
+                    removeLocalStorage("rememberAdminEmail");
+                }
+
                 if (response.data.token && response.data.sid) {
-                    // localStorage.setItem("authToken", response.data.token);
-                    // localStorage.setItem("sid", response.data.sid.id);
                     login(response.data.token);
                     userData({
                         sid: response.data.sid.id,
@@ -109,6 +150,12 @@ function AdminLoginPage() {
             }
 
         } catch (error) {
+            /**
+             * clear the remember me credentials if the login fails
+             */
+            removeLocalStorage("rememberAdminDetails");
+            removeLocalStorage("rememberAdminEmail");
+
             if (error.response && error.response.status === 400) {
                 setFieldErrors(error.response.data.errors);
             } else if (error.response && error.response.status === 401) {
@@ -176,7 +223,12 @@ function AdminLoginPage() {
                         </FormControl>
                     </div>
                     <FormControlLabel
-                        control={<Checkbox />}
+                        control={
+                            <Checkbox
+                                checked={rememberMe}
+                                onChange={handleRememberMeChanges}
+                            />
+                        }
                         label={
                             <>
                                 <Typography variant="body2" className="text-black">
@@ -192,7 +244,7 @@ function AdminLoginPage() {
                     </div>
                     <div className="flex items-center justify-between gap-2 mt-6">
                         <Typography variant="body2" className="text-black">
-                            <a href="#" className="text-black">Forgot Password</a>
+                            <a href="/ForgotPassword" className="text-black">Forgot Password</a>
                         </Typography>
                     </div>
                 </form>

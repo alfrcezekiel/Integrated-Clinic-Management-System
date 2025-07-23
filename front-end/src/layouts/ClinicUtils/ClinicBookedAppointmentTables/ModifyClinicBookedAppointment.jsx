@@ -28,7 +28,7 @@ const ModifyClinicBookedAppointment = () => {
     const navigate = useNavigate();
     const { token } = useAuthorization();
     const tokenContext = token;
-    
+
     const selectedGender = [
         "Male",
         "Female"
@@ -95,7 +95,7 @@ const ModifyClinicBookedAppointment = () => {
             status: bookedAppointment.status
         }))
     }, [bookedAppointment, location.pathname, navigate]);
-    
+
     /**
      * this function handles the changes of input in selecting appointment date
      */
@@ -113,7 +113,7 @@ const ModifyClinicBookedAppointment = () => {
             }))
         }
 
-        if(fieldErrors.appointmentDate){
+        if (fieldErrors.appointmentDate) {
             setFieldErrors((prev) => ({
                 ...prev,
                 appointmentDate: ""
@@ -125,7 +125,7 @@ const ModifyClinicBookedAppointment = () => {
      * @function to navigate in the respective appointmetns after modifiying the booked appointment
      */
     const navigateToRespectiveAppointmentsPage = async () => {
-        if(modifyBookedAppointmentDetails.status === "Pending") {
+        if (modifyBookedAppointmentDetails.status === "Pending") {
             navigate("/doctor-portal/dashboard/PendingBookedAppointment")
         } else if (modifyBookedAppointmentDetails.status === "Approved") {
             navigate("/doctor-portal/dashboard/ApprovedBookedAppointment")
@@ -133,7 +133,7 @@ const ModifyClinicBookedAppointment = () => {
             navigate("/doctor-portal/dashboard/DeclinedBookedAppointment")
         }
     }
-    
+
     /**
      * this function handles the changes of text fields inputs
      */
@@ -144,7 +144,7 @@ const ModifyClinicBookedAppointment = () => {
             [name]: value
         }))
 
-        if(fieldErrors[name]){
+        if (fieldErrors[name]) {
             setFieldErrors((prev) => ({
                 ...prev,
                 [name]: ""
@@ -169,7 +169,7 @@ const ModifyClinicBookedAppointment = () => {
             }))
         }
 
-        if(fieldErrors.appointmentTime){
+        if (fieldErrors.appointmentTime) {
             setFieldErrors((prev) => ({
                 ...prev,
                 appointmentTime: ""
@@ -183,8 +183,8 @@ const ModifyClinicBookedAppointment = () => {
     const handleSubmitModifyBookedAppointmentDetails = async (e) => {
         try {
             e.preventDefault();
-            
-            if(!tokenContext) {
+
+            if (!tokenContext) {
                 console.error(`Token is not set in context or local storage`)
                 return;
             }
@@ -206,7 +206,7 @@ const ModifyClinicBookedAppointment = () => {
                 }
             })
 
-            if(response.status === 200) {
+            if (response.status === 200) {
                 setFieldErrors({
                     firstName: "",
                     lastName: "",
@@ -225,7 +225,7 @@ const ModifyClinicBookedAppointment = () => {
                 throw new Error(`Failed to submit the modified booked appointment details: ${response.statusText}`)
             }
         } catch (error) {
-            if(error.response && error.response.status === 400) {
+            if (error.response && error.response.status === 400) {
                 const errors = error.response.data.errors;
                 setFieldErrors((prev) => ({
                     ...prev,
@@ -251,9 +251,9 @@ const ModifyClinicBookedAppointment = () => {
                             name="firstName"
                             autoComplete="off"
                             onChange={handlesTextFieldsChanges}
-                            label="First Name"
+                            label="Enter First Name"
                             fullWidth
-                            margin="normal"
+                            margin="dense"
                             error={!!fieldErrors.firstName}
                             helperText={fieldErrors.firstName || ""}
                         />
@@ -266,11 +266,11 @@ const ModifyClinicBookedAppointment = () => {
                             name="lastName"
                             autoComplete="off"
                             onChange={handlesTextFieldsChanges}
-                            label="Last Name"
+                            label="Enter Last Name"
                             fullWidth
+                            margin="dense"
                             error={!!fieldErrors.lastName}
                             helperText={fieldErrors.lastName || ""}
-                            margin="normal"
                         />
                     </div>
                     <div className="flex flex-col">
@@ -281,11 +281,11 @@ const ModifyClinicBookedAppointment = () => {
                             name="address"
                             autoComplete="off"
                             onChange={handlesTextFieldsChanges}
-                            label="Address"
+                            label="Enter Address"
                             fullWidth
                             error={!!fieldErrors.address}
                             helperText={fieldErrors.address || ""}
-                            margin="normal"
+                            margin="dense"
                         />
                     </div>
                     <div className="flex flex-col">
@@ -296,11 +296,11 @@ const ModifyClinicBookedAppointment = () => {
                             name="email"
                             autoComplete="off"
                             onChange={handlesTextFieldsChanges}
-                            label="Email"
+                            label="Enter Email"
                             fullWidth
                             error={!!fieldErrors.email}
                             helperText={fieldErrors.email || ""}
-                            margin="normal"
+                            margin="dense"
                         />
                     </div>
                     <div className="flex flex-col">
@@ -311,11 +311,11 @@ const ModifyClinicBookedAppointment = () => {
                             name="phoneNumber"
                             autoComplete="off"
                             onChange={handlesTextFieldsChanges}
-                            label="Phone Number"
+                            label="Enter Phone Number"
                             fullWidth
                             error={!!fieldErrors.phoneNumber}
                             helperText={fieldErrors.phoneNumber || ""}
-                            margin="normal"
+                            margin="dense"
                         />
                     </div>
                     <div className="flex flex-col">
@@ -331,7 +331,7 @@ const ModifyClinicBookedAppointment = () => {
                                         textField: {
                                             autoComplete: "off",
                                             fullWidth: true,
-                                            margin: "normal",
+                                            margin: "dense",
                                             error: !!fieldErrors.appointmentDate,
                                             helperText: fieldErrors.appointmentDate || "",
                                             variant: "outlined"
@@ -354,7 +354,7 @@ const ModifyClinicBookedAppointment = () => {
                                         textField: {
                                             autoComplete: "off",
                                             fullWidth: true,
-                                            margin: "normal",
+                                            margin: "dense",
                                             error: !!fieldErrors.appointmentTime,
                                             helperText: fieldErrors.appointmentTime || "",
                                             variant: "outlined"
@@ -375,7 +375,7 @@ const ModifyClinicBookedAppointment = () => {
                             fullWidth
                             error={!!fieldErrors.gender}
                             helperText={fieldErrors.gender || ""}
-                            margin="normal"
+                            margin="dense"
                         >
                             {selectedGender.map((gender, i) => (
                                 <MenuItem key={i} value={gender}>
@@ -395,7 +395,7 @@ const ModifyClinicBookedAppointment = () => {
                             error={!!fieldErrors.status}
                             helperText={fieldErrors.status || ""}
                             fullWidth
-                            margin="normal"
+                            margin="dense"
                         >
                             {selectedStatus.map((status, i) => (
                                 <MenuItem key={i} value={status}>
@@ -415,7 +415,7 @@ const ModifyClinicBookedAppointment = () => {
                             fullWidth
                             error={!!fieldErrors.purposeOfAppointment}
                             helperText={fieldErrors.purposeOfAppointment || ""}
-                            margin="normal"
+                            margin="dense"
                         >
                             {purposeOfAppointment.map((purpose, i) => (
                                 <MenuItem key={i} value={purpose}>

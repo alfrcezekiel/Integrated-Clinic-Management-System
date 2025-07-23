@@ -1,6 +1,7 @@
 import {
     useState,
-    useEffect
+    useEffect,
+    useCallback
 } from "react";
 import CMS from "../../../API/CMS";
 import { useAuthorization } from "../../../context/auth/useAuthorization";
@@ -12,12 +13,21 @@ import {
 import {
     IconButton
 } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import DeleteBookedAppointmentDialog from "../../../utils/DeleteConfirmation";
 
+/**
+ * 
+ * @function component that filters the pending booked appointment status
+ */
 const PendingBookedAppointment = () => {
     const { user, token } = useAuthorization();
     const clinic_id = user?.sid;
     const tokenContext = token;
+    const navigate = useNavigate();
     const [pendingBookedAppointments, setPendingBookedAppointments] = useState([]);
+    const [openDeleteBookedAppointmentDialog, setOpenDeleteBookedAppointmentDialog] = useState(false);
+    const [selectedBookedAppointment, setSelectedBookedAppointment] = useState(null);
 
     useEffect(() => {
         const retrievedClinicPendingBookedAppointments = async () => {
@@ -52,11 +62,11 @@ const PendingBookedAppointment = () => {
             }
         }
 
-        if(clinic_id && tokenContext) {
+        if (clinic_id && tokenContext) {
             retrievedClinicPendingBookedAppointments();
         }
     }, [clinic_id, tokenContext]);
-    
+
     const clinic_columns = [
         "First Name",
         "Last Name",
@@ -108,6 +118,66 @@ const PendingBookedAppointment = () => {
             return time;
         }
     };
+
+    /**
+     * @function callback to navigate in modify booked appointment details
+     */
+    const navigateToModifyBookedAppointment = useCallback(appointment => {
+        navigate("/doctor-portal/dashboard/ModifyBookedAppointment", {
+            state: {
+                bookedAppointment: appointment
+            }
+        })
+    }, [navigate]);
+
+    /**
+     * @function callback to open the delete booked appointment dialog in selected pending status
+     */
+    const openDeleteBookedAppointmentComponent = useCallback(appointment => {
+        setSelectedBookedAppointment(appointment);
+        setOpenDeleteBookedAppointmentDialog(true);
+    }, []);
+
+    /**
+     * @function callback to close the delete booked appointment dialog in selected pending status
+     */
+    const closeDeleteBookedAppointmentComponent = useCallback(() => {
+        setSelectedBookedAppointment(null);
+        setOpenDeleteBookedAppointmentDialog(false);
+    }, []);
+
+    /**
+     * @function to delete the pending booked appointment details
+     */
+    const deletePendingBookedAppointmentDetails = useCallback(async (e) => {
+        try {
+            e.preventDefault();
+
+            if (!selectedBookedAppointment) {
+                console.error(`No pending booked appointment details selected`)
+                return;
+            }
+
+            const response = await CMS.delete(`/CMS/cms.api.com/clinic/dashboard/deletePendingBookedAppointmentDetails`, {
+                params: {
+                    pendingBookedAppointmentID: selectedBookedAppointment.id
+                },
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${tokenContext}`
+                }
+            })
+
+            if (response.status === 200) {
+                setPendingBookedAppointments((prevPendingBookedAppointments) => prevPendingBookedAppointments.filter((pendingBookedAppointment) => pendingBookedAppointment.id !== selectedBookedAppointment.id));
+                closeDeleteBookedAppointmentComponent();
+            } else {
+                throw new Error(`Failed to delete the pending booked appointment details: ${response.status}`)
+            }
+        } catch (error) {
+            console.error(`Failed to delete the pending booked appointment details: ${error}`)
+        }
+    }, [selectedBookedAppointment, tokenContext, closeDeleteBookedAppointmentComponent])
 
     return (
         <div className="p-6 max-h-screen">
@@ -195,7 +265,7 @@ const PendingBookedAppointment = () => {
                                         <td className="px-6 py-4">
                                             <IconButton
                                                 aria-label="Edit Appointment"
-                                                onClick={() => console.log(`Edit appointment ID: ${pendingBookedAppointments.id}`)}
+                                                onClick={() => navigateToModifyBookedAppointment(pendingBookedAppointments)}
                                                 className="cursor-pointer"
                                             >
                                                 <Edit className="h-5 w-5 inline" color="primary" />
@@ -204,7 +274,7 @@ const PendingBookedAppointment = () => {
                                         <td className="px-6 py-4">
                                             <IconButton
                                                 aria-label="Delete Appointment"
-                                                onClick={() => console.log(`Delete appointment ID: ${pendingBookedAppointments.id}`)}
+                                                onClick={() => openDeleteBookedAppointmentComponent(pendingBookedAppointments)}
                                                 className="cursor-pointer"
                                             >
                                                 <Delete className="h-5 w-5 inline" color="error" />
@@ -223,6 +293,13 @@ const PendingBookedAppointment = () => {
                     </table>
                 </div>
             </div>
+            {/* this component is used to confirrmed the deletion of booked appointment details in pending booked appointment */}
+            <DeleteBookedAppointmentDialog
+                open={openDeleteBookedAppointmentDialog}
+                users={selectedBookedAppointment}
+                onClose={closeDeleteBookedAppointmentComponent}
+                onConfirm={deletePendingBookedAppointmentDetails}
+            />
         </div>
     )
 }

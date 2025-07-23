@@ -86,19 +86,36 @@ const DoctorsDashboard = () => {
         }
 
         // funnction to refresh a new access token when the token is expired
-        const refreshAccessToken = async () => {
+        const refreshAccessToken = async (retryCount = 0) => {
+            const MAX_RETRIES = 0
+            const RETRY_DELAYS = 1000;
             try {
                 const refreshResponse = await CMS.get(`CMS/refreshAccessToken`, {
                     withCredentials: true,
+                    headers: {
+                        "Cache-Control" : "no-cache",
+                        "Pragma" : "no-cache"
+                    }
                 })
 
-                if(refreshResponse.status === 200){
+                if(refreshResponse.status === 200 && refreshResponse.data?.accessToken){
                     const newAccessToken = refreshResponse.data.accessToken;
                     login(newAccessToken);
+                } else {
+                    throw new Error(`Error refreshing access token: ${refreshResponse.status}`);
                 }
             } catch (error) {
                 console.log(`Error in refreshing access token: ${error}`);
                 if(error.response && error.response.status === 401) {
+                    navigateBackToHome();
+                }
+
+                if (retryCount < MAX_RETRIES) {
+                    console.error(`Refresh access token failed, retrying...`)
+                    await new Promise((resolve) => setTimeout(resolve, RETRY_DELAYS * (retryCount + 1)))
+                    return refreshAccessToken(retryCount + 1);
+                } else {
+                    console.error(`Refresh access token failed, maximum retries reached`)
                     navigateBackToHome();
                 }
             }
@@ -107,18 +124,19 @@ const DoctorsDashboard = () => {
         if (tokenContext) {
             fetchUserSession();
             confirmedTokenVerification();
+
+            /**
+             * set to 55 minutes token expiration time
+             */
+            const tokenExpirationTime = 55 * 60 * 1000;
+    
+            const interval = setInterval(() => {
+                refreshAccessToken();
+            }, tokenExpirationTime);
+    
+            return () => clearInterval(interval);
         }
 
-        /**
-         * set to 1 hour token expiration time
-         */
-        const tokenExpirationTime = 60 * 60 * 1000;
-
-        const interval = setInterval(() => {
-            refreshAccessToken();
-        }, tokenExpirationTime);
-
-        return () => clearInterval(interval);
     }, [location.pathname, navigate, tokenContext, login]);
 
     return (

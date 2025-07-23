@@ -238,7 +238,7 @@ export const loginPatientsAccount = async (req, res) => {
 
         // generate a access token
         const accessToken = jwt.sign(payload, SECRET_KEY, {
-            expiresIn: "15mins"
+            expiresIn: "1hr"
         });
 
         // generate a refresh token
@@ -258,8 +258,9 @@ export const loginPatientsAccount = async (req, res) => {
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             secure: false, // Set to true if using HTTPS
-            sameSite: "strict",
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+            sameSite: "lax",
+            domain: "localhost",
+            path: "/"
         })
 
         return res.status(StatusCodes.OK).json({
@@ -380,29 +381,36 @@ export const loginAdminAccount = async (req, res) => {
             });
         }
 
+        /**
+         * jwt token payload details
+         */
         const payload = {
             id: adminUsers.adminID,
             email: adminUsers.email
         }
 
         const accessToken = jwt.sign(payload, SECRET_KEY, {
-            expiresIn: "15mins"
+            expiresIn: "1hr"
         })
 
         const refreshToken = jwt.sign(payload, REFRESH_KEY_SECRET, {
             expiresIn: "7d"
         })
 
+        /**
+         * session details
+         */
         const sid = req.session.user = {
             id: adminUsers.adminID,
             email: adminUsers.email
         }
 
         res.cookie("refreshToken", refreshToken, {
+            path: "/",
             httpOnly: true,
             secure: false, // Set to true if using HTTPS
-            sameSite: "strict",
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+            sameSite: "lax",
+            domain: "localhost"
         })
 
         return res.status(StatusCodes.OK).json({
@@ -508,11 +516,19 @@ export const logout = (req, res) => {
             });
         }
 
-        res.clearCookie("connect.sid")
+        res.clearCookie("connect.sid", {
+            sameSite: "lax",
+            domain: "localhost",
+            path: "/",
+            secure: false,
+            httpOnly: true
+        })
         res.clearCookie("refreshToken", {
             httpOnly: true,
             secure: false, // Set to true if using HTTPS
-            sameSite: "strict"
+            sameSite: "lax",
+            domain: "localhost",
+            path: "/"
         }); // remove session details
 
         return res.status(StatusCodes.OK).json({
@@ -1475,8 +1491,9 @@ export const loggedInClinicAccount = async (req, res) => {
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             secure: false,
-            sameSite: "strict",
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+            sameSite: "lax",
+            domain: "localhost",
+            path: "/"
         })
 
         return res.status(StatusCodes.OK).json({
@@ -2982,14 +2999,21 @@ export const createAdminAccount = async (req, res) => {
         const {
             email,
             password,
+            confirmPassword
         } = req.body;
 
         const email_address = String(email)
         const password_hash = String(password);
+        const confirm_password_hash = String(confirmPassword);
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const resetTokenExpiry = dayjs().add(10, 'minutes').toISOString();
 
         const admin_account_data = {
             email: email_address,
-            password: password_hash
+            password: password_hash,
+            confirmPassword: confirm_password_hash,
+            resetToken: resetToken,
+            resetTokenExpiry: resetTokenExpiry
         }
 
         // instance of clinic model with a method to create admin account
@@ -3741,9 +3765,9 @@ export const sendResetEmail = asyncHandler(
                 })
             }
 
-            if (userType !== "patient" && userType !== "clinic") {
+            if (userType !== "patient" && userType !== "clinic" && userType !== "admin") {
                 return res.status(StatusCodes.BAD_REQUEST).json({
-                    message: "Invalid! User type must be Patient or Clinic"
+                    message: "Invalid! User type whether Patient, Clinic or Admin"
                 })
             }
 
@@ -3767,14 +3791,14 @@ export const sendResetEmail = asyncHandler(
                     email: email_address,
                     userType: userType
                 })
-    
+
                 if (!checkEmailResult || !checkEmailResult.success) {
-                    logger.log("warn", `No existing ${userType} email found ${email_address}`)
+                    logger.log("warn", `No existing ${userType} email found: ${email_address}`)
                     return res.status(StatusCodes.NOT_FOUND).json({
                         message: `No ${userType} account found with this email address`
                     })
                 }
-    
+
                 const reset_link = `${process.env.FRONTEND_ENDPOINT}/ResetPassword?token=${checkEmailResult.data.resetToken}&type=${userType}`;
                 /**
                  * try catch block to send a reset email
@@ -3788,7 +3812,7 @@ export const sendResetEmail = asyncHandler(
                         checkEmailResult.data.name,
                         reset_link
                     )
-    
+
                     return res.status(StatusCodes.OK).json({
                         message: "Reset Email has been sent successfully"
                     })
@@ -3797,7 +3821,7 @@ export const sendResetEmail = asyncHandler(
                         token: checkEmailResult.data.resetToken,
                         userType: userType
                     });
-    
+
                     logger.log("error", `Failed to send reset password link: ${error}`)
                     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
                         message: "Failed to send reset password link"
@@ -3805,7 +3829,7 @@ export const sendResetEmail = asyncHandler(
                 }
             } catch (error) {
                 if (error.message === "No existing email address found in our records") {
-                    logger.log("warn", `No existing ${userType} email found ${email_address}`)
+                    logger.log("warn", `No existing ${userType} email found: ${email_address}`)
                     return res.status(StatusCodes.NOT_FOUND).json({
                         message: `No ${userType} account found with this email address`
                     })
@@ -3843,10 +3867,10 @@ export const resetPassword = asyncHandler(
             }
 
             const normalizedUserType = userType.toLowerCase();
-            if (normalizedUserType !== 'clinic' && normalizedUserType !== 'patient') {
+            if (normalizedUserType !== 'clinic' && normalizedUserType !== 'patient' && normalizedUserType !== "admin") {
                 return res.status(StatusCodes.BAD_REQUEST).json({
                     success: false,
-                    message: "Invalid user type. Must be 'clinic' or 'patient'"
+                    message: "Invalid user type. Either 'admin', 'clinic' or 'patient'"
                 });
             }
 
@@ -3912,6 +3936,92 @@ export const resetPassword = asyncHandler(
             logger.log("error", `Failed to reset password in controller: ${error}`)
             return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
                 message: "Failed to reset password in controller"
+            })
+        }
+    }
+)
+
+/**
+ * @function controller logic to logout refresh access token 
+ */
+export const logoutRefreshToken = asyncHandler(
+    async (req, res) => {
+        res.clearCookie("refreshToken", {
+            httpOnly: true,
+            secure: false,
+            sameSite: "lax",
+            domain: "localhost",
+            path: "/"
+        })
+
+        return res.status(StatusCodes.OK).json({
+            message: "Refresh token cleared successfully"
+        })
+    }
+)
+
+/**
+ * @function controller logic to delete the pending booked appointment details in clinic side table
+ */
+export const deletePendingBookedAppointmentDetailsByFindingId = asyncHandler(
+    async (req, res) => {
+        const { pendingBookedAppointmentID } = req.query;
+
+        if (!pendingBookedAppointmentID || typeof pendingBookedAppointmentID !== "string") {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid! Pending booked appointment ID must be a string"
+            })
+        }
+
+        /**
+         * @convert the pending booked appointment into int
+         */
+        const pending_booked_appointment_id = parseInt(pendingBookedAppointmentID);
+
+        if (isNaN(pending_booked_appointment_id)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid! Pending booked appointment ID must be a number"
+            })
+        }
+
+        /**
+         * @create a instance of clinic class model
+         */
+        const clinicInstance = new Clinic();
+
+        if (!(clinicInstance instanceof Clinic)) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "Failed to instantiate clinic instance model"
+            })
+        }
+
+        try {
+            const delete_pending_booked_appointment_result = await clinicInstance.deletePendingBookedAppointmentDetailsByFindingId({
+                pendingBookedAppointmentId: pending_booked_appointment_id
+            })
+
+            if (!delete_pending_booked_appointment_result || delete_pending_booked_appointment_result.length === 0) {
+                logger.log("warn", `Delete pending booked appointment details is not found`)
+                return res.status(StatusCodes.NOT_FOUND).json({
+                    message: "Delete pending booked appointment details is not found"
+                })
+            }
+
+            logger.log("info", `Delete pending booked appointment details successfully`)
+            return res.status(StatusCodes.OK).json({
+                message: "Delete pending booked appointment details successfully"
+            })
+        } catch (error) {
+            if (error.message === "Delete pending booked appointment details is not found") {
+                logger.log("warn", `Delete pending booked appointment details is not found`)
+                return res.status(StatusCodes.NOT_FOUND).json({
+                    message: "Delete pending booked appointment details is not found"
+                })
+            }
+
+            logger.log("error", `Failed to delete pending booked appointment details: ${error}`)
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "Failed to delete pending booked appointment details"
             })
         }
     }

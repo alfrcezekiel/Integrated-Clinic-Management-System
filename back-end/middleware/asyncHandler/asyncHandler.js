@@ -4,7 +4,11 @@
  * @ contains promise object to resolve and catch
  */
 const asyncHandler = (fn) => (req, res, next) => {
-    Promise.resolve(fn(req, res, next)).catch(next);
+    try {
+        Promise.resolve(fn(req, res, next)).catch(next);
+    } catch (error) {
+        next(error);
+    }
 }
 
 export default asyncHandler;

@@ -117,12 +117,12 @@ const DashboardNavbar = () => {
             if (!response.data || !response.data.message) {
                 throw new Error("No response data or no success message");
             } else {
-                logout(false);
+                logout();
                 navigate("/cms");
             }
         } catch (error) {
             console.error(`Code functionality error for logging out: ${error}`);
-            logout(false);
+            logout();
             navigate("/cms");
         } finally {
             setLogoutDialog(false);

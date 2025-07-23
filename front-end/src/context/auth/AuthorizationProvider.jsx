@@ -6,7 +6,9 @@ import PropTypes from "prop-types";
 import { AuthContext } from "./AuthContext.jsx";
 import {
     removeLocalStorage,
+    getLocalStorage
 } from "../../utils/storage/localStorage";
+import CMS from "../../API/CMS.jsx";
 
 export const AuthorizationProvider = ({ children }) => {
     const [token, setToken] = useState(null);
@@ -44,15 +46,25 @@ export const AuthorizationProvider = ({ children }) => {
     /**
      * function to removed the authrization token and user data from localStorage
      */
-    const logout = (clearRememberMe = true) => {
-        if (clearRememberMe) {
-            removeLocalStorage("rememberClinicCredentials");
-            removeLocalStorage("rememberEmail");
+    const logout = async () => {
+        try {
+            await CMS.post(`/CMS/cms.api.com/logoutRefreshToken`, {}, {
+                withCredentials: true,
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${getLocalStorage("authToken")}`,
+                },
+            })
+        } catch (error) {
+            console.error(`Error in clearing the refresh token during logout: ${error}`)
+        } finally {
+            removeLocalStorage("authToken");
+            removeLocalStorage("userData");
+            setToken(null);
+            setUser(null);
+
+            window.location.href = "/cms"
         }
-        removeLocalStorage("authToken");
-        removeLocalStorage("userData");
-        setToken(null);
-        setUser(null);
     }
 
     /**

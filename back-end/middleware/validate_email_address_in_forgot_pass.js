@@ -13,7 +13,7 @@ const validateEmailAddressInForgotPassword = [
     check("userType")
         .notEmpty()
         .withMessage("Selecting user type is required")
-        .isIn(["patient", "clinic"])
+        .isIn(["patient", "clinic", "admin"])
         .withMessage("Invalid user type"),
     (req, res, next) => {
         const errors = validationResult(req)

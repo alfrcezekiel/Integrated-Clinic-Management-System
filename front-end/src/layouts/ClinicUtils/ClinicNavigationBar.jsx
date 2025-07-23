@@ -64,12 +64,12 @@ const DoctorsDashboardNavbar = () => {
             if (!response.data || !response.data.message) {
                 throw new Error("No response for logging out the doctors details");
             } else {
-                logout(false);
+                logout();
                 navigate("/cms");
             }
         } catch (error) {
             console.error(`Code functionality error for logging out: ${error}`);
-            logout(false);
+            logout();
             navigate("/cms");
         } finally {
             setLogoutDialog(false);

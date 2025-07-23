@@ -21,14 +21,17 @@ const AdminRegisterationAccount = () => {
     // state to manage the admin registration form data
     const [adminRegistrationFormData, setAdminRegistrationFormData] = useState({
         email: "",
-        password: ""
+        password: "",
+        confirmPassword: ""
     })
     // state to manage field errors for the admin registration form
     const [fieldErrors, setFieldErrors] = useState({
         email: "",
-        password: ""
+        password: "",
+        confirmPassword: ""
     })
     const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const handleClickShowPassword = () => {
         setShowPassword((show) => !show);
     }
@@ -36,6 +39,16 @@ const AdminRegisterationAccount = () => {
         e.preventDefault();
     }
     const handleMouseUpPassword = (e) => {
+        e.preventDefault();
+    }
+
+    const handleClickShowConfirmPassword = () => {
+        setShowConfirmPassword((show) => !show);
+    }
+    const handleMouseDownConfirmPassword = (e) => {
+        e.preventDefault();
+    }
+    const handleMouseUpConfirmPassword = (e) => {
         e.preventDefault();
     }
 
@@ -69,7 +82,8 @@ const AdminRegisterationAccount = () => {
 
             const payload = {
                 email: adminRegistrationFormData.email,
-                password: adminRegistrationFormData.password
+                password: adminRegistrationFormData.password,
+                confirmPassword: adminRegistrationFormData.confirmPassword
             }
 
             const response = await CMS.post("/CMS/adminDashboard/createAdminAccount", payload, {
@@ -82,11 +96,13 @@ const AdminRegisterationAccount = () => {
             if (response.status === 201) {
                 setAdminRegistrationFormData({
                     email: "",
-                    password: ""
+                    password: "",
+                    confirmPassword: ""
                 });
                 setFieldErrors({
                     email: "",
-                    password: ""
+                    password: "",
+                    confirmPassword: ""
                 });
                 alert("Admin account created successfully!");
                 navigate("/admin-dashboard/AdminAccountRegistration");
@@ -122,7 +138,6 @@ const AdminRegisterationAccount = () => {
                                     type="text"
                                     onChange={adminTextFieldChangeHandler}
                                     fullWidth
-                                    className="mb-4"
                                     autoComplete="off"
                                     value={adminRegistrationFormData.email}
                                     error={!!fieldErrors.email}
@@ -160,6 +175,38 @@ const AdminRegisterationAccount = () => {
                                         label="Password"
                                     />
                                     {fieldErrors.password && <FormHelperText error>{fieldErrors.password}</FormHelperText>}
+                                </FormControl>
+                            </div>
+                            <div className="flex flex-col">
+                                <label className="font-medium text-md mb-2">Confirm Password</label>
+                                <FormControl variant="outlined" sx={{ width: "100%"}} error={!!fieldErrors.confirmPassword}>
+                                    <InputLabel htmlFor="outlined-adornment-password">Confirm Password</InputLabel>
+                                    <OutlinedInput
+                                        placeholder="Enter confirm password"
+                                        name="confirmPassword"
+                                        onChange={adminTextFieldChangeHandler}
+                                        value={adminRegistrationFormData.confirmPassword}
+                                        autoComplete="off"
+                                        type={showConfirmPassword ? 'text' : 'password'}
+                                        endAdornment={
+                                            <InputAdornment position="end">
+                                                <IconButton
+                                                    aria-label={
+                                                        showConfirmPassword ? 'hide the password' : 'display the password'
+                                                    }
+                                                    onClick={handleClickShowConfirmPassword}
+                                                    onMouseDown={handleMouseDownConfirmPassword}
+                                                    onMouseUp={handleMouseUpConfirmPassword}
+                                                    edge="end"
+                                                >
+                                                    {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                                                </IconButton>
+                                            </InputAdornment>
+                                        }
+                                        fullWidth
+                                        label="Confirm Password"
+                                    />
+                                    {fieldErrors.confirmPassword && <FormHelperText error>{fieldErrors.confirmPassword}</FormHelperText>}
                                 </FormControl>
                             </div>
                             <div className="items-center justify-center flex">

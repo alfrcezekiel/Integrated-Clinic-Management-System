@@ -24,6 +24,7 @@ import {
     useState,
     useEffect
 } from "react";
+import ResetPasswordSuccess from "./ResetPasswordSuccess";
 
 const ResetPassword = () => {
     const resetPasswordState = useSelector((state) => state.forgotPassword);
@@ -35,6 +36,7 @@ const ResetPassword = () => {
         newPassword: "",
         confirmPassword: ""
     })
+    const [showSuccessResetPasswordDialog, setShowSuccessResetPasswordDialog] = useState(false);
 
     useEffect(() => {
         document.title = "Reset Password"
@@ -60,6 +62,14 @@ const ResetPassword = () => {
                 [name]: ""
             }))
         }
+    }
+
+    /**
+     * @function to close the success reset password dialog
+     */
+    const closeSuccessDialog = () => {
+        setShowSuccessResetPasswordDialog(false);
+        navigate("/cms");
     }
     /**
      * function handles to toggle the visibility of the new password
@@ -89,7 +99,7 @@ const ResetPassword = () => {
 
             if (resetPassword.fulfilled.match(response)) {
                 dispatch(resetForm())
-                navigate("/cms");
+                setShowSuccessResetPasswordDialog(true);
             } else if (resetPassword.rejected.match(response)) {
                 const error = response.payload;
 
@@ -104,13 +114,14 @@ const ResetPassword = () => {
             console.error(`Failed to reset password: ${error}`);
         }
     }
+
     return (
         <div className="p-4 flex gap-4 max-h-screen">
             <div className="flex justify-center p-4 w-full lg:w-3/5 md:w-1/2">
                 <div className="flex-col mt-50">
                     <div className="p-4">
                         <h1 className="text-3xl font-extrabold text-gray-900 mb-4 text-center lg:text-center">
-                            Enter New Password
+                            Reset Your Password
                         </h1>
                         <p className="text-gray-600 text-sm mb-8 text-center lg:text-center p-2">
                             Enter your new password and confirm it to complete the password reset process.
@@ -202,6 +213,11 @@ const ResetPassword = () => {
                     </div>
                 </div>
             </div>
+            {showSuccessResetPasswordDialog && (
+                <ResetPasswordSuccess
+                    closeSuccessDialog={closeSuccessDialog}
+                />
+            )}
             <div className="max-w-6/12 hidden lg:block">
                 <img src="img/stethoscope.jpg" className="max-w-full max-h-full object-cover rounded-3xl ml-60" alt="Stethoscope" />
             </div>
