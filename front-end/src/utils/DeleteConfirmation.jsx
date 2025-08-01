@@ -23,7 +23,7 @@ const DeleteConfirmationDialog = ({ open, onClose, onConfirm, users }) => {
                     </h2>
                 </div>
                 {/* Content */}
-                <div className="mt-4 space-y-3">
+                <div className="space-y-3">
                     <p className="text-gray-600">
                         Are you sure you want to delete <span className="font-medium text-gray-900">{users?.firstName} {users?.lastName}</span>?
                     </p>

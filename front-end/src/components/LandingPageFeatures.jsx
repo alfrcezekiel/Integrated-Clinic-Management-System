@@ -57,7 +57,7 @@ const LandingPageFeatures = () => {
                 {/* <!-- Section Title --> */}
                 <div className="container section-title" data-aos="fade-up">
                     <h2>{featuresTitle}</h2>
-                    <p>Streamlining dental clinic operations with advanced features for efficient and effective patient care.</p>
+                    <p>Streamline your clinic operations with our advanced features designed to improve patient care and reduce administrative tasks.</p>
                 </div>
                 {/* <!-- End Section Title --> */}
                 <div className="container">

@@ -235,7 +235,7 @@ const ConsultationPatientPage = () => {
                 ...patientFormData,
                 admin_id: user?.sid,
                 clinic_name: patientFormData.clinic_name,
-                appointmentID: patientFormData.appointmentID
+                appointmentID: patientFormData.appointmentID,
             }, {
                 headers: {
                     "Content-Type": "application/json",
@@ -299,7 +299,7 @@ const ConsultationPatientPage = () => {
                     ...error.response.data.errors
                 }));
             } else {
-                console.error("Validation steo error in function handle next:", error);
+                console.error("Validation step error in function handle next:", error);
             }
         }
     };

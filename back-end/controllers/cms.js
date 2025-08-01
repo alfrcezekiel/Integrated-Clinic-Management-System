@@ -3782,6 +3782,7 @@ export const sendResetEmail = asyncHandler(
                     message: "Failed to instantiate clinic instance model"
                 })
             }
+
             try {
                 /**
                  * @argument email and user type to passed in instance of clinic class
@@ -3849,7 +3850,7 @@ export const sendResetEmail = asyncHandler(
 )
 
 /**
- * function controlelr logic to reset the password in clinic and patient side
+ * @function controller logic to reset the password in clinic and patient side
  */
 export const resetPassword = asyncHandler(
     async (req, res) => {
@@ -4012,7 +4013,7 @@ export const deletePendingBookedAppointmentDetailsByFindingId = asyncHandler(
                 message: "Delete pending booked appointment details successfully"
             })
         } catch (error) {
-            if (error.message === "Delete pending booked appointment details is not found") {
+            if (error.message === "Invalid! Pending booked appointment ID not found") {
                 logger.log("warn", `Delete pending booked appointment details is not found`)
                 return res.status(StatusCodes.NOT_FOUND).json({
                     message: "Delete pending booked appointment details is not found"

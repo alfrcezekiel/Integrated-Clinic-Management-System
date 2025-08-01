@@ -6,6 +6,7 @@ import {
 import CMS from "../../../API/CMS";
 import { useAuthorization } from "../../../context/auth/useAuthorization";
 import dayjs from "dayjs";
+import { useNavigate } from "react-router-dom";
 
 /**
  * @function component ApprovedBookedAppointmentTable
@@ -16,34 +17,35 @@ const ApprovedBookedAppointmentTable = () => {
     const { user, token } = useAuthorization();
     const clinicID = user?.sid;
     const tokenContext = token;
-    const memoizedRetrieveApprovedBookedAppointmetns = useMemo(() => approvedBookedAppointments, [approvedBookedAppointments]);
+    const navigate = useNavigate();
+    const memoizedRetrieveApprovedBookedAppointments = useMemo(() => approvedBookedAppointments, [approvedBookedAppointments]);
 
     useEffect(() => {
         const retrieveApprovedBookedAppointment = async () => {
             try {
-                if(!clinicID || !tokenContext) {
+                if (!clinicID || !tokenContext) {
                     console.error(`Clinic ID or Token is not set in context or local storage`);
                     return;
                 }
-    
+
                 const response = await CMS.get("/CMS/clinic/dashboard/retrieveApprovedBookedAppointments", {
                     params: {
                         clinicID: clinicID
                     }
                 }, {
                     headers: {
-                        "Content-Type" : "application/json",
-                        "Authorization" : `Bearer ${tokenContext}`
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${tokenContext}`
                     }
                 })
-    
+
                 if (response.status === 200) {
                     const data = response.data.retrievedApprovedBookedAppointments;
                     setApprovedBookedAppoinments(data);
                 } else {
                     throw new Error(`Failed to retrieve approved booked appointment to render in clinic side table: ${response.statusText}`);
                 }
-            } catch (error){
+            } catch (error) {
                 console.error(`Failed to retrieve approved booked appointment to render in clinic side table in catch block: ${error}`)
             }
         }
@@ -70,6 +72,26 @@ const ApprovedBookedAppointmentTable = () => {
             return time;
         }
     };
+
+    /**
+     * @function to navigate in consultation page with retrieved booked appointment details in clinic table
+     */
+    const navigateInConsultationPage = async (appointment) => {
+        navigate("/doctor-portal/dashboard/ConsultPatient", {
+            state: {
+                appointmentData: {
+                    firstName: appointment.firstName,
+                    lastName: appointment.lastName,
+                    email: appointment.email,
+                    phoneNumber: appointment.phoneNumber,
+                    appointmentDate: dateFormat(appointment.appointmentDate),
+                    preferredTime: appointment.appointmentTime,
+                    appointmentID: appointment.id,
+                    clinic_name: appointment.clinic_name,
+                }
+            }
+        })
+    }
 
     const clinic_columns = [
         "First Name",
@@ -122,11 +144,11 @@ const ApprovedBookedAppointmentTable = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200 bg-white">
-                            {memoizedRetrieveApprovedBookedAppointmetns && memoizedRetrieveApprovedBookedAppointmetns.length > 0 ? (
-                                memoizedRetrieveApprovedBookedAppointmetns.map((approved, i) => (
+                            {memoizedRetrieveApprovedBookedAppointments && memoizedRetrieveApprovedBookedAppointments.length > 0 ? (
+                                memoizedRetrieveApprovedBookedAppointments.map((approved, i) => (
                                     <tr
                                         key={i}
-                                        className={`hover:bg-blue-50 transition-colors duration-200 ${statusColor(approved.status)}`}
+                                        className={`hover:bg-blue-50 transition-colors duration-200 ${statusColor(approved.status)} cursor-pointer`}
                                     >
                                         <td className="px-6 py-6">
                                             <span className="text-center">
@@ -186,7 +208,8 @@ const ApprovedBookedAppointmentTable = () => {
                                         <td className="px-6 py-6">
                                             <button
                                                 type="button"
-                                                className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+                                                className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded cursor-pointer"
+                                                onClick={() => navigateInConsultationPage(approved)}
                                             >
                                                 Consult Patient
                                             </button>

@@ -205,7 +205,7 @@ const PendingBookedAppointment = () => {
                                 pendingBookedAppointments.map((pendingBookedAppointments, index) => (
                                     <tr
                                         key={index}
-                                        className={`hover:bg-blue-50 transition-colors duration-200 ${statusColor(pendingBookedAppointments.status)}`}
+                                        className={`hover:bg-blue-50 transition-colors duration-200 ${statusColor(pendingBookedAppointments.status)} cursor-pointer`}
                                     >
                                         <td className="px-6 py-4">
                                             <span className="text-center">

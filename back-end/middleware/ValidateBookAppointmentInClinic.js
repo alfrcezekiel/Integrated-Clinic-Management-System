@@ -53,16 +53,41 @@ const validateBookAppointmentInClinic = [
         .notEmpty()
         .withMessage("Appointment time is required")
         .custom(async (value, { req }) => {
-            const { appointmentDate } = req.body;
+            const { appointmentDate, clinicID } = req.body;
+
+            if (!clinicID) {
+                throw new Error("Clinic ID is required");
+            }
+
             const appointmentTime = dayjs(value, "HH:mm", true);
             if (!appointmentTime.isValid()) {
                 throw new Error("Invalid appointment time");
             }
 
-            // convert the appointment date into YYYY-MM-DD format
+            /**
+             * @instance method for checking the clinic operating hours in clinic book appointment
+             */
+            const checkClinicOperatingHours = await new Clinic().checkClinicOperatingHours({
+                appointmentTime: appointmentTime,
+                appointmentDate: appointmentDate,
+                clinicID: clinicID
+            })
+
+            /**
+             * @checks the clinic operating hours message if the appointment time is outside the clinic's operating hours
+             */
+            if (!checkClinicOperatingHours.message) {
+                throw new Error(checkClinicOperatingHours.message)
+            }
+            
+            /**
+             * @convert the appointment date into YYYY-MM-DD format
+             */
             const formatted_appointment_date = dayjs(appointmentDate).format("YYYY-MM-DD");
 
-            // format the appointment time into HH:mm format
+            /**
+             * @format the appointment time into HH:mm format
+             */
             const formattedAppointmentTime = appointmentTime.format("HH:mm");
             const book_appointment_status = ["Pending", "Approved"];
 
@@ -72,11 +97,13 @@ const validateBookAppointmentInClinic = [
                 book_appointment_status
             );
 
-            // Function to normalize and format time to AM/PM
+            /**
+             * @function to normalize and format time to AM/PM
+             */
             const normalizeAndFormatTimeToAMPM = (time) => {
                 const parsedTime = dayjs(time, ["HH:mm", "h:mm A", "hh:mm A", dayjs.ISO8601], true)
 
-                if(!parsedTime.isValid()) {
+                if (!parsedTime.isValid()) {
                     throw new Error("Invalid appointment time format");
                 }
 
@@ -84,7 +111,9 @@ const validateBookAppointmentInClinic = [
 
             }
 
-            //  check if the appointment time is already booked or awaiting approval
+            /**
+             * @checks if the appointment time is already booked or awaiting approval
+             */
             if (check_book_appointment_status) {
                 const formattedAppointmentTime = normalizeAndFormatTimeToAMPM(value);
                 const formattedAppointmentDate = dayjs(formatted_appointment_date).format("MMMM D, YYYY");

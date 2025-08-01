@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "nodemon main.js",
-    "dev" : "bun --watch main.js"
+    "dev": "bun --watch main.js"
   },
   "keywords": [],
   "author": "",

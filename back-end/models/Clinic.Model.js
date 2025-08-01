@@ -2498,6 +2498,112 @@ class Clinic {
         "Delete Pending Booked Appointment Details By Finding Id"
     )
 
+    /**
+     * @method for checking the clinic operating hours in clinic book appointment 
+     */
+    checkClinicOperatingHours = modelErrorHandling(
+        async (params) => {
+            this.connection = await this.conn.getConnection();
+            try {
+                await this.connection.beginTransaction();
+
+                let { appointmentTime, appointmentDate, clinicID } = params;
+
+                if (!appointmentTime || !appointmentDate || !clinicID) {
+                    throw new Error("Invalid! Appointment time, appointment date are required")
+                }
+
+                if (params && typeof params === "object" && !Array.isArray(params)) {
+                    params = params.appointmentTime;
+                    params = params.appointmentDate;
+                } else {
+                    throw new Error("Invalid! Parameters must be an object")
+                }
+
+                const dayOfWeek = dayjs(appointmentDate).day();
+                const dayName = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][dayOfWeek];
+
+                const clinic_field = [
+                    "clinic_time",
+                    "clinic_close_time"
+                ]
+
+                const query = `
+                    SELECT ${clinic_field.join(", ")}
+                    FROM clinic
+                    WHERE clinic_id = ?;
+                `
+
+                const value = [
+                    clinicID
+                ]
+
+                const [rows] = await this.connection.query(query, value);
+
+                if (!rows || !rows.length) {
+                    throw new Error("Invalid! Clinic ID not found")
+                }
+
+                const { clinic_time: openingTime, clinic_close_time: closingTime } = rows[0];
+
+                /**
+                 * @function to parse the time 
+                 */
+                const parseTime = (timeStr) => {
+                    const [hours, minutes] = timeStr.split(":").map(Number);
+                    return { hours, minutes };
+                }
+
+                const openingTimeObj = parseTime(openingTime);
+                const closingTimeObj = parseTime(closingTime);
+
+                const appointment = dayjs(appointmentTime, "HH:mm");
+                const appointmentMinutes = appointment.hour() * 60 + appointment.minute();
+
+                const openingMinutes = openingTimeObj.hours * 60 + openingTimeObj.minutes;
+                const closingMinutes = closingTimeObj.hours * 60 + closingTimeObj.minutes;
+
+                const isWithInOperatingHours = appointmentMinutes >= openingMinutes && appointmentMinutes <= closingMinutes;
+
+                if (!isWithInOperatingHours) {
+                    /**
+                     * @function to format the time to 12-hour format
+                     */
+                    const formatTimeTo12Hour = (hours, minutes) => {
+                        const period = hours >= 12 ? 'PM' : 'AM';
+                        const displayHours = hours % 12 || 12; // Convert 0 to 12 for 12 AM
+                        return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+                    };
+
+                    /**
+                     * @function to format the appointment time to 12-hour format
+                     */
+                    const formatAppointmentTime = (appointment) => {
+                        return formatTimeTo12Hour(appointment.hour(), appointment.minute());
+                    };
+
+                    const formattedOpeningTime = formatTimeTo12Hour(openingTimeObj.hours, openingTimeObj.minutes);
+                    const formattedClosingTime = formatTimeTo12Hour(closingTimeObj.hours, closingTimeObj.minutes);
+                    const formattedAppointmentTime = formatAppointmentTime(appointmentTime);
+
+                    throw new Error(`Appointment time ${formattedAppointmentTime} on  ${dayName} is outside the clinic's operating hours ` + `(${formattedOpeningTime} - ${formattedClosingTime})`);
+                }
+
+                return {
+                    message: isWithInOperatingHours
+                }
+
+            } catch (error) {
+                logger.log("error", `Failed to check the clinic operating hours in clinic book appointment in method: ${error}`);
+                throw error;
+            } finally {
+                if (this.connection) {
+                    await this.connection.release();
+                }
+            }
+        },
+        "Check Clinic Operating Hours"
+    )
 }
 
 export default Clinic;

@@ -1,7 +1,8 @@
 import Dashboard from "../../../layouts/dashboard";
 import {
     useEffect,
-    useState
+    useState,
+    useCallback
 } from "react";
 import {
     useLocation,
@@ -9,33 +10,116 @@ import {
 } from "react-router-dom";
 import CMS from "../../../API/CMS";
 import { useAuthorization } from "../../../context/auth/useAuthorization.jsx";
-
+import {removeLocalStorage } from "../../../utils/storage/localStorage.js";
 import { useMemo } from "react";
 
 const PatientsDashboard = () => {
     const location = useLocation();
     const [userSession, setUserSession] = useState(null);
     const [confirmToken, setConfirmToken] = useState(null);
-
     const navigate = useNavigate();
-
+    const [lastActivity, setLastActivity] = useState(Date.now());
+    const SESSION_TIMEOUT = 60 * 60 * 1000; // 1 hour in milliseconds
+    const ACTIVITY_CHECK_INTERVAL = 5 * 60 * 1000; // Check every 5 minutes
     const { token, login } = useAuthorization();
 
     const tokenContext = useMemo(() => token || localStorage.getItem("authToken"), [token]);
-    
+
+    const updateLastActivity = async () => {
+        setLastActivity(Date.now());
+    };
+
+    const navigateBackToHome = useCallback(() => {
+        removeLocalStorage("authToken");
+        removeLocalStorage("userData");
+        navigate("/cms");
+    }, [navigate]);
+
+    useEffect(() => {
+        /**
+         * add events for user activity 
+         */
+
+        const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+        events.forEach(event => {
+            window.addEventListener(event, updateLastActivity);
+        });
+
+        /**
+         * check session timeout periodically
+         */
+
+        const activityCheckInterval = setInterval(() => {
+            const currentTime = Date.now();
+
+            if (currentTime - lastActivity > SESSION_TIMEOUT) {
+                console.log(`Session timeout due to inactivity`)
+                navigateBackToHome();
+            }
+        }, ACTIVITY_CHECK_INTERVAL);
+
+        /**
+         * check token expiration
+         */
+
+        const checkTokenExpiration = () => {
+            if (!tokenContext) return;
+
+            try {
+                const tokenPayload = JSON.parse(atob(tokenContext.split('.')[1]));
+                const expirationTime = tokenPayload.exp * 1000;
+                const currentTime = Date.now();
+
+                if (currentTime > expirationTime) {
+                    console.log(`Token has expired`);
+                    navigateBackToHome();
+                } else {
+                    /**
+                     * sets a timeout to check again when the token is about to expire
+                     */
+
+                    const timeUntilExpiry = expirationTime - currentTime;
+                    const tokenExpirationTimeout = setTimeout(() => {
+                        checkTokenExpiration();
+                    }, Math.min(timeUntilExpiry, SESSION_TIMEOUT));
+
+                    return () => clearTimeout(tokenExpirationTimeout);
+                }
+            } catch (error) {
+                console.error(`Error checking token expiration: ${error}`)
+                if (error.response && error.response.status === 401) {
+                    navigateBackToHome();
+                }
+            }
+        }
+
+        /**
+         * initial token expiration check
+         */
+        const tokenExpirationCleanup = checkTokenExpiration();
+
+        /**
+         * cleanup functtion to clear the events and intervals
+         */
+
+        return () => {
+            events.forEach((event) => {
+                window.removeEventListener(event, updateLastActivity);
+            })
+            clearInterval(activityCheckInterval);
+            if (tokenExpirationCleanup) tokenExpirationCleanup();
+        }
+    }, [ACTIVITY_CHECK_INTERVAL, SESSION_TIMEOUT, lastActivity, navigateBackToHome, tokenContext])
+
     useEffect(() => {
         if (!tokenContext) {
             console.error("No token found in context or localStorage");
-            navigate("/cms");
+            navigateBackToHome();
+            return;
         }
-    }, [tokenContext, navigate]);
+    }, [tokenContext, navigateBackToHome]);
 
     useEffect(() => {
-        const navigateBackToHome = () => {
-            console.error("Unauthorized access, redirecting to home page");
-            navigate("/cms")
-        }
-
         const titleHead = () => document.title = "Patient Dashboard | CMS";
         titleHead();
 
@@ -84,6 +168,13 @@ const PatientsDashboard = () => {
             } catch (error) {
                 console.error(`Code functinality error in confirm token verification function: ${error}`)
                 if (error.response && error.response.status === 401) {
+                    try {
+                        await refreshAccessToken()
+                    } catch (error) {
+                        console.error(`Error refreshing access token: ${error}`)
+                        navigateBackToHome();
+                    }
+                } else {
                     navigateBackToHome();
                 }
             }
@@ -91,22 +182,21 @@ const PatientsDashboard = () => {
 
         // funnction to refresh a new access token when the token is expired
         const refreshAccessToken = async (retryCount = 0) => {
-            const MAX_RETRIES = 0;
+            const MAX_RETRIES = 1;
             const RETRY_DELAY = 1000;
             try {
 
                 const refreshResponse = await CMS.get(`CMS/refreshAccessToken`, {
                     withCredentials: true,
                     headers: {
-                        "Cache-Control" : "no-cache",
-                        "Pragma" : "no-cache"
+                        "Cache-Control": "no-cache",
+                        "Pragma": "no-cache"
                     }
                 })
 
                 if (refreshResponse.status === 200 && refreshResponse.data?.accessToken) {
                     const newAccessToken = refreshResponse.data.accessToken;
                     login(newAccessToken);
-                    return true;
                 } else {
                     throw new Error(`Error refreshing access token: ${refreshResponse.status}`);
                 }
@@ -115,17 +205,15 @@ const PatientsDashboard = () => {
                 if (error.response && error.response.status === 401) {
                     console.error(`Refresh acces token expired`)
                     navigateBackToHome();
-                    return false;
                 }
 
                 if (retryCount < MAX_RETRIES) {
                     console.error(`Refresh access token failed, retrying...`)
-                    await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY * (retryCount + 1)))
+                    await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY))
                     return refreshAccessToken(retryCount + 1);
                 } else {
                     console.error(`Refresh access token failed, maximum retries reached`)
                     navigateBackToHome();
-                    return false;
                 }
             }
         }
@@ -135,14 +223,14 @@ const PatientsDashboard = () => {
             confirmTokenVerification();
 
             const tokenExpirationTime = 55 * 60 * 1000; // 55 minutes
-    
+
             const interval = setInterval(() => {
                 refreshAccessToken();
             }, tokenExpirationTime);
-    
+
             return () => clearInterval(interval);
         }
-    }, [location.pathname, tokenContext, navigate, login]);
+    }, [location.pathname, tokenContext, navigate, login, navigateBackToHome]);
 
     return (
         <>

@@ -6,7 +6,7 @@ import { Routes, Route } from "react-router-dom";
 
 const Dashboard = () => {
     return (
-        <div className="min-h-screen bg-blue-gray-50/50">
+        <div className="min-h-screen bg-white">
             {/* this top component is for side nav */}
             <SideNav routes={routes} brandName="Patient Dashboard" />
             {/* Main Content */}
