@@ -58,6 +58,7 @@ const ApprovedAppointmentClinicTable = () => {
                     preferredTime: appointment.preferredTime,
                     appointmentID: appointment.appointmentID,
                     clinic_name: appointment.clinic_name,
+                    type: "Patient"
                 }
             }
         })

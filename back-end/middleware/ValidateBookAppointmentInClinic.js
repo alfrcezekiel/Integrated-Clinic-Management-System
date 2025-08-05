@@ -52,6 +52,16 @@ const validateBookAppointmentInClinic = [
     body("appointmentTime")
         .notEmpty()
         .withMessage("Appointment time is required")
+        .custom(async (value) => {
+            const isISOFormat = dayjs(value).isValid();
+
+            const appointTime12HourRegex = /^(0?[1-9]|1[0-2]):([0-5]\d)\s?(AM|PM|am|pm)$/i.test(value);
+            if (!isISOFormat && !appointTime12HourRegex) {
+                throw new Error(`Appointment time must be in 12-hour format (e.g., AM | PM)`)
+            }
+
+            return true;
+        })
         .custom(async (value, { req }) => {
             const { appointmentDate, clinicID } = req.body;
 
@@ -59,7 +69,16 @@ const validateBookAppointmentInClinic = [
                 throw new Error("Clinic ID is required");
             }
 
-            const appointmentTime = dayjs(value, "HH:mm", true);
+            const appointmentDateValue = dayjs(appointmentDate, "YYYY-MM-DD", true);
+            if (!appointmentDateValue.isValid()) {
+                throw new Error("Invalid appointment date format for appointment time validation");
+            }
+
+            let appointmentTime;
+            /**
+             * @shorthand condition for checking parse time based format whether AM/PM or ISO format
+             */
+            dayjs(value).isValid() ? appointmentTime = dayjs(value) : appointmentTime = dayjs(value, "HH:mm", true);
             if (!appointmentTime.isValid()) {
                 throw new Error("Invalid appointment time");
             }
@@ -79,7 +98,7 @@ const validateBookAppointmentInClinic = [
             if (!checkClinicOperatingHours.message) {
                 throw new Error(checkClinicOperatingHours.message)
             }
-            
+
             /**
              * @convert the appointment date into YYYY-MM-DD format
              */
@@ -115,7 +134,7 @@ const validateBookAppointmentInClinic = [
              * @checks if the appointment time is already booked or awaiting approval
              */
             if (check_book_appointment_status) {
-                const formattedAppointmentTime = normalizeAndFormatTimeToAMPM(value);
+                const formattedAppointmentTime = normalizeAndFormatTimeToAMPM(appointmentTime);
                 const formattedAppointmentDate = dayjs(formatted_appointment_date).format("MMMM D, YYYY");
 
                 throw new Error(`Appointment time ${formattedAppointmentTime} is already booked or awaiting approval on  ${formattedAppointmentDate}.`);

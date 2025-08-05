@@ -109,7 +109,9 @@ const step4Validation = [
 const step5Validation = [
     body("consent")
         .notEmpty()
-        .withMessage("Consent is required. You must agree to the terms and privacy policy."),
+        .withMessage("Consent is required. You must agree to the terms and privacy policy.")
+        .isIn(["Yes", "No"])
+        .withMessage("Consent must be Yes or No")
 ];
 
 // dynamic medical history question based on the retrieved consultation questionnaire in the server

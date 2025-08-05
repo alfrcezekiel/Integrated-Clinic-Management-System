@@ -120,7 +120,8 @@ const ConsultationPatientPage = () => {
         consent: "",
         appointmentID: "",
         clinic_name: "",
-        admin_id: ""
+        admin_id: "",
+        type: ""
     });
     const [openAppointmentDataNotFoundDialog, setOpenAppointmentDataNotFoundDialog] = useState(false);
     const [medicalHistoryFieldNames, setMedicalHistoryFieldNames] = useState([]);
@@ -131,7 +132,7 @@ const ConsultationPatientPage = () => {
 
     const { token, user } = useAuthorization();
     const tokenContext = token;
-    if(!tokenContext){
+    if (!tokenContext) {
         console.error("Token is not available in the context or local storage.");
     }
 
@@ -149,7 +150,7 @@ const ConsultationPatientPage = () => {
 
     // retrieving the patient form data from the approved appointment table component
     useEffect(() => {
-        if (!appointmentData || !appointmentData.appointmentID) {
+        if (!appointmentData || !appointmentData.appointmentID || !appointmentData.type) {
             setOpenAppointmentDataNotFoundDialog(true);
             return;
         }
@@ -164,6 +165,7 @@ const ConsultationPatientPage = () => {
             preferredTime: appointmentData.preferredTime ? dayjs(appointmentData.preferredTime, "HH:mm") : null,
             appointmentID: appointmentData.appointmentID,
             clinic_name: appointmentData.clinic_name,
+            type: appointmentData.type
         }));
     }, [appointmentData, navigate]);
 
@@ -210,7 +212,7 @@ const ConsultationPatientPage = () => {
             ...prev,
             preferredTime: newValue && dayjs(newValue) ? newValue : null
         }));
-        
+
         if (fieldErrors.preferredTime) {
             setFieldErrors((prev) => ({
                 ...prev,
@@ -231,7 +233,13 @@ const ConsultationPatientPage = () => {
                 return;
             }
 
-            const response = await CMS.post("/CMS/clinic-dashboard/consultPatient", {
+            const endpoint = patientFormData.type === "Patient" ? "/CMS/clinic-dashboard/consultPatient" : "/CMS/cms.api.com/clinic/dashboard/clinicConsultPatient";
+            if (!endpoint) {
+                console.error("Endpoint not found.");
+                return;
+            }
+
+            const response = await CMS.post(endpoint, {
                 ...patientFormData,
                 admin_id: user?.sid,
                 clinic_name: patientFormData.clinic_name,
@@ -372,8 +380,13 @@ const ConsultationPatientPage = () => {
 
     // function for closing the dialog box of patient consultation successful dialog
     const handleClosePatientConsultationSuccessfulDialog = async () => {
-        setOpenPatientConsultationSuccessfulDialog(false);
-        navigate("/doctor-portal/dashboard/AppointmentHistory");
+        if (patientFormData.type === "Patient") {
+            setOpenPatientConsultationSuccessfulDialog(false);
+            navigate("/doctor-portal/dashboard/AppointmentHistory");
+        } else if (patientFormData.type === "Clinic") {
+            setOpenPatientConsultationSuccessfulDialog(false);
+            navigate("/doctor-portal/dashboard/home");
+        }
     }
 
     return (

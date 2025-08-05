@@ -13,7 +13,9 @@ const LOG_LEVEL = process.env.LOG_LEVEL || "info"; // Default log level
 if (!fs.existsSync(LOG_DIR)) {
     fs.mkdirSync(LOG_DIR, { recursive: true });
 }
-
+/**
+ * @function to track the request and response of the application logs
+ */
 const logger = createLogger({
     format: format.combine(
         format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),

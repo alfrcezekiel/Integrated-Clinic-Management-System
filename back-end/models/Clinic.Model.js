@@ -45,6 +45,13 @@ class Clinic {
                 cp.participate_in_sports_details,
                 cp.balanced_diet_details,
                 cp.regular_exercise_details,
+                cp.brush_frequency_details,
+                cp.use_mouthwash_details,
+                cp.replace_toothbrush_details,
+                cp.clean_tongue_details,
+                cp.regular_checkup_details,
+                cp.dental_anxiety_details,
+                cp.dental_trauma_details,
                 cp.eating_disorder_details,
                 cp.appointment_date,
                 cp.appointment_time,
@@ -2544,6 +2551,11 @@ class Clinic {
                     throw new Error("Invalid! Clinic ID not found")
                 }
 
+                const commitQuery = await this.connection.commit();
+                if (!commitQuery) {
+                    throw new Error("Failed to commit the transaction in checking the clinic operating hours")
+                }
+
                 const { clinic_time: openingTime, clinic_close_time: closingTime } = rows[0];
 
                 /**
@@ -2594,6 +2606,11 @@ class Clinic {
                 }
 
             } catch (error) {
+                const rollbackQuery = await this.connection.rollback();
+                if (!rollbackQuery) {
+                    throw new Error(`Failed to rollback the transaction in checking the clinic operating hours`)
+                }
+
                 logger.log("error", `Failed to check the clinic operating hours in clinic book appointment in method: ${error}`);
                 throw error;
             } finally {
@@ -2603,6 +2620,278 @@ class Clinic {
             }
         },
         "Check Clinic Operating Hours"
+    )
+
+    /**
+     * @method logic to consult a patient in clinic side appointment with consultation questionnaires
+     */
+    consultPatientInClinicSideAppointment = modelErrorHandling(
+        async (params) => {
+            this.connection = await this.conn.getConnection();
+            try {
+                await this.connection.beginTransaction();
+
+                if (params && typeof params === "object" && !Array.isArray(params)) {
+                    params = params;
+                } else {
+                    throw new Error("Invalid! Parameters must be an object")
+                }
+
+                const {
+                    firstName,
+                    lastName,
+                    emailAddress,
+                    phoneNumber,
+                    appointmentDate,
+                    appointmentTime,
+                    allergiesDetails,
+                    takingPrescriptionMedicationDetails,
+                    chronicConditionDetails,
+                    surgeriesDetails,
+                    jawPainDetails,
+                    experiencedExcessiveBleedingDetails,
+                    heartProblemsDetails,
+                    advisedTakingAntibioticsDetails,
+                    smokeDetails,
+                    consumeSugaryFoodOrDrinksDetails,
+                    dentalFlossDetails,
+                    consumeAlcoholDetails,
+                    participateInSportsDetails,
+                    balancedDietDetails,
+                    regularExerciseDetails,
+                    eatingDisorderDetails,
+                    experienceBleedingDetails,
+                    toothSensitivityDetails,
+                    dentalAppearanceDetails,
+                    looseTeethDetails,
+                    badBreathOrBadTasteDetails,
+                    dentalXraysDetails,
+                    dentalRestorationDetails,
+                    orthodonticTreatmentDetails,
+                    brushFrequencyDetails,
+                    useMouthWashDetails,
+                    replaceToothbrushDetails,
+                    cleanTongueDetails,
+                    regularCheckupDetails,
+                    dentalAnxietyDetails,
+                    dentalTraumaDetails,
+                    consent,
+                    adminId,
+                    clinicName,
+                    appointmentId
+                } = params;
+
+                const first_name = String(firstName);
+                const last_name = String(lastName);
+                const email_address = String(emailAddress);
+                const phone_number = String(phoneNumber);
+                const appointment_date = dayjs(appointmentDate).format("YYYY-MM-DD");
+                let appointment_time;
+                if (typeof appointmentTime === 'string' && /^\d{1,2}:\d{2}(:\d{2})?$/.test(appointmentTime)) {
+                    // If it's already in HH:mm or H:mm format, use it directly
+                    appointment_time = appointmentTime.split(':').slice(0, 2).join(':'); // Ensure we only keep hours and minutes
+                } else if (dayjs(appointmentTime).isValid()) {
+                    // If it's a valid date object or ISO string, format it
+                    appointment_time = dayjs(appointmentTime).format("HH:mm");
+                } else {
+                    // Default to current time if invalid
+                    appointment_time = dayjs().format("HH:mm");
+                }
+                const allergies_details = String(allergiesDetails);
+                const taking_prescription_medication_details = String(takingPrescriptionMedicationDetails);
+                const chronic_condition_details = String(chronicConditionDetails);
+                const surgeries_details = String(surgeriesDetails);
+                const jaw_pain_details = String(jawPainDetails);
+                const experienced_excessive_bleeding_details = String(experiencedExcessiveBleedingDetails);
+                const heart_problems_details = String(heartProblemsDetails);
+                const advised_taking_antibiotics_details = String(advisedTakingAntibioticsDetails);
+                const smoke_details = String(smokeDetails);
+                const consume_sugary_food_or_drinks_details = String(consumeSugaryFoodOrDrinksDetails);
+                const dental_floss_details = String(dentalFlossDetails);
+                const consume_alcohol_details = String(consumeAlcoholDetails);
+                const participate_in_sports_details = String(participateInSportsDetails);
+                const balanced_diet_details = String(balancedDietDetails);
+                const regular_exercise_details = String(regularExerciseDetails);
+                const eating_disorder_details = String(eatingDisorderDetails);
+                const experience_bleeding_details = String(experienceBleedingDetails);
+                const tooth_sensitivity_details = String(toothSensitivityDetails);
+                const dental_appearance_details = String(dentalAppearanceDetails);
+                const loose_teeth_details = String(looseTeethDetails);
+                const bad_breath_or_bad_taste_details = String(badBreathOrBadTasteDetails);
+                const dental_xrays_details = String(dentalXraysDetails);
+                const dental_restoration_details = String(dentalRestorationDetails);
+                const orthodontic_treatment_details = String(orthodonticTreatmentDetails);
+                const brush_frequency_details = String(brushFrequencyDetails);
+                const use_mouth_wash_details = String(useMouthWashDetails);
+                const replace_toothbrush_details = String(replaceToothbrushDetails);
+                const clean_tongue_details = String(cleanTongueDetails);
+                const regular_checkup_details = String(regularCheckupDetails);
+                const dental_anxiety_details = String(dentalAnxietyDetails);
+                const dental_trauma_details = String(dentalTraumaDetails);
+                const clinic_name_details = String(clinicName);
+                const consent_details = String(consent);
+                const admin_id_details = String(adminId);
+                const appointment_id_details = String(appointmentId);
+
+                const table_name = String("clinic_consulted_patients");
+
+                const clinic_side_consulting_patients_fields = [
+                    "clinic_appointment_id",
+                    "first_name",
+                    "last_name",
+                    "email",
+                    "phone_number",
+                    "appointment_date",
+                    "appointment_time",
+                    "allergy_details",
+                    "taking_prescription_medication_details",
+                    "chronic_condition_details",
+                    "past_surgeries_details",
+                    "history_of_jaw_pain_details",
+                    "experienced_excessive_bleeding_details",
+                    "past_history_of_cardiovascular_issues_details",
+                    "advised_taking_antibiotics_details",
+                    "smoke_frequency_details",
+                    "consume_sugary_foods_or_beverage_details",
+                    "dental_floss_details",
+                    "consume_alcohol_details",
+                    "participate_in_sports_details",
+                    "balanced_diet_details",
+                    "regular_exercise_details",
+                    "eating_disorder_details",
+                    "experienced_bleeding_details",
+                    "tooth_sensitivity_details",
+                    "dental_appearance_details",
+                    "loose_teeth_details",
+                    "bad_breath_or_bad_taste_details",
+                    "dental_xrays_details",
+                    "dental_restoration_details",
+                    "orthodontic_treatment_details",
+                    "brush_frequency_details",
+                    "use_mouthwash_details",
+                    "replace_toothbrush_details",
+                    "clean_tongue_details",
+                    "regular_checkup_details",
+                    "dental_anxiety_details",
+                    "dental_trauma_details",
+                    "clinic_name",
+                    "consent",
+                    "created_by"
+                ]
+
+                const clinic_consultation_placeholders = clinic_side_consulting_patients_fields.map(() => "?").join(", ");
+
+                const consultation_values = [
+                    appointment_id_details,
+                    first_name,
+                    last_name,
+                    email_address,
+                    phone_number,
+                    appointment_date,
+                    appointment_time,
+                    allergies_details,
+                    taking_prescription_medication_details,
+                    chronic_condition_details,
+                    surgeries_details,
+                    jaw_pain_details,
+                    experienced_excessive_bleeding_details,
+                    heart_problems_details,
+                    advised_taking_antibiotics_details,
+                    smoke_details,
+                    consume_sugary_food_or_drinks_details,
+                    dental_floss_details,
+                    consume_alcohol_details,
+                    participate_in_sports_details,
+                    balanced_diet_details,
+                    regular_exercise_details,
+                    eating_disorder_details,
+                    experience_bleeding_details,
+                    tooth_sensitivity_details,
+                    dental_appearance_details,
+                    loose_teeth_details,
+                    bad_breath_or_bad_taste_details,
+                    dental_xrays_details,
+                    dental_restoration_details,
+                    orthodontic_treatment_details,
+                    brush_frequency_details,
+                    use_mouth_wash_details,
+                    replace_toothbrush_details,
+                    clean_tongue_details,
+                    regular_checkup_details,
+                    dental_anxiety_details,
+                    dental_trauma_details,
+                    clinic_name_details,
+                    consent_details,
+                    admin_id_details
+                ]
+
+                const query = `
+                    INSERT INTO ${table_name}
+                    (${clinic_side_consulting_patients_fields.join(", ")})
+                    VALUES (${clinic_consultation_placeholders})
+                `
+                if (query.match(/\?/g).length !== consultation_values.length) {
+                    throw new Error("Invalid! Insert clinic consultation query placeholders and values do not match")
+                }
+
+                const [result] = await this.connection.query(query, consultation_values);
+
+                if (result.affectedRows === 0) {
+                    throw new Error("Failed to consult a patient in clinic side appointment with consultation questionnaires")
+                }
+
+                const clinic_appointment_table_name = String("clinic_appointments");
+                const update_appointment_field = [
+                    "status = ?"
+                ]
+                const clinic_appointment_status = String("Consulted");
+                const update_clinic_appointment_values = [
+                    clinic_appointment_status,
+                    appointment_id_details
+                ]
+
+                const clinic_appointment_id_condition = [
+                    "id = ?"
+                ]
+
+                const update_clinic_appointment_query = `
+                    UPDATE ${clinic_appointment_table_name}
+                    SET ${update_appointment_field}
+                    WHERE ${clinic_appointment_id_condition}
+                `
+
+                if (update_clinic_appointment_query.match(/\?/g).length !== update_clinic_appointment_values.length) {
+                    throw new Error("Invalid! Update clinic appointment query placeholders and values do not match")
+                }
+
+                const [update_clinic_appointment_result] = await this.connection.query(update_clinic_appointment_query, update_clinic_appointment_values);
+
+                if (update_clinic_appointment_result.affectedRows === 0) {
+                    throw new Error("Failed to update clinic appointment status")
+                }
+
+                const commitQuery = await this.connection.commit();
+                if (!commitQuery) {
+                    throw new Error(`Failed to commit the transaction in consulting a patient in clinic side appointment with consultation questionnaires`)
+                }
+
+                return {
+                    message: "Patient consulted successfully"
+                }
+            } catch (error) {
+                const rollbackQuery = await this.connection.rollback();
+                if (!rollbackQuery) {
+                    throw new Error(`Failed to rollback the transaction in consulting a patient in clinic side appointment with consultation questionnaires`)
+                }
+                logger.log("error", `Failed to consult a patient in clinic side appointment with consultation questionnaires in method: ${error}`);
+                throw error;
+            } finally {
+                if (this.connection) {
+                    await this.connection.release();
+                }
+            }
+        },
+        "Consult Patient In Clinic Side Appointment"
     )
 }
 

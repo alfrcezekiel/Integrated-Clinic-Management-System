@@ -25,9 +25,14 @@ const DoctorsDashboard = () => {
     const ACTIVITY_CHECK_INTERVAL = 5 * 60 * 1000; // Check every 5 minutes
 
     // Track user activity
-    const updateLastActivity = async () => {
-        setLastActivity(Date.now());
-    };
+    const updateLastActivity = useCallback(() => {
+        setLastActivity((prevActivity) => {
+            if (Date.now() - prevActivity > 1000) {
+                return Date.now()
+            }
+            return prevActivity;
+        });
+    }, []);
 
     const navigateBackToHome = useCallback(() => {
         removeLocalStorage("authToken");
@@ -38,8 +43,11 @@ const DoctorsDashboard = () => {
     useEffect(() => {
         // Add event listeners for user activity
         const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+        const eventHandlers = []
         events.forEach(event => {
-            window.addEventListener(event, updateLastActivity);
+            const handler = () => updateLastActivity();
+            window.addEventListener(event, handler, {passive: true});
+            eventHandlers.push({event, handler});
         });
 
         // Check session timeout periodically
@@ -83,13 +91,13 @@ const DoctorsDashboard = () => {
 
         // Cleanup function
         return () => {
-            events.forEach(event => {
-                window.removeEventListener(event, updateLastActivity);
+            eventHandlers.forEach(({event, handler}) => {
+                window.removeEventListener(event, handler);
             });
             clearInterval(activityCheckInterval);
             if (tokenExpirationCleanup) tokenExpirationCleanup();
         };
-    }, [tokenContext, lastActivity, navigateBackToHome, ACTIVITY_CHECK_INTERVAL, SESSION_TIMEOUT]);
+    }, [updateLastActivity, tokenContext, lastActivity, navigateBackToHome, ACTIVITY_CHECK_INTERVAL, SESSION_TIMEOUT]);
 
     useEffect(() => {
         if (!tokenContext) {

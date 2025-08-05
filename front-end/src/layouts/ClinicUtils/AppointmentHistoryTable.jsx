@@ -451,6 +451,38 @@ const AppointmentHistoryTable = () => {
                                                 <strong className="text-sm/6">History of Orthodontic Interventions: </strong>
                                                 {selectedPatient.orthodontic_treatment_details || "N/A"}
                                             </div>
+                                            <div className="col-span-2 md:col-span-1">
+                                                <strong className="text-sm/6">Brushing Frequency: </strong>
+                                                {selectedPatient.brush_frequency_details || "N/A"}
+                                            </div>
+                                            <div className="col-span-2 md:col-span-1">
+                                                <strong className="text-sm/6">Use of Mouthwash: </strong>
+                                                {selectedPatient.use_mouthwash_details || "N/A"}
+                                            </div>
+                                            <div className="col-span-2 md:col-span-1">
+                                                <strong className="text-sm/6">Replacement of Toothbrush: </strong>
+                                                {selectedPatient.replace_toothbrush_details || "N/A"}
+                                            </div>
+                                            <div className="col-span-2 md:col-span-1">
+                                                <strong className="text-sm/6">Cleaning of Tongue: </strong>
+                                                {selectedPatient.clean_tongue_details || "N/A"}
+                                            </div>
+                                            <div className="col-span-2 md:col-span-1">
+                                                <strong className="text-sm/6">Regular Dental Checkups: </strong>
+                                                {selectedPatient.regular_checkup_details || "N/A"}
+                                            </div>
+                                            <div className="col-span-2 md:col-span-1">
+                                                <strong className="text-sm/6">Dental Anxiety: </strong>
+                                                {selectedPatient.dental_anxiety_details || "N/A"}
+                                            </div>
+                                            <div className="col-span-2 md:col-span-1">
+                                                <strong className="text-sm/6">History of Dental Trauma: </strong>
+                                                {selectedPatient.dental_trauma_details || "N/A"}
+                                            </div>
+                                            <div className="col-span-2 md:col-span-1">
+                                                <strong className="text-sm/6">Eating Disorders: </strong>
+                                                {selectedPatient.eating_disorder_details || "N/A"}
+                                            </div>
                                         </div>
                                     </section>
                                 </div>

@@ -75,7 +75,8 @@ import {
     sendResetEmail,
     resetPassword,
     logoutRefreshToken,
-    deletePendingBookedAppointmentDetailsByFindingId
+    deletePendingBookedAppointmentDetailsByFindingId,
+    consultPatientInClinicSideAppointment
 } from "../controllers/cms.js";
 import validateRegister from "../middleware/validation.js";
 import patientsLoginValidation from "../middleware/patientsLoginValidation.js";
@@ -374,5 +375,10 @@ router.post("/cms.api.com/logoutRefreshToken", verifyToken, logoutRefreshToken);
  * @exports router to delete pending booked appointment details in clinic side table by filtering the id
  */
 router.delete("/cms.api.com/clinic/dashboard/deletePendingBookedAppointmentDetails", verifyToken, deletePendingBookedAppointmentDetailsByFindingId);
+
+/**
+ * @exports router to consult a patient using questionnaires provided in clinic side table and questionnaires
+ */
+router.post("/cms.api.com/clinic/dashboard/clinicConsultPatient", verifyToken, consultPatientInClinicSideAppointment);
 
 export default router;

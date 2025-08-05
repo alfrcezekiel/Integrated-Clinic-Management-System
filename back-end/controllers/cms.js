@@ -2676,7 +2676,9 @@ export const deleteBookedAppointment = async (req, res) => {
     }
 }
 
-// controller logic for inserting a book appointment in clinic side
+/**
+ * @function controller logic for inserting a book appointment in clinic side
+ */
 export const addBookAppointmentInClinic = async (req, res) => {
     try {
         const {
@@ -4010,7 +4012,7 @@ export const deletePendingBookedAppointmentDetailsByFindingId = asyncHandler(
 
             logger.log("info", `Delete pending booked appointment details successfully`)
             return res.status(StatusCodes.OK).json({
-                message: "Delete pending booked appointment details successfully"
+                message: "Delete pending booked appointment details successfully"   ``
             })
         } catch (error) {
             if (error.message === "Invalid! Pending booked appointment ID not found") {
@@ -4023,6 +4025,194 @@ export const deletePendingBookedAppointmentDetailsByFindingId = asyncHandler(
             logger.log("error", `Failed to delete pending booked appointment details: ${error}`)
             return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
                 message: "Failed to delete pending booked appointment details"
+            })
+        }
+    }
+)
+
+/**
+ * @function controller logic to consult a patient using questionnaires provided in clinic side table and questionnaires
+ * @inserting a patient information in clinic side table
+ */
+export const consultPatientInClinicSideAppointment = asyncHandler(
+    async (req, res) => {
+        const {
+            firstName,
+            lastName,
+            email,
+            phoneNumber,
+            appointmentDate,
+            preferredTime,
+            allergiesDetails,
+            takingPrescriptionMedicationDetails,
+            chronicConditionDetails,
+            surgeriesDetails,
+            jawPainDetails,
+            experiencedExcessiveBleedingDetails,
+            heartProblemsDetails,
+            advisedTakingAntibioticsDetails,
+            smokeDetails,
+            consumeSugaryFoodsOrDrinksDetails,
+            dentalFlossDetails,
+            consumeAlcoholDetails,
+            participateInSportsDetails,
+            balancedDietDetails,
+            regularExerciseDetails,
+            eatingDisordersDetails,
+            experienceBleedingDetails,
+            toothSensitivityDetails,
+            dentalAppearanceDetails,
+            looseTeethDetails,
+            badBreathOrBadTasteDetails,
+            dentalXraysDetails,
+            dentalRestorationDetails,
+            orthodonticTreatmentDetails,
+            brushFrequencyDetails,
+            useMouthWashDetails,
+            replaceToothbrushDetails,
+            cleanTongueDetails,
+            regularCheckupDetails,
+            dentalAnxietyDetails,
+            dentalTraumaDetails,
+            consent,
+            admin_id,
+            clinic_name,
+            appointmentID
+        } = req.body
+
+        const first_name = String(firstName);
+        const last_name = String(lastName);
+        const email_address = String(email);
+        const phone_number = String(phoneNumber);
+        const appointment_date = dayjs(appointmentDate).format("YYYY-MM-DD");
+        const appointment_time = dayjs(preferredTime).format("hh:mm");
+
+        const allergies_details = String(allergiesDetails);
+        const taking_prescription_medication_details = String(takingPrescriptionMedicationDetails);
+        const chronic_condition_details = String(chronicConditionDetails);
+        const surgeries_details = String(surgeriesDetails);
+        const jaw_pain_details = String(jawPainDetails);
+        const experienced_excessive_bleeding_details = String(experiencedExcessiveBleedingDetails);
+        const heart_problems_details = String(heartProblemsDetails);
+        const advised_taking_antibiotics_details = String(advisedTakingAntibioticsDetails);
+
+        const smoke_details = String(smokeDetails);
+        const consume_sugary_foods_or_drinks_details = String(consumeSugaryFoodsOrDrinksDetails);
+        const dental_floss_details = String(dentalFlossDetails);
+        const consume_alcohol_details = String(consumeAlcoholDetails);
+        const participate_in_sports_details = String(participateInSportsDetails);
+        const balanced_diet_details = String(balancedDietDetails);
+        const regular_exercise_details = String(regularExerciseDetails);
+        const eating_disorder_details = String(eatingDisordersDetails);
+
+        const experience_bleeding_details = String(experienceBleedingDetails);
+        const tooth_sensitivity_details = String(toothSensitivityDetails);
+        const dental_appearance_details = String(dentalAppearanceDetails);
+        const loose_teeth_details = String(looseTeethDetails);
+        const bad_breath_or_bad_taste_details = String(badBreathOrBadTasteDetails);
+        const dental_xrays_details = String(dentalXraysDetails);
+        const dental_restoration_details = String(dentalRestorationDetails);
+        const orthodontic_treatment_details = String(orthodonticTreatmentDetails);
+
+        const brush_frequency_details = String(brushFrequencyDetails);
+        const use_mouth_wash_details = String(useMouthWashDetails);
+        const replace_toothbrush_details = String(replaceToothbrushDetails);
+        const clean_tongue_details = String(cleanTongueDetails);
+        const regular_checkup_details = String(regularCheckupDetails);
+        const dental_anxiety_details = String(dentalAnxietyDetails);
+        const dental_trauma_details = String(dentalTraumaDetails);
+        const consent_field = String(consent);
+
+        const admin_id_field = parseInt(admin_id);
+        const clinic_name_field = String(clinic_name);
+        const appointment_id_field = parseInt(appointmentID);
+
+        if (!first_name && !last_name && !email_address && !phone_number && !appointment_date && !appointment_time && !allergies_details && !taking_prescription_medication_details && !chronic_condition_details && !surgeries_details && !jaw_pain_details && !experienced_excessive_bleeding_details && !heart_problems_details && !advised_taking_antibiotics_details && !smoke_details && !consume_sugary_foods_or_drinks_details && !dental_floss_details && !consume_alcohol_details && !participate_in_sports_details && !balanced_diet_details && !regular_exercise_details && !eating_disorder_details && !experience_bleeding_details && !tooth_sensitivity_details && !dental_appearance_details && !loose_teeth_details && !bad_breath_or_bad_taste_details && !dental_xrays_details && !dental_restoration_details && !orthodontic_treatment_details && !brush_frequency_details && !use_mouth_wash_details && !replace_toothbrush_details && !clean_tongue_details && !regular_checkup_details && !dental_anxiety_details && !dental_trauma_details && !consent_field && !admin_id_field && !clinic_name_field && !appointment_id_field) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid! All fields are required"
+            })
+        }
+
+        if (isNaN(admin_id_field) || isNaN(appointment_id_field)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid! Admin ID and appointment ID must be a number"
+            })
+        }
+
+        try {
+            const clinic_instance = new Clinic();
+            if (!(clinic_instance instanceof Clinic)) {
+                return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                    message: "Failed to instantiate clinic instance model"
+                })
+            }
+
+            const consult_patient_value = {
+                firstName: first_name,
+                lastName: last_name,
+                emailAddress: email_address,
+                phoneNumber: phone_number,
+                appointmentDate: appointment_date,
+                appointmentTime: appointment_time,
+                allergiesDetails: allergies_details,
+                takingPrescriptionMedicationDetails: taking_prescription_medication_details,
+                chronicConditionDetails: chronic_condition_details,
+                surgeriesDetails: surgeries_details,
+                jawPainDetails: jaw_pain_details,
+                experiencedExcessiveBleedingDetails: experienced_excessive_bleeding_details,
+                heartProblemsDetails: heart_problems_details,
+                advisedTakingAntibioticsDetails: advised_taking_antibiotics_details,
+                smokeDetails: smoke_details,
+                consumeSugaryFoodOrDrinksDetails: consume_sugary_foods_or_drinks_details,
+                dentalFlossDetails: dental_floss_details,
+                consumeAlcoholDetails: consume_alcohol_details,
+                participateInSportsDetails: participate_in_sports_details,
+                balancedDietDetails: balanced_diet_details,
+                regularExerciseDetails: regular_exercise_details,
+                eatingDisorderDetails: eating_disorder_details,
+                experienceBleedingDetails: experience_bleeding_details,
+                toothSensitivityDetails: tooth_sensitivity_details,
+                dentalAppearanceDetails: dental_appearance_details,
+                looseTeethDetails: loose_teeth_details,
+                badBreathOrBadTasteDetails: bad_breath_or_bad_taste_details,
+                dentalXraysDetails: dental_xrays_details,
+                dentalRestorationDetails: dental_restoration_details,
+                orthodonticTreatmentDetails: orthodontic_treatment_details,
+                brushFrequencyDetails: brush_frequency_details,
+                useMouthWashDetails: use_mouth_wash_details,
+                replaceToothbrushDetails: replace_toothbrush_details,
+                cleanTongueDetails: clean_tongue_details,
+                regularCheckupDetails: regular_checkup_details,
+                dentalAnxietyDetails: dental_anxiety_details,
+                dentalTraumaDetails: dental_trauma_details,
+                consent: consent_field,
+                adminId: admin_id_field,
+                clinicName: clinic_name_field,
+                appointmentId: appointment_id_field
+            }
+
+            const consulted_patient_result = await clinic_instance.consultPatientInClinicSideAppointment(consult_patient_value);
+
+            if (!consulted_patient_result || consulted_patient_result.length === 0) {
+                return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                    message: "Failed to consult patient in clinic side appointment"
+                })
+            }
+
+            return res.status(StatusCodes.OK).json({
+                message: "Patient Consulted Succesfully in Clinic Side Appointment"
+            })
+        } catch (error) {
+            if (error.message === "Failed to consult a patient in clinic side appointment with consultation questionnaires") {
+                logger.log("error", `Failed to consult a patient in clinic side appointment with consultation questionnaires: ${error}`)
+                return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                    message: "Failed to consult a patient in clinic side appointment with consultation questionnaires"
+                })
+            }
+
+            logger.log("error", `Failed to consult patient in clinic side appointment: ${error}`)
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "Failed to consult patient in clinic side appointment"
             })
         }
     }
