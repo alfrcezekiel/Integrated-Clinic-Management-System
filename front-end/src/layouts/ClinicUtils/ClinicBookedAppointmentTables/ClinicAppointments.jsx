@@ -64,8 +64,7 @@ const ClinicAppointments = () => {
     }, [clinic_id, tokenContext, location.pathname]);
 
     const clinic_columns = [
-        "First Name",
-        "Last Name",
+        "Full Name",
         "Address",
         "Email",
         "Phone Number",
@@ -75,8 +74,7 @@ const ClinicAppointments = () => {
         "Purpose of Appointment",
         "Clinic Name",
         "Status",
-        "Edit",
-        "Delete"
+        "Action",
     ]
 
     const statusColor = (status) => {
@@ -217,12 +215,7 @@ const ClinicAppointments = () => {
                                     >
                                         <td className="px-6 py-4">
                                             <span className="text-center">
-                                                {appointment.firstName}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className="text-center">
-                                                {appointment.lastName}
+                                                {appointment.firstName} {appointment.lastName}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 ">
@@ -270,24 +263,22 @@ const ClinicAppointments = () => {
                                                 {appointment.status}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4">
+                                        <td className="px-6 py-4 flex">
                                             {/* Edit button placeholder */}
                                             <IconButton
                                                 aria-label="edit"
                                                 onClick={() => navigateToModifyBookedAppointment(appointment)}
                                                 className="cursor-pointer"
                                             >
-                                                <Edit className="h-5 w-5 inline" color="primary" />
+                                                <Edit className="h-5 w-5" color="primary" />
                                             </IconButton>
-                                        </td>
-                                        <td className="px-6 py-4">
                                             {/* Delete button placeholder */}
                                             <IconButton
                                                 aria-label="delete"
                                                 onClick={() => openConfirmedDeleteBookedAppointmentDialog(appointment)}
                                                 className="cursor-pointer"
                                             >
-                                                <Delete className="h-5 w-5 inline" color="error" />
+                                                <Delete className="h-5 w-5" color="error" />
                                             </IconButton>
                                         </td>
                                     </tr>

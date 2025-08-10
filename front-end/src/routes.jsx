@@ -139,7 +139,7 @@ export const doctorRoutes = [
             {
                 id: 6,
                 icon: <HistoryIcon style={iconStyle} />,
-                name: "Appointment History",
+                name: "Patient Side History",
                 path: "/AppointmentHistory",
                 element: <AppointmentHistoryTable />
             },

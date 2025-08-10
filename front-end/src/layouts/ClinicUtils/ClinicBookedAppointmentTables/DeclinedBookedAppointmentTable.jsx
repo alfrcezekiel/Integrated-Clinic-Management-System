@@ -71,8 +71,7 @@ const DeclinedBookedAppointmentTable = () => {
     };
 
     const clinic_columns = [
-        "First Name",
-        "Last Name",
+        "Full Name",
         "Address",
         "Email",
         "Phone Number",
@@ -106,7 +105,7 @@ const DeclinedBookedAppointmentTable = () => {
                     <span className="text-2xl font-bold p-4">Declined Booked Appointments</span>
                 </div>
                 <div className="overflow-x-auto block">
-                    <table className="max-w-full text-sm text-center text-gray-700">
+                    <table className="min-w-full text-sm text-center text-gray-700">
                         <thead className="bg-blue-100 text-black uppercase text-xs sticky top-0 z-10">
                             <tr>
                                 {clinic_columns.map((columns, i) => (

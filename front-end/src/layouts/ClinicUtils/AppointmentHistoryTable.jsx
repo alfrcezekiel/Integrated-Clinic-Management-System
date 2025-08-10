@@ -14,17 +14,183 @@ import {
     Dialog,
     DialogTitle,
     DialogContent,
+    Button
 } from "@mui/material";
 import CMS from "../../API/CMS";
 import HistoryIcon from "@mui/icons-material/History";
 import CloseIcon from "@mui/icons-material/Close";
 import { useAuthorization } from "../../context/auth/useAuthorization";
+import { jsPDF } from "jspdf";
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf"
 
 const AppointmentHistoryTable = () => {
+    /**
+     * @function to add a section in PDF 
+     */
+    const addSection = async (doc, title, yPos, margin, pageWidth) => {
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(14);
+        doc.text(title.toUpperCase(), margin, yPos);
+        doc.setDrawColor(41, 128, 185);
+        doc.setLineWidth(0.5);
+        doc.line(margin, yPos + 2, pageWidth - margin, yPos + 2);
+        return yPos + 10;
+    }
+
+    /**
+     * @function to add a new page if the canvas breaks
+     */
+    const addPage = (doc, currentY, requiredSpace = 50) => {
+        const pageHeight = doc.internal.pageSize.getHeight();
+        if (currentY + requiredSpace > pageHeight) {
+            doc.addPage();
+            return 20;
+        }
+        return currentY;
+    }
+
+    /**
+     * @function to add a key-value in PDF
+     */
+    const addKeyValue = async (doc, key, value, yPos, margin, maxWidth, isSubItem = false) => {
+        const startX = isSubItem ? margin + 10 : margin;
+        const keyWidth = isSubItem ? 40 : 80;
+        const valueStart = startX + keyWidth + 2;
+
+        /**
+         * sets the font and font size for the key
+         */
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        doc.text(key, startX, yPos);
+
+        /**
+         * splits value into multiple lines if needed
+         */
+        const splitValue = doc.splitTextToSize(String(value || "N/A"), maxWidth - keyWidth - 5);
+
+        doc.setFont("helvetica", "normal");
+        doc.text(splitValue, valueStart, yPos);
+
+        /**
+         * calculate the new Y position based on number of lines
+         */
+        const lineHeight = 7;
+        const valueHeight = splitValue.length * lineHeight;
+
+        return yPos + Math.max(10, valueHeight + 3);
+    }
+
+    /**
+     * @function to auto-genereate a medical history and appointment details and download PDF
+     */
+    const autoGenerateAndDownloadPDF = async (patient) => {
+        const doc = new jsPDF();
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const margin = 15;
+        const maxWidth = pageWidth - 2 * margin;
+        let yPos = 20;
+
+        /**
+         * add header
+         */
+        doc.setFontSize(18);
+        doc.setFont("helvetica", "bold");
+        doc.text("Medical Consultation Report", pageWidth / 2, yPos, { align: "center" });
+        yPos += 10;
+
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text(patient.clinic_name, pageWidth / 2, yPos, { align: "center" })
+        yPos += 20;
+
+        /**
+         * Patient Information Section
+         */
+        yPos = await addSection(doc, "Patient Information", yPos, margin, pageWidth);
+
+        /**
+         * Patient Details 
+         */
+        yPos = await addKeyValue(doc, "Name", `${patient.patient_first_name} ${patient.patient_last_name}`, yPos, margin, maxWidth);
+        yPos = await addKeyValue(doc, "Email", `${patient.patient_email}` || "", yPos, margin, maxWidth);
+        yPos = await addKeyValue(doc, "Phone Number", `${patient.phoneNumber}` || "", yPos, margin, maxWidth);
+        yPos = await addKeyValue(doc, "Appointment Date", `${dateFormat(patient.appointment_date)}` || "", yPos, margin, maxWidth);
+        yPos = await addKeyValue(doc, "Appointment Time", `${formatTimeToAMPM(patient.appointment_time)}` || "", yPos, margin, maxWidth);
+        yPos = await addKeyValue(doc, "Gender", `${patient.gender}` || " ", yPos, margin, maxWidth);
+        yPos = await addKeyValue(doc, "Status", `${patient.status}` || "", yPos, margin, maxWidth);
+        yPos = await addKeyValue(doc, "Purpose of Appointment", `${patient.purposeOfAppointment}` || "", yPos, margin, maxWidth);
+
+        yPos += 5;
+        /**
+         * Medical History Section
+         */
+        yPos = await addSection(doc, "Medical History", yPos, margin, pageWidth);
+
+        /**
+         * medical history details
+         */
+        yPos = await addKeyValue(doc, "Allergies", `${patient.allergy_details}` || "None Reported", yPos, margin, maxWidth);
+        yPos = await addKeyValue(doc, "Current Medications", `${patient.taking_prescription_medication_details}` || "None", yPos, margin, maxWidth);
+        yPos = await addKeyValue(doc, "Chronic Condition", `${patient.chronic_condition_details}` || "None Reported", yPos, margin, maxWidth);
+        yPos = await addKeyValue(doc, "Surgical History", `${patient.past_surgeries_details}` || "None", yPos, margin, maxWidth);
+        yPos = await addKeyValue(doc, "Cardiovascular History", `${patient.past_history_of_cardiovascular_issues}` || "None Reported", yPos, margin, maxWidth);
+        yPos = await addKeyValue(doc, "Dental History", `${patient.dental_restoration_details}` || "None", yPos, margin, maxWidth);
+        yPos = await addKeyValue(doc, "Orthodontic History", `${patient.orthodontic_treatment_details}` || "None", yPos, margin, maxWidth);
+        yPos = await addKeyValue(doc, "Dental Trauma", `${patient.dental_trauma_details}`, yPos, margin, maxWidth);
+
+        yPos += 5;
+        /**
+         * Lifestyle Assessment Section
+         */
+        yPos = addPage(doc, yPos, 50);
+        yPos = await addSection(doc, "Lifestyle Assessment", yPos, margin, pageWidth);
+
+        /**
+         * lifestyle assessment details
+         */
+        yPos = await addKeyValue(doc, "Oral Hygiene", " ", yPos, margin, maxWidth);
+        yPos = await addKeyValue(doc, "• Brushing: ", `${patient.brush_frequency_details}` || "Not specified", yPos, margin, maxWidth, true);
+        yPos = await addKeyValue(doc, "• Flossing: ", `${patient.dental_floss_details}` || "Not specified", yPos, margin, maxWidth, true);
+        yPos = await addKeyValue(doc, "• Mouthwash: ", `${patient.use_mouthwash_details}` || "Not specified", yPos, margin, maxWidth, true);
+        yPos = addPage(doc, yPos, 50);
+
+        yPos = await addKeyValue(doc, "Habits", " ", yPos, margin, maxWidth);
+        yPos = await addKeyValue(doc, "• Tobbaco Use: ", `${patient.smoke_frequency_details}` || "None", yPos, margin, maxWidth, true);
+        yPos = await addKeyValue(doc, "• Alcohol Use: ", `${patient.consume_alcohol_details}` || "None", yPos, margin, maxWidth, true);
+
+        yPos = await addKeyValue(doc, "Diet & Exercises", " ", yPos, margin, maxWidth);
+        yPos = await addKeyValue(doc, "• Diet: ", `${patient.balanced_diet_details}` || "Not specified", yPos, margin, maxWidth, true);
+        yPos = await addKeyValue(doc, "• Exercises: ", `${patient.regular_exercise_details}` || "Not specified", yPos, margin, maxWidth, true);
+        yPos = await addKeyValue(doc, "• Dental Anxiety: ", `${patient.dental_anxiety_details}` || "Not specified", yPos, margin, maxWidth, true);
+
+        yPos += 5;
+        /**
+         * Footer
+         */
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            const currentPageHeight = doc.internal.pageSize.getHeight();
+
+            doc.setFontSize(10);
+            doc.text(`Page ${i} of ${pageCount}`, pageWidth - margin, currentPageHeight - 1, { align: "center" });
+
+            const footerY = doc.internal.pageSize.getHeight() - 20;
+            if (i === pageCount) {
+                doc.setFontSize(10);
+                doc.setFont("helvetica", "italic");
+                doc.text("This is a system-generated document. No signature is required.", pageWidth / 2, footerY, { align: "center" });
+                doc.text(`Generated on ${new Date().toLocaleDateString()}`, pageWidth / 2, footerY + 5, { align: "center" });
+            }
+        }
+
+        doc.save(`Medical_Report_${patient.patient_first_name}_${patient.patient_last_name}_${new Date().toISOString().split("T")[0]}.pdf`);
+    }
+
     const appointmentsTableColumn = [
         "Clinic Name",
-        "First Name",
-        "Last Name",
+        "Full Name",
         "Email",
         "Appointment Date",
         "Appointment Time",
@@ -86,7 +252,7 @@ const AppointmentHistoryTable = () => {
 
     useEffect(() => {
         const titleHeader = () => {
-            document.title = "Clinic's Dashboard | Patient's Appointment | CMS";
+            document.title = "Patient's Appointment History | CMS";
         };
         titleHeader();
 
@@ -122,6 +288,31 @@ const AppointmentHistoryTable = () => {
         };
         retrieveAppointmentHistory();
     }, [location.pathname, user?.sid, token]);
+
+    /**
+     * @function to auto-generate a medical history using PDF
+     */
+
+    const autoGenerateMedicalReport = async (patient) => {
+        try {
+            const tokenContext = token;
+            const response = await CMS.post(`/CMS/cms.api.com/clinic/dashboard/autoGenerateMedicalReport`, { patient: patient }, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${tokenContext}`
+                }
+            })
+
+            if (response.status === 200) {
+                const data = response.data.downloadURL;
+                window.open(data, "_blank");
+            } else {
+                throw new Error(`Error in response status code`)
+            }
+        } catch (error) {
+            console.error(`Failed to auto generate a medical report: ${error}`)
+        }
+    }
 
     // this function determines the color of the status of the patients
     const getStatusColor = (status) => {
@@ -185,7 +376,7 @@ const AppointmentHistoryTable = () => {
                                             <TableCell align="center">
                                                 <Typography
                                                     variant="body2"
-                                                    className="text-blue-gray-900"
+                                                    className="text-black"
                                                 >
                                                     {appointment.clinic_name}
                                                 </Typography>
@@ -193,23 +384,15 @@ const AppointmentHistoryTable = () => {
                                             <TableCell align="center">
                                                 <Typography
                                                     variant="body2"
-                                                    className="text-blue-gray-900"
+                                                    className="text-black"
                                                 >
-                                                    {appointment.patient_first_name}
+                                                    {appointment.patient_first_name} {appointment.patient_last_name}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="center">
                                                 <Typography
                                                     variant="body2"
-                                                    className="text-blue-gray-900"
-                                                >
-                                                    {appointment.patient_last_name}
-                                                </Typography>
-                                            </TableCell>
-                                            <TableCell align="center">
-                                                <Typography
-                                                    variant="body2"
-                                                    className="text-blue-gray-900"
+                                                    className="text-black"
                                                 >
                                                     {appointment.patient_email}
                                                 </Typography>
@@ -217,7 +400,7 @@ const AppointmentHistoryTable = () => {
                                             <TableCell align="center">
                                                 <Typography
                                                     variant="body2"
-                                                    className="text-blue-gray-900"
+                                                    className="text-black"
                                                 >
                                                     {dateFormat(appointment.appointment_date)}
                                                 </Typography>
@@ -225,7 +408,7 @@ const AppointmentHistoryTable = () => {
                                             <TableCell align="center">
                                                 <Typography
                                                     variant="body2"
-                                                    className="text-blue-gray-900"
+                                                    className="text-black"
                                                 >
                                                     {formatTimeToAMPM(appointment.appointment_time)}
                                                 </Typography>
@@ -233,7 +416,7 @@ const AppointmentHistoryTable = () => {
                                             <TableCell align="center">
                                                 <Typography
                                                     variant="body2"
-                                                    className="text-blue-gray-900"
+                                                    className="text-black"
                                                 >
                                                     {appointment.phoneNumber}
                                                 </Typography>
@@ -241,13 +424,16 @@ const AppointmentHistoryTable = () => {
                                             <TableCell align="center">
                                                 <Typography
                                                     variant="body2"
-                                                    className="text-blue-gray-900"
+                                                    className="text-black"
                                                 >
                                                     {appointment.gender}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="center">
-                                                <Typography variant="body2">
+                                                <Typography
+                                                    variant="body2"
+                                                    className="text-black"
+                                                >
                                                     {appointment.status}
                                                 </Typography>
                                             </TableCell>
@@ -269,7 +455,7 @@ const AppointmentHistoryTable = () => {
                                         >
                                             <Typography
                                                 variant="body2"
-                                                className="text-blue-gray-900"
+                                                className="text-black"
                                             >
                                                 No appointments available.
                                             </Typography>
@@ -293,6 +479,18 @@ const AppointmentHistoryTable = () => {
                         <span className="text-lg font-semibold text-white">
                             Patient Consultation Result
                         </span>
+                        <div>
+                            <Button
+                                variant="contained"
+                                color="error"
+                                startIcon={<PictureAsPdfIcon />}
+                                onClick={() => autoGenerateMedicalReport(selectedPatient) || autoGenerateAndDownloadPDF(selectedPatient) }
+                                className="mr-2"
+                                size="small"
+                            >
+                                Print Medical History
+                            </Button>
+                        </div>
                         <IconButton onClick={handleClose} className="text-white">
                             <CloseIcon />
                         </IconButton>

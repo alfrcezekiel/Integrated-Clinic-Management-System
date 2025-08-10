@@ -55,8 +55,7 @@ const DoctorsTablesListOfAppointments = () => {
     })
     const appointmentsTableColumn = [
         "Clinic Name",
-        'First Name',
-        'Last Name',
+        'Full Name',
         "Email",
         'Appointment Date',
         "Appointment Time",
@@ -64,8 +63,7 @@ const DoctorsTablesListOfAppointments = () => {
         "Gender",
         'Status',
         'Purpose of Appointment',
-        "Edit",
-        "Delete"
+        "Action",
     ]
     // form data for updating the appointment details
     const [formData, setFormData] = useState({
@@ -381,7 +379,7 @@ const DoctorsTablesListOfAppointments = () => {
                         }}
                     />
                     <CardContent className="overflow-x-scroll pt-0 pb-2 rounded-xl shadow-sm bg-white">
-                        <Table className="w-full min-w-[100%] text-left text-gray-500">
+                        <Table className="w-full min-w-[100%] text-center text-gray-500">
                             <TableHead className="bg-gray-100 text-sm sm:text-base text-gray-600 uppercase">
                                 <TableRow>
                                     {appointmentsTableColumn.map((header, i) => (
@@ -411,12 +409,7 @@ const DoctorsTablesListOfAppointments = () => {
                                             </TableCell>
                                             <TableCell align="center" className="border-b border-blue-gray-50 text-center">
                                                 <Typography variant="body2" className="text-blue-gray-900">
-                                                    {appointment.firstName}
-                                                </Typography>
-                                            </TableCell>
-                                            <TableCell align="center" className="border-b border-blue-gray-50 text-center">
-                                                <Typography variant="body2" className="text-blue-gray-900">
-                                                    {appointment.lastName}
+                                                    {appointment.firstName} {appointment.lastName}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="center" className="border-b border-blue-gray-50 text-center">
@@ -454,12 +447,10 @@ const DoctorsTablesListOfAppointments = () => {
                                                     {appointment.purposeOfAppointment}
                                                 </Typography>
                                             </TableCell>
-                                            <TableCell align="center" className="border-b border-blue-gray-50 text-center">
+                                            <TableCell align="center" className="border-b border-blue-gray-50 text-center" sx={{ display: "flex" }}>
                                                 <IconButton aria-label="edit" onClick={() => handleClickOpen(appointment)}>
                                                     <EditIcon color="primary" />
                                                 </IconButton>
-                                            </TableCell>
-                                            <TableCell align="center" className="border-b border-blue-gray-50 text-center">
                                                 <IconButton aria-label="delete" onClick={() => deleteBookedAppointmentDialog(appointment)}>
                                                     <DeleteIcon color="error" />
                                                 </IconButton>

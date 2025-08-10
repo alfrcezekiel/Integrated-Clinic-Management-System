@@ -76,7 +76,8 @@ import {
     resetPassword,
     logoutRefreshToken,
     deletePendingBookedAppointmentDetailsByFindingId,
-    consultPatientInClinicSideAppointment
+    consultPatientInClinicSideAppointment,
+    autoGenerateMedicalReport
 } from "../controllers/cms.js";
 import validateRegister from "../middleware/validation.js";
 import patientsLoginValidation from "../middleware/patientsLoginValidation.js";
@@ -380,5 +381,10 @@ router.delete("/cms.api.com/clinic/dashboard/deletePendingBookedAppointmentDetai
  * @exports router to consult a patient using questionnaires provided in clinic side table and questionnaires
  */
 router.post("/cms.api.com/clinic/dashboard/clinicConsultPatient", verifyToken, consultPatientInClinicSideAppointment);
+
+/**
+ * @exports router to auto generate a medical report in patient side medical historys
+ */
+router.post("/cms.api.com/clinic/dashboard/autoGenerateMedicalReport", verifyToken, autoGenerateMedicalReport);
 
 export default router;

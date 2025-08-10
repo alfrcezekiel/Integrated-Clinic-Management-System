@@ -68,8 +68,7 @@ const PendingBookedAppointment = () => {
     }, [clinic_id, tokenContext]);
 
     const clinic_columns = [
-        "First Name",
-        "Last Name",
+        "Full Name",
         "Address",
         "Email",
         "Phone Number",
@@ -79,8 +78,7 @@ const PendingBookedAppointment = () => {
         "Purpose of Appointment",
         "Clinic Name",
         "Status",
-        "Edit",
-        "Delete"
+        "Action",
     ]
 
     const statusColor = (status) => {
@@ -209,12 +207,7 @@ const PendingBookedAppointment = () => {
                                     >
                                         <td className="px-6 py-4">
                                             <span className="text-center">
-                                                {pendingBookedAppointments.firstName}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className="text-center">
-                                                {pendingBookedAppointments.lastName}
+                                                {pendingBookedAppointments.firstName} {pendingBookedAppointments.lastName}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
@@ -262,7 +255,7 @@ const PendingBookedAppointment = () => {
                                                 {pendingBookedAppointments.status}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4">
+                                        <td className="px-6 py-4 flex">
                                             <IconButton
                                                 aria-label="Edit Appointment"
                                                 onClick={() => navigateToModifyBookedAppointment(pendingBookedAppointments)}
@@ -270,8 +263,6 @@ const PendingBookedAppointment = () => {
                                             >
                                                 <Edit className="h-5 w-5 inline" color="primary" />
                                             </IconButton>
-                                        </td>
-                                        <td className="px-6 py-4">
                                             <IconButton
                                                 aria-label="Delete Appointment"
                                                 onClick={() => openDeleteBookedAppointmentComponent(pendingBookedAppointments)}

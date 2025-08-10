@@ -19,8 +19,7 @@ const DeclinedAppointmentStatusClinicTable = () => {
     const [appointmentsData, setAppointmentsData] = useState([])
     const appointmentsTableColumn = [
         "Clinic Name",
-        'First Name',
-        'Last Name',
+        'Full Name',
         "Email",
         'Appointment Date',
         "Appointment Time",
@@ -157,12 +156,7 @@ const DeclinedAppointmentStatusClinicTable = () => {
                                             </TableCell>
                                             <TableCell align="center">
                                                 <Typography variant="body2" className="text-blue-gray-900">
-                                                    {appointment.firstName}
-                                                </Typography>
-                                            </TableCell>
-                                            <TableCell align="center">
-                                                <Typography variant="body2" className="text-blue-gray-900">
-                                                    {appointment.lastName}
+                                                    {appointment.firstName} {appointment.lastName}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="center">

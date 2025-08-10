@@ -25,9 +25,14 @@ const PatientsDashboard = () => {
 
     const tokenContext = useMemo(() => token || localStorage.getItem("authToken"), [token]);
 
-    const updateLastActivity = async () => {
-        setLastActivity(Date.now());
-    };
+    const updateLastActivity = useCallback(() => {
+        setLastActivity((prevActivity) => {
+            if (Date.now() - prevActivity > 1000) {
+                return Date.now();
+            }
+            return prevActivity;
+        })
+    }, []);
 
     const navigateBackToHome = useCallback(() => {
         removeLocalStorage("authToken");
@@ -109,7 +114,7 @@ const PatientsDashboard = () => {
             clearInterval(activityCheckInterval);
             if (tokenExpirationCleanup) tokenExpirationCleanup();
         }
-    }, [ACTIVITY_CHECK_INTERVAL, SESSION_TIMEOUT, lastActivity, navigateBackToHome, tokenContext])
+    }, [updateLastActivity, ACTIVITY_CHECK_INTERVAL, SESSION_TIMEOUT, lastActivity, navigateBackToHome, tokenContext])
 
     useEffect(() => {
         if (!tokenContext) {

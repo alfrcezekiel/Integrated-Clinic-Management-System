@@ -77,7 +77,7 @@ const DoctorsSideNav = ({ brandName, routes }) => {
                 {routes.map(({ layout, pages }, index) => (
                     <div key={layout || index} className="mb-4">
                         {pages
-                            .filter((page) => page.name !== "Appointments" && page.name !== "Pending Appointments" && page.name !== "Approved Appointments" && page.name !== "Declined Appointments" && page.name !== "Appointment History" && page.name !== "Consult Patient" && page.name !== "Add Book Appointment" && page.name !== "Clinic Book Appointment" && page.name !== "Clinic Pending Booked Appointment" && page.name !== "Clinic Approved Booked Appointment" && page.name !== "Clinic Declined Booked Appointment" && page.name !== "Modify Booked Appointment")
+                            .filter((page) => page.name !== "Appointments" && page.name !== "Pending Appointments" && page.name !== "Approved Appointments" && page.name !== "Declined Appointments" && page.name !== "Patient Side History" && page.name !== "Consult Patient" && page.name !== "Add Book Appointment" && page.name !== "Clinic Book Appointment" && page.name !== "Clinic Pending Booked Appointment" && page.name !== "Clinic Approved Booked Appointment" && page.name !== "Clinic Declined Booked Appointment" && page.name !== "Modify Booked Appointment")
                             .map(({ icon, name, path }) => (
                                 <NavLink
                                     key={name}
@@ -302,7 +302,7 @@ const DoctorsSideNav = ({ brandName, routes }) => {
                         <List component="div" disablePadding>
                             {routes.map(({ layout, pages }, index) => (
                                 pages
-                                    .filter((page) => page.name === "Appointment History")
+                                    .filter((page) => page.name === "Patient Side History")
                                     .map(({ icon, name, path }) => (
                                         <NavLink
                                             key={index}

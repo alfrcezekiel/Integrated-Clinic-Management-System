@@ -188,7 +188,7 @@ const DoctorsDashboard = () => {
                     throw new Error(`Error refreshing access token: ${refreshResponse.status}`);
                 }
             } catch (error) {
-                console.log(`Error in refreshing access token: ${error}`);
+                console.error(`Error in refreshing access token: ${error}`);
                 if (error.response && error.response.status === 401) {
                     navigateBackToHome();
                 }

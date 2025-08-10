@@ -12,26 +12,35 @@ import { promisify } from "util";
 import asyncHandler from "../middleware/asyncHandler/asyncHandler.js";
 import sendResetPasswordEmail from '../utils/resetPassword.js';
 import crypto from "crypto";
+import PDFDocument from "pdfkit"
+import {
+    autoGenerateMedicalReportPath,
+    saveMedicalReport
+} from "../middleware/upload_medical_report/medical_report.js";
 dotenv.config();
 
 // controller logic for a global route
 export const CMS = async (req, res) => {
-    return res.status(StatusCodes.OK).json({
-        title: "Clinic Management System",
-        description: "CMS streamlines the operational workflow of a clinic that automates the medical health records (EHR), appointment scheduling, payment integration and inventory of clinical products.",
-        ehrText: "Electronic Health Records",
-        paymentIntegrationText: "Payment Integration",
-        appointmentSchedulingText: "Appointment Scheduling",
-        featuresTitle: "Features",
-        inventoryText: "Inventory Management of Clinical Products",
-        whatWeServeTitle: "Services We Provide",
-        healthQuotes: "Your health is an investment, not an expense.",
-        firstDescription: "Comprehensive healthcare services for the whole family.",
-        secondDescription: "Advanced medical technology for accurate diagnoses and treatments.",
-        thirdDescription: "Experienced and compassionate healthcare professionals.",
-        fourthDescription: "Personalized care plans tailored to your unique needs.",
-        emergencyServices: "Emergency Services avaiable 24/7."
-    })
+    try {
+        return res.status(StatusCodes.OK).json({
+            title: "Clinic Management System",
+            description: "CMS streamlines the operational workflow of a clinic that automates the medical health records (EHR), appointment scheduling, payment integration and inventory of clinical products.",
+            ehrText: "Electronic Health Records",
+            paymentIntegrationText: "Payment Integration",
+            appointmentSchedulingText: "Appointment Scheduling",
+            featuresTitle: "Features",
+            inventoryText: "Inventory Management of Clinical Products",
+            whatWeServeTitle: "Services We Provide",
+            healthQuotes: "Your health is an investment, not an expense.",
+            firstDescription: "Comprehensive healthcare services for the whole family.",
+            secondDescription: "Advanced medical technology for accurate diagnoses and treatments.",
+            thirdDescription: "Experienced and compassionate healthcare professionals.",
+            fourthDescription: "Personalized care plans tailored to your unique needs.",
+            emergencyServices: "Emergency Services avaiable 24/7."
+        })
+    } catch (error) {
+        console.error(`Failed to fetch CMS data: ${error}`);
+    }
 }
 
 // controller logic for register patients accounts
@@ -4213,6 +4222,222 @@ export const consultPatientInClinicSideAppointment = asyncHandler(
             logger.log("error", `Failed to consult patient in clinic side appointment: ${error}`)
             return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
                 message: "Failed to consult patient in clinic side appointment"
+            })
+        }
+    }
+)
+
+/**
+ * @function to add a section header
+ */
+const addSection = (doc, title, yPos, margin, pageWidth) => {
+    doc.font("Helvetica-Bold")
+        .fontSize(14)
+        .text(title.toUpperCase(), margin, yPos, {
+            width: pageWidth - margin * 2
+        });
+    doc.moveTo(margin, yPos + 14)
+        .lineTo(pageWidth - margin, yPos + 14)
+        .lineWidth(0.5)
+        .strokeColor("#2980b9")
+        .stroke()
+    return yPos + 25
+}
+
+/**
+ * @function to add a key-value in PDF
+ */
+const addKeyValue = (doc, key, value, yPos, margin, maxWidth, isSubItem = false) => {
+    const startX = isSubItem ? margin + 45 : margin + 25;
+    const keyWidth = isSubItem ? 130 : 150;
+    const valueWidth = maxWidth - keyWidth - 25;
+    const valueStart = startX + keyWidth + 200
+
+    /**
+     * set the font of key
+     */
+    doc.font("Helvetica-Bold")
+        .fontSize(10)
+        .text(key, startX, yPos, {
+            width: keyWidth,
+            align: "left"
+        })
+
+    /**
+     * set the font of value
+     */
+    doc.font("Helvetica")
+        .fontSize(10)
+        .text(value || "N/A", valueStart, yPos, {
+            width: valueWidth,
+            align: "left"
+        })
+
+    const valueHeight = doc.heightOfString(value || "N/A", {
+        width: valueWidth
+    })
+
+    return yPos + Math.max(14, valueHeight + 6);
+}
+
+/**
+ * @function to add a new page if the canvas breaks
+ */
+const addPage = (doc, currentY, requiredSpace = 50) => {
+    const pageHeight = doc.page.height - 50;
+    if (currentY + requiredSpace > pageHeight) {
+        doc.addPage();
+        return 20;
+    }
+    return currentY;
+}
+
+/**
+ * @function controller logic to auto-generate a medical history and appointment details and download PDF
+ */
+export const autoGenerateMedicalReport = asyncHandler(
+    async (req, res) => {
+        try {
+            const { patient } = req.body;
+
+            if (!patient) {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    message: "Patient details are required"
+                })
+            }
+            const doc = new PDFDocument({ margin: 15 });
+
+            const pathInfo = await autoGenerateMedicalReportPath(patient);
+
+            const pageWidth = doc.page.width;
+            const margin = 50;
+            const maxWidth = pageWidth - 2 * margin;
+            let yPos = 30;
+
+            /**
+             * Header
+             */
+            doc.fontSize(18)
+                .font("Helvetica-Bold")
+                .text("Medical Consultation Result", margin, yPos, {
+                    align: "center",
+                    width: maxWidth
+                });
+            yPos += 25;
+
+            /**
+             * Clinic Name
+             */
+            doc.fontSize(12)
+                .font("Helvetica-Bold")
+                .text(patient.clinic_name, margin, yPos, {
+                    align: "center",
+                    width: maxWidth
+                });
+            yPos += 35;
+
+            const appointmentDate = dayjs(patient.appointment_date).format("MMM D, YYYY");
+            /**
+             * Patient Information Details
+             */
+            yPos = addSection(doc, "Patient Information", yPos, margin, pageWidth);
+            yPos = addKeyValue(doc, "Name", `${patient.patient_first_name} ${patient.patient_last_name}`, yPos, margin, maxWidth);
+            yPos = addKeyValue(doc, "Email", `${patient.patient_email}`, yPos, margin, maxWidth);
+            yPos = addKeyValue(doc, "Phone Number", `${patient.phoneNumber}`, yPos, margin, maxWidth);
+            yPos = addKeyValue(doc, "Appointment Date", `${appointmentDate}`, yPos, margin, maxWidth);
+            yPos = addKeyValue(doc, "Appointment Time", `${patient.appointment_time}`, yPos, margin, maxWidth);
+            yPos = addKeyValue(doc, "Gender", `${patient.gender}`, yPos, margin, maxWidth);
+            yPos = addKeyValue(doc, "Status", `${patient.status}`, yPos, margin, maxWidth);
+            yPos = addKeyValue(doc, "Purpose of Appointment", `${patient.purposeOfAppointment}`, yPos, margin, maxWidth);
+
+            yPos += 5;
+
+            /**
+             * Medical History Details
+             */
+            yPos = addSection(doc, "Medical History", yPos, margin, pageWidth);
+            yPos = addKeyValue(doc, "Allergies", `${patient.allergy_details}`, yPos, margin, maxWidth);
+            yPos = addKeyValue(doc, "Current Medications", `${patient.taking_prescription_medication_details}`, yPos, margin, maxWidth);
+            yPos = addKeyValue(doc, "Chronic Condition", `${patient.chronic_condition_details}`, yPos, margin, maxWidth);
+            yPos = addKeyValue(doc, "Surgical History", patient.past_surgeries_details, yPos, margin, maxWidth);
+            yPos = addKeyValue(doc, "Cardiovascular History", patient.past_history_of_cardiovascular_issues, yPos, margin, maxWidth);
+            yPos = addKeyValue(doc, "Dental History", patient.dental_restoration_details, yPos, margin, maxWidth);
+            yPos = addKeyValue(doc, "Orthodontic History", patient.orthodontic_treatment_details, yPos, margin, maxWidth);
+            yPos = addKeyValue(doc, "Dental Trauma", patient.dental_trauma_details, yPos, margin, maxWidth);
+
+            // Lifestyle Assessment
+            yPos += 5;
+            yPos = addPage(doc, yPos);
+            yPos = addSection(doc, "Lifestyle Assessment", yPos, margin, pageWidth);
+            yPos = addKeyValue(doc, "Oral Hygiene", " ", yPos, margin, maxWidth);
+            yPos = addKeyValue(doc, "• Brushing: ", patient.brush_frequency_details, yPos, margin, maxWidth, true);
+            yPos = addKeyValue(doc, "• Flossing: ", patient.dental_floss_details, yPos, margin, maxWidth, true);
+            yPos = addKeyValue(doc, "• Mouthwash: ", patient.use_mouthwash_details, yPos, margin, maxWidth, true);
+
+            yPos = addKeyValue(doc, "Habits", " ", yPos, margin, maxWidth);
+            yPos = addKeyValue(doc, "• Tobacco Use: ", patient.smoke_frequency_details, yPos, margin, maxWidth, true);
+            yPos = addKeyValue(doc, "• Alcohol Use: ", patient.consume_alcohol_details, yPos, margin, maxWidth, true);
+
+            yPos = addKeyValue(doc, "Diet & Exercises", " ", yPos, margin, maxWidth);
+            yPos = addKeyValue(doc, "• Diet: ", patient.balanced_diet_details, yPos, margin, maxWidth, true);
+            yPos = addKeyValue(doc, "• Exercises: ", patient.regular_exercise_details, yPos, margin, maxWidth, true);
+            yPos = addKeyValue(doc, "• Dental Anxiety: ", patient.dental_anxiety_details, yPos, margin, maxWidth, true);
+
+            /**
+             * Footer
+             */
+            const pageCount = doc.bufferedPageRange().count;
+            for (let i = 0; i < pageCount; i++) {
+                doc.switchToPage(i)
+                const footerY = doc.page.height - 20;
+
+                if (i === pageCount - 1) {
+                    doc.fontSize(10)
+                        .font("Helvetica-Oblique")
+                        .text("This is a system-generated documented. No signature is required", margin, footerY - 25, {
+                            align: "center",
+                            width: maxWidth
+                        })
+                    doc.fontSize(10)
+                        .font("Helvetica-Oblique")
+                        .text(`Generated on ${new Date().toLocaleDateString()}`, margin, footerY - 8, {
+                            align: "center",
+                            width: maxWidth
+                        })
+                }
+            }
+
+            const pdfBuffer = await new Promise((resolve, reject) => {
+                const chunks = [];
+                doc.on("data", (chunk) => chunks.push(chunk));
+                doc.on("end", () => {
+                    try {
+                        const pdfBuffer = Buffer.concat(chunks);
+                        resolve(pdfBuffer);
+                    } catch (error) {
+                        reject(error);
+                    }
+                })
+
+                doc.on("error", reject);
+
+                doc.end();
+            })
+
+            const baseURL = `${req.protocol}://${req.get("host")}`;
+            const relativePath = await saveMedicalReport(pdfBuffer, pathInfo);
+            const downloadURL = `${baseURL}/${relativePath}`;
+
+
+            res.status(StatusCodes.OK).json({
+                success: true,
+                downloadURL,
+                message: "Medical report generated successfully"
+            })
+        } catch (error) {
+            logger.log("error", `Failed to auto-generate a medical report in controller: ${error}`);
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "Failed to auto-generate a medical report"
             })
         }
     }

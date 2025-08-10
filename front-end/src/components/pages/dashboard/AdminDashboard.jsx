@@ -1,5 +1,15 @@
-import { useEffect, useState, useCallback } from "react";
-import { useLocation, Outlet, Route, Routes, useNavigate } from "react-router-dom";
+import {
+    useEffect,
+    useState,
+    useCallback
+} from "react";
+import {
+    useLocation,
+    Outlet,
+    Route,
+    Routes,
+    useNavigate
+} from "react-router-dom";
 import AdminDashboardNavbar from "../../../layouts/adminUtils/adminNavBar";
 import AdminSideNav from "../../../layouts/adminUtils/AdminSideNav";
 import { adminRoutes } from "../../../routes";
@@ -19,9 +29,14 @@ const AdminDashboard = () => {
     const ACTIVITY_CHECK_INTERVAL = 5 * 60 * 1000; // Check every 5 minutes
 
     // Track user activity
-    const updateLastActivity = async () => {
-        setLastActivity(Date.now());
-    };
+    const updateLastActivity = useCallback(() => {
+        setLastActivity((prevActvity) => {
+            if (Date.now() - prevActvity > 1000) {
+                return Date.now();
+            }
+            return prevActvity;
+        });
+    }, []);
 
     const navigateBackToHome = useCallback(() => {
         removeLocalStorage("authToken");
@@ -83,7 +98,7 @@ const AdminDashboard = () => {
             clearInterval(activityCheckInterval);
             if (tokenExpirationCleanup) tokenExpirationCleanup();
         };
-    }, [tokenContext, lastActivity, navigateBackToHome, ACTIVITY_CHECK_INTERVAL, SESSION_TIMEOUT]);
+    }, [tokenContext, lastActivity, navigateBackToHome, ACTIVITY_CHECK_INTERVAL, SESSION_TIMEOUT, updateLastActivity]);
 
     useEffect(() => {
         if (!tokenContext) {

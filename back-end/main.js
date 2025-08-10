@@ -48,7 +48,7 @@ app.use(helmet());
 // limiting the number of requests to the server
 app.use(rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 1000, // Limit each IP to 100 requests per windowMs
+    max: 1000, // Limit each IP to 1000 requests per windowMs
     message: "Too many requests from this IP, please try again later."
 }))
 
@@ -76,8 +76,13 @@ app.use(cors({
     allowedHeaders: ["Content-Type", "Authorization"]
 }))
 
+const medicalReportPath = path.join(__dirname, "uploads/medical_reports");
+app.use("/uploads/medical_reports", express.static(medicalReportPath));
+
 // route for CMS
 app.use("/CMS", cms);
+
+app.disable("etag");
 
 // error handling for server not found
 app.use((req, res) => {
