@@ -75,6 +75,7 @@ const ConfirmAppointmentModal = ({ open, onClose, patientsData, onNextStep }) =>
                 <Button
                     variant="contained"
                     color="error"
+                    clasName="cursor-pointer"
                     onClick={() => onClose(patientsData?.appointmentID)}
                 >
                     Cancel Appointment
@@ -82,9 +83,10 @@ const ConfirmAppointmentModal = ({ open, onClose, patientsData, onNextStep }) =>
                 <Button
                     variant="contained"
                     color="primary"
+                    className="cursor-pointer"
                     onClick={onNextStep}
                 >
-                    Confirmed Booked Appointment
+                    Submit
                 </Button>
             </DialogActions>
         </Dialog>

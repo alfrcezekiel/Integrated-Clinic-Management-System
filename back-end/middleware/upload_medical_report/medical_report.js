@@ -11,6 +11,9 @@ if (!fs.existsSync(BASE_UPLOAD_DIR)) {
     fs.mkdirSync(BASE_UPLOAD_DIR, { recursive: true });
 }
 
+/**
+ * @exports function that retrieve the patient information then indicate the path for medical reports
+ */
 export const autoGenerateMedicalReportPath = async (patient) => {
     const timestamp = Date.now();
     const sanitizeFirstName = (patient.patient_first_name || "patient").replace(/[^a-zA-Z0-9]/g, "_");

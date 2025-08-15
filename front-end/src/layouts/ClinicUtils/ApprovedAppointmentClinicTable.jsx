@@ -252,7 +252,7 @@ const ApprovedAppointmentClinicTable = () => {
                                     <TableRow>
                                         <TableCell colSpan={appointmentsTableColumn.length} align="center">
                                             <Typography variant="body2" className="text-blue-gray-900">
-                                                No appointments available.
+                                                No approved appointments available.
                                             </Typography>
                                         </TableCell>
                                     </TableRow>

@@ -51,6 +51,12 @@ const CreateClinicAccount = () => {
     const clinicAccountState = location.state?.clinicAccountState
     const uploadClinicImageRef = useRef(null);
     const uploadLtoFileRef = useRef(null);
+    const navigate = useNavigate();
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const { token, user } = useAuthorization();
+    const tokenContext = token;
+    const clinic_id = user?.sid;
 
     useEffect(() => {
         if (!clinicAccountState) {
@@ -62,13 +68,6 @@ const CreateClinicAccount = () => {
             setClinicLtoFile(null)
         }
     }, [clinicAccountState, dispatch]);
-
-    const navigate = useNavigate();
-    const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const { token, user } = useAuthorization();
-    const tokenContext = token;
-    const clinic_id = user?.sid;
 
     const handleClickShowPassword = () => {
         setShowPassword((show) => !show);
@@ -603,7 +602,7 @@ const CreateClinicAccount = () => {
                         </div>
                         <div className="min-w-3/4 p-6 rounded-2xl shadow-lg bg-white">
                             <div className="mb-4">
-                                <span className="text-lg font-semibold text-gray-700">Clinic Account</span>
+                                <span className="text-lg font-semibold text-gray-700">Create Password</span>
                             </div>
                             <div className="flex-col">
                                 <label className="font-semibold text-gray-700">

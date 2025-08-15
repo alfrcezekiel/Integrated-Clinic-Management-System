@@ -4231,6 +4231,14 @@ export const consultPatientInClinicSideAppointment = asyncHandler(
  * @function to add a section header
  */
 const addSection = (doc, title, yPos, margin, pageWidth) => {
+    const pageHeight = doc.page.height - 50;
+    const requiredSpace = 30;
+
+    if (yPos + requiredSpace > pageHeight) {
+        doc.addPage();
+        yPos = 20;
+    }
+
     doc.font("Helvetica-Bold")
         .fontSize(14)
         .text(title.toUpperCase(), margin, yPos, {
@@ -4248,6 +4256,14 @@ const addSection = (doc, title, yPos, margin, pageWidth) => {
  * @function to add a key-value in PDF
  */
 const addKeyValue = (doc, key, value, yPos, margin, maxWidth, isSubItem = false) => {
+    const pageHeight = doc.page.height - 50;
+    const requiredSpace = 20;
+
+    if (yPos + requiredSpace > pageHeight) {
+        doc.addPage();
+        yPos = 20;
+    }
+
     const startX = isSubItem ? margin + 45 : margin + 25;
     const keyWidth = isSubItem ? 130 : 150;
     const valueWidth = maxWidth - keyWidth - 25;
@@ -4260,7 +4276,7 @@ const addKeyValue = (doc, key, value, yPos, margin, maxWidth, isSubItem = false)
         .fontSize(10)
         .text(key, startX, yPos, {
             width: keyWidth,
-            align: "left"
+            align: "left",
         })
 
     /**
@@ -4278,18 +4294,6 @@ const addKeyValue = (doc, key, value, yPos, margin, maxWidth, isSubItem = false)
     })
 
     return yPos + Math.max(14, valueHeight + 6);
-}
-
-/**
- * @function to add a new page if the canvas breaks
- */
-const addPage = (doc, currentY, requiredSpace = 50) => {
-    const pageHeight = doc.page.height - 50;
-    if (currentY + requiredSpace > pageHeight) {
-        doc.addPage();
-        return 20;
-    }
-    return currentY;
 }
 
 /**
@@ -4337,6 +4341,13 @@ export const autoGenerateMedicalReport = asyncHandler(
             yPos += 35;
 
             const appointmentDate = dayjs(patient.appointment_date).format("MMM D, YYYY");
+            const timeStr = patient.appointment_time;
+            const [hours, minutes] = timeStr.split(":");
+            const hour = parseInt(hours, 10);
+            const ampm = hour >= 12 ? "PM" : "AM";
+            const adjustedHours = hour % 12 || 12;
+            const formattedTime = `${adjustedHours}:${minutes} ${ampm}`;
+
             /**
              * Patient Information Details
              */
@@ -4345,7 +4356,7 @@ export const autoGenerateMedicalReport = asyncHandler(
             yPos = addKeyValue(doc, "Email", `${patient.patient_email}`, yPos, margin, maxWidth);
             yPos = addKeyValue(doc, "Phone Number", `${patient.phoneNumber}`, yPos, margin, maxWidth);
             yPos = addKeyValue(doc, "Appointment Date", `${appointmentDate}`, yPos, margin, maxWidth);
-            yPos = addKeyValue(doc, "Appointment Time", `${patient.appointment_time}`, yPos, margin, maxWidth);
+            yPos = addKeyValue(doc, "Appointment Time", `${formattedTime}`, yPos, margin, maxWidth);
             yPos = addKeyValue(doc, "Gender", `${patient.gender}`, yPos, margin, maxWidth);
             yPos = addKeyValue(doc, "Status", `${patient.status}`, yPos, margin, maxWidth);
             yPos = addKeyValue(doc, "Purpose of Appointment", `${patient.purposeOfAppointment}`, yPos, margin, maxWidth);
@@ -4359,20 +4370,31 @@ export const autoGenerateMedicalReport = asyncHandler(
             yPos = addKeyValue(doc, "Allergies", `${patient.allergy_details}`, yPos, margin, maxWidth);
             yPos = addKeyValue(doc, "Current Medications", `${patient.taking_prescription_medication_details}`, yPos, margin, maxWidth);
             yPos = addKeyValue(doc, "Chronic Condition", `${patient.chronic_condition_details}`, yPos, margin, maxWidth);
-            yPos = addKeyValue(doc, "Surgical History", patient.past_surgeries_details, yPos, margin, maxWidth);
-            yPos = addKeyValue(doc, "Cardiovascular History", patient.past_history_of_cardiovascular_issues, yPos, margin, maxWidth);
-            yPos = addKeyValue(doc, "Dental History", patient.dental_restoration_details, yPos, margin, maxWidth);
-            yPos = addKeyValue(doc, "Orthodontic History", patient.orthodontic_treatment_details, yPos, margin, maxWidth);
-            yPos = addKeyValue(doc, "Dental Trauma", patient.dental_trauma_details, yPos, margin, maxWidth);
+            yPos = addKeyValue(doc, "Surgical History", `${patient.past_surgeries_details}`, yPos, margin, maxWidth);
+            yPos = addKeyValue(doc, "Cardiovascular History", `${patient.past_history_of_cardiovascular_issues}`, yPos, margin, maxWidth);
+            yPos = addKeyValue(doc, "Dental History", `${patient.dental_restoration_details}`, yPos, margin, maxWidth);
+            yPos = addKeyValue(doc, "Orthodontic History", `${patient.orthodontic_treatment_details}`, yPos, margin, maxWidth);
+            yPos = addKeyValue(doc, "Dental Trauma", `${patient.dental_trauma_details}`, yPos, margin, maxWidth);
+            yPos = addKeyValue(doc, "Tooth Sensitivity", `${patient.tooth_sensitivity_details}`, yPos, margin, maxWidth);
+            yPos = addKeyValue(doc, "Dental Xray", `${patient.dental_xrays_details}`, yPos, margin, maxWidth);
+            yPos = addKeyValue(doc, "Experienced Bleeding", `${patient.experience_bleeding_details}`, yPos, margin, maxWidth);
+            yPos = addKeyValue(doc, "Jaw Pain", `${patient.history_of_jaw_pain_details}`, yPos, margin, maxWidth);
+            yPos = addKeyValue(doc, "Loose Teeth", `${patient.loose_teeth_details}`, yPos, margin, maxWidth);
+            yPos = addKeyValue(doc, "Bad Breath or Bad Taste", `${patient.bad_breath_or_bad_taste_details}`, yPos, margin, maxWidth);
+            yPos = addKeyValue(doc, "Dental Appearance", `${patient.dental_appearance_details}`, yPos, margin, maxWidth);
+            yPos = addKeyValue(doc, "Experienced Excessive Bleeding", `${patient.experienced_excessive_bleeding_details}`, yPos, margin, maxWidth);
 
-            // Lifestyle Assessment
-            yPos += 5;
-            yPos = addPage(doc, yPos);
+            /**
+             * Lifestyle Assessment
+             */
+            yPos += 15;
             yPos = addSection(doc, "Lifestyle Assessment", yPos, margin, pageWidth);
             yPos = addKeyValue(doc, "Oral Hygiene", " ", yPos, margin, maxWidth);
             yPos = addKeyValue(doc, "• Brushing: ", patient.brush_frequency_details, yPos, margin, maxWidth, true);
             yPos = addKeyValue(doc, "• Flossing: ", patient.dental_floss_details, yPos, margin, maxWidth, true);
             yPos = addKeyValue(doc, "• Mouthwash: ", patient.use_mouthwash_details, yPos, margin, maxWidth, true);
+            yPos = addKeyValue(doc, "• Toothbrush Replacement", `${patient.replace_toothbrush_details}`, yPos, margin, maxWidth, true)
+            yPos = addKeyValue(doc, "• Tongue Cleaning", `${patient.clean_tongue_details}`, yPos, margin, maxWidth, true)
 
             yPos = addKeyValue(doc, "Habits", " ", yPos, margin, maxWidth);
             yPos = addKeyValue(doc, "• Tobacco Use: ", patient.smoke_frequency_details, yPos, margin, maxWidth, true);
@@ -4382,29 +4404,36 @@ export const autoGenerateMedicalReport = asyncHandler(
             yPos = addKeyValue(doc, "• Diet: ", patient.balanced_diet_details, yPos, margin, maxWidth, true);
             yPos = addKeyValue(doc, "• Exercises: ", patient.regular_exercise_details, yPos, margin, maxWidth, true);
             yPos = addKeyValue(doc, "• Dental Anxiety: ", patient.dental_anxiety_details, yPos, margin, maxWidth, true);
+            yPos = addKeyValue(doc, "• Participating in Sports: ", `${patient.participate_in_sports_details}`, yPos, margin, maxWidth, true)
+            yPos = addKeyValue(doc, "• Consumed Sugary Foods or Beverage: ", `${patient.consume_sugary_foods_or_beverages_details}`, yPos, margin, maxWidth, true);
+
+            const remainingSpace = doc.page.height - 50;
+            
+            if (yPos > remainingSpace) {
+                doc.addPage();
+                yPos = margin
+            } else {
+                yPos = doc.page.height - 45
+            }
 
             /**
              * Footer
              */
-            const pageCount = doc.bufferedPageRange().count;
-            for (let i = 0; i < pageCount; i++) {
-                doc.switchToPage(i)
-                const footerY = doc.page.height - 20;
-
-                if (i === pageCount - 1) {
-                    doc.fontSize(10)
-                        .font("Helvetica-Oblique")
-                        .text("This is a system-generated documented. No signature is required", margin, footerY - 25, {
-                            align: "center",
-                            width: maxWidth
-                        })
-                    doc.fontSize(10)
-                        .font("Helvetica-Oblique")
-                        .text(`Generated on ${new Date().toLocaleDateString()}`, margin, footerY - 8, {
-                            align: "center",
-                            width: maxWidth
-                        })
-                }
+            try {
+                doc.fontSize(10)
+                    .font("Helvetica-Oblique")
+                    .text("This is a system-generated documented. No signature is required", margin, yPos, {
+                        align: "center",
+                        width: maxWidth
+                    })
+                doc.fontSize(10)
+                    .font("Helvetica-Oblique")
+                    .text(`Generated on ${new Date().toLocaleDateString()}`, margin, yPos + 15, {
+                        align: "center",
+                        width: maxWidth
+                    })
+            } catch (error) {
+                logger.log("error", `Failed to add footer in controller: ${error}`);
             }
 
             const pdfBuffer = await new Promise((resolve, reject) => {
@@ -4421,13 +4450,15 @@ export const autoGenerateMedicalReport = asyncHandler(
 
                 doc.on("error", reject);
 
+                if (doc.bufferedPageRange().count === 0) {
+                    doc.addPage();
+                }
                 doc.end();
             })
 
             const baseURL = `${req.protocol}://${req.get("host")}`;
             const relativePath = await saveMedicalReport(pdfBuffer, pathInfo);
             const downloadURL = `${baseURL}/${relativePath}`;
-
 
             res.status(StatusCodes.OK).json({
                 success: true,

@@ -457,7 +457,7 @@ const AppointmentHistoryTable = () => {
                                                 variant="body2"
                                                 className="text-black"
                                             >
-                                                No appointments available.
+                                                No consulted patients available.
                                             </Typography>
                                         </TableCell>
                                     </TableRow>

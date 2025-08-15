@@ -13,8 +13,59 @@ import rateLimit from "express-rate-limit";
 import requestLogger from "./middleware/logger/requestLogger.js";
 import cookieParser from "cookie-parser";
 import * as errorHandler from "./middleware/errorHandler/errorHandler.js";
-
+import {
+    scheduleBackup,
+    getNextBackupRun
+} from "./config/backup_database_schema.js";
+import parser from "cron-parser"
 dotenv.config();
+
+const nextRuns = await getNextBackupRun(5);
+console.log(`Upcoming backup runs (Asia/Manila)`)
+nextRuns.forEach((run, index) => {
+    console.log(`Run ${index + 1}: ${run.toLocaleString("en-US", { timeZone: "Asia/Manila" })}`)
+})
+
+const backupConfig = {
+    development: {
+        enabled: true,
+        schedule: process.env.BACKUP_SCHEDULE_DEV || "0 */6 * * *", // every 6 hours
+        log: "Database backup scheduler initialized. (developement enviroment - running every 6 hours)"
+    },
+    production: {
+        enabled: true,
+        schedule: process.env.BACKUP_SCHEDULE_PROD || "0 2 * * *", // daily at 2 AM
+        log: "Database backup schedule initialized (production enviroment - running daily at 2 AM)"
+    },
+    test: {
+        enabled: false,
+        log: "Database backup schedule disabled in the test enviroment"
+    }
+}
+
+const env = process.env.NODE_ENV || "development";
+const config = backupConfig[env] || backupConfig.development
+
+let nextRun = null;
+try {
+    const it = parser.parse(config.schedule);
+    nextRun = it.next().toDate();
+} catch (error) {
+    console.log(`Invalid! cron expression for backup schedule: - (${error})`);
+}
+
+
+if (config.enabled) {
+    try {
+        const schedule = await scheduleBackup(config.schedule);
+
+        console.log(`${config.log} - Next backup scheduled at: ${schedule} - (${nextRun ? `Next Run: ${nextRun.toLocaleString("en-US", { timeZone: "Asia/Manila" })}` : ""})`);
+    } catch (error) {
+        console.error(`Failed to initialize backup scheduler: ${error}`)
+    }
+} else {
+    console.log(config.log);
+}
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
@@ -30,9 +81,9 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     rolling: true,
-    cookie:{
-        secure:false,
-        httpOnly:true,
+    cookie: {
+        secure: false,
+        httpOnly: true,
         maxAge: 1000 * 60 * 60 * 24,
         sameSite: true
     },
@@ -40,7 +91,7 @@ app.use(session({
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.urlencoded({ extended: true , limit: "20mb" }));
+app.use(express.urlencoded({ extended: true, limit: "20mb" }));
 // app.use(morgan("dev"));
 app.use(express.static(path.join(__dirname, "public")));
 // security middleware to set various HTTP headers
@@ -105,7 +156,7 @@ const startServer = async () => {
         app.listen(app.get("port"), app.get("host"), () => {
             console.log(`Server is running on http://${app.get("host")}:${app.get("port")}${app.get("baseURL")}`);
         })
-    } catch (error){
+    } catch (error) {
         console.error("Error starting server:", error);
     }
 }

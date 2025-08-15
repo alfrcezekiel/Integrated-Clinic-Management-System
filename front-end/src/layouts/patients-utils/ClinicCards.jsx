@@ -439,7 +439,7 @@ const ClinicCards = () => {
                             </p>
                             <button
                                 onClick={handleCloseConfirmedBookedAppointmentSuccessDialogBox}
-                                className="w-20 bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200"
+                                className="w-20 bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 cursor-pointer"
                             >
                                 Okay
                             </button>

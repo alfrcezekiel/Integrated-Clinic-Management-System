@@ -455,7 +455,7 @@ const PendingAppointmentClinicTable = () => {
                                     <TableRow>
                                         <TableCell colSpan={appointmentsTableColumn.length} align="center">
                                             <Typography variant="body2" className="text-blue-gray-900">
-                                                No appointments available.
+                                                No pending appointments available.
                                             </Typography>
                                         </TableCell>
                                     </TableRow>
