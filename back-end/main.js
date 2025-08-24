@@ -18,6 +18,7 @@ import {
     getNextBackupRun
 } from "./config/backup_database_schema.js";
 import parser from "cron-parser"
+import logger from "./config/winston.js";
 dotenv.config();
 
 const nextRuns = await getNextBackupRun(5);
@@ -154,10 +155,10 @@ app.use(errorHandler.internalServerError)
 const startServer = async () => {
     try {
         app.listen(app.get("port"), app.get("host"), () => {
-            console.log(`Server is running on http://${app.get("host")}:${app.get("port")}${app.get("baseURL")}`);
+            logger.log(`info`, `Server is running on http://${app.get("host")}:${app.get("port")}${app.get("baseURL")}`);
         })
     } catch (error) {
-        console.error("Error starting server:", error);
+        logger.error(`Error starting server: ${error}`);
     }
 }
 startServer();
