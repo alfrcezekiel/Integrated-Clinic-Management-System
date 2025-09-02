@@ -6,10 +6,10 @@ import { Link } from "react-router-dom";
 const LandingPageHeroSection = () => {
     const [title, setTitle] = useState("");
     const [teethTagline, setTeethTagline] = useState("");
-    const [animate, setAnimate] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
 
     useEffect(() => {
-        setAnimate(true);
+        setIsMounted(true);
         const retriveDataTitle = async () => {
             try {
                 const response = await CMS.get("/CMS");
@@ -28,38 +28,59 @@ const LandingPageHeroSection = () => {
     }, []);
 
     return (
-        <section
-            id="hero"
-            className="rounded-2xl bg-gradient-to-br from-purple-700 via-purple-500 to-purple-700 text-white py-20 h-[100vh] transition-all duration-700 ease-in-out transform"
-        >
-            <div className="container mx-auto px-6 md:px-12 h-full flex items-center justify-center">
-                <div className="flex flex-col-reverse md:flex-row items-center justify-between gap-8 w-full">
+        <section className="relative overflow-hidden bg-white py-60 xl:py-60 lg:py-70 md:py-70 sm:py-40">
+            {/* Content */}
+            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
                     {/* Left content */}
-                    <div className={`md:w-1/2 text-center md:text-left ${animate ? "animate-fade-in-left" : ""}`}>
-                        <h1 className="text-4xl md:text-5xl font-extrabold mb-4 transition-transform duration-700 ease-in-out hover:scale-110">
-                            {title}
-                        </h1>
-                        <p className="text-lg mb-6 text-white/90 transition-opacity duration-700 ease-in-out hover:opacity-90">
-                            {teethTagline}
-                        </p>
-                        <Link
-                            to="/PatientRegistration"
-                            className="inline-block bg-blue-200 border-white text-black px-6 py-3 rounded-md hover:bg-blue-100 hover:text-purple-700 transition-colors duration-500 ease-in-out"
-                        >
-                            Schedule An Appointment
-                        </Link>
+                    <div className={`transition-all duration-700 ${isMounted ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}>
+                        <div className="max-w-lg">
+                            <h1 className="text-4xl sm:text-5xl md:text-5xl lg:text-4xl font-bold text-gray-900 leading-tight mb-6">
+                                {title}
+                            </h1>
+                            <p className="text-lg text-gray-600 mb-8 leading-relaxed max-w-lg">
+                                {teethTagline}
+                            </p>
+                            <div className="flex flex-col sm:flex-row gap-4">
+                                <Link
+                                    to="/PatientRegistration"
+                                    className="px-8 py-4 bg-black hover:bg-gray-900 text-white font-medium rounded-md shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 text-center text-base"
+                                >
+                                    Schedule An Appointment
+                                </Link>
+                                <Link
+                                    to="/services"
+                                    className="px-8 py-4 border-2 text-black hover:bg-gray-50 hover:text-black font-medium rounded-md transition-all duration-200 text-center text-base"
+                                >
+                                    Our Services
+                                </Link>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Right image */}
-                    <div className={`md:w-1/2 flex justify-center ${animate ? "animate-fade-in-right" : ""}`}>
-                        <img
-                            src={HeroImage}
-                            alt="Clinic Display"
-                            className="max-w-full h-auto rounded-lg shadow-lg transition-transform duration-700 ease-in-out hover:scale-110"
-                        />
+                    <div className={`relative transition-all duration-700 delay-100 ${isMounted ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
+                        <div className="relative rounded-xl overflow-hidden shadow-xl">
+                            <div className="aspect-w-4 aspect-h-3">
+                                <img
+                                    src={HeroImage}
+                                    alt="Dental Clinic"
+                                    className="w-full h-full object-cover transform transition-transform duration-500 hover:scale-102"
+                                />
+                            </div>
+                            <div className="absolute inset-0 bg-gradient-to-t from-gray-900/50 to-transparent"></div>
+                            <div className="absolute bottom-0 left-0 p-6 text-white">
+                                <p className="text-sm font-medium text-indigo-200">Professional Care</p>
+                                <h3 className="text-xl font-bold">Your Health, Our Commitment</h3>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            {/* Decorative elements */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-100 rounded-full -mt-16 -mr-16 opacity-50"></div>
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-100 rounded-full -mb-32 -ml-32 opacity-50"></div>
         </section>
     );
 };

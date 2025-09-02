@@ -1,199 +1,180 @@
-import PropTypes from "prop-types"
-import "../../App.css";
-import {
-    Drawer,
-    Typography,
-    useMediaQuery,
-    Collapse,
-    List,
-    ListItem,
-    ListItemButton,
-    ListItemText
-} from "@mui/material";
-import { useCallback, useState } from "react";
-import {
-    Link,
-    NavLink,
-    Outlet
-} from "react-router-dom"
-import {
-    ExpandLess,
-    ExpandMore
-} from "@mui/icons-material";
+import PropTypes from "prop-types";
+import { useState, useCallback } from "react";
+import { Link, NavLink } from "react-router-dom";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
-// this is the sidenav component for the dashboard of patients
 const SideNav = ({ brandName, routes }) => {
-    const [open, setOpen] = useState(false);
-    const isMobile = useMediaQuery("(max-width: 768px)");
+    const [isOpen, setIsOpen] = useState(false);
     const [clinicOpen, setClinicOpen] = useState(false);
     const [appointmentOpen, setAppointmentOpen] = useState(false);
-    // this function is used to handle the click event of the appointment management button
-    const handleDropdownAppointmentClick = useCallback(() => {
+    const isMobile = window.innerWidth <= 768;
+
+    const toggleMobileMenu = useCallback(() => {
+        setIsOpen(!isOpen);
+    }, [isOpen]);
+
+    const toggleClinicMenu = useCallback(() => {
+        setClinicOpen(!clinicOpen);
+    }, [clinicOpen]);
+
+    const toggleAppointmentMenu = useCallback(() => {
         setAppointmentOpen(!appointmentOpen);
     }, [appointmentOpen]);
 
-    // this function is used to handle the click event of the clinic management button
-    const handleClinicClick = () => {
-        setClinicOpen(!clinicOpen);
-    }
+    const navItemClasses = ({ isActive }) =>
+        `flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${isActive
+            ? "bg-blue-50 text-blue-600 font-semibold font-sans"
+            : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+        }`;
+
+    const subNavItemClasses = ({ isActive }) =>
+        `flex items-center pl-8 pr-4 py-2.5 text-sm rounded-lg transition-all duration-200 ${isActive
+            ? "bg-blue-50 text-blue-600 font-medium font-sans"
+            : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+        }`;
 
     return (
-        <Drawer
-            open={open}
-            onClose={() => setOpen(false)}
-            variant={isMobile ? "temporary" : "permanent"}
-            className={`transition-all ${isMobile ? "w-2" : "w-2"}`}
-            classes={{ paper: isMobile ? "bg-white w-72 shadow-md" : "w-72 bg-white shadow-md" }}
-        >
-            <div className="relative p-6">
-                <Link to={"/patients-dashboard/Home"} className="text-black text-center">
-                    <Typography variant="h5" className="text-black">
-                        {brandName}
-                    </Typography>
-                </Link>
-                <Outlet />
-            </div>
-            <nav className="p-4">
-                {routes.map(({ layout, pages }, index) => (
-                    <div key={index} className="mb-4">
-                        {pages
-                            .filter((page) => page.name !== "View Clinics" && page.name !== "Appointments" && page.name !== "Pending Appointments" && page.name !== "Approved Appointments" && page.name !== "Declined Appointments")
-                            .map(({ icon, name, path }) => (
-                                <NavLink
-                                    key={index}
-                                    to={`${layout}${path}`}
-                                    className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-white" : "text-gray-700 hover:bg-gray-100"}`}
-                                >
-                                    {icon}
-                                    <Typography sx={{ marginLeft: 1 }} className="text-black">{name}</Typography>
-                                </NavLink>
-                            ))}
+        <>
+            {/* Mobile menu button */}
+            <button
+                onClick={toggleMobileMenu}
+                className="fixed top-4 left-4 z-50 p-2 rounded-lg bg-white shadow-md md:hidden"
+            >
+                <div className="w-6 flex flex-col space-y-1.5">
+                    <span className={`block h-0.5 bg-gray-600 transition-all duration-200 ${isOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
+                    <span className={`block h-0.5 bg-gray-600 transition-all duration-200 ${isOpen ? 'opacity-0' : 'opacity-100'}`}></span>
+                    <span className={`block h-0.5 bg-gray-600 transition-all duration-200 ${isOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
+                </div>
+            </button>
+
+            {/* Sidebar */}
+            <div
+                className={`fixed inset-y-0 left-0 z-40 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${isMobile && !isOpen ? '-translate-x-full' : 'translate-x-0'
+                    }`}
+            >
+                <div className="flex flex-col h-full overflow-y-auto mt-12">
+                    {/* Brand */}
+                    <div className="py-4 border-b border-gray-200">
+                        <Link to={"/patients-dashboard/Home"} className="inline-block">
+                            <h1 className="text-lg font-bold text-gray-800 py-5 px-12 text-center font-sans">{brandName}</h1>
+                        </Link>
                     </div>
-                ))}
-                <List className="bg-white shadow-lg rounded-2xl">
-                    <ListItemButton onClick={handleClinicClick}>
-                        <ListItemText primary="Clinic Management" />
-                        {clinicOpen ? <ExpandLess /> : <ExpandMore />}
-                    </ListItemButton>
-                    <Collapse in={clinicOpen} timeout="auto" unmountOnExit className="p-3">
-                        <List component="div" disablePadding>
-                            {routes.map(({ layout, pages }, index) => (
-                                pages
-                                    .filter((page) => page.name === "View Clinics")
-                                    .map(({ path, icon, name }) => (
+
+                    {/* Navigation */}
+                    <nav className="flex-1 px-3 py-5 space-y-2">
+                        {/* Regular Nav Items */}
+                        {routes.map(({ layout, pages }, index) => (
+                            <div key={index} className="space-y-1">
+                                {pages
+                                    .filter(
+                                        (page) =>
+                                            !["View Clinics", "Appointments", "Pending Appointments", "Approved Appointments", "Declined Appointments"].includes(page.name)
+                                    )
+                                    .map(({ icon, name, path }, idx) => (
                                         <NavLink
-                                            key={index}
+                                            key={`${index}-${idx}`}
                                             to={`${layout}${path}`}
-                                            className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-black" : "hover:bg-gray-100 p-2"}`}
+                                            className={navItemClasses}
+                                            onClick={() => isMobile && setIsOpen(false)}
                                         >
-                                            {icon}
-                                            <ListItem button="true">
-                                                <ListItemText primary={name} className="text-black" />
-                                            </ListItem>
+                                            <span className="mr-3">{icon}</span>
+                                            {name}
                                         </NavLink>
-                                    ))
-                            ))}
-                        </List>
-                    </Collapse>
-                </List>
-                <div className="h-4"></div>
-                {/* Dropdown component of appointment management */}
-                <List className="bg-white shadow-lg rounded-2xl">
-                    <ListItemButton onClick={handleDropdownAppointmentClick}>
-                        <ListItemText primary="Appointment Management" />
-                        {appointmentOpen ? <ExpandLess /> : <ExpandMore />}
-                    </ListItemButton>
-                    <Collapse in={appointmentOpen} timeout="auto" unmountOnExit className="p-2">
-                        <List component="div" disablePadding>
-                            {routes.map(({ layout, pages }, index) => (
-                                pages
-                                    .filter((page) => page.name === "Appointments")
-                                    .map(({ path, name, icon }) => (
-                                        <NavLink
-                                            key={index}
-                                            to={`${layout}${path}`}
-                                            className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-black" : "hover:bg-gray-100 p-2"}`}
-                                        >
-                                            {icon}
-                                            <ListItem button="true">
-                                                <ListItemText primary={name} className="text-black" />
-                                            </ListItem>
-                                        </NavLink>
-                                    ))
-                            ))}
-                        </List>
-                    </Collapse>
-                    <Collapse in={appointmentOpen} timeout="auto" unmountOnExit className="p-2">
-                        <List component="div" disablePadding>
-                            {routes.map(({ layout, pages }, index) => (
-                                pages
-                                    .filter((page) => page.name === "Pending Appointments")
-                                    .map(({ path, name, icon }) => (
-                                        <NavLink
-                                            key={index}
-                                            to={`${layout}${path}`}
-                                            className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-black" : "hover:bg-gray-100 p-2"}`}
-                                        >
-                                            {icon}
-                                            <ListItem button="true">
-                                                <ListItemText primary={name} className="text-black" />
-                                            </ListItem>
-                                        </NavLink>
-                                    ))
-                            ))}
-                        </List>
-                    </Collapse>
-                    <Collapse in={appointmentOpen} timeout="auto" unmountOnExit className="p-2">
-                        <List component="div" disablePadding>
-                            {routes.map(({ layout, pages }, index) => (
-                                pages
-                                    .filter((page) => page.name === "Approved Appointments")
-                                    .map(({ path, icon, name }) => (
-                                        <NavLink
-                                            key={index}
-                                            to={`${layout}${path}`}
-                                            className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-black" : "hover:bg-gray-100 p-2"}`}
-                                        >
-                                            {icon}
-                                            <ListItem button="true">
-                                                <ListItemText primary={name} className="text-black" />
-                                            </ListItem>
-                                        </NavLink>
-                                    ))
-                            ))}
-                        </List>
-                    </Collapse>
-                    <Collapse in={appointmentOpen} timeout="auto" unmountOnExit className="p-2">
-                        <List component="div" disablePadding>
-                            {routes.map(({ layout, pages }, index) => (
-                                pages.filter((page) => page.name === "Declined Appointments")
-                                    .map(({ path, icon, name }) => (
-                                        <NavLink
-                                            key={index}
-                                            to={`${layout}${path}`}
-                                            className={({ isActive }) => `flex items-center px-4 py-2 rounded-lg transition ${isActive ? "bg-blue-500 text-black" : "hover:bg-gray-100 p-2"}`}
-                                        >
-                                            {icon}
-                                            <ListItem button="true">
-                                                <ListItemText primary={name} className="text-black" />
-                                            </ListItem>
-                                        </NavLink>
-                                    ))
-                            ))}
-                        </List>
-                    </Collapse>
-                </List>
-            </nav>
-        </Drawer>
-    )
-}
+                                    ))}
+                            </div>
+                        ))}
+
+                        {/* Clinic Management Dropdown */}
+                        <div className="mt-2">
+                            <button
+                                onClick={toggleClinicMenu}
+                                className="w-full cursor-pointer flex items-center justify-between px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                            >
+                                <div className="flex items-center font-sans">
+                                    <span className="mr-3">🏥</span>
+                                    Clinic Management
+                                </div>
+                                {clinicOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                            </button>
+
+                            <div className={`overflow-hidden transition-all duration-200 ${clinicOpen ? 'mt-1 mb-2' : 'h-0'}`}>
+                                <div className="py-1 space-y-1">
+                                    {routes.map(({ layout, pages }, index) =>
+                                        pages
+                                            .filter((page) => page.name === "View Clinics")
+                                            .map(({ path, icon, name }) => (
+                                                <NavLink
+                                                    key={`clinic-${index}`}
+                                                    to={`${layout}${path}`}
+                                                    className={subNavItemClasses}
+                                                    onClick={() => isMobile && setIsOpen(false)}
+                                                >
+                                                    <span className="mr-3">{icon}</span>
+                                                    {name}
+                                                </NavLink>
+                                            ))
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Appointment Management Dropdown */}
+                        <div className="mt-2">
+                            <button
+                                onClick={toggleAppointmentMenu}
+                                className="w-full flex cursor-pointer items-center justify-between px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                            >
+                                <div className="flex items-center font-sans">
+                                    <span className="mr-3">📅</span>
+                                    Appointment Management
+                                </div>
+                                {appointmentOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                            </button>
+
+                            <div className={`overflow-hidden transition-all duration-200 ${appointmentOpen ? 'mt-1 mb-2' : 'h-0'}`}>
+                                <div className="py-1 space-y-1">
+                                    {routes.map(({ layout, pages }, index) =>
+                                        pages
+                                            .filter((page) =>
+                                                ["Appointments", "Pending Appointments", "Approved Appointments", "Declined Appointments"].includes(page.name)
+                                            )
+                                            .map(({ path, icon, name }) => (
+                                                <NavLink
+                                                    key={`appt-${index}-${name}`}
+                                                    to={`${layout}${path}`}
+                                                    className={subNavItemClasses}
+                                                    onClick={() => isMobile && setIsOpen(false)}
+                                                >
+                                                    <span className="mr-3">{icon}</span>
+                                                    {name}
+                                                </NavLink>
+                                            ))
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </nav>
+                </div>
+            </div>
+
+            {/* Overlay for mobile */}
+            {isMobile && isOpen && (
+                <div
+                    className="fixed inset-0 z-30 bg-opacity-50 md:hidden"
+                    onClick={() => setIsOpen(false)}
+                />
+            )}
+        </>
+    );
+};
 
 SideNav.propTypes = {
     brandName: PropTypes.string,
-    routes: PropTypes.arrayOf(PropTypes.object).isRequired
-}
+    routes: PropTypes.arrayOf(PropTypes.object).isRequired,
+};
+
 SideNav.defaultProps = {
-    brandName: "Patients Dashboard"
-}
+    brandName: "Patients Dashboard",
+};
 
 export default SideNav;

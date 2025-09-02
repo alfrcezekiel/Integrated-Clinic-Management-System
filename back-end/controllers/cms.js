@@ -18,6 +18,10 @@ import {
     saveMedicalReport
 } from "../middleware/upload_medical_report/medical_report.js";
 dotenv.config();
+import {
+    sendAppointmentsConfirmation,
+    sendFollowUpMessage
+} from '../services/automate_notification_service.js';
 
 // controller logic for a global route
 export const CMS = async (req, res) => {
@@ -609,7 +613,10 @@ export const getBookedAppointments = async (req, res) => {
 
 // controller logic for patients booked appointments
 export const patientsBookedAppointments = async (req, res) => {
+    const connection = await conn.getConnection();
     try {
+        await connection.beginTransaction();
+
         const {
             patientID,
             firstName,
@@ -628,6 +635,7 @@ export const patientsBookedAppointments = async (req, res) => {
         const appointmentDateFormat = dayjs(appointmentDate).format("YYYY-MM-DD");
         const status = String("Pending");
         const appointment_time = String(preferredTime)
+        const followUpSent = parseInt(0);
 
         // Convert to 24-hour format before inserting into DB
         const normalizeTime = (timeStr) => {
@@ -662,10 +670,11 @@ export const patientsBookedAppointments = async (req, res) => {
             preferredTime,
             purposeOfAppointment,
             clinic_id,
-            createdAt
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
+            createdAt,
+            followUpSent
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
 
-        const [result] = await conn.query(query, [
+        const [result] = await connection.query(query, [
             patientID,
             firstName,
             lastName,
@@ -677,7 +686,8 @@ export const patientsBookedAppointments = async (req, res) => {
             normalizeTime(appointment_time),
             purposeOfAppointment,
             clinic_id,
-            createdAt
+            createdAt,
+            followUpSent
         ]);
 
         if (result.affectedRows === 0) {
@@ -702,7 +712,7 @@ export const patientsBookedAppointments = async (req, res) => {
                 WHERE appointmentID = ?;
         `
 
-        const [appointmentRows] = await conn.query(retrieveAppointmentIDQuery, [
+        const [appointmentRows] = await connection.query(retrieveAppointmentIDQuery, [
             result.insertId
         ])
 
@@ -712,16 +722,58 @@ export const patientsBookedAppointments = async (req, res) => {
             });
         }
 
+        /**
+         * retrieve specific clinic information
+         */
+        const clinicQuery = `
+            SELECT
+                clinic_name,
+                clinic_address
+            FROM clinic
+            WHERE clinic_id = ?;
+        `
+
+        const clinicValue = [
+            clinic_id
+        ]
+
+        const [clinicRows] = await connection.query(clinicQuery, clinicValue);
+
+        if (clinicRows.length === 0) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No clinic found with the provided ID"
+            });
+        }
+
+        const clinicData = clinicRows[0];
+
+        await connection.commit();
+
+        await sendAppointmentsConfirmation({
+            ...appointmentRows[0],
+            clinicName: clinicData.clinic_name,
+            clinicAddress: clinicData.clinic_address
+        }).catch((error) => {
+            logger.log(`error`, `Failed to send appointment via sms and email: ${error}`);
+        })
+
         return res.status(StatusCodes.OK).json({
             message: "Appointment booked successfully",
             appointment: appointmentRows[0]
         });
 
     } catch (error) {
+        const rollbackQuery = await connection.rollback();
+        if (rollbackQuery) {
+            logger.log(`error`, `Failed to rollback patient booked appointment: ${error}`)
+        }
+
         console.error(`Failed to book appointments: ${error}`);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             message: "Failed to book appointment"
         });
+    } finally {
+        connection.release();
     }
 }
 
@@ -817,7 +869,7 @@ export const getPatientsAppointments = async (req, res) => {
             purposeOfAppointment
             FROM patientsappointment
             WHERE email = ?
-            ORDER BY appointmentDate ASC;
+            ORDER BY appointmentDate DESC;
         `;
 
         const value = [
@@ -1317,16 +1369,39 @@ export const getClinics = async (req, res) => {
 // controller logic for filtering the clinic details in search field in patients dashboard
 export const filterClinicDetails = async (req, res) => {
     try {
-        const { clinicName, clinicType, clinicAddress } = req.query;
+        const {
+            clinicName,
+            clinicType,
+            clinicAddress,
+            phoneNumber,
+            emailAddress,
+            clinicImage,
+            businessOpenHours,
+            businessClosingHours
+        } = req.query;
 
         const clinic_name = String(clinicName)
         const clinic_type = String(clinicType);
         const clinic_address = String(clinicAddress);
+        const phone_number = String(phoneNumber);
+        const email_address = String(emailAddress);
+        const clinic_image = String(clinicImage);
+        const business_open_hours = String(businessOpenHours);
+        const business_closing_hours = String(businessClosingHours);
 
         let query = `SELECT
             clinic_name,
             clinic_address,
-            clinic_type
+            clinic_type,
+            clinic_image,
+            clinic_time,
+            clinic_id,
+            phoneNumber,
+            clinic_date_open,
+            clinic_close_date,
+            consultation_fee,
+            clinic_close_time,
+            email
             FROM clinic
         `
 
@@ -1353,6 +1428,51 @@ export const filterClinicDetails = async (req, res) => {
                 query += `WHERE clinic_type LIKE ?`;
             }
             params.push(`%${clinic_type}%`);
+        }
+
+        if (clinic_image) {
+            if (params.length > 0) {
+                query += `OR clinic_image LIKE ?`;
+            } else {
+                query += `WHERE clinic_image LIKE ?`
+            }
+            params.push(`%${clinic_image}%`);
+        }
+
+        if (phone_number) {
+            if (params.length > 0) {
+                query += `OR phoneNumber LIKE ?`;
+            } else {
+                query += `WHERE phoneNumber LIKE ?`
+            }
+            params.push(`%${phone_number}%`);
+        }
+
+        if (email_address) {
+            if (params.length > 0) {
+                query += `OR email LIKE ?`;
+            } else {
+                query += `WHERE email LIKE ?`
+            }
+            params.push(`%${email_address}%`);
+        }
+
+        if (business_open_hours) {
+            if (params.length > 0) {
+                query += `OR clinic_time LIKE ?`;
+            } else {
+                query += `WHERE clinic_time LIKE ?`
+            }
+            params.push(`%${business_open_hours}%`);
+        }
+
+        if (business_closing_hours) {
+            if (params.length > 0) {
+                query += `OR clinic_close_time LIKE ?`;
+            } else {
+                query += `WHERE clinic_close_time LIKE ?`
+            }
+            params.push(`%${business_closing_hours}%`);
         }
 
         query += `ORDER BY clinic_id ASC`
@@ -1405,7 +1525,7 @@ export const getPatientPendingStatus = async (req, res) => {
             FROM patientsappointment
             INNER JOIN clinic ON patientsappointment.clinic_id = clinic.clinic_id
             WHERE patientsappointment.status = ? AND patientsappointment.email = ? 
-            ORDER BY patientsappointment.appointmentDate ASC;
+            ORDER BY patientsappointment.appointmentDate DESC;
         `
 
         const [rows] = await conn.query(query, [status, emailAddress]);
@@ -4408,7 +4528,7 @@ export const autoGenerateMedicalReport = asyncHandler(
             yPos = addKeyValue(doc, "• Consumed Sugary Foods or Beverage: ", `${patient.consume_sugary_foods_or_beverages_details}`, yPos, margin, maxWidth, true);
 
             const remainingSpace = doc.page.height - 50;
-            
+
             if (yPos > remainingSpace) {
                 doc.addPage();
                 yPos = margin
@@ -4469,6 +4589,180 @@ export const autoGenerateMedicalReport = asyncHandler(
             logger.log("error", `Failed to auto-generate a medical report in controller: ${error}`);
             return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
                 message: "Failed to auto-generate a medical report"
+            })
+        }
+    }
+)
+
+/**
+ * @controller controller logic to filter all booked appointment of a patient in patient side
+ */
+export const filterAllBookedAppointments = asyncHandler(
+    async (req, res) => {
+        try {
+            const { search = "", page = 1, limit = 10, email } = req.query;
+
+            if (!email) {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    message: "Please enter a valid email address"
+                })
+            }
+
+            const email_address = String(email);
+            const search_value = String(search);
+            const page_value = parseInt(page);
+            const limit_value = parseInt(limit);
+
+            const clinic_instance = new Clinic();
+            const result = await clinic_instance.filterAllBookedAppointments({
+                search: search_value,
+                page: page_value,
+                limit: limit_value,
+                email: email_address
+            });
+
+            return res.status(StatusCodes.OK).json({
+                success: true,
+                result
+            })
+        } catch (error) {
+            logger.log(`error`, `Failed to filter all booked appointments of a patient in controller: ${error}`);
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "Failed to filter all booked appointments of a patient"
+            })
+        }
+    }
+)
+
+/**
+ * @function controller loigc for searching the pending booked appointment of a patient in patient side
+ */
+export const searchPendingBookedAppointments = asyncHandler(
+    async (req, res) => {
+        try {
+            const { search = "", page = 1, limit = 10, email } = req.query;
+
+            if (!email) {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    message: "Please enter a valid email address"
+                })
+            }
+
+            const email_address = String(email);
+            const search_value = String(search);
+            const page_value = parseInt(page);
+            const limit_value = parseInt(limit);
+
+            const clinic_instance = new Clinic();
+            const result = await clinic_instance.searchPendingBookedAppointments({
+                search: search_value,
+                page: page_value,
+                limit: limit_value,
+                email: email_address
+            });
+
+            return res.status(StatusCodes.OK).json({
+                success: true,
+                result: result
+            })
+        } catch (error) {
+            logger.log(`error`, `Failed to search pending booked appointments of a patient in controller: ${error}`);
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "Failed to search pending booked appointments of a patient"
+            })
+        }
+    }
+)
+
+/**
+ * @function controller to handle appointment status changes to automate reminder/confirmation in patient side
+ */
+export const handleAutomatedUpdateStatus = asyncHandler(
+    async (req, res) => {
+        try {
+            const { appointmentID, status } = req.body;
+
+            const appointment_id = parseInt(appointmentID);
+            const patient_status = String(status);
+
+            const clinic_instance = new Clinic();
+            const result = await clinic_instance.handleAutomatedUpdateStatus({
+                appointmentID: appointment_id,
+                status: patient_status
+            });
+
+            return res.status(StatusCodes.OK).json({
+                success: true,
+                result
+            })
+        } catch (error) {
+            logger.log(`error`, `Failed to handle automated update status in controller: ${error}`);
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "Failed to handle automated update status"
+            })
+        }
+    }
+)
+
+/**
+ * @function controller logic to scheedule reminders for upcoming appointments
+ */
+export const scheduleReminderForUpcomingAppointments = asyncHandler(
+    async () => {
+        try {
+            const now = new Date();
+            const tomorrow = new Date(now);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+
+            const clinic_instance = new Clinic();
+            await clinic_instance.scheduleReminderForUpcomingAppointments({
+                now,
+                tomorrow
+            });
+
+            return res.status(StatusCodes.OK).json({
+                success: true,
+                message: "Reminders scheduled successfully"
+            })
+        } catch (error) {
+            logger.log(`error`, `Failed to schedule reminder for upcoming appointments in controller: ${error}`);
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "Failed to schedule reminder for upcoming appointments"
+            })
+        }
+    }
+)
+
+/**
+ * @function controller logic to process a follow up message via sms, email
+ */
+export const processFollowUpMessage = asyncHandler(
+    async () => {
+        try {
+            const clinic = new Clinic();
+            const appointments = await clinic.getCompletedAppointmentsForFollowUp({
+                daysAfter: 1
+            })
+
+            for (const appt of appointments) {
+                try {
+                    await sendFollowUpMessage(appt);
+                    await clinic.markFollowUpSent({
+                        appointmentID: appt.appointmentID
+                    });
+                } catch (error) {
+                    logger.error(`Failed to process follow up message in controller: ${error}`);
+                }
+            }
+
+            return res.status(StatusCodes.OK).json({
+                success: true,
+                message: "Follow up message processed successfully"
+            })
+        } catch (error) {
+            logger.log(`error`, `Failed to process follow up message in controller: ${error}`);
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "Failed to process follow up message"
             })
         }
     }

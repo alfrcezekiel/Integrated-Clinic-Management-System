@@ -57,7 +57,7 @@ const ApprovedAppointmentsTable = () => {
 
     return (
         <>
-            <div className="mt-5 mb-1 flex justify-center items-center w-full">
+            <div className="mt-20 mb-1 flex justify-center items-center w-full">
                 <Card className="shadow-lg w-full">
                     <CardHeader
                         title="Approved Appointments"

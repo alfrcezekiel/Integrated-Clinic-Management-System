@@ -75,10 +75,10 @@ const ConfirmAppointmentModal = ({ open, onClose, patientsData, onNextStep }) =>
                 <Button
                     variant="contained"
                     color="error"
-                    clasName="cursor-pointer"
+                    className="cursor-pointer"
                     onClick={() => onClose(patientsData?.appointmentID)}
                 >
-                    Cancel Appointment
+                    Cancel
                 </Button>
                 <Button
                     variant="contained"

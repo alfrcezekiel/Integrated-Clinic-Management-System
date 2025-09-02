@@ -5,6 +5,7 @@ import PageNotFound from './components/pageNotFound/error.jsx';
 import Loader from "./components/Loader/Loader.jsx";
 import ProtectedRoutes from './routes/ProtectedRoutes/ProtectedRoutes.jsx';
 import { AuthorizationProvider } from "./context/auth/AuthorizationProvider.jsx";
+import "./App.css";
 
 const Home = lazy(() => import("./components/MainContent.jsx"));
 const PatientRegistrationPortal = lazy(() => import("./components/pages/PatientsRegistrationPage.jsx"));

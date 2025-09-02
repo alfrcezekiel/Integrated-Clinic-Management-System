@@ -2,25 +2,15 @@ import {
     useEffect,
     useState
 } from "react";
-import {
-    Card,
-    CardContent,
-    Typography,
-    CircularProgress,
-    Button,
-    CardMedia,
-    ImageList,
-    ImageListItem,
-} from "@mui/material";
 import CMS from "../../API/CMS";
-import LocationOn from "@mui/icons-material/LocationOn";
 import { Phone } from "@mui/icons-material";
 import {
     Clock,
     Mail,
     Stethoscope,
     Building,
-    PhilippinePesoIcon
+    PhilippinePesoIcon,
+    MapPin
 } from 'lucide-react';
 import BookingAppointmentModal from "./BookingAppointmentModal";
 import {
@@ -33,9 +23,12 @@ import dayjs from "dayjs";
 
 const ClinicCards = () => {
     const [clinics, setClinics] = useState([]);
+    const [filteredClinic, setFilteredClinic] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState("");
     const [showConfirmedBookAppointmentModal, setShowConfirmedBookAppointmentModal] = useState(false);
     const [selectedClinic, setSelectedClinic] = useState(null);
+    const [selectedClinicId, setSelectedClinicId] = useState(null);
     const [appointmentData, setAppointmentData] = useState({
         firstName: "",
         lastName: "",
@@ -72,6 +65,68 @@ const ClinicCards = () => {
     if (!tokenContext) {
         console.error("No token found in context or localStorage");
     }
+
+    useEffect(() => {
+        const searchFilterClinics = async () => {
+            try {
+
+                const response = await CMS.get(`/CMS/patients-dashboard/filter_search`, {
+                    params: {
+                        clinicName: searchQuery,
+                        clinicType: searchQuery,
+                        clinicAddress: searchQuery,
+                        phoneNumber: searchQuery,
+                        emailAddress: searchQuery,
+                        clinicImage: searchQuery,
+                        businessOpenHours: searchQuery,
+                        businessClosingHours: searchQuery
+                    }
+                });
+
+                if (response.status === 200) {
+                    const clinicsData = response.data.clinics;
+                    setClinics(clinicsData);
+                    if (selectedClinicId) {
+                        const selectedClinic = clinicsData.find((c) => c.clinic_id === selectedClinicId);
+                        setFilteredClinic(selectedClinic ? [selectedClinic] : [])
+                    } else {
+                        setFilteredClinic(clinicsData)
+                    }
+                } else {
+                    throw new Error(`Failed to filter specific clinic: ${response.status}`)
+                }
+            } catch (error) {
+                console.error(`Failed to filter specific clinic: ${error}`)
+            }
+        }
+        searchFilterClinics()
+    }, [selectedClinicId, searchQuery]);
+
+    useEffect(() => {
+        const searchClinics = () => {
+            if (searchQuery && searchQuery.trim() !== "") {
+                const filtered = clinics.filter((clinic) => {
+                    const query = searchQuery.toLowerCase().trim();
+
+                    return (
+                        (clinic?.clinic_name?.toLowerCase()?.includes(query)) ||
+                        (clinic?.clinic_type?.toLowerCase()?.includes(query)) ||
+                        (clinic?.clinic_address?.toLowerCase()?.includes(query)) ||
+                        (clinic?.phoneNumber?.toLowerCase()?.includes(query)) ||
+                        (clinic?.email?.toLowerCase()?.includes(query)) ||
+                        (clinic?.clinic_image?.toLowerCase()?.includes(query)) ||
+                        (clinic?.clinic_time?.toLowerCase()?.includes(query)) ||
+                        (clinic?.clinic_close_time?.toLowerCase()?.includes(query))
+                    )
+                });
+                setFilteredClinic(filtered)
+            } else if (!selectedClinicId) {
+                setFilteredClinic(clinics);
+            }
+        }
+        searchClinics()
+
+    }, [clinics, searchQuery, location.search, selectedClinicId])
 
     const formatTimeToAMPM = (time) => {
         if (!time) return "N/A";
@@ -113,7 +168,7 @@ const ClinicCards = () => {
                     setLoading(false);
                 }
             } catch (error) {
-                console.error(error);
+                console.error(`Failed to retrieve clinic data: ${error}`);
             }
         }
         fetchClinics();
@@ -216,7 +271,6 @@ const ClinicCards = () => {
             }
         }
     }
-
     // function to handle the booking appointment
     const handleBooking = async (e) => {
         try {
@@ -224,10 +278,10 @@ const ClinicCards = () => {
             const payload = {
                 ...appointmentData,
                 appointmentDate: appointmentData.appointmentDate ? dayjs(appointmentData.appointmentDate).format("YYYY-MM-DD") : null,
-                patientID: appointmentID,
-                clinicID: selectedClinic.clinic_id,
+                clinicID: selectedClinic?.clinic_id || selectedClinic?._id || selectedClinic?.id,
+                patientID: appointmentID
             }
-
+            
             const response = await CMS.post("/CMS/patientsDashboard/patientsBookedAppointments", payload, {
                 headers: {
                     "Content-Type": "application/json",
@@ -257,7 +311,7 @@ const ClinicCards = () => {
                     appointmentID: apppointment?.appointmentID
                 }) // set the confirmed appointment data
             } else {
-                console.error(`Error in rendering the status code: ${response.status}`);
+                throw new Error(`Failed to book appointment: ${response.status}`);
             }
         } catch (error) {
             if (error.response || error.response.data.status === 400) {
@@ -269,8 +323,10 @@ const ClinicCards = () => {
             } else if (error.response || error.response.data.status === 500) {
                 setFieldErrors({ preferredTime: error.response.data.errors.preferredTime });
             } else {
-                console.error(`Failed to book appointment: ${error}`);
+                throw new Error(`Failed to book appointment: ${error}`);
             }
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -306,91 +362,134 @@ const ClinicCards = () => {
         setShowSuccessConfirmedBookedAppointmentDialogBox(true);
     }
 
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center min-h-[50dvh]">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+            </div>
+        )
+    }
+
     return (
-        <div className="flex flex-row flex-wrap justify-center gap-6 p-6 from-blue-50 to-blue-100">
-            {loading ? (
-                <CircularProgress />
-            ) : clinics.length === 0 ? (
-                <Typography variant="h6" className="text-gray-600">
-                    No clinics found.
-                </Typography>
-            ) : (
-                clinics.map((clinic, i) => (
-                    <Card key={i} className="w-md mx-auto bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl shadow-lg overflow-hidden transform transition duration-300 hover:scale-105">
-                        <CardMedia
-                            className="h-74 w-full bg-neutral-50 flex items-center justify-center"
-                            component="div"
-                        >
-                            <div className="text-center p-4">
-                                <ImageList cols={3} rowHeight={164} className="h-screen">
-                                    <ImageListItem>
+        <div className="container mx-auto px-4 py-20 min-h-dvh">
+            {selectedClinicId && (
+                <button
+                    onClick={() => {
+                        navigate('/patients-dashboard/Home');
+                        setSelectedClinicId(null);
+                    }}
+                    className="mb-4 flex items-center text-blue-600 hover:text-blue-800"
+                >
+                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="rdound" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    Back to dashboard
+                </button>
+            )}
+
+            {!selectedClinicId && (
+                <div className="mb-6">
+                    <input
+                        type="text"
+                        placeholder="Search clinics..."
+                        className="w-full max-w-md px-4 py-2 border rounded-4xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        value={searchQuery}
+                        name="searchQuery"
+                        autoComplete="off"
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredClinic.length > 0 ? (
+                    filteredClinic.map((clinic) => {
+                        const clinicId = clinic.clinic_id || clinic._id || clinic.id;
+
+                        return (
+                            <div
+                                key={clinicId}
+                                id={clinicId}
+                                className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
+                            >
+                                <div className="p-6">
+                                    <div className="flex items-center p-4">
+                                        <Building className="h-6 w-6 text-black mr-2" />
+                                        <h3 className="text-lg text-black font-semibold">{clinic.clinic_name}</h3>
+                                    </div>
+                                    <div className="py-2">
                                         <img
                                             src={`http://localhost:7506/uploads/clinic_images/${clinic.clinic_image}`}
-                                            alt="Clinic Image"
-                                            loading="lazy"
-                                            className="min-w-sm h-full object-cover rounded-lg"
+                                            alt="Clinic Management Image"
+                                            className="object-center object-cover rounded-2xl min-h-[25dvh]"
                                         />
-                                    </ImageListItem>
-                                </ImageList>
-                            </div>
-                        </CardMedia>
+                                    </div>
+                                    <div className="space-y-3 text-black">
+                                        <div className="flex items-start">
+                                            <MapPin className="h-5 w-5 text-black mt-0.5 mr-2 flex-shrink-0" />
+                                            <p className="text-sm text-black">{clinic.clinic_address}</p>
+                                        </div>
+                                        <div className="flex items-center">
+                                            <Stethoscope className="h-5 w-5 text-black mt-0.5 mr-2 flex-shrink-0" />
+                                            <p className="text-sm text-black">{clinic.clinic_type}</p>
+                                        </div>
+                                        <div className="flex items-center">
+                                            <Phone className="h-5 w-5 text-black mr-2" />
+                                            <a
+                                                href={`tel:${clinic.phoneNumber}`}
+                                                className="text-sm hover:text-black transition-colors"
+                                            >
+                                                {clinic.phoneNumber}
+                                            </a>
+                                        </div>
+                                        <div className="flex items-center">
+                                            <Mail className="h-5 w-5 text-black mr-2" />
+                                            <a
+                                                href={`mailto:${clinic.email}`}
+                                                className="text-sm hover:text-black transition-colors"
+                                            >
+                                                {clinic.email}
+                                            </a>
+                                        </div>
+                                        <div className="flex items-center">
+                                            <Clock className="h-5 w-5 text-black mr-2" />
+                                            <span className="text-sm">
+                                                {formatTimeToAMPM(clinic.clinic_time)} - {formatTimeToAMPM(clinic.clinic_close_time)}
+                                            </span>
+                                        </div>
+                                        {clinic.consultation_fee && (
+                                            <div className="flex items-start">
+                                                <PhilippinePesoIcon className="h-5 w-5 text-black mr-2" />
+                                                <span className="text-sm">
+                                                    Consultation Fee: ₱ {clinic.consultation_fee}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
 
-                        <CardContent className="p-6">
-                            <Typography variant="h5" className="text-3xl font-extrabold text-blue-800 mb-4">
-                                {clinic.clinic_name}
-                            </Typography>
-                            <div className="space-y-4">
-                                <div className="flex items-center">
-                                    <Mail className="h-6 w-6 text-blue-600 mr-3" />
-                                    <a href={`mailto:${clinic.email}`} className="text-gray-800 hover:text-blue-600 transition-colors">
-                                        {clinic.email}
-                                    </a>
-                                </div>
-                                <div className="flex items-center">
-                                    <LocationOn className="h-6 w-6 text-blue-600 mr-3" />
-                                    <span className="text-gray-800">
-                                        {clinic ? clinic.clinic_address : "N/A"}
-                                    </span>
-                                </div>
-                                <div className="flex items-center">
-                                    <Phone className="h-6 w-6 text-blue-600 mr-3" />
-                                    <span className="text-gray-800">
-                                        {clinic ? clinic.phoneNumber : ""}
-                                    </span>
-                                </div>
-                                <div className="flex items-center">
-                                    <Building className="h-6 w-6 text-blue-600 mr-3" />
-                                    <span className="text-gray-800">
-                                        {clinic ? clinic.clinic_date_open : "N/A"} - {clinic ? clinic.clinic_close_date : "N/A"}
-                                    </span>
-                                </div>
-                                <div className="flex items-center">
-                                    <Clock className="h-6 w-6 text-blue-600 mr-3" />
-                                    <span className="text-gray-800">{formatTimeToAMPM(clinic.clinic_time)} - {formatTimeToAMPM(clinic.clinic_close_time)}</span>
-                                </div>
-                                <div className="flex items-center">
-                                    <PhilippinePesoIcon className="h-6 w-6 text-blue-600 mr-3" />
-                                    <span className="text-gray-800">{clinic.consultation_fee}</span>
-                                </div>
-                                <div className="flex items-center">
-                                    <Stethoscope className="h-6 w-6 text-blue-600 mr-3" />
-                                    <span className="text-gray-800">{clinic.clinic_type}</span>
+                                    <div className="flex justify-start mt-4">
+                                        <button
+                                            onClick={() => handleOpenModal(clinic)}
+                                            className="cursor-pointer bg-black/100 text-white px-4 py-2 rounded-full transition-colors duration-300"
+                                        >
+                                            <div className="flex justify-center items-center">
+                                                <span>Book Appointment</span>
+                                                <svg className="w-4 h-4 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                                </svg>
+                                            </div>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="flex justify-center mt-6">
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    className="mt-6 w-full py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-lg shadow-md hover:shadow-xl transition-all"
-                                    onClick={() => handleOpenModal(clinic)}
-                                >
-                                    Book Appointment
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-                ))
-            )}
+                        )
+                    })
+                ) : (
+                    <div className="col-span-full text-center py-12">
+                        <p className="text-gray-500 text-lg">No clinics found matching your search.</p>
+                    </div>
+                )}
+            </div>
 
             {selectedClinic && (
                 <BookingAppointmentModal

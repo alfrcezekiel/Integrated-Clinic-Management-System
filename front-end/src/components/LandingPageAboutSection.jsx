@@ -1,18 +1,8 @@
-import "../assets/css/main.css"
-import "../assets/vendor/bootstrap/css/bootstrap.min.css"
-import "../assets/vendor/bootstrap-icons/bootstrap-icons.css"
-import "../assets/vendor/aos/aos.css"
-import "../assets/vendor/glightbox/css/glightbox.min.css"
-import "../assets/vendor/swiper/swiper-bundle.min.css"
 import AboutImage from "../assets/img/about.jpg"
 import AOS from "aos"
 import { useEffect, useState } from "react"
-import "../assets/js/main.js";
-import "../assets/vendor/bootstrap/js/bootstrap.bundle.min.js";
-import "../assets/vendor/glightbox/js/glightbox.min.js"
-import "../assets/vendor/imagesloaded/imagesloaded.pkgd.min.js"
-import "../assets/vendor/isotope-layout/isotope.pkgd.min.js"
 import CMS from "../API/CMS.jsx"
+import { CheckCircleIcon } from "@heroicons/react/24/outline"
 
 const LandingPageAboutSection = () => {
     const [aboutTitle, setAboutTitle] = useState("");
@@ -21,7 +11,7 @@ const LandingPageAboutSection = () => {
     const [secondDescription, setSecondDescription] = useState("")
     const [thirdDescription, setThirdDescription] = useState("");
     const [fourthDescription, setFourthDescription] = useState("")
-    const [emergencyServies, setEmergencyServices] = useState("")
+    const [emergencyServices, setEmergencyServices] = useState("")
 
     useEffect(() => {
         const aos = () => {
@@ -48,7 +38,7 @@ const LandingPageAboutSection = () => {
                     setEmergencyServices(response.data.emergencyServices);
                 }
             } catch (error) {
-                console.error(`Code functionality error for fetching data about title: ${error}`);
+                console.error(`Error fetching data: ${error}`);
             }
         }
         retrieveDataAboutTitle();
@@ -58,33 +48,64 @@ const LandingPageAboutSection = () => {
     }, [])
 
     return (
-        <>
-            {/* <!-- About Section --> */}
-            <section id="about" className="about section">
-                <div className="container">
-                    <div className="row gy-4">
-                        <div className="col-lg-6 order-1 order-lg-2" data-aos="fade-up" data-aos-delay="100">
-                            <img src={AboutImage} className="img-fluid" alt="about-image" />
-                        </div>
-                        <div className="col-lg-6 order-2 order-lg-1 content" data-aos="fade-up" data-aos-delay="200">
-                            <h3>{aboutTitle}</h3>
-                            <p className="fst-italic">
-                                {aboutDescription}
-                            </p>
-                            <ul>
-                                <li><i className="bi bi-check-circle"></i> <span>{firstDescription}</span></li>
-                                <li><i className="bi bi-check-circle"></i> <span>{secondDescription}</span></li>
-                                <li><i className="bi bi-check-circle"></i> <span>{thirdDescription}</span></li>
-                                <li><i className="bi bi-check-circle"></i> <span>{fourthDescription}</span></li>
-                                <li><i className="bi bi-check-circle"></i> <span>{emergencyServies}</span></li>
-                            </ul>
+        <section id="about" className="bg-white py-16 md:py-24 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-7xl mx-auto">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    {/* Image Section */}
+                    <div
+                        className="relative rounded-2xl overflow-hidden shadow-2xl transform hover:scale-[1.02] transition-all duration-500"
+                        data-aos="fade-right"
+                        data-aos-delay="100"
+                    >
+                        <img
+                            src={AboutImage}
+                            alt="About our clinic"
+                            className="w-full h-auto object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/20 mix-blend-multiply"></div>
+                    </div>
+
+                    {/* Content Section */}
+                    <div
+                        className="space-y-6"
+                        data-aos="fade-left"
+                        data-aos-delay="200"
+                    >
+                        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight">
+                            {aboutTitle}
+                        </h2>
+
+                        <p className="text-lg text-gray-600">
+                            {aboutDescription}
+                        </p>
+
+                        <ul className="space-y-4">
+                            {[firstDescription, secondDescription, thirdDescription, fourthDescription, emergencyServices].map((item, index) => (
+                                item && (
+                                    <li key={index} className="flex items-start space-x-3">
+                                        <CheckCircleIcon className="h-6 w-6 text-emerald-500 flex-shrink-0 mt-1" />
+                                        <span className="text-gray-700">{item}</span>
+                                    </li>
+                                )
+                            ))}
+                        </ul>
+
+                        <div className="pt-4">
+                            <a
+                                href="#contact"
+                                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-black hover:bg-gray-800 transition-colors duration-200"
+                            >
+                                Contact Us
+                                <svg className="ml-2 -mr-1 w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                                </svg>
+                            </a>
                         </div>
                     </div>
                 </div>
-            </section>
-            {/* <!-- /About Section --> */}
-        </>
+            </div>
+        </section>
     )
 }
 
-export default LandingPageAboutSection; 
+export default LandingPageAboutSection;

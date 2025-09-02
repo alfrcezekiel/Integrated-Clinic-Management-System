@@ -1,109 +1,114 @@
-import "../assets/vendor/bootstrap/css/bootstrap.min.css"
-import "../assets/vendor/bootstrap-icons/bootstrap-icons.css"
-import "../assets/vendor/aos/aos.css"
-import "../assets/vendor/swiper/swiper-bundle.min.css"
-import "../assets/css/main.css"
-import "../assets/vendor/glightbox/css/glightbox.min.css"
-import "../assets/js/main.js";
-import "../assets/vendor/bootstrap/js/bootstrap.bundle.min.js";
-import "../assets/vendor/glightbox/js/glightbox.min.js"
-// import "../assets/vendor/purecounter/purecounter_vanilla.js"
-import "../assets/vendor/imagesloaded/imagesloaded.pkgd.min.js"
-import "../assets/vendor/isotope-layout/isotope.pkgd.min.js"
 import AOS from "aos"
 import { useEffect } from "react"
+
+const services = [
+    {
+        id: 1,
+        icon: "bi-heart-pulse",
+        title: "Primary Care",
+        description: "Comprehensive primary care services for patients of all ages, including annual physicals, immunizations, and preventive care.",
+        delay: "100"
+    },
+    {
+        id: 2,
+        icon: "bi-clipboard2-pulse",
+        title: "Chronic Disease Management",
+        description: "Personalized treatment plans for chronic conditions like diabetes, hypertension, and heart disease.",
+        delay: "150"
+    },
+    {
+        id: 3,
+        icon: "bi-thermometer",
+        title: "Urgent Care",
+        description: "Immediate medical attention for non-life-threatening illnesses and injuries with minimal wait times.",
+        delay: "200"
+    },
+    {
+        id: 4,
+        icon: "bi-capsule",
+        title: "Pharmacy Services",
+        description: "On-site pharmacy with prescription filling, medication counseling, and medication therapy management.",
+        delay: "250"
+    },
+    {
+        id: 5,
+        icon: "bi-heart",
+        title: "Cardiology",
+        description: "Comprehensive heart health services including EKGs, stress tests, and cardiovascular disease management.",
+        delay: "300"
+    },
+    {
+        id: 6,
+        icon: "bi-lungs",
+        title: "Pulmonology",
+        description: "Specialized care for respiratory conditions like asthma, COPD, and sleep disorders.",
+        delay: "350"
+    }
+];
+
 const LandingPageServices = () => {
     useEffect(() => {
-        const aos = () => {
-            AOS.init({
-                duration: 600,
-                once: true
-            })
-        }
-        aos();
-        return () => {
-            AOS.refresh();
-        }
-    }, [])
+        AOS.init({
+            duration: 600,
+            once: true
+        });
+        return () => AOS.refresh();
+    }, []);
 
     return (
-        <>
-            {/* <!-- Services Section --> */}
-            <section id="services" className="services section">
-                {/* <!-- Section Title --> */}
-                <div className="container section-title" data-aos="fade-up">
-                    <h2>Services</h2>
-                    <p>Providing comprehensive and compassionate healthcare to ensure your optimal well-being.</p>
+        <section id="services" className="py-16 md:py-24 lg:py-32 bg-gradient-to-b from-blue-50 to-white">
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div
+                    className="text-center max-w-3xl mx-auto mb-12 md:mb-20"
+                    data-aos="fade-up"
+                >
+                    <span className="inline-block px-4 py-2 text-sm font-semibold text-blue-600 bg-blue-100 rounded-full mb-4">
+                        Our Services
+                    </span>
+                    <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+                        Comprehensive Healthcare Services
+                    </h2>
+                    <p className="text-lg text-gray-600">
+                        Delivering exceptional medical care with compassion and expertise to improve your health and wellbeing.
+                    </p>
                 </div>
-                {/* <!-- End Section Title --> */}
-                <div className="container">
-                    <div className="row gy-4">
-                        <div className="col-xl-4 col-lg-6" data-aos="fade-up" data-aos-delay="100">
-                            <div className="service-item d-flex">
-                                <div className="icon flex-shrink-0"><i className="bi bi-heart-pulse"></i></div> {/* Icon for General Health Checkups */}
-                                <div>
-                                    <h4 className="title"><a href="#" className="stretched-link">General Health Checkups</a></h4>
-                                    <p className="description">Comprehensive health exams, screenings, and preventive care for all ages.</p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                    {services.map((service) => (
+                        <div
+                            key={service.id}
+                            className="group relative bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 border border-gray-100"
+                            data-aos="fade-up"
+                            data-aos-delay={service.delay}
+                        >
+                            <div className="p-6 md:p-8">
+                                <div className="w-16 h-16 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 mb-6 group-hover:bg-blue-100 transition-colors duration-300 group-hover:scale-110">
+                                    <i className={`bi ${service.icon} text-3xl`}></i>
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors duration-200">
+                                    {service.title}
+                                </h3>
+                                <p className="text-gray-600 mb-6">
+                                    {service.description}
+                                </p>
+                                <div className="absolute bottom-6 left-8">
+                                    <a
+                                        href="#"
+                                        className="inline-flex items-center text-blue-600 font-medium group-hover:text-blue-700 transition-colors duration-200"
+                                    >
+                                        Learn more
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2 transform group-hover:translate-x-1 transition-transform duration-200" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                                        </svg>
+                                    </a>
                                 </div>
                             </div>
                         </div>
-                        {/* <!-- End Service Item --> */}
-                        <div className="col-xl-4 col-lg-6" data-aos="fade-up" data-aos-delay="200">
-                            <div className="service-item d-flex">
-                                <div className="icon flex-shrink-0"><i className="bi bi-clipboard2-pulse"></i></div> {/* Icon for Chronic Disease Management */}
-                                <div>
-                                    <h4 className="title"><a href="#" className="stretched-link">Chronic Disease Management</a></h4>
-                                    <p className="description">Personalized care plans for managing diabetes, hypertension, and other chronic conditions.</p>
-                                </div>
-                            </div>
-                        </div>
-                        {/* <!-- End Service Item --> */}
-                        <div className="col-xl-4 col-lg-6" data-aos="fade-up" data-aos-delay="300">
-                            <div className="service-item d-flex">
-                                <div className="icon flex-shrink-0"><i className="bi bi-emoji-smile"></i></div> {/* Icon for Pediatric Care */}
-                                <div>
-                                    <h4 className="title"><a href="#" className="stretched-link">Pediatric Care</a></h4>
-                                    <p className="description">Specialized healthcare services for children to ensure healthy growth and development.</p>
-                                </div>
-                            </div>
-                        </div>
-                        {/* <!-- End Service Item --> */}
-                        <div className="col-xl-4 col-lg-6" data-aos="fade-up" data-aos-delay="400">
-                            <div className="service-item d-flex">
-                                <div className="icon flex-shrink-0"><i className="bi bi-gender-female"></i></div> {/* Icon for Women's Health */}
-                                <div>
-                                    <h4 className="title"><a href="#" className="stretched-link">Women&apos;s Health</a></h4>
-                                    <p className="description">Comprehensive care for women, including prenatal, gynecological, and wellness services.</p>
-                                </div>
-                            </div>
-                        </div>
-                        {/* <!-- End Service Item --> */}
-                        <div className="col-xl-4 col-lg-6" data-aos="fade-up" data-aos-delay="500">
-                            <div className="service-item d-flex">
-                                <div className="icon flex-shrink-0"><i className="bi bi-exclamation-triangle"></i></div> {/* Icon for Emergency Care */}
-                                <div>
-                                    <h4 className="title"><a href="#" className="stretched-link">Emergency Care</a></h4>
-                                    <p className="description">Immediate medical attention for emergencies, including injuries and acute illnesses.</p>
-                                </div>
-                            </div>
-                        </div>
-                        {/* <!-- End Service Item --> */}
-                        <div className="col-xl-4 col-lg-6" data-aos="fade-up" data-aos-delay="600">
-                            <div className="service-item d-flex">
-                                <div className="icon flex-shrink-0"><i className="bi bi-clipboard2-data"></i></div> {/* Icon for Diagnostic Services */}
-                                <div>
-                                    <h4 className="title"><a href="#" className="stretched-link">Diagnostic Services</a></h4>
-                                    <p className="description">Advanced diagnostic tools for accurate and timely health assessments.</p>
-                                </div>
-                            </div>
-                        </div>
-                        {/* <!-- End Service Item --> */}
-                    </div>
+                    ))}
                 </div>
-            </section>
-            {/* <!-- /Services Section --> */}
-        </>
+            </div>
+        </section>
     );
-}
+};
 
 export default LandingPageServices;

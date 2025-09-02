@@ -1,7 +1,6 @@
 import express from "express";
 import path from "path";
 import bodyParser from "body-parser";
-import morgan from "morgan";
 import cors from "cors";
 import { fileURLToPath } from "url";
 import cms from "./routes/userRoutes.js";
@@ -19,6 +18,7 @@ import {
 } from "./config/backup_database_schema.js";
 import parser from "cron-parser"
 import logger from "./config/winston.js";
+import initializeScheduler from "./config/appointment_scheduler.js";
 dotenv.config();
 
 const nextRuns = await getNextBackupRun(5);
@@ -52,7 +52,7 @@ try {
     const it = parser.parse(config.schedule);
     nextRun = it.next().toDate();
 } catch (error) {
-    console.log(`Invalid! cron expression for backup schedule: - (${error})`);
+    logger.log(`error`, `Invalid! cron expression for backup schedule: - (${error})`);
 }
 
 
@@ -60,12 +60,12 @@ if (config.enabled) {
     try {
         const schedule = await scheduleBackup(config.schedule);
 
-        console.log(`${config.log} - Next backup scheduled at: ${schedule} - (${nextRun ? `Next Run: ${nextRun.toLocaleString("en-US", { timeZone: "Asia/Manila" })}` : ""})`);
+        logger.log(`info`, `${config.log} - Next backup scheduled at: ${schedule} - (${nextRun ? `Next Run: ${nextRun.toLocaleString("en-US", { timeZone: "Asia/Manila" })}` : ""})`);
     } catch (error) {
-        console.error(`Failed to initialize backup scheduler: ${error}`)
+        logger.log(`error`, `Failed to initialize backup scheduler: ${error}`)
     }
 } else {
-    console.log(config.log);
+    logger.log(`info`, config.log);
 }
 
 const app = express();
@@ -100,7 +100,7 @@ app.use(helmet());
 // limiting the number of requests to the server
 app.use(rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 1000, // Limit each IP to 1000 requests per windowMs
+    max: 2000, // Limit each IP to 1000 requests per windowMs
     message: "Too many requests from this IP, please try again later."
 }))
 
@@ -154,6 +154,12 @@ app.use(errorHandler.internalServerError)
 // function for statrting the server
 const startServer = async () => {
     try {
+
+        if (process.env.NODE_ENV === "development") {
+            initializeScheduler();
+            logger.log(`info`, `Appointment scheduler initialized`);
+        }
+
         app.listen(app.get("port"), app.get("host"), () => {
             logger.log(`info`, `Server is running on http://${app.get("host")}:${app.get("port")}${app.get("baseURL")}`);
         })

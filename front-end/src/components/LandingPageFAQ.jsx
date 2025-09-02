@@ -45,10 +45,10 @@ const LandingPageFAQ = () => {
         <section id="faq" className="py-20 bg-white">
             <div className="container mx-auto px-4 text-center" data-aos="fade-up">
                 <h2 className="text-4xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
-                <p className="text-gray-600 text-xl">Everything you need to know about your health care</p>
+                <p className="text-gray-600 text-lg">Everything you need to know about your health care</p>
             </div>
 
-            <div className="container mx-auto px-4 mt-14">
+            <div className="container mx-auto px-4 mt-6">
                 <div className="max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="100">
                     <div className="space-y-6">
                         {faqs.map((faq, index) => (
@@ -56,11 +56,11 @@ const LandingPageFAQ = () => {
                                 key={index}
                                 onClick={() => toggleFAQ(index)}
                                 className={
-                                    `border shadow-xs border-gray-200 rounded-2xl px-4 py-4 transition-all duration-300 cursor-pointer ${activeIndex === index ? "bg-blue-50 border-blue-400 shadow-md" : "bg-white"}`
+                                    `border shadow-sm border-gray-200 rounded-2xl px-4 py-5 transition-all duration-300 cursor-pointer ${activeIndex === index ? "bg-blue-50 border-blue-500 shadow-md" : "bg-white"}`
                                 }
                             >
                                 <div className="flex justify-between items-center">
-                                    <h6 className="text-xs text-gray-800">{faq.question}</h6>
+                                    <h6 className="text-md text-gray-800">{faq.question}</h6>
                                     <i
                                         className={
                                             `bi transition-transform duration-200 text-sm ${activeIndex === index ? "bi-chevron-down rotate-180" : "bi-chevron-right"} text-blue-600`

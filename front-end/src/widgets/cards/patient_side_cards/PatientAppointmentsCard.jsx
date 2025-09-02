@@ -70,7 +70,7 @@ const PatientAppointmentsCard = () => {
     ];
 
     return (
-        <div className="p-2 block">
+        <div className="py-10 block">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
                 {patientsData.map(({ title, value, Icon, gradient, iconBg }, index) => (
                     <div

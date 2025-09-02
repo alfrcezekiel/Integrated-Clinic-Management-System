@@ -4,6 +4,11 @@ import bcrypt from "bcryptjs";
 import modelErrorHandling from "../middleware/asyncHandler/modelHandler.js";
 import dayjs from "dayjs";
 import crypto from "crypto";
+import {
+    scheduleAppointmentsReminder,
+    sendEmailNotification,
+    sendSmsNotification
+} from "../services/automate_notification_service.js";
 
 /**
  * @class Clinic Model
@@ -2892,6 +2897,645 @@ class Clinic {
             }
         },
         "Consult Patient In Clinic Side Appointment"
+    )
+
+    /**
+     * @method logic to filter all patient booked appointments of a patient side to displa a specific patient booked appointment
+     */
+    filterAllBookedAppointments = modelErrorHandling(
+        async (params) => {
+            const connection = await this.conn.getConnection();
+            try {
+                await connection.beginTransaction();
+
+                if (!params || typeof params !== "object" || Array.isArray(params)) {
+                    throw new Error(`Invalid! Filtered all booked appointment should be an object`);
+                }
+
+                if (!params.email) {
+                    throw new Error(`Invalid! Filtered all booked appointment should have an email`);
+                }
+
+                if (!params.page) {
+                    throw new Error(`Invalid! Filtered all booked appointment should have a page`);
+                }
+
+                if (!params.limit) {
+                    throw new Error(`Invalid! Filtered all booked appointment should have a limit`);
+                }
+
+                if (!params.search) {
+                    throw new Error(`Invalid! Filtered all booked appointment should have a search`);
+                }
+
+                const offset = (params.page - 1) * params.limit;
+                const queryParams = [params.email];
+                const limit = parseInt(params.limit);
+                const page = parseInt(params.page);
+
+                let query = `
+                    SELECT 
+                        pa.firstName,
+                        pa.lastName,
+                        pa.email,
+                        pa.appointmentDate,
+                        pa.preferredTime,
+                        pa.status,
+                        pa.purposeOfAppointment,
+                        pa.phoneNumber
+                    FROM patientsappointment AS pa
+                    WHERE pa.email = ?
+                `
+
+                if (params.search) {
+                    query += `
+                        AND (
+                            pa.firstName LIKE ? OR
+                            pa.lastName LIKE ? OR
+                            pa.email LIKE ? OR
+                            pa.phoneNumber LIKE ? OR
+                            pa.purposeOfAppointment LIKE ? OR
+                            pa.status LIKE ? OR
+                            pa.preferredTime LIKE ? OR
+                            pa.appointmentDate LIKE ?
+                        )
+                    `
+                    const searchTerm = `%${params.search}%`;
+                    queryParams.push(
+                        searchTerm,
+                        searchTerm,
+                        searchTerm,
+                        searchTerm,
+                        searchTerm,
+                        searchTerm,
+                        searchTerm,
+                        searchTerm
+                    );
+                }
+
+                query += `ORDER BY pa.appointmentDate DESC LIMIT ? OFFSET ?`;
+                queryParams.push(limit, offset);
+
+                let countQuery = `
+                    SELECT COUNT(*) AS total
+                    FROM patientsappointment AS pa
+                    WHERE pa.email = ?
+                `
+
+                const countParams = [params.email];
+
+                if (params.search) {
+                    countQuery += `
+                    AND (
+                            pa.firstName LIKE ? OR
+                            pa.lastName LIKE ? OR
+                            pa.email LIKE ? OR
+                            pa.phoneNumber LIKE ? OR
+                            pa.purposeOfAppointment LIKE ? OR
+                            pa.status LIKE ? OR
+                            pa.preferredTime LIKE ? OR
+                            pa.appointmentDate LIKE ?
+                        )
+                    `
+                    const searchTerm = `%${params.search}%`;
+                    countParams.push(
+                        searchTerm,
+                        searchTerm,
+                        searchTerm,
+                        searchTerm,
+                        searchTerm,
+                        searchTerm,
+                        searchTerm,
+                        searchTerm
+                    );
+                }
+
+                const [rows] = await connection.query(query, queryParams);
+                const [countResult] = await connection.query(countQuery, countParams);
+
+                await connection.commit();
+
+                const total = countResult[0]?.total || 0;
+                const totalPages = Math.ceil(total / limit);
+
+                return {
+                    success: true,
+                    count: rows.length,
+                    total,
+                    totalPages,
+                    limit,
+                    currentPage: page,
+                    data: rows
+                }
+            } catch (error) {
+                const rollbackQuery = await connection.rollback();
+                if (!rollbackQuery) {
+                    throw new Error(`Failed to rollback the transaction in filtering all booked appointments`)
+                }
+
+                logger.log("error", `Failed to filter all booked appointments in method: ${error}`);
+                throw error;
+            } finally {
+                if (connection) {
+                    await connection.release();
+                }
+            }
+        },
+        "Filter All Booked Appointments"
+    )
+
+    /**
+     * @method logic to search the pending booked appointment of a patient in patient side
+     */
+    searchPendingBookedAppointments = modelErrorHandling(
+        async (params) => {
+            this.connection = await this.conn.getConnection();
+            try {
+                await this.connection.beginTransaction();
+
+                const { search, page, limit, email } = params;
+
+                if (!params || typeof params !== "object" || Array.isArray(params)) {
+                    throw new Error(`Invalid! Search pending booked appointment should be an object`);
+                }
+
+                if (!email) {
+                    throw new Error(`Invalid! Search pending booked appointment should have an email`);
+                }
+
+                if (!page) {
+                    throw new Error(`Invalid! Search pending booked appointment should have a page`);
+                }
+
+                if (!limit) {
+                    throw new Error(`Invalid! Search pending booked appointment should have a limit`);
+                }
+
+                if (!search) {
+                    throw new Error(`Invalid! Search pending booked appointment should have a search`);
+                }
+
+                const email_address = String(email);
+                const search_value = String(search);
+                const page_value = parseInt(page);
+                const limit_value = parseInt(limit);
+
+                const offset = (page_value - 1) * limit_value;
+
+                const countQuery = `
+                    SELECT COUNT(*) as total
+                    FROM patientsappointment AS pa
+                    INNER JOIN clinic AS c
+                    ON pa.clinic_id = c.clinic_id
+                    WHERE pa.email = ? AND pa.status = ?
+                    AND (
+                        pa.firstName LIKE ? OR
+                        pa.lastName LIKE ? OR
+                        pa.email LIKE ? OR
+                        pa.phoneNumber LIKE ? OR
+                        pa.preferredTime LIKE ? OR
+                        pa.appointmentDate LIKE ? OR
+                        pa.purposeOfAppointment LIKE ? OR
+                        c.clinic_name LIKE ?
+                    )
+                `
+
+                const patient_status = String("Pending");
+                const searchPattern = `%${search_value}%`;
+                const countQueryValues = [
+                    email_address,
+                    patient_status,
+                    searchPattern,
+                    searchPattern,
+                    searchPattern,
+                    searchPattern,
+                    searchPattern,
+                    searchPattern,
+                    searchPattern,
+                    searchPattern
+                ]
+
+                const [countResult] = await this.connection.query(countQuery, countQueryValues);
+                const total = countResult[0]?.total;
+                const totalPages = Math.ceil(total / limit_value);
+
+                const searchQuery = `
+                    SELECT 
+                        c.clinic_name,
+                        pa.firstName,
+                        pa.lastName,
+                        pa.email,
+                        pa.appointmentDate,
+                        pa.preferredTime,
+                        pa.status,
+                        pa.phoneNumber,
+                        pa.purposeOfAppointment
+                    FROM patientsappointment AS pa
+                    INNER JOIN clinic AS c
+                    ON pa.clinic_id = c.clinic_id
+                    WHERE pa.email = ? AND pa.status = ?
+                    AND (
+                        pa.firstName LIKE ? OR
+                        pa.lastName LIKE ? OR
+                        pa.email LIKE ? OR 
+                        pa.appointmentDate LIKE ? OR
+                        pa.preferredTime LIKE ? OR
+                        pa.phoneNumber LIKE ? OR
+                        pa.purposeOfAppointment LIKE ? OR
+                        c.clinic_name LIKE ?
+                    )
+                    ORDER BY pa.appointmentDate DESC
+                    LIMIT ? OFFSET ?
+                `
+
+                const searchQueryValues = [
+                    email_address,
+                    patient_status,
+                    searchPattern,
+                    searchPattern,
+                    searchPattern,
+                    searchPattern,
+                    searchPattern,
+                    searchPattern,
+                    searchPattern,
+                    searchPattern,
+                    parseInt(limit_value),
+                    parseInt(offset)
+                ]
+
+                const [rows] = await this.connection.query(searchQuery, searchQueryValues);
+
+                await this.connection.commit();
+
+                return {
+                    appointments: rows,
+                    pagination: {
+                        total: total,
+                        totalPages: totalPages,
+                        currentPage: parseInt(page_value),
+                        limit: parseInt(limit_value)
+                    }
+                }
+            } catch (error) {
+                const rollbackQuery = this.connection.rollback();
+                if (!rollbackQuery) {
+                    throw new Error(`Failed to rollback the transaction in searching pending booked appointments`)
+                }
+
+                logger.log(`error`, `Failed in searching pending booked appointments in method: ${error}`);
+                throw error;
+            } finally {
+                if (this.connection) {
+                    await this.connection.release();
+                }
+            }
+        },
+        "Search Pending Booked Appointments"
+    )
+
+    /**
+     * @method logic to automatically updates a status of patient to reminder/confirmation via sms and email
+     */
+    handleAutomatedUpdateStatus = modelErrorHandling(
+        async (params) => {
+            this.connection = await this.conn.getConnection();
+            try {
+                if (!params || typeof params !== "object" || Array.isArray(params)) {
+                    throw new Error(`Invalid! Handle automated update status should be an object`);
+                }
+
+                const { appointmentID, status } = params;
+
+                await this.connection.beginTransaction();
+
+                const appointment_id = parseInt(appointmentID);
+                const patient_status = String(status);
+
+                if (!appointment_id) {
+                    throw new Error(`Invalid! Appointment ID should be a number`);
+                }
+
+                if (!patient_status) {
+                    throw new Error(`Invalid! Patient status should be a string`);
+                }
+
+                const updateQuery = `
+                    UPDATE patientsappointment
+                    SET status = ?
+                    WHERE appointmentID = ?;
+                `
+
+                const updateQueryValues = [
+                    patient_status,
+                    appointment_id
+                ]
+
+                const [updateRows] = await this.connection.query(updateQuery, updateQueryValues);
+
+                if (!updateRows) {
+                    throw new Error(`Failed to automate update the status of patient via email and sms`);
+                }
+
+                const patients_appointments_and_clinics_columns = [
+                    "pa.appointmentID",
+                    "pa.firstName",
+                    "pa.lastName",
+                    "pa.email",
+                    "pa.appointmentDate",
+                    "pa.preferredTime",
+                    "pa.phoneNumber",
+                    "pa.status",
+                    "pa.purposeOfAppointment",
+                    "c.clinic_name",
+                    "c.clinic_address"
+                ]
+
+                const retrieveAppointmentAndClinicQuery = `
+                    SELECT
+                        ${patients_appointments_and_clinics_columns.join(",")}
+                    FROM patientsappointment AS pa
+                    INNER JOIN clinic AS c
+                    ON pa.clinic_id = c.clinic_id
+                    WHERE pa.appointmentID = ?;
+                `
+
+                const retrieveAppointmentAndClinicQueryValues = [
+                    appointment_id
+                ]
+
+                const [rows] = await this.connection.query(
+                    retrieveAppointmentAndClinicQuery,
+                    retrieveAppointmentAndClinicQueryValues
+                );
+
+                if (!rows.length) {
+                    throw new Error(`Failed to retrieve the appointment and clinic`);
+                }
+
+                const statusMessage = patient_status === "Approved" ?
+                    `Your appointment on ${rows[0].appointmentDate} at ${rows[0].preferredTime} has been approved` :
+                    `Your appointment on ${rows[0].appointmentDate} at ${rows[0].preferredTime} has been ${patient_status.toLowerCase()}`;
+
+                const confirmationEmailTemplate = sendEmailNotification(
+                    rows[0].email,
+                    "Appointment Status Update",
+                    statusMessage
+                );
+
+                const confirmationSMSMessage = `
+                    Hi ${rows[0].firstName}, ${statusMessage.toLowerCase()},
+                `;
+
+                if (rows[0].email) {
+                    await confirmationEmailTemplate;
+                }
+
+                if (rows[0].phoneNumber) {
+                    sendSmsNotification(
+                        rows[0].phoneNumber,
+                        confirmationSMSMessage
+                    );
+                }
+
+                await this.connection.commit();
+
+                return {
+                    success: true
+                }
+
+            } catch (error) {
+                const rollbackQuery = this.connection.rollback();
+                if (!rollbackQuery) {
+                    throw new Error(`Failed to rollback the transaction in handling automated update status`);
+                }
+
+                logger.log(`error`, `Failed in handling automated update status via sms and email in method: ${error}`);
+                throw error;
+            } finally {
+                if (this.connection) {
+                    await this.connection.release();
+                }
+            }
+        },
+        "Handle Automated Update Status"
+    )
+
+    /**
+     * @method logic  to check the patient status between pending and approved for scheduled reminders
+     */
+    scheduleRemindersForUpcomingAppointments = modelErrorHandling(
+        async (params) => {
+            this.connection = await this.conn.getConnection();
+            try {
+                await this.connection.beginTransaction();
+
+                if (!params || typeof params !== "object" || Array.isArray(params)) {
+                    throw new Error(`Invalid! Schedule reminders for upcoming appointments should be an object`);
+                }
+
+                const { appointmentDate } = params;
+
+                if (!appointmentDate) {
+                    throw new Error(`Invalid! Appointment date should be a string`);
+                }
+
+                const appointment_date = String(appointmentDate);
+
+                const patients_appointments_col = [
+                    "pa.appointmentID",
+                    "pa.firstName",
+                    "pa.lastName",
+                    "pa.email",
+                    "pa.appointmentDate",
+                    "pa.preferredTime",
+                    "pa.phoneNumber",
+                    "pa.status",
+                    "pa.purposeOfAppointment",
+                ]
+
+                const status_values = [
+                    "Pending",
+                    "Approved"
+                ]
+
+                const query = `
+                    SELECT
+                        ${patients_appointments_col.join(",")}
+                    FROM patientsappointment AS pa
+                    WHERE pa.appointmentDate BETWEEN ? AND ?
+                    AND pa.status IN (${status_values.join(",")})
+                `
+
+                const queryValues = [
+                    appointment_date,
+                    appointment_date
+                ]
+
+                const [rows] = await this.connection.query(query, queryValues);
+
+                if (!rows.length) {
+                    throw new Error(`Failed to retrieve the appointments`);
+                }
+
+                for (const appointment of rows) {
+                    try {
+                        scheduleAppointmentsReminder({
+                            ...appointment,
+                            reminderTime: 60
+                        })
+
+                        const appointmentTime = new Date(appointment.appointmentDate);
+                        const timeUntilAppointment = appointmentTime - new Date();
+
+                        if (timeUntilAppointment > 24 * 60 * 60 * 1000) {
+                            scheduleAppointmentsReminder({
+                                ...appointment,
+                                reminderTime: 24 * 60
+                            })
+                        }
+                    } catch (error) {
+                        logger.log(`error`, `Failed in scheduling reminders for upcoming appointments in method: ${error}`);
+                        throw error;
+                    }
+                }
+
+                await this.connection.commit();
+
+                return rows;
+            } catch (error) {
+                await this.connection.rollback();
+                logger.log(`error`, `Failed in scheduling reminders for upcoming appointments in method: ${error}`);
+                throw error;
+            } finally {
+                if (this.connection) {
+                    await this.connection.release();
+                }
+            }
+        },
+        "Schedule Reminders For Upcoming Appointments"
+    )
+
+    /**
+     * @method logic to retrieve approved appointments that needs follow-up messsages
+     */
+    getCompletedAppointmentsForFollowUp = modelErrorHandling(
+        async (options) => {
+            this.connection = await this.conn.getConnection();
+            try {
+                await this.connection.beginTransaction();
+
+                const { clinicID, daysAfter = 1, limit = 100 } = options;
+
+                if (!clinicID) {
+                    throw new Error(`Invalid! Clinic ID should be a number`);
+                }
+
+                const patients_appointments_col = [
+                    "pa.appointmentID",
+                    "pa.firstName",
+                    "pa.lastName",
+                    "pa.email",
+                    "pa.appointmentDate",
+                    "pa.preferredTime",
+                    "pa.phoneNumber",
+                    "pa.status",
+                    "pa.purposeOfAppointment",
+                    "c.clinic_name",
+                    "c.email",
+                    "c.phoneNumber"
+                ]
+
+                const status = String("Approved");
+                const followUpSent = false;
+                const query = `
+                    SELECT 
+                    ${patients_appointments_col.join(",")}
+                    FROM patientsappointment AS pa
+                    INNER JOIN clinic AS c
+                    ON pa.clinic_id = c.clinic_id
+                    WHERE pa.status = ? AND 
+                    pa.followUpSent = ? AND
+                    pa.appointmentDate <= DATE_SUB(CURRENT_DATE(), INTERVAL ? DAY)
+                    ${clinicID ? `AND pa.clinic_id = ?` : ""}
+                    ORDER BY pa.appointmentDate ASC
+                    LIMIT ?
+                `
+
+                const queryValues = [
+                    status,
+                    followUpSent,
+                    daysAfter,
+                    clinicID,
+                    limit
+                ]
+
+                const [rows] = await this.connection.query(query, queryValues);
+
+                if (!rows.length) {
+                    throw new Error(`Failed to retrieve the completed appointments for follow-up`);
+                }
+
+                return rows;
+            } catch (error) {
+                logger.log(`error`, `Failed in retrieving completed appointments for follow-up in method: ${error}`);
+                throw error;
+            } finally {
+                if (this.connection) {
+                    await this.connection.release();
+                }
+            }
+        },
+        "Get Approved Appointments For Follow Up"
+    )
+
+    /**
+     * method logic to mark the follow-up message as sent
+     */
+    markFollowUpSent = modelErrorHandling(
+        async (params) => {
+            this.connection = await this.conn.getConnection();
+            try {
+                await this.connection.beginTransaction();
+
+                if (!params || typeof params !== "object" || Array.isArray(params)) {
+                    throw new Error(`Invalid! Mark follow-up sent should be an object`);
+                }
+
+                const { appointmentID } = params;
+
+                if (!appointmentID) {
+                    throw new Error(`Invalid! Appointment ID should be a number`);
+                }
+
+                const appointment_id = parseInt(appointmentID);
+
+                const query = `UPDATE patientsappointment SET followUpSent = ? WHERE appointmentID = ?`;
+
+                const queryValues = [
+                    true,
+                    appointment_id
+                ]
+
+                const [rows] = await this.connection.query(query, queryValues);
+
+                if (!rows.length) {
+                    throw new Error(`Failed to mark the follow-up message as sent`);
+                }
+
+                await this.connection.commit();
+
+                return rows > 0;
+            } catch (error) {
+                await this.connection.rollback();
+                logger.log(`error`, `Failed in marking the follow-up message as sent in method: ${error}`);
+                throw error;
+            } finally {
+                if (this.connection) {
+                    await this.connection.release();
+                }
+            }
+        },
+        "Mark Follow Up Sent"
     )
 }
 

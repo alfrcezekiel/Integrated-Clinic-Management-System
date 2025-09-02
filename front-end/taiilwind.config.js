@@ -1,7 +1,7 @@
 // tailwind.config.js
 export default {
     prefix: 'tw-',
-    important: true,
+    important: "#root",
     preflight: false,
     content: [
         './index.html',
@@ -9,6 +9,9 @@ export default {
     ],
     theme: {
         extend: {},
+    },
+    corePlugins: {
+        preflight: false
     },
     plugins: [],
 }

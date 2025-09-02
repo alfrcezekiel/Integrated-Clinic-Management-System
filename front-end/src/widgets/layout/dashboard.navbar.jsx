@@ -1,88 +1,38 @@
-import {
-    AppBar,
-    Toolbar,
-    Typography,
-    IconButton,
-    Breadcrumbs,
-    InputBase,
-    Menu,
-    MenuItem,
-    Avatar,
-    Card,
-    CardContent
-} from "@mui/material";
-import {
-    Menu as MenuIcon,
-    Notifications,
-    Settings,
-    CreditCard,
-    Logout
-} from "@mui/icons-material";
+import { useEffect, useState } from "react";
+import { Link, useLocation, Outlet, useNavigate } from "react-router-dom";
 import { useMaterialUIController } from "../../context/useController";
-import {
-    Link,
-    useLocation,
-    Outlet,
-    useNavigate
-} from "react-router-dom";
-import {
-    setOpenConfigurator,
-    setOpenSideNav
-} from "../../context/materialUIController";
-import {
-    useCallback,
-    useEffect,
-    useMemo,
-    useState
-} from "react";
+import { setOpenConfigurator, setOpenSideNav } from "../../context/materialUIController";
 import CMS from "../../API/CMS";
 import LogoutDialog from "../../components/loguoutConfirmation";
 import { useAuthorization } from "../../context/auth/useAuthorization";
+import { FiMenu, FiBell, FiSettings, FiCreditCard, FiLogOut, FiChevronRight } from "react-icons/fi";
 
-// this is the navbar component for the dashboard
 const DashboardNavbar = () => {
     const [controller, dispatch] = useMaterialUIController();
     const { fixedNavbar, openSideNav } = controller;
     const location = useLocation();
     const pathParts = location.pathname.substring(1).split("/").filter(Boolean);
     const [layout = "home", page = "", path = "Home", name = "Patient's Dashboard"] = pathParts;
-    const [anchorEl, setAnchorEl] = useState(null);
     const [settingsAnchorEl, setSettingsAnchorEl] = useState(null);
-    const handleMenuOpen = (e) => {
-        setAnchorEl(e.currentTarget);
-    }
     const [logoutDialog, setLogoutDialog] = useState(false);
-    const [filteredClinics, setFilteredClinics] = useState([]);
-    const [searchQuery, setSearchQuery] = useState('');
     const navigate = useNavigate();
     const [patientNameWithPrefix, setPatientNameWithPrefix] = useState("");
     const { logout, user, token } = useAuthorization();
 
     useEffect(() => {
-        const fetchClinicData = async () => {
-            try {
-                const response = await CMS.get("/CMS/patients-dashboard/filter_search", {
-                    params: {
-                        clinicName: searchQuery,
-                        clinicType: searchQuery,
-                        clinicAddress: searchQuery
-                    }
-                })
-
-                if (response.status === 200) {
-                    setFilteredClinics(response.data.clinics)
-                }
-            } catch (error) {
-                console.error(`Code functionality error for fetching clinic data: ${error}`);
+        const handleClickOutside = e => {
+            if (settingsAnchorEl && !e.target.closest('.user-menu-container')) {
+                setSettingsAnchorEl(null);
             }
         }
 
-        if (searchQuery.length > 2) {
-            fetchClinicData();
-        } else {
-            setFilteredClinics([])
+        document.addEventListener('click', handleClickOutside);
+        return () => {
+            document.removeEventListener('click', handleClickOutside);
         }
+    }, [settingsAnchorEl])
 
+    useEffect(() => {
         const patientNameWithSuffix = () => {
             const first_name = user?.sfn || "";
             const prefix = user?.sprefix || "";
@@ -91,17 +41,11 @@ const DashboardNavbar = () => {
             setPatientNameWithPrefix(patient_full_name);
         }
         patientNameWithSuffix();
-    }, [searchQuery, user?.sfn, user?.sprefix])
-
-    const memoizedSearchQueryValue = useMemo(() => searchQuery, [searchQuery])
-    const handleSearchChange = useCallback(async (e) => {
-        const { value } = e.target;
-        setSearchQuery(value);
-    }, [])
+    }, [user?.sfn, user?.sprefix])
 
     const handleLogoutConfirm = async () => {
         const tokenContext = token || localStorage.getItem("authToken");
-        
+
         if (!tokenContext) {
             console.error("No token found in context or localStorage");
         }
@@ -133,113 +77,126 @@ const DashboardNavbar = () => {
         setLogoutDialog(true);
     }
 
-    const handleDialogClose = () => {
+    const handleLogoutDialogClose = () => {
         setLogoutDialog(false);
     }
 
     const handleSettingsMenuOpen = (e) => {
-        setSettingsAnchorEl(e.currentTarget);
-    }
-    const handleSettingsMenuClose = () => {
-        setSettingsAnchorEl(null);
-    }
-    const handleMenuClose = () => {
-        setAnchorEl(null);
+        e.stopPropagation();
+        setSettingsAnchorEl(settingsAnchorEl ? null : e.currentTarget);
     }
 
     return (
-        <AppBar
-            position={fixedNavbar ? "fixed" : "static"}
-            className={`rounded-xl transition-all ${fixedNavbar ? "top-4 z-40 shadow-md shadow-blue-gray-500/5" : "px-0 py-1"}`}
-            sx={{ backgroundColor: fixedNavbar ? "white" : "transparent" }}
-        >
-            <Toolbar className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                    <IconButton onClick={() => setOpenSideNav(dispatch, !openSideNav)}>
-                        <MenuIcon />
-                    </IconButton>
-                    <Breadcrumbs className="text-gray-600">
-                        <Link to={`/${layout}/${path}`} className="text-black">
-                            <Typography variant="body1">{name}</Typography>
-                        </Link>
-                    </Breadcrumbs>
-                    <Outlet />
-                    <Typography variant="body2" className="text-black">/</Typography>
-                    <Typography variant="body1" className="text-black">
-                        {page}
-                    </Typography>
-                </div>
-                <div className="flex items-center gap-4">
-                    <InputBase
-                        placeholder="Search your desired clinic center"
-                        className="border px-2 py-1 rounded-md w-full"
-                        value={memoizedSearchQueryValue}
-                        name="filterSearch"
-                        onChange={handleSearchChange}
-                    />
-                    <div className="search-results">
-                        {filteredClinics.length > 0 ? (
-                            filteredClinics.map((clinic, index) => (
-                                <div key={index} className="clinic-item">
-                                    <Card key={index} className="clinic-card mb-4" sx={{ width: 300 }}>
-                                        <CardContent>
-                                            <Typography variant="h6">{clinic.clinic_name}</Typography>
-                                            <Typography variant="body2">{clinic.clinic_address}</Typography>
-                                            <Typography variant="body2">{clinic.clinic_type}</Typography>
-                                        </CardContent>
-                                    </Card>
-                                </div>
-                            ))
-                        ) : (
-                            <Typography>No results found</Typography>
-                        )}
+        <nav className={`fixed top-0 left-0 right-0 z-40 transition-all ${fixedNavbar ? 'bg-white shadow-md' : 'bg-white shadow-md'}`}>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex justify-between h-16">
+                    {/* Left side - Menu and Breadcrumbs */}
+                    <div className="flex items-center">
+                        <button
+                            onClick={() => setOpenSideNav(dispatch, !openSideNav)}
+                            className="xl:hidden lg:hidden md:hidden p-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none"
+                        >
+                            <FiMenu className="h-6 w-6" />
+                        </button>
+
+                        <div className="hidden md:ml-6 md:flex md:items-center space-x-2">
+                            <nav className="flex" aria-label="Breadcrumb">
+                                <ol className="flex items-center space-x-2">
+                                    <li>
+                                        <Link
+                                            to={`/${layout}/${path}`}
+                                            className="text-gray-600 hover:text-blue-600 text-sm font-medium"
+                                        >
+                                            {name}
+                                        </Link>
+                                    </li>
+                                    {page && (
+                                        <>
+                                            <li className="flex items-center">
+                                                <FiChevronRight className="h-4 w-4 text-gray-400" />
+                                            </li>
+                                            <li>
+                                                <span className="text-gray-700 text-sm font-medium">
+                                                    {page}
+                                                </span>
+                                            </li>
+                                        </>
+                                    )}
+                                </ol>
+                            </nav>
+                        </div>
                     </div>
-                    <IconButton onClick={handleMenuOpen}>
-                        <Notifications />
-                    </IconButton>
-                    <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose} keepMounted>
-                        <MenuItem>
-                            <Avatar src="" />
-                            <Typography className="ml-2">New Message from Doctor</Typography>
-                        </MenuItem>
-                        <MenuItem>
-                            <Avatar src="" />
-                            <Typography className="ml-2">New Doctor has been added</Typography>
-                        </MenuItem>
-                        <MenuItem>
-                            <CreditCard className="mr-2" />
-                            <Typography>Payment has been made</Typography>
-                        </MenuItem>
-                    </Menu>
-                    <IconButton onClick={handleSettingsMenuOpen}>
-                        <Settings />
-                    </IconButton>
-                    <Menu
-                        anchorEl={settingsAnchorEl}
-                        open={Boolean(settingsAnchorEl)}
-                        onClose={handleSettingsMenuClose}
-                        keepMounted
-                    >
-                        <MenuItem>
-                            <Typography variant="body1">{patientNameWithPrefix}</Typography>
-                        </MenuItem>
-                        <MenuItem onClick={() => setOpenConfigurator(dispatch, true)}>
-                            <Settings className="mr-2" />
-                            <Typography>Settings</Typography>
-                        </MenuItem>
-                        <MenuItem onClick={handleLogout}>
-                            <Logout className="mr-2" />
-                            <Typography>Logout</Typography>
-                        </MenuItem>
-                    </Menu>
+
+                    {/* Right side - Search and User Menu */}
+                    <div className="flex items-center space-x-4">
+                        {/* Notification Bell */}
+                        <button
+                            className="p-2 rounded-full text-gray-600 hover:bg-gray-100 focus:outline-none"
+                        >
+                            <FiBell className="h-5 w-5" />
+                        </button>
+
+                        {/* User Menu */}
+                        <div className="relative">
+                            <button
+                                className="flex items-center text-sm rounded-full focus:outline-none cursor-pointer"
+                                onClick={handleSettingsMenuOpen}
+                            >
+                                <span className="sr-only">Open user menu</span>
+                                <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white">
+                                    {patientNameWithPrefix ? patientNameWithPrefix.charAt(5) : 'U'}
+                                </div>
+                            </button>
+
+                            {/* Dropdown Menu */}
+                            {settingsAnchorEl && (
+                                <div className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                                    <div className="py-1" role="menu" aria-orientation="vertical">
+                                        <div className="px-4 py-2 border-b border-gray-100">
+                                            <p className="text-sm font-medium text-gray-900">{patientNameWithPrefix || 'User'}</p>
+                                            <p className="text-xs text-gray-500">Patient</p>
+                                        </div>
+                                        <a
+                                            href="#"
+                                            onClick={() => setOpenConfigurator(dispatch, true)}
+                                            className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                            role="menuitem"
+                                        >
+                                            <FiSettings className="mr-3 h-5 w-5 text-gray-400" />
+                                            Settings
+                                        </a>
+                                        <a
+                                            href="#"
+                                            className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                            role="menuitem"
+                                        >
+                                            <FiCreditCard className="mr-3 h-5 w-5 text-gray-400" />
+                                            Billing
+                                        </a>
+                                        <button
+                                            onClick={handleLogout}
+                                            className="w-full text-left flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                                            role="menuitem"
+                                        >
+                                            <FiLogOut className="mr-3 h-5 w-5 text-red-400" />
+                                            Sign out
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
-            </Toolbar>
+            </div>
+
             <LogoutDialog
                 open={logoutDialog}
-                onClose={handleDialogClose}
+                onClose={handleLogoutDialogClose}
                 onConfirm={handleLogoutConfirm}
             />
-        </AppBar>
-    )
-}
+            <Outlet />
+        </nav>
+    );
+};
+
 export default DashboardNavbar;

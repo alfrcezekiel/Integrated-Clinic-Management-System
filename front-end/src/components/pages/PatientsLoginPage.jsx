@@ -201,7 +201,7 @@ function PatientsLoginPortal() {
     return (
         <>
             <section className="m-3 flex gap-4">
-                <div className="w-full lg:w-3/5 mt-24">
+                <div className="w-full lg:w-3/5 py-55">
                     <div className="text-center">
                         <Typography variant="h5" className="font-bold mb-4" color="black">Patients Login Portal</Typography>
                     </div>
@@ -282,8 +282,8 @@ function PatientsLoginPortal() {
                         </div>
                     </form>
                 </div>
-                <div className="w-2/5 h-screen hidden lg:block">
-                    <img src="img/stethoscope.jpg" className="h-full w-full object-cover rounded-3xl" alt="Stethoscope" />
+                <div className="py-10 px-2 w-2/5 max-h-[90dvh] hidden lg:block">
+                    <img src="img/stethoscope.jpg" className="w-full max-h-[90dvh] object-cover rounded-3xl" alt="Stethoscope" />
                 </div>
             </section>
             <Dialog open={openModal} onClose={handleCloseModal} className="flex items-center justify-center">
