@@ -1,5 +1,6 @@
 import mysql from "mysql2/promise";
 import dotenv from "dotenv";
+import logger from "../../config/winston.js";
 dotenv.config();
 /**
  * Function to create a connection pool to the MySQL database
@@ -17,11 +18,11 @@ async function createConnection() {
             queueLimit: 0
         });
 
-        console.log("Server connected successfully!");
-        
+        logger.log("info", "Server connected successfully!");
+
         return pool;
     } catch (error) {
-        console.error(`Failed to connect to server: ${error}`);
+        logger.error(`Failed to connect to server: ${error}`);
     }
 }
 

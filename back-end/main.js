@@ -22,9 +22,9 @@ import initializeScheduler from "./config/appointment_scheduler.js";
 dotenv.config();
 
 const nextRuns = await getNextBackupRun(5);
-console.log(`Upcoming backup runs (Asia/Manila)`)
+logger.log(`info`, `Upcoming backup runs (Asia/Manila)`)
 nextRuns.forEach((run, index) => {
-    console.log(`Run ${index + 1}: ${run.toLocaleString("en-US", { timeZone: "Asia/Manila" })}`)
+    logger.log(`info`, `Run ${index + 1}: ${run.toLocaleString("en-US", { timeZone: "Asia/Manila" })}`)
 })
 
 const backupConfig = {
@@ -157,7 +157,6 @@ const startServer = async () => {
 
         if (process.env.NODE_ENV === "development") {
             initializeScheduler();
-            logger.log(`info`, `Appointment scheduler initialized`);
         }
 
         app.listen(app.get("port"), app.get("host"), () => {
