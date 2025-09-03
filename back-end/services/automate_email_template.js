@@ -90,7 +90,7 @@ export const automatedEmailNotificationTemplate = (appointment) => {
 
                     <!-- CTA buttons -->
                     <div class="text-center">
-                        <a href="${process.env.FRONTEND_ENDPOINT}/appointment" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-8 rounded-lg shadow-md transition duration-300 ease-in-out">
+                        <a href="${process.env.FRONTEND_ENDPOINT}/patients-dashboard/ViewAppointment" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-8 rounded-lg shadow-md transition duration-300 ease-in-out">
                             View Appointment
                         </a>
                         <p class="mt-4 text-sm text-gray-500">

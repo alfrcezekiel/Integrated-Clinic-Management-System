@@ -317,7 +317,7 @@ router.get("/patient/dashboard/calculateAllBookedAppointments", verifyToken, cal
 router.get("/patient/dashboard/calculatePendingBookedAppointments", verifyToken, calculatePendingBookedAppointmentsOfPatient);
 
 /**
- * @exports router for calculating the approved booked appointmnet of specific patient account
+ * @exports router for calculating the approved booked appointment of specific patient account
  */
 router.get("/patient/dashboard/calculateApprovedBookedAppointment", verifyToken, calculateApprovedBookedAppointmentOfPatient);
 

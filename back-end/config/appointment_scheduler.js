@@ -39,7 +39,7 @@ const scheduleAppointmentReminders = () => {
         try {
             logger.log(`info`, `Running appointment reminders scheduler`)
             const result = scheduleReminderForUpcomingAppointments();
-            logger.log(`info`, `Appointment reminders scheduled successfully: ${result}`);
+            logger.log(`info`, `Appointment reminders scheduled successfully: ${result} reminder sent`);
         } catch (error) {
             logger.log(`error`, `Failed to schedule appointment reminders: ${error}`);
         }
@@ -66,7 +66,7 @@ const scheduleFollowUpMessage = () => {
         try {
             logger.log(`info`, `Running follow up message scheduler`)
             const result = processFollowUpMessage();
-            logger.log(`info`, `Follow up message scheduled successfully: ${result}`);
+            logger.log(`info`, `Follow up message scheduled successfully: ${result} follow up message sent`);
         } catch (error) {
             logger.log(`error`, `Failed to schedule follow up message: ${error}`);
         }
@@ -84,7 +84,7 @@ const initializeScheduler = () => {
     try {
         scheduleAppointmentReminders();
         scheduleFollowUpMessage();
-    
+
         logger.log(`info`, `Appointment scheduler initialized`)
     } catch (error) {
         logger.log(`error`, `Failed to initialize appointment scheduler: ${error}`)
