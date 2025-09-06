@@ -705,6 +705,7 @@ export const patientsBookedAppointments = async (req, res) => {
                 email,
                 appointmentDate,
                 phoneNumber,
+                status,
                 gender,
                 preferredTime,
                 purposeOfAppointment
@@ -930,9 +931,11 @@ export const getBookedAppointmentsToDisplayInDoctorsDashboard = async (req, res)
 
 // controller logic for updating patients appointments details
 export const updatePatientsAppointments = async (req, res) => {
+    const connection = await conn.getConnection();
     try {
         const { appointmentID } = req.params;
 
+        await connection.beginTransaction();
         if (!appointmentID) {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 message: "Please enter a valid appointment ID"
@@ -953,6 +956,19 @@ export const updatePatientsAppointments = async (req, res) => {
 
         // Debug log to check the received appointmentID and body
         console.log(`Received appointmentID: ${appointmentID}`);
+
+        const status_query = `
+            SELECT status
+            FROM patientsappointment
+            WHERE appointmentID = ?;
+        `
+        const [current_appointment] = await conn.query(status_query, [appointmentID]);
+
+        if (current_appointment.length === 0) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No appointments found with the provided Patient ID"
+            });
+        }
 
         const formattedAppointmentDate = dayjs(appointmentDate).format("YYYY-MM-DD");
         const formattedPreferredTime = preferredTime ? preferredTime.slice(0, 5) : null;
@@ -993,16 +1009,39 @@ export const updatePatientsAppointments = async (req, res) => {
             });
         }
 
+        /**
+         * if the status of the appointment has been changed, trigger the automated status update
+         */
+        if (current_appointment.length > 0 && current_appointment[0].status !== status) {
+            try {
+                const clinic_instance = new Clinic();
+                await clinic_instance.handleAutomatedUpdateStatus({
+                    appointmentID: parseInt(appointmentID),
+                    status: status
+                })
+            } catch (error) {
+                logger.error(`Failed to update patients appointments: ${error}`);
+            }
+        }
         // Return success response
         return res.status(StatusCodes.OK).json({
             message: "Patients appointments updated successfully"
         });
 
     } catch (error) {
+        const rollbackQuery = await connection.rollback();
+        if (!rollbackQuery) {
+            logger.log(`error`, `Failed to rollback transaction: ${error}`);
+        }
+
         console.error(`Failed to update patients appointments: ${error}`);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             message: "Failed to update patients appointments"
         });
+    } finally {
+        if (connection) {
+            connection.release();
+        }
     }
 };
 
@@ -4708,16 +4747,14 @@ export const handleAutomatedUpdateStatus = asyncHandler(
  * @function controller logic to scheedule reminders for upcoming appointments
  */
 export const scheduleReminderForUpcomingAppointments = asyncHandler(
-    async () => {
+    async (req, res) => {
         try {
             const now = new Date();
-            const tomorrow = new Date(now);
-            tomorrow.setDate(tomorrow.getDate() + 1);
+            const appointmentDate = now.toISOString().split("T")[0];
 
             const clinic_instance = new Clinic();
-            await clinic_instance.scheduleReminderForUpcomingAppointments({
-                now,
-                tomorrow
+            await clinic_instance.scheduleRemindersForUpcomingAppointments({
+                appointmentDate: appointmentDate
             });
 
             return res.status(StatusCodes.OK).json({
@@ -4737,7 +4774,7 @@ export const scheduleReminderForUpcomingAppointments = asyncHandler(
  * @function controller logic to process a follow up message via sms, email
  */
 export const processFollowUpMessage = asyncHandler(
-    async () => {
+    async (req, res) => {
         try {
             const clinic = new Clinic();
             const appointments = await clinic.getCompletedAppointmentsForFollowUp({

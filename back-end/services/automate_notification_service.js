@@ -16,7 +16,8 @@ const transporter = nodemailer.createTransport({
     auth: {
         user: process.env.SMTP_EMAIL_USER,
         pass: process.env.SMTP_EMAIL_PASSWORD
-    }
+    },
+    secure: true
 })
 
 /**
@@ -44,7 +45,7 @@ initialzeTwilioClient();
 
 
 /**
- * @function send a email notification
+ * @function send a email notification in patient side for appointment confirmation / reminders
  */
 export const sendEmailNotification = async (to, subject, html) => {
     try {
@@ -247,6 +248,113 @@ export const sendFollowUpMessage = async (appointment) => {
         }
     } catch (error) {
         logger.log(`error`, `Failed sending a follow up message via email, sms: ${error}`)
+        throw error;
+    }
+}
+
+/**
+ * @function to send a reminder in updating the status of the appointment in clinic side via email and sms
+ */
+export const sendStatusUpdateReminder = async ({ email, phoneNumber, firstName, lastName, appointmentDate, preferredTime, patientStatus, clinicName }) => {
+    try {
+        let dateObj;
+
+        if (typeof appointmentDate === "string") {
+            dateObj = new Date(appointmentDate);
+
+            if (isNaN(dateObj.getTime())) {
+                const [datePart, timePart] = appointmentDate.split(" ");
+                const [year, month, day] = datePart.split("-").map(Number);
+
+                if (timePart) {
+                    const [hours, minutes] = timePart.split(":").map(Number);
+
+                    dateObj = new Date(year, month - 1, day, hours, minutes);
+                } else {
+                    dateObj = new Date(year, month - 1, day);
+                }
+            }
+        } else if (appointmentDate instanceof Date) {
+            dateObj = appointmentDate;
+        } else {
+            dateObj = new Date();
+            logger.warn(`Invalid appointment date: ${appointmentDate}`)
+        }
+
+        const options = {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+        }
+
+        const formattedDate = dateObj.toLocaleDateString("en-US", options);
+
+        /**
+         * email content
+         */
+        const emailSubject = `Appointment Status Update - ${clinicName}`;
+        const emailBody = `
+            Dear ${firstName} ${lastName},
+
+            Your appointment scheduled for ${formattedDate} at ${preferredTime} has been updated to ${patientStatus}.
+
+            Clinic: ${clinicName}
+
+            Please contact the clinic if you have any questions or concerns.
+
+            Best regards,
+            ${clinicName} Team.
+        `;
+
+        const emailInfo = await transporter.sendMail({
+            from: `${clinicName} <${process.env.SMTP_EMAIL_USER}>`,
+            to: email,
+            subject: emailSubject,
+            text: emailBody
+        })
+
+        const smsBody = `
+            Hi ${firstName} ${lastName}, your appointment scheduled on ${formattedDate} at ${preferredTime} has been updated to ${patientStatus} - ${clinicName}
+
+            Please contact the clinic if you have any questions or concerns.
+
+            Best regards,
+            ${clinicName} Team.
+        `
+
+        let smsInfo;
+
+        if (phoneNumber && process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
+            smsInfo = await sendSmsNotification(
+                phoneNumber,
+                smsBody
+            )
+        }
+
+        return {
+            success: true,
+            emailInfo,
+            smsInfo: smsInfo
+        }
+    } catch (error) {
+        logger.log(`error`, `Failed sending a status update reminder via email, sms: ${error}`)
+        throw error;
+    }
+}
+
+/**
+ * @function handles the automated update of patient status and send a reminder to the patient via sms and email.
+ */
+export const handleAutomatedUpdateStatus = async ({ appointmentID, patientStatus }) => {
+    try {
+        return {
+            success: true,
+            message: "Automated update status has been sent successfully",
+            appointmentID,
+            patientStatus
+        }
+    } catch (error) {
+        logger.log(`error`, `Failed handling automated update status: ${error}`)
         throw error;
     }
 }

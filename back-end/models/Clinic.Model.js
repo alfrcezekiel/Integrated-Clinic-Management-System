@@ -6,8 +6,8 @@ import dayjs from "dayjs";
 import crypto from "crypto";
 import {
     scheduleAppointmentsReminder,
-    sendEmailNotification,
-    sendSmsNotification
+    sendSmsNotification,
+    sendStatusUpdateReminder
 } from "../services/automate_notification_service.js";
 
 /**
@@ -3219,6 +3219,53 @@ class Clinic {
                     throw new Error(`Invalid! Patient status should be a string`);
                 }
 
+                /**
+                 * @description columns of patients appointments and clinics
+                 */
+                const patients_appointments_and_clinics_columns = [
+                    "pa.appointmentID",
+                    "pa.firstName",
+                    "pa.lastName",
+                    "pa.email",
+                    "pa.appointmentDate",
+                    "pa.preferredTime",
+                    "pa.phoneNumber",
+                    "pa.status",
+                    "pa.purposeOfAppointment",
+                    "c.clinic_name",
+                    "c.clinic_address"
+                ]
+
+                /**
+                 * @description query to retrieve the appointment and clinic
+                 */
+                const retrieveAppointmentAndClinicQuery = `
+                    SELECT
+                    ${patients_appointments_and_clinics_columns.join(",")}
+                    FROM patientsappointment AS pa
+                    INNER JOIN clinic AS c
+                    ON pa.clinic_id = c.clinic_id
+                    WHERE pa.appointmentID = ?;
+                `
+
+                /**
+                 * @description values of appointment ID
+                 */
+                const retrieveAppointmentAndClinicQueryValues = [
+                    appointment_id
+                ]
+
+                const [rows] = await this.connection.query(
+                    retrieveAppointmentAndClinicQuery,
+                    retrieveAppointmentAndClinicQueryValues
+                );
+
+                if (!rows.length) {
+                    throw new Error(`Failed to retrieve the appointment and clinic`);
+                }
+
+                const current_appointment = rows[0];
+
                 const updateQuery = `
                     UPDATE patientsappointment
                     SET status = ?
@@ -3236,63 +3283,32 @@ class Clinic {
                     throw new Error(`Failed to automate update the status of patient via email and sms`);
                 }
 
-                const patients_appointments_and_clinics_columns = [
-                    "pa.appointmentID",
-                    "pa.firstName",
-                    "pa.lastName",
-                    "pa.email",
-                    "pa.appointmentDate",
-                    "pa.preferredTime",
-                    "pa.phoneNumber",
-                    "pa.status",
-                    "pa.purposeOfAppointment",
-                    "c.clinic_name",
-                    "c.clinic_address"
-                ]
-
-                const retrieveAppointmentAndClinicQuery = `
-                    SELECT
-                        ${patients_appointments_and_clinics_columns.join(",")}
-                    FROM patientsappointment AS pa
-                    INNER JOIN clinic AS c
-                    ON pa.clinic_id = c.clinic_id
-                    WHERE pa.appointmentID = ?;
-                `
-
-                const retrieveAppointmentAndClinicQueryValues = [
-                    appointment_id
-                ]
-
-                const [rows] = await this.connection.query(
-                    retrieveAppointmentAndClinicQuery,
-                    retrieveAppointmentAndClinicQueryValues
-                );
-
-                if (!rows.length) {
-                    throw new Error(`Failed to retrieve the appointment and clinic`);
-                }
+                /**
+                 * sends reminder to the patient in via email
+                 */
+                await this.sendStatusUpdateReminder({
+                    appointmentID: appointment_id,
+                    email: current_appointment.email,
+                    phoneNumber: current_appointment.phoneNumber,
+                    firstName: current_appointment.firstName,
+                    lastName: current_appointment.lastName,
+                    appointmentDate: `${current_appointment.appointmentDate}`,
+                    preferredTime: `${current_appointment.preferredTime}`,
+                    patientStatus: patient_status,
+                    clinicName: current_appointment.clinic_name,
+                })
 
                 const statusMessage = patient_status === "Approved" ?
-                    `Your appointment on ${rows[0].appointmentDate} at ${rows[0].preferredTime} has been approved` :
-                    `Your appointment on ${rows[0].appointmentDate} at ${rows[0].preferredTime} has been ${patient_status.toLowerCase()}`;
-
-                const confirmationEmailTemplate = sendEmailNotification(
-                    rows[0].email,
-                    "Appointment Status Update",
-                    statusMessage
-                );
+                    `Your appointment on ${current_appointment.appointmentDate} at ${current_appointment.preferredTime} has been approved` :
+                    `Your appointment on ${current_appointment.appointmentDate} at ${current_appointment.preferredTime} has been ${patient_status.toLowerCase()}`;
 
                 const confirmationSMSMessage = `
-                    Hi ${rows[0].firstName}, ${statusMessage.toLowerCase()},
+                    Hi ${current_appointment.firstName}, ${statusMessage.toLowerCase()},
                 `;
 
-                if (rows[0].email) {
-                    await confirmationEmailTemplate;
-                }
-
-                if (rows[0].phoneNumber) {
+                if (current_appointment.phoneNumber) {
                     sendSmsNotification(
-                        rows[0].phoneNumber,
+                        current_appointment.phoneNumber,
                         confirmationSMSMessage
                     );
                 }
@@ -3300,7 +3316,8 @@ class Clinic {
                 await this.connection.commit();
 
                 return {
-                    success: true
+                    success: true,
+                    message: `Automated update status of patient via email and sms`
                 }
 
             } catch (error) {
@@ -3320,6 +3337,40 @@ class Clinic {
         "Handle Automated Update Status"
     )
 
+    /**
+     * @method logic send status update reminder to the patient via email and sms
+     */
+    sendStatusUpdateReminder = modelErrorHandling(
+        async ({
+            appointmentID,
+            email,
+            phoneNumber,
+            firstName,
+            lastName,
+            appointmentDate,
+            preferredTime,
+            patientStatus,
+            clinicName
+        }) => {
+            try {
+                return await sendStatusUpdateReminder({
+                    appointmentID,
+                    email,
+                    phoneNumber,
+                    firstName,
+                    lastName,
+                    appointmentDate,
+                    preferredTime,
+                    patientStatus,
+                    clinicName
+                })
+            } catch (error) {
+                logger.log(`error`, `Failed to send status update reminder via email and sms: ${error}`);
+                throw error;
+            }
+        },
+        "Send Status Update Reminder"
+    )
     /**
      * @method logic  to check the patient status between pending and approved for scheduled reminders
      */
@@ -3358,17 +3409,20 @@ class Clinic {
                     "Approved"
                 ]
 
+                const status_placeholders = status_values.map(() => "?").join(",");
+
                 const query = `
                     SELECT
                         ${patients_appointments_col.join(",")}
                     FROM patientsappointment AS pa
                     WHERE pa.appointmentDate BETWEEN ? AND ?
-                    AND pa.status IN (${status_values.join(",")})
+                    AND pa.status IN (${status_placeholders})
                 `
 
                 const queryValues = [
                     appointment_date,
-                    appointment_date
+                    appointment_date,
+                    ...status_values
                 ]
 
                 const [rows] = await this.connection.query(query, queryValues);
