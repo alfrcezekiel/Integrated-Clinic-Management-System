@@ -3427,13 +3427,19 @@ class Clinic {
 
                 const [rows] = await this.connection.query(query, queryValues);
 
-                if (!rows.length) {
-                    throw new Error(`Failed to retrieve the appointments`);
+                if (!rows || rows.length === 0) {
+                    logger.log(`error`, `No upcoming appointments found in this appointment date: ${appointment_date}`);
+                    throw new Error(`Failed to retrieve the schedule upcoming appointments`);
                 }
+
+                await this.connection.commit();
 
                 for (const appointment of rows) {
                     try {
-                        scheduleAppointmentsReminder({
+                        /**
+                         * schedule a reminder for 1 hour
+                         */
+                        await scheduleAppointmentsReminder({
                             ...appointment,
                             reminderTime: 60
                         })
@@ -3441,8 +3447,11 @@ class Clinic {
                         const appointmentTime = new Date(appointment.appointmentDate);
                         const timeUntilAppointment = appointmentTime - new Date();
 
+                        /**
+                         * schedule a reminder for 24 hours
+                         */
                         if (timeUntilAppointment > 24 * 60 * 60 * 1000) {
-                            scheduleAppointmentsReminder({
+                            await scheduleAppointmentsReminder({
                                 ...appointment,
                                 reminderTime: 24 * 60
                             })
@@ -3452,8 +3461,6 @@ class Clinic {
                         throw error;
                     }
                 }
-
-                await this.connection.commit();
 
                 return rows;
             } catch (error) {
@@ -3590,6 +3597,180 @@ class Clinic {
             }
         },
         "Mark Follow Up Sent"
+    )
+
+    /**
+     * @method search logic to  filter approved booked appointments specific patient information in patient side
+     */
+    searchApprovedBookedAppointments = modelErrorHandling(
+        async (params) => {
+            this.connection = await this.conn.getConnection();
+            try {
+                await this.connection.beginTransaction();
+                if (!params || typeof params !== "object" || Array.isArray(params)) {
+                    throw new Error(`Invalid! Search approved booked appointments should be an object`);
+                }
+
+                const {
+                    search,
+                    limit,
+                    page,
+                    email
+                } = params;
+
+                const search_term = String(search);
+                const limit_value = parseInt(limit);
+                const page_value = parseInt(page);
+                const email_address = String(email);
+
+                if (!email_address) {
+                    throw new Error(`Invalid! Email address should be a string`);
+                }
+
+                if (!search_term) {
+                    throw new Error(`Invalid! Search term should be a string`);
+                }
+
+                if (!limit_value) {
+                    throw new Error(`Invalid! Limit should be a number`);
+                }
+
+                if (!page_value) {
+                    throw new Error(`Invalid! Page should be a number`);
+                }
+
+                const offset = (page_value - 1) * limit_value;
+
+                /**
+                 * counts all rows to for pagination
+                 */
+                const countQuery = `
+                    SELECT COUNT(*) AS total
+                    FROM patientsappointment AS pa
+                    INNER JOIN clinic AS c
+                    ON pa.clinic_id = c.clinic_id
+                    WHERE pa.email = ? AND pa.status = ?
+                    AND (
+                        pa.firstName LIKE ? OR
+                        pa.lastName LIKE ? OR
+                        pa.email LIKE ? OR
+                        pa.phoneNumber LIKE ? OR
+                        pa.appointmentDate LIKE ? OR
+                        pa.preferredTime LIKE ? OR
+                        pa.status LIKE ? OR
+                        pa.purposeOfAppointment LIKE ? OR
+                        c.clinic_name LIKE ?
+                    )
+                `
+
+                const patient_status = String("Approved");
+                const search_pattern = `%${search_term}%`;
+                const count_query_values = [
+                    email_address,
+                    patient_status,
+                    search_pattern,
+                    search_pattern,
+                    search_pattern,
+                    search_pattern,
+                    search_pattern,
+                    search_pattern,
+                    search_pattern,
+                    search_pattern,
+                    search_pattern,
+                ]
+
+                const [countResult] = await this.connection.query(
+                    countQuery,
+                    count_query_values
+                );
+
+                if (!countResult.length) {
+                    throw new Error(`Failed to count the approved booked appointments`);
+                }
+                const total = countResult[0].total;
+                const totalPages = Math.ceil(total / limit_value);
+
+                const searchQuery = `
+                    SELECT 
+                        c.clinic_name,
+                        pa.firstName,
+                        pa.lastName,
+                        pa.email,
+                        pa.appointmentDate,
+                        pa.preferredTime,
+                        pa.status,
+                        pa.phoneNumber,
+                        pa.purposeOfAppointment
+                    FROM patientsappointment AS pa
+                    INNER JOIN clinic AS c
+                    ON pa.clinic_id = c.clinic_id
+                    WHERE pa.email = ? AND pa.status = ?
+                    AND (
+                        c.clinic_name LIKE ? OR
+                        pa.firstName LIKE ? OR
+                        pa.lastName LIKE ? OR
+                        pa.email LIKE ? OR
+                        pa.phoneNumber LIKE ? OR
+                        pa.appointmentDate LIKE ? OR
+                        pa.preferredTime LIKE ? OR
+                        pa.status LIKE ? OR
+                        pa.purposeOfAppointment LIKE ?
+                    )
+                    ORDER BY pa.appointmentDate DESC, pa.preferredTime DESC
+                    LIMIT ? OFFSET ?
+                `;
+
+                const search_query_values = [
+                    email_address,
+                    patient_status,
+                    search_pattern,
+                    search_pattern,
+                    search_pattern,
+                    search_pattern,
+                    search_pattern,
+                    search_pattern,
+                    search_pattern,
+                    search_pattern,
+                    search_pattern,
+                    limit_value,
+                    offset
+                ]
+
+                const [rows] = await this.connection.query(
+                    searchQuery,
+                    search_query_values
+                );
+
+                if (!rows.length) {
+                    throw new Error(`Failed to filter specific particular approved booked appointment`);
+                }
+
+                await this.connection.commit();
+
+                return {
+                    appointments: rows,
+                    pagination: {
+                        total: total,
+                        totalPages: totalPages,
+                        currentPage: page_value,
+                        limit: limit_value
+                    }
+                }
+            } catch (error) {
+                const rollbackQuery = this.connection.rollback();
+                if (!rollbackQuery) {
+                    throw new Error("Failed to rollback transaction in searching specific approved booked appointments")
+                }
+
+                logger.log(`error`, `Failed to filter specific particular approved booked appointment: ${error}`);
+                throw error;
+            } finally {
+                if (this.connection) {
+                    await this.connection.release();
+                }
+            }
+        },
+        "Search Approved Booked Appointments"
     )
 }
 

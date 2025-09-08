@@ -35,16 +35,34 @@ const scheduleAppointmentReminders = () => {
     /**
      * run every hour at minute 0
      */
-    cron.schedule(APPOINTMENT_REMINDER_SCHEDULE, async () => {
-        try {
-            logger.log(`info`, `Running appointment reminders scheduler`)
-            const result = scheduleReminderForUpcomingAppointments();
-            logger.log(`info`, `Appointment reminders scheduled successfully: ${result} reminder sent`);
-        } catch (error) {
-            logger.log(`error`, `Failed to schedule appointment reminders: ${error}`);
-        }
+    cron.schedule(APPOINTMENT_REMINDER_SCHEDULE, () => {
+        (async () => {
+            try {
+                logger.log(`info`, `Running appointment reminders scheduler`)
 
-        logger.log(`info`, `Appoinntment reminder scheduler started`)
+                const mockReq = {};
+                const mockRes = {
+                    status: function (code) {
+                        this.statusCode = code;
+                        return this;
+                    },
+                    json: function (data) {
+                        if (data && data.success) {
+                            logger.log(`info`, `Appointment reminders scheduled successfully: ${data.message}`);
+                        } else {
+                            logger.log(`warn`, `No appointments found for scheduling upcoming reminders: ${data?.message}`)
+                        }
+                        return this;
+                    }
+                }
+
+                await scheduleReminderForUpcomingAppointments(mockReq, mockRes);
+            } catch (error) {
+                logger.log(`error`, `Failed to schedule appointment reminders: ${error}`);
+            }
+
+            logger.log(`info`, `Appoinntment reminder scheduler started.`)
+        })()
     }, {
         timezone: "Asia/Manila",
         scheduled: true

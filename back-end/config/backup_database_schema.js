@@ -8,7 +8,7 @@ import cron from "node-cron"
 import crypto from "crypto"
 import zlib from "zlib"
 import parser from "cron-parser"
-
+import logger from "./winston.js"
 /**
  * converts __dirname to ES modules
 */
@@ -309,7 +309,7 @@ export const scheduleBackup = async (schedule = null) => {
         }
     }, { timezone: "Asia/Manila" })
 
-    console.log(`Database backup scheduled to run at: ${effectiveSchedule} - (${new Date().toLocaleString()}) - (${process.env.NODE_ENV || "development"}) - (${nextRun ? `Next Run: ${nextRun.toLocaleString("en-US", { timeZone: "Asia/Manila" })}` : ""})`);
+    logger.log(`info`, `Database backup scheduled to run at: ${effectiveSchedule} - (${new Date().toLocaleString()}) - (${process.env.NODE_ENV || "development"}) - (${nextRun ? `Next Run: ${nextRun.toLocaleString("en-US", { timeZone: "Asia/Manila" })}` : ""})`);
 
     return effectiveSchedule;
 }

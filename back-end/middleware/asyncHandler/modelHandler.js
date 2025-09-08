@@ -1,5 +1,9 @@
 import logger from "../../config/winston.js";
 
+/**
+ * @function modelErrorHandling
+ * @description This function is used to handle errors in the model.
+ */
 const modelErrorHandling = (fn, contextName) => async (...args) => {
     let connection;
     try {

@@ -16,7 +16,7 @@ const AppointmentsTable = ({ retrievedAppointmentsData }) => {
 
     // function to determine the color of patients status
     const getStatusStyles = (status) => {
-        const baseClasses = "px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap";
+        const baseClasses = "px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap";
 
         switch (status?.toLowerCase()) {
             case "approved":
@@ -63,7 +63,7 @@ const AppointmentsTable = ({ retrievedAppointmentsData }) => {
         return retrievedAppointmentsData.map((appointment, i) => (
             <tr
                 key={i}
-                className="bg-white hover:bg-gray-50 transition-colors duration-150 text-center"
+                className={`${i % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-gray-50 transition-colors duration-150 text-center`}
             >
                 <td className="px-4 py-3 text-sm text-black whitespace-nowrap">
                     {appointment.firstName}
@@ -83,14 +83,14 @@ const AppointmentsTable = ({ retrievedAppointmentsData }) => {
                     {formatTimeToAMPM(appointment.preferredTime)}
                 </td>
                 <td className="px-4 py-3 text-sm whitespace-nowrap text-center text-black">
-                    <span className={getStatusStyles(appointment.status)}>
+                    <span className={`${getStatusStyles(appointment.status)} px-2 py-1 rounded-full text-xs font-medium`}>
                         {appointment.status}
                     </span>
                 </td>
                 <td className="px-4 py-3 text-sm text-black whitespace-nowrap text-center">
                     {appointment.purposeOfAppointment}
                 </td>
-            </tr>
+            </tr >
         ));
     }, [retrievedAppointmentsData]);
 

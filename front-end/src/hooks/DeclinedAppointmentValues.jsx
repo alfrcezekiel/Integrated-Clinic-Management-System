@@ -1,14 +1,8 @@
 import { useMemo } from "react";
 import PropTypes from "prop-types";
-import {
-    TableBody,
-    TableRow,
-    TableCell,
-    Typography,
-} from "@mui/material";
 
-// This component is used to rende  r the table rows for the appointments table
-const DeclinedAppointmentsTableValue = ({ retrievedAppointmentsData }) => {
+// This component is used to render the table rows for the appointments table
+const DeclinedAppointmentsTableValue = ({ retrievedAppointmentsData, appointmentsTableColumn }) => {
 
     // This function is used to format the date string to a more readable format
     const formatDate = (dateString) => {
@@ -22,17 +16,18 @@ const DeclinedAppointmentsTableValue = ({ retrievedAppointmentsData }) => {
 
     // function to determine  the color of patients status
     const getStatusColor = (status) => {
-        switch (status) {
-            case "Approved":
-                return "text-black bg-green-200";
-            case "Declined":
-                return "text-black bg-red-200";
-            case "Consulted":
-                return "text-black bg-blue-200";
-            case "Pending":
-                return "text-black bg-white"
+        const baseStyles = "px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap"
+        switch (status?.toLowerCase()) {
+            case "approved":
+                return `${baseStyles} text-black bg-green-200`;
+            case "declined":
+                return `${baseStyles} text-black bg-red-200`;
+            case "consulted":
+                return `${baseStyles} text-black bg-blue-200`;
+            case "pending":
+                return `${baseStyles} text-black bg-white`
             default:
-                return "text-black bg-white";
+                return `${baseStyles} text-black bg-white`;
         }
     }
 
@@ -52,80 +47,65 @@ const DeclinedAppointmentsTableValue = ({ retrievedAppointmentsData }) => {
     };
 
     const memoizedTableRows = useMemo(() => {
-        const statusMatch = ["Approved", "Declined", "Pending", "Consulted"];
-
-        if (retrievedAppointmentsData && retrievedAppointmentsData.length > 0) {
-            return retrievedAppointmentsData.map((appointment, i) => (
-                <TableRow key={i} className={`hover:bg-gray-200 transition duration-200 ease-in-out ${getStatusColor(appointment.status)}`}>
-                    <TableCell className="border-b border-blue-gray-50 text-center" align="center">
-                        <Typography variant="body2" className="text-blue-gray-900">
-                            {appointment.clinic_name}
-                        </Typography>
-                    </TableCell>
-                    <TableCell className="border-b border-blue-gray-50 text-center" align="center">
-                        <Typography variant="body2" className="text-blue-gray-900">
-                            {appointment.firstName}
-                        </Typography>
-                    </TableCell>
-                    <TableCell className="border-b border-blue-gray-50 text-center" align="center">
-                        <Typography variant="body2" className="text-blue-gray-900">
-                            {appointment.lastName}
-                        </Typography>
-                    </TableCell>
-                    <TableCell className="border-b border-blue-gray-50 text-center" align="center">
-                        <Typography variant="body2" className="text-blue-gray-900">
-                            {appointment.email}
-                        </Typography>
-                    </TableCell>
-                    <TableCell className="border-b border-blue-gray-50 text-center" align="center">
-                        <Typography variant="body2" className="text-blue-gray-900">
-                            {statusMatch.includes(appointment.appointmentDate) ? formatDate(appointment.appointmentDate) : formatDate(appointment.appointmentDate)}
-                        </Typography>
-                    </TableCell>
-                    <TableCell className="border-b border-blue-gray-50 text-center" align="center">
-                        <Typography variant="body2" className="text-blue-gray-900">
-                            {appointment.phoneNumber}
-                        </Typography>
-                    </TableCell>
-                    <TableCell className="border-b border-blue-gray-50 text-center" align="center">
-                        <Typography variant="body2" className="text-blue-gray-900">
-                            {formatTimeToAMPM(appointment.preferredTime) ? formatTimeToAMPM(appointment.preferredTime) : "N/A"}
-                        </Typography>
-                    </TableCell>
-                    <TableCell className="border-b border-blue-gray-50 text-center" align="center">
-                        <Typography variant="body2" className="text-blue-gray-900">
-                            {appointment.status}
-                        </Typography>
-                    </TableCell>
-                    <TableCell className="border-b border-blue-gray-50 text-center" align="center">
-                        <Typography variant="body2" className="text-blue-gray-900">
-                            {appointment.purposeOfAppointment}
-                        </Typography>
-                    </TableCell>
-                </TableRow>
-            ));
-        } else {
-            // If no data is found, render a no appointments found row
+        if (!retrievedAppointmentsData || retrievedAppointmentsData.length === 0) {
             return (
-                <TableRow key={0}>
-                    <TableCell colSpan={9} className="py-3 px-5 border-b border-blue-gray-50 text-center" align="center">
-                        <Typography variant="body2" className="text-blue-gray-900">
-                            {retrievedAppointmentsData ? "No appointments found" : "Please input credentials to view declined appointments"}
-                        </Typography>
-                    </TableCell>
-                </TableRow>
-            );
+                <tr>
+                    <td
+                        colSpan={appointmentsTableColumn.length}
+                        className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center"
+                    >
+                        No declined appointments found
+                    </td>
+                </tr>
+            )
         }
-    }, [retrievedAppointmentsData]);
+
+        return retrievedAppointmentsData.map((appointment, i) => (
+            <tr
+                key={i}
+                className={`${i % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-50 text-center transition-colors duration-150`}
+            >
+                <td className="px-6 py-3 whitespace-nowrap text-sm text-black dark:text-black">
+                    {appointment.clinic_name}
+                </td>
+                <td className="px-6 py-3 whitespace-nowrap text-sm text-black dark:text-black">
+                    {appointment.firstName}
+                    {" "}
+                    {appointment.lastName}
+                </td>
+                <td className="px-6 py-3 whitespace-nowrap text-sm text-black dark:text-black">
+                    {appointment.email}
+                </td>
+                <td className="px-6 py-3 whitespace-nowrap text-sm text-black dark:text-black">
+                    {formatDate(appointment.appointmentDate)}
+                </td>
+                <td className="px-6 py-3 whitespace-nowrap text-sm text-black dark:text-black">
+                    {appointment.phoneNumber}
+                </td>
+                <td className="px-6 py-3 whitespace-nowrap text-sm text-black dark:text-black">
+                    {formatTimeToAMPM(appointment.preferredTime)}
+                </td>
+                <td className="px-6 py-3 whitespace-nowrap text-sm text-black dark:text-black">
+                    <span className={`${getStatusColor(appointment.status)} px-2 py-1 rounded-full text-xs font-medium`}>
+                        {appointment.status}
+                    </span>
+                </td>
+                <td className="px-6 py-3 whitespace-nowrap text-sm text-black dark:text-black">
+                    {appointment.purposeOfAppointment}
+                </td>
+            </tr>
+        ));
+    }, [retrievedAppointmentsData, appointmentsTableColumn]);
 
     return (
-        <TableBody>
+        <tbody>
             {memoizedTableRows}
-        </TableBody>
+        </tbody>
     );
 };
 
 DeclinedAppointmentsTableValue.propTypes = {
     retrievedAppointmentsData: PropTypes.array,
+    appointmentsTableColumn: PropTypes.array,
 };
 export default DeclinedAppointmentsTableValue;

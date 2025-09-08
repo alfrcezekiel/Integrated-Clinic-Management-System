@@ -253,6 +253,28 @@ export const sendFollowUpMessage = async (appointment) => {
 }
 
 /**
+ * @function formats the date of the patient's appointment to AM/PM format
+ */
+const formatAppointmentDateToAMPM = (timeString) => {
+    if (!timeString) return "";
+
+    const time_string = String(timeString);
+
+    try {
+        let [hours, minutes] = time_string.split(":")
+        hours = parseInt(hours, 10);
+        const ampm = hours >= 12 ? "PM" : "AM";
+        hours = hours % 12;
+        hours = hours ? hours : 12;
+        minutes = minutes.toString().padStart(2, "0");
+        return `${hours}:${minutes} ${ampm}`;
+    } catch (error) {
+        logger.log(`error`, `Failed to format the date of the patient's appointment to AM/PM format: ${error}`)
+        return timeString;
+    }
+}
+
+/**
  * @function to send a reminder in updating the status of the appointment in clinic side via email and sms
  */
 export const sendStatusUpdateReminder = async ({ email, phoneNumber, firstName, lastName, appointmentDate, preferredTime, patientStatus, clinicName }) => {
@@ -288,29 +310,92 @@ export const sendStatusUpdateReminder = async ({ email, phoneNumber, firstName, 
         }
 
         const formattedDate = dateObj.toLocaleDateString("en-US", options);
+        const formattedAppointmentTime = formatAppointmentDateToAMPM(preferredTime);
 
         /**
          * email content
          */
         const emailSubject = `Appointment Status Update - ${clinicName}`;
         const emailBody = `
-            Dear ${firstName} ${lastName},
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Appointment Status Update</title>
+                <script src="https://cdn.tailwindcss.com"></script>
+            </head>
+            <body class="bg-gray-50 p-4">
+                <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
+                    <!-- Header -->
+                    <div class="bg-blue-600 p-6 text-white">
+                        <h2 class="text-2xl font-bold">Appointment Status Update</h2>
+                    </div>
 
-            Your appointment scheduled for ${formattedDate} at ${preferredTime} has been updated to ${patientStatus}.
+                    <!-- Main Content -->
+                    <div class="p-6">
+                        <p class="mb-4 text-gray-700">
+                            Dear <span class="font-semibold">${firstName} ${lastName}</span>,
+                        </p>
 
-            Clinic: ${clinicName}
+                        <div class="bg-blue-50 border-1-4 border-blue-500 p-4 mb-6">
+                            <h2 class="font-bold text-lg mb-2">Appointment Details</h2>
+                            <div class="space-y-1 text-gray-700">
+                                <p>
+                                    <span class="font-medium">Appointment Date: </span>
+                                    ${formattedDate}
+                                </p>
+                                <p>
+                                    <span class="font-medium">Appointment Time: </span>
+                                    ${formattedAppointmentTime}
+                                </p>
+                                <p class="mt-2">
+                                    <span class="font-medium">
+                                        Status:
+                                    </span>
+                                    <span class="px-2 py-1 rounded text-sm font-medium ${
+                                        patientStatus.toLowerCase() === "approved" ? "bg-green-200 text-green-800" : 
+                                        patientStatus.toLowerCase() === "pending" ? "bg-yellow-200 text-yellow-800" : 
+                                        patientStatus.toLowerCase() === "declined" ? "bg-red-200 text-red-800" : 
+                                        patientStatus.toLowerCase() === "cancelled" ? "bg-red-200 text-red-800" : 
+                                        "bg-gray-200 text-gray-800"
+                                    }">
+                                        ${patientStatus}
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
 
-            Please contact the clinic if you have any questions or concerns.
+                        <p class="mb-4 text-gray-700">
+                            If you have any questions or need to reschedule your appointment, please dont't hesitate to contact our clinic.
+                        </p>
 
-            Best regards,
-            ${clinicName} Team.
+                        <p class="text-gray-700">
+                            Thank you for choosing ${clinicName} for your healthcare needs.
+                        </p>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
+                        <p class="text-gray-500 text-sm">
+                            Best regards,
+                            <br>
+                            <span class="font-medium">${clinicName} Team</span>
+                        </p>
+                        <p class="mt-2 text-xs text-gray-400">
+                            This is an automated message. Please do not reply to this emaail.
+                        </p>
+                    </div>
+                </div>
+            </body>
+            </html>
         `;
 
         const emailInfo = await transporter.sendMail({
             from: `${clinicName} <${process.env.SMTP_EMAIL_USER}>`,
             to: email,
             subject: emailSubject,
-            text: emailBody
+            html: emailBody
         })
 
         const smsBody = `

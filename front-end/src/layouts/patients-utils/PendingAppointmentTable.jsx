@@ -165,7 +165,7 @@ const PendingAppointmentTable = () => {
 
     return (
         <>
-            <div className="container mx-auto px-4 py-20">
+            <div className="mt-16 w-full mb-8">
                 <div className="bg-white rounded-xl shadow-lg overflow-hidden">
                     <div
                         className="px-6 py-4 bg-gradient-to-r from-black to-black flex flex-col sm:flex-row justify-between items-center gap-4"
@@ -191,7 +191,6 @@ const PendingAppointmentTable = () => {
                             <div
                                 className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-black/100"
                             >
-                                <p className="mt-2 text-white dark:text-gray-300">Loading...</p>
                             </div>
                         </div>
                     )}
@@ -236,7 +235,7 @@ const PendingAppointmentTable = () => {
                                 </table>
                             </div>
                             {!isLoading && retrievedAppointmentsData.length === 0 && (
-                                <div className="text-center py-8">
+                                <div className="text-center py-4">
                                     <p className="text-gray-500 dark:text-gray-400">No searched pending appointments found</p>
                                 </div>
                             )}

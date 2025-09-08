@@ -18,7 +18,7 @@ const PendingStatusAppointmentTable = ({ retrievedAppointmentsData, appointmentT
 
     // function to determine  the color of patients status
     const getStatusColor = (status) => {
-        const baseStyles = "px-3 py-1 rounded-full text-xs font-medium"
+        const baseStyles = "px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap"
         switch (status?.toLowerCase()) {
             case "approved":
                 return `${baseStyles} text-black bg-green-200 dark:bg-green-800`;
@@ -53,10 +53,10 @@ const PendingStatusAppointmentTable = ({ retrievedAppointmentsData, appointmentT
             return (
                 <tr>
                     <td
-                        colSpan={appointmentTableColumn}
-                        className="px-5 py-3 text-center text-black"
+                        colSpan={appointmentTableColumn?.length || 9}
+                        className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center"
                     >
-                        {retrievedAppointmentsData ? "No pending appointment found" : "Please input credentials to view pending appointments"}
+                        No pending appointments found
                     </td>
                 </tr>
             )
@@ -65,13 +65,14 @@ const PendingStatusAppointmentTable = ({ retrievedAppointmentsData, appointmentT
         return retrievedAppointmentsData.map((appointment, i) => (
             <tr
                 key={i}
-                className={`bg-white hover:bg-gray-50 text-center transition-colors duration-150`}
+                className={`${i % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-50 text-center transition-colors duration-150`}
             >
                 <td className="px-6 py-3 whitespace-nowrap text-sm text-black dark:text-black">
                     {appointment.clinic_name}
                 </td>
                 <td className="px-6 py-3 whitespace-nowrap text-sm text-black dark:text-black">
-                    {appointment.firstName} {""}
+                    {appointment.firstName}
+                    {""}
                     {appointment.lastName}
                 </td>
                 <td className="px-6 py-3 whitespace-nowrap text-sm text-black dark:text-black">

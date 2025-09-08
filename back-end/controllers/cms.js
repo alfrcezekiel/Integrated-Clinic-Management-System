@@ -1009,6 +1009,8 @@ export const updatePatientsAppointments = async (req, res) => {
             });
         }
 
+        await connection.commit();
+
         /**
          * if the status of the appointment has been changed, trigger the automated status update
          */
@@ -4753,16 +4755,30 @@ export const scheduleReminderForUpcomingAppointments = asyncHandler(
             const appointmentDate = now.toISOString().split("T")[0];
 
             const clinic_instance = new Clinic();
-            await clinic_instance.scheduleRemindersForUpcomingAppointments({
+            const result = await clinic_instance.scheduleRemindersForUpcomingAppointments({
                 appointmentDate: appointmentDate
             });
 
+            if (result && result.length === 0) {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    message: "No appointments found for scheduling upcoming reminders"
+                })
+            };
+
             return res.status(StatusCodes.OK).json({
                 success: true,
-                message: "Reminders scheduled successfully"
+                message: "Reminders scheduled successfully",
+                data: result
             })
         } catch (error) {
             logger.log(`error`, `Failed to schedule reminder for upcoming appointments in controller: ${error}`);
+
+            if (error.message.includes("No appointments found for scheduling upcoming reminders")) {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    message: error.message
+                })
+            }
+
             return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
                 message: "Failed to schedule reminder for upcoming appointments"
             })
@@ -4800,6 +4816,77 @@ export const processFollowUpMessage = asyncHandler(
             logger.log(`error`, `Failed to process follow up message in controller: ${error}`);
             return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
                 message: "Failed to process follow up message"
+            })
+        }
+    }
+)
+
+/**
+ * @function controller search logic to filter the approved booked appointment details of patient in patient side table
+ */
+export const searchApprovedBookedAppointments = asyncHandler(
+    async (req, res) => {
+        try {
+
+            const {
+                search = " ",
+                page = 1,
+                limit = 10,
+                email
+            } = req.query;
+
+            const search_term = String(search);
+            const page_value = parseInt(page);
+            const limit_value = parseInt(limit);
+            const email_address = String(email);
+
+            if (!email_address) {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    message: "Please enter a valid email address"
+                })
+            } else if (!search_term) {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    message: "Please enter a valid search term"
+                })
+            } else if (!page_value) {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    message: "Please enter a valid page number"
+                })
+            } else if (!limit_value) {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    message: "Please enter a valid limit"
+                })
+            }
+
+            const clinic_instance = new Clinic();
+
+            if (!clinic_instance instanceof Clinic) {
+                return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                    message: "Failed to instantiate clinic instance in filtering approved booked appointments"
+                })
+            }
+
+            const result = await clinic_instance.searchApprovedBookedAppointments({
+                search: search_term,
+                page: page_value,
+                limit: limit_value,
+                email: email_address
+            })
+
+            if (result.length === 0) {
+                return res.status(StatusCodes.NOT_FOUND).json({
+                    message: "No approved booked appointments found"
+                })
+            }
+
+            return res.status(StatusCodes.OK).json({
+                message: "Filtered approved booked appointments found",
+                result: result
+            })
+        } catch (error) {
+            logger.log(`error`, `Failed to search approved booked appointments in controller: ${error}`);
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "Failed to search approved booked appointments"
             })
         }
     }
