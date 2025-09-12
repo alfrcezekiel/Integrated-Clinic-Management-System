@@ -186,14 +186,6 @@ const PendingAppointmentTable = () => {
                             />
                         </div>
                     </div>
-                    {isLoading && (
-                        <div className="py-6 text-center">
-                            <div
-                                className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-black/100"
-                            >
-                            </div>
-                        </div>
-                    )}
                     {error && (
                         <div
                             className="py-6 text-center"
@@ -234,9 +226,17 @@ const PendingAppointmentTable = () => {
                                     )}
                                 </table>
                             </div>
+                            {isLoading && (
+                                <div className="py-6 text-center">
+                                    <div
+                                        className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-black/100"
+                                    >
+                                    </div>
+                                </div>
+                            )}
                             {!isLoading && retrievedAppointmentsData.length === 0 && (
                                 <div className="text-center py-4">
-                                    <p className="text-gray-500 dark:text-gray-400">No searched pending appointments found</p>
+                                    <p className="text-gray-500 dark:text-gray-400">{searchTerm ? "No searched pending appointments found" : "No pending appointments found"}</p>
                                 </div>
                             )}
                             {totalItems > 0 && (

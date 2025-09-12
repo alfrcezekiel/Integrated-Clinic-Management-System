@@ -383,7 +383,7 @@ export const sendStatusUpdateReminder = async ({ email, phoneNumber, firstName, 
                             <span class="font-medium">${clinicName} Team</span>
                         </p>
                         <p class="mt-2 text-xs text-gray-400">
-                            This is an automated message. Please do not reply to this emaail.
+                            This is an automated message. Please do not reply to this email.
                         </p>
                     </div>
                 </div>

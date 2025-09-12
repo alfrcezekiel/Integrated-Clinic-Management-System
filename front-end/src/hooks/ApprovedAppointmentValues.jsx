@@ -54,7 +54,7 @@ const ApprovedAppointmentsTableValue = ({ retrievedAppointmentsData, appointment
             return (
                 <tr>
                     <td
-                        colSpan={appointmentsTableColumn.length}
+                        colSpan={appointmentsTableColumn?.length || 8}
                         className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center"
                     >
                         No appointments found
@@ -108,7 +108,7 @@ const ApprovedAppointmentsTableValue = ({ retrievedAppointmentsData, appointment
 };
 
 ApprovedAppointmentsTableValue.propTypes = {
-    retrievedAppointmentsData: PropTypes.array.isRequired,
+    retrievedAppointmentsData: PropTypes.array,
     appointmentsTableColumn: PropTypes.array
 };
 

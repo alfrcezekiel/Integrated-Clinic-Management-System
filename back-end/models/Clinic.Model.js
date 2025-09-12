@@ -3687,11 +3687,11 @@ class Clinic {
                 if (!countResult.length) {
                     throw new Error(`Failed to count the approved booked appointments`);
                 }
-                const total = countResult[0].total;
+                const total = countResult[0]?.total;
                 const totalPages = Math.ceil(total / limit_value);
 
                 const searchQuery = `
-                    SELECT 
+                    SELECT
                         c.clinic_name,
                         pa.firstName,
                         pa.lastName,
@@ -3732,8 +3732,8 @@ class Clinic {
                     search_pattern,
                     search_pattern,
                     search_pattern,
-                    limit_value,
-                    offset
+                    parseInt(limit_value),
+                    parseInt(offset)
                 ]
 
                 const [rows] = await this.connection.query(
@@ -3741,8 +3741,17 @@ class Clinic {
                     search_query_values
                 );
 
-                if (!rows.length) {
-                    throw new Error(`Failed to filter specific particular approved booked appointment`);
+                if (!rows || rows.length === 0) {
+                    return {
+                        appointments: [],
+                        pagination: {
+                            total: 0,
+                            currentPage: parseInt(page_value),
+                            totalPages: 0,
+                            limit: parseInt(limit_value)
+                        },
+                        message: "No approved booked appointments found"
+                    }
                 }
 
                 await this.connection.commit();
@@ -3752,8 +3761,8 @@ class Clinic {
                     pagination: {
                         total: total,
                         totalPages: totalPages,
-                        currentPage: page_value,
-                        limit: limit_value
+                        currentPage: parseInt(page_value),
+                        limit: parseInt(limit_value)
                     }
                 }
             } catch (error) {
@@ -3771,6 +3780,84 @@ class Clinic {
             }
         },
         "Search Approved Booked Appointments"
+    )
+
+    /**
+     * @method logic to return all approved booked appointments if no search term provided
+     */
+    getAllApprovedBookedAppoinmentsByPatient = modelErrorHandling(
+        async (params) => {
+            this.connection = await this.conn.getConnection();
+            try {
+                if (!params || typeof params !== "object" || Array.isArray(params)) {
+                    throw new Error(`Invalid! Get all approved booked appointments should be an object`);
+                }
+
+                await this.connection.beginTransaction();
+
+                const { patientEmail } = params;
+
+                const email_address = String(patientEmail);
+
+                if (!email_address) {
+                    throw new Error(`Invalid! Patient email should be a string`);
+                }
+
+                const patients_appintments_cols = [
+                    "c.clinic_name",
+                    "pa.firstName",
+                    "pa.lastName",
+                    "pa.email",
+                    "pa.appointmentDate",
+                    "pa.preferredTime",
+                    "pa.status",
+                    "pa.phoneNumber",
+                    "pa.purposeOfAppointment"
+                ]
+                const patient_status = String("Approved");
+
+                const values = [
+                    email_address,
+                    patient_status
+                ]
+
+                const query = `
+                    SELECT 
+                        ${patients_appintments_cols.join(", ")}
+                    FROM patientsappointment AS pa
+                    INNER JOIN clinic AS c
+                    ON pa.clinic_id = c.clinic_id
+                    WHERE pa.email = ? AND pa.status = ?
+                    ORDER BY pa.appointmentDate DESC, pa.preferredTime DESC;
+                `
+
+                const [results] = await this.connection.query(query, values);
+
+                if (!results.length) {
+                    throw new Error(`Failed to return all approved booked appointments when no filter term provided`);
+                }
+
+                await this.connection.commit();
+
+                return {
+                    appointments: results,
+                    pagination: {
+                        total: results.length,
+                        totalPages: 1,
+                        currentPage: 1,
+                        limit: results.length
+                    }
+                };
+            } catch (error) {
+                logger.log(`error`, `Failed to return all approved booked appointments when no filter term provided: ${error}`);
+                throw error;
+            } finally {
+                if (this.connection) {
+                    await this.connection.release();
+                }
+            }
+        },
+        "Get All Approved Booked Appointment By Patient"
     )
 }
 

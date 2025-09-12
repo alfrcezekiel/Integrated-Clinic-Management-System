@@ -1705,7 +1705,7 @@ export const getPatientApprovedStatus = async (req, res) => {
             FROM patientsappointment
             INNER JOIN clinic ON patientsappointment.clinic_id = clinic.clinic_id
             WHERE patientsappointment.status = ? AND patientsappointment.email = ?
-            ORDER BY patientsappointment.appointmentDate ASC;
+            ORDER BY patientsappointment.appointmentDate DESC, patientsappointment.preferredTime DESC;
         `
 
         const [rows] = await conn.query(query, [status, emailAddress]);
@@ -4829,7 +4829,7 @@ export const searchApprovedBookedAppointments = asyncHandler(
         try {
 
             const {
-                search = " ",
+                search = "",
                 page = 1,
                 limit = 10,
                 email
@@ -4866,6 +4866,24 @@ export const searchApprovedBookedAppointments = asyncHandler(
                 })
             }
 
+            if (!search_term || search_term.trim() === "") {
+                const result = await clinic_instance.getAllApprovedBookedAppoinmentsByPatient({
+                    patientEmail: email_address
+                })
+
+                if (!result || result.length === 0) {
+                    return res.status(StatusCodes.NOT_FOUND).json({
+                        message: "No approved booked appointments found"
+                    })
+                }
+
+                return res.status(StatusCodes.OK).json({
+                    sucess: true,
+                    message: "No filtered approved booked appointments found",
+                    result: result
+                })
+            }
+
             const result = await clinic_instance.searchApprovedBookedAppointments({
                 search: search_term,
                 page: page_value,
@@ -4880,11 +4898,19 @@ export const searchApprovedBookedAppointments = asyncHandler(
             }
 
             return res.status(StatusCodes.OK).json({
+                sucess: true,
                 message: "Filtered approved booked appointments found",
                 result: result
             })
         } catch (error) {
             logger.log(`error`, `Failed to search approved booked appointments in controller: ${error}`);
+
+            if (error.message === "No approved booked appointments found") {
+                return res.status(StatusCodes.NOT_FOUND).json({
+                    message: error.message
+                })
+            }
+
             return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
                 message: "Failed to search approved booked appointments"
             })

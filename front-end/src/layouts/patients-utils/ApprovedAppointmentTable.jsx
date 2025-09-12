@@ -75,7 +75,7 @@ const ApprovedAppointmentsTable = () => {
                 });
 
                 if (response.status === 200) {
-                    setRetrievedAppointmentsData(response.data.patientsApprovedStatus || []);
+                    setRetrievedAppointmentsData(response.data.patientsApprovedStatus);
                 } else {
                     console.error(`Failed to retrieve approved appointment status in server: ${response.status}`);
                 }
@@ -90,6 +90,13 @@ const ApprovedAppointmentsTable = () => {
             retrieveApprovedStatus();
         }
     }, [patientEmail, tokenContext]);
+
+    // Pagination
+    const totalItems = retrievedAppointmentsData.length;
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = retrievedAppointmentsData.slice(indexOfFirstItem, indexOfLastItem);
 
     /**
      * @function filter the declined booked appointment details
@@ -140,17 +147,10 @@ const ApprovedAppointmentsTable = () => {
         const { value } = e.target;
         setSearchTerm(value);
         if (value.trim() === "") {
-            filteredApprovedBookedAppointments("")
+            filteredApprovedBookedAppointments("");
         }
-        debouncedSearch(value)
+        debouncedSearch(value);
     }
-
-    // Pagination
-    const totalItems = retrievedAppointmentsData.length;
-    const totalPages = Math.ceil(totalItems / itemsPerPage);
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = retrievedAppointmentsData.slice(indexOfFirstItem, indexOfLastItem);
 
     const handlePageChange = (pageNumber) => {
         setCurrentPage(pageNumber);
@@ -160,14 +160,6 @@ const ApprovedAppointmentsTable = () => {
         setItemsPerPage(parseInt(e.target.value));
         setCurrentPage(1);
     };
-
-    if (isLoading) {
-        return (
-            <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-            </div>
-        );
-    }
 
     return (
         <div className="mt-16 mb-8 w-full">
@@ -183,7 +175,7 @@ const ApprovedAppointmentsTable = () => {
                         <input
                             type="text"
                             className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-black/50 focus:border-black/50 sm:text-sm"
-                            placeholder="Search appointments..."
+                            placeholder="Search patients..."
                             value={searchTerm}
                             onChange={handleSearchChange}
                         />
@@ -214,118 +206,81 @@ const ApprovedAppointmentsTable = () => {
                                     />
                                 )}
                             </table>
-                            {isLoading && (
-                                <div className="py-6 text-center">
-                                    <div
-                                        className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-black/100"
-                                    >
-                                    </div>
-                                </div>
-                            )}
-                            {retrievedAppointmentsData.length === 0 && !isLoading && (
-                                <div className="text-center py-4 text-gray-500">
-                                    {searchTerm ? 'No searched approved appointments found' : 'No approved appointments available'}
-                                </div>
-                            )}
-                            {/* Pagination */}
-                            {totalPages > 1 && (
-                                <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-                                    <div className="flex-1 flex justify-between sm:hidden">
-                                        <button
-                                            onClick={() => handlePageChange(currentPage - 1)}
-                                            disabled={currentPage === 1}
-                                            className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-                                        >
-                                            Previous
-                                        </button>
-                                        <button
-                                            onClick={() => handlePageChange(currentPage + 1)}
-                                            disabled={currentPage === totalPages}
-                                            className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-                                        >
-                                            Next
-                                        </button>
-                                    </div>
-                                    <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                                        <div>
-                                            <p className="text-sm text-gray-700">
-                                                Showing <span className="font-medium">{indexOfFirstItem + 1}</span> to{' '}
-                                                <span className="font-medium">
-                                                    {Math.min(indexOfLastItem, totalItems)}
-                                                </span>{' '}
-                                                of <span className="font-medium">{totalItems}</span> results
-                                            </p>
-                                        </div>
-                                        <div className="flex items-center gap-4">
-                                            <div className="flex items-center">
-                                                <label htmlFor="itemsPerPage" className="mr-2 text-sm text-gray-700">
-                                                    Rows per page:
-                                                </label>
-                                                <select
-                                                    id="itemsPerPage"
-                                                    value={itemsPerPage}
-                                                    onChange={handleItemsPerPageChange}
-                                                    className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-black/50 focus:border-black/50 sm:text-sm rounded-md"
-                                                >
-                                                    <option value={5}>5</option>
-                                                    <option value={10}>10</option>
-                                                    <option value={25}>25</option>
-                                                    <option value={50}>50</option>
-                                                </select>
-                                            </div>
-                                            <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                                                <button
-                                                    onClick={() => handlePageChange(currentPage - 1)}
-                                                    disabled={currentPage === 1}
-                                                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-                                                >
-                                                    <span className="sr-only">Previous</span>
-                                                    <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                                        <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
-                                                    </svg>
-                                                </button>
-                                                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                                                    let pageNum;
-                                                    if (totalPages <= 5) {
-                                                        pageNum = i + 1;
-                                                    } else if (currentPage <= 3) {
-                                                        pageNum = i + 1;
-                                                    } else if (currentPage >= totalPages - 2) {
-                                                        pageNum = totalPages - 4 + i;
-                                                    } else {
-                                                        pageNum = currentPage - 2 + i;
-                                                    }
-                                                    return (
-                                                        <button
-                                                            key={pageNum}
-                                                            onClick={() => handlePageChange(pageNum)}
-                                                            className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${currentPage === pageNum
-                                                                ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
-                                                                : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                                                                }`}
-                                                        >
-                                                            {pageNum}
-                                                        </button>
-                                                    );
-                                                })}
-                                                <button
-                                                    onClick={() => handlePageChange(currentPage + 1)}
-                                                    disabled={currentPage === totalPages}
-                                                    className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-                                                >
-                                                    <span className="sr-only">Next</span>
-                                                    <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                                        <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                                                    </svg>
-                                                </button>
-                                            </nav>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
                         </div>
                     </div>
                 </div>
+                {!isLoading && retrievedAppointmentsData.length === 0 && (
+                    <div className="text-center py-4">
+                        {searchTerm ? `No searched approved appointments found` : 'No approved appointments available'}
+                    </div>
+                )}
+                {/* Pagination */}
+                {totalItems > 0 && (
+                    <div className="px-6 py-4 flex flex-col sm:flex-row items-center justify-between border-t border-gray-200">
+                        <div className="text-sm text-gray-700 mb-4 sm:mb-0">
+                            Showing <span className="font-medium">
+                                {Math.min((currentPage - 1) * itemsPerPage + 1, totalItems)}
+                            </span> to{' '}
+                            <span className="font-medium">
+                                {Math.min(currentPage * itemsPerPage, totalItems)}
+                            </span>{' '}
+                            of <span className="font-medium">{totalItems}</span> results
+                        </div>
+                        <div className="flex items-center space-x-4">
+                            <select
+                                className="px-3 py-1 border rounded text-sm"
+                                value={itemsPerPage}
+                                onChange={handleItemsPerPageChange}
+                            >
+                                <option value={10}>10</option>
+                                <option value={25}>25</option>
+                                <option value={50}>50</option>
+                                <option value={100}>100</option>
+                                <option value={150}>150</option>
+                                <option value={200}>200</option>
+                                <option value={250}>250</option>
+                                <option value={300}>300</option>
+                                <option value={350}>350</option>
+                                <option value={400}>400</option>
+                                <option value={450}>450</option>
+                                <option value={500}>500</option>
+                            </select>
+                            <div className="flex space-x-1 gap-1">
+                                <button
+                                    onClick={() => handlePageChange(1)}
+                                    disabled={currentPage === 1}
+                                    className="px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer bg-black/100 text-white"
+                                >
+                                    First
+                                </button>
+                                <button
+                                    onClick={() => handlePageChange(currentPage - 1)}
+                                    disabled={currentPage === 1}
+                                    className="px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer bg-black/100 text-white"
+                                >
+                                    Previous
+                                </button>
+                                <p className="py-1 text-center">
+                                    Page {currentPage} of {totalPages}
+                                </p>
+                                <button
+                                    onClick={() => handlePageChange(currentPage + 1)}
+                                    disabled={currentPage >= totalPages}
+                                    className="px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer bg-black/100 text-white"
+                                >
+                                    Next
+                                </button>
+                                <button
+                                    onClick={() => handlePageChange(totalPages)}
+                                    disabled={currentPage >= totalPages}
+                                    className="px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer bg-black/100 text-white"
+                                >
+                                    Last
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
