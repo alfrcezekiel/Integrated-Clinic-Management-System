@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import CMS from "../../API/CMS";
 import DeclinedAppointmentsTableValue from "../../hooks/DeclinedAppointmentValues";
 import { useAuthorization } from "../../context/auth/useAuthorization";
@@ -7,12 +7,12 @@ import { useAuthorization } from "../../context/auth/useAuthorization";
 const DeclinedAppointmentStatusTable = () => {
     const appointmentsTableColumn = [
         {
-            key: "clinicName",
+            key: "clinic_name",
             label: "Clinic Name",
             className: "text-center"
         },
         {
-            key: "name",
+            key: "firstName",
             label: "Name",
             className: "text-center"
         },
@@ -32,7 +32,7 @@ const DeclinedAppointmentStatusTable = () => {
             className: "text-center"
         },
         {
-            key: "appointmentTime",
+            key: "preferredTime",
             label: "Appointment Time",
             className: "text-center"
         },
@@ -42,22 +42,24 @@ const DeclinedAppointmentStatusTable = () => {
             className: "text-center"
         },
         {
-            key: "purpose",
+            key: "purposeOfAppointment",
             label: "Purpose of Appointment",
             className: "lg:table-cell"
         }
-    ]
+    ];
     const { user, token } = useAuthorization();
 
     const [searchTerm, setSearchTerm] = useState("");
+    const [allDeclinedAppointments, setAllDeclinedAppointments] = useState([]);
     const [retrievedAppointmentsData, setRetrievedAppointmentsData] = useState([]);
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [currentPage, setCurrentPage] = useState(1);
     const [isLoading, setIsLoading] = useState(true);
     const patientEmail = user?.sem || "";
-    const tokenContext = token;
-    const [isSearching, setIsSearching] = useState(false);
+    const tokenContext = token || localStorage.getItem("authToken");
+    const [isSearching] = useState(false);
 
+    // Pagination derived values
     const totalItems = retrievedAppointmentsData.length;
     const totalPages = Math.ceil(totalItems / itemsPerPage);
     const indexOfLastItem = currentPage * itemsPerPage;
@@ -68,60 +70,11 @@ const DeclinedAppointmentStatusTable = () => {
         console.error("No token found in context or localStorage");
     }
 
-    const filteredDeclinedAppointments = useCallback(async (searchQuery) => {
-        if (!patientEmail && !tokenContext) return;
-
-        setIsSearching(true);
-
-        try {
-            const response = await CMS.get(`/CMS/cms.api.com/patient/dashboard/searchDeclinedBookedAppointments`, {
-                params: {
-                    search: searchQuery,
-                    email: patientEmail,
-                    page: currentPage,
-                    limit: itemsPerPage
-                },
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${tokenContext}`,
-                },
-            })
-
-            if (response.status === 200) {
-                setRetrievedAppointmentsData(response.data.result.appointments);
-                setCurrentPage(response.data.result.pagination.currentPage);
-                setItemsPerPage(response.data.result.pagination.limit);
-            } else {
-                throw new Error(`Failed to filter declined appointment information in server: ${response.status}`);
-            }
-        } catch (error) {
-            console.error(`Failed to filter declined appointment information: ${error}`);
-        } finally {
-            setIsSearching(false);
-        }
-    }, [patientEmail, tokenContext, currentPage, itemsPerPage]);
-
-    const debouncedSearch = useCallback((searchValue) => {
-        const timer = setTimeout(() => {
-            filteredDeclinedAppointments(searchValue);
-        }, 500)
-
-        return () => clearTimeout(timer)
-    }, [filteredDeclinedAppointments])
-
-    const handleSearchChange = (e) => {
-        const { value } = e.target;
-        setSearchTerm(value);
-        if (value.trim() === "") {
-            filteredDeclinedAppointments("")
-        }
-        debouncedSearch(value)
-    }
-
+    // Retrieve all declined appointments for this patient once
     useEffect(() => {
         const retrieveDeclinedStatus = async () => {
             try {
-                setIsLoading(true)
+                setIsLoading(true);
 
                 const response = await CMS.get(`/CMS/patients-dashboard/getPatientDeclinedStatus/${patientEmail}`, {
                     headers: {
@@ -131,28 +84,75 @@ const DeclinedAppointmentStatusTable = () => {
                 });
 
                 if (response.status === 200) {
-                    setRetrievedAppointmentsData(response.data.patientsDeclinedStatus);
+                    const data = response.data.patientsDeclinedStatus || [];
+                    setAllDeclinedAppointments(data);
+                    setRetrievedAppointmentsData(data);
                 } else {
                     console.error(`Failed to retrieve declined appointment status in server: ${response.status}`);
                 }
-
             } catch (error) {
                 console.error(`Failed to retrieve declined appointment status: ${error}`);
             } finally {
                 setIsLoading(false);
             }
+        };
+
+        if (patientEmail && tokenContext) {
+            retrieveDeclinedStatus();
         }
-        retrieveDeclinedStatus();
     }, [patientEmail, tokenContext]);
 
+    // Local filter on patient information (name, email, phone, clinic, purpose, status, date, time)
+    useEffect(() => {
+        // Reset to first page on each new search
+        setCurrentPage(1);
+
+        const term = searchTerm.trim().toLowerCase();
+        if (!term) {
+            setRetrievedAppointmentsData(allDeclinedAppointments);
+            return;
+        }
+
+        const timer = setTimeout(() => {
+            const filtered = allDeclinedAppointments.filter((appt) => {
+                const fullName = `${appt?.firstName || ""} ${appt?.lastName || ""}`.trim();
+                const fields = [
+                    appt?.firstName,
+                    appt?.lastName,
+                    fullName,
+                    appt?.email,
+                    appt?.phoneNumber,
+                    appt?.clinic_name,
+                    appt?.purposeOfAppointment,
+                    appt?.status,
+                    appt?.appointmentDate,
+                    appt?.preferredTime,
+                ];
+
+                return fields.some((val) =>
+                    String(val || "").toLowerCase().includes(term)
+                );
+            });
+
+            setRetrievedAppointmentsData(filtered);
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [searchTerm, allDeclinedAppointments]);
+
+    const handleSearchChange = (e) => {
+        const { value } = e.target;
+        setSearchTerm(value);
+    };
+
     const handlePageChange = (pageNumber) => {
-        setCurrentPage(pageNumber)
-    }
+        setCurrentPage(pageNumber);
+    };
 
     const handleItemsPerPageChange = (e) => {
-        setItemsPerPage(parseInt(e.target.value))
-        setCurrentPage(1)
-    }
+        setItemsPerPage(parseInt(e.target.value));
+        setCurrentPage(1);
+    };
 
     return (
         <>
@@ -285,7 +285,7 @@ const DeclinedAppointmentStatusTable = () => {
                 </div>
             </div>
         </>
-    )
-}
+    );
+};
 
 export default DeclinedAppointmentStatusTable;
