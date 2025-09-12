@@ -586,6 +586,7 @@ export const getBookedAppointments = async (req, res) => {
                 pr1.firstName,
                 pr1.lastName,
                 pr1.email,
+                pr1.gender,
                 pr2.phoneNumber
                 FROM patientsregisteraccount1 AS pr1
                 INNER JOIN
@@ -636,6 +637,7 @@ export const patientsBookedAppointments = async (req, res) => {
         const status = String("Pending");
         const appointment_time = String(preferredTime)
         const followUpSent = parseInt(0);
+        const reminder_sent = parseInt(0);
 
         // Convert to 24-hour format before inserting into DB
         const normalizeTime = (timeStr) => {
@@ -671,8 +673,9 @@ export const patientsBookedAppointments = async (req, res) => {
             purposeOfAppointment,
             clinic_id,
             createdAt,
+            reminder_sent,
             followUpSent
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
 
         const [result] = await connection.query(query, [
             patientID,
@@ -687,6 +690,7 @@ export const patientsBookedAppointments = async (req, res) => {
             purposeOfAppointment,
             clinic_id,
             createdAt,
+            reminder_sent,
             followUpSent
         ]);
 
@@ -4751,17 +4755,13 @@ export const handleAutomatedUpdateStatus = asyncHandler(
 export const scheduleReminderForUpcomingAppointments = asyncHandler(
     async (req, res) => {
         try {
-            const now = new Date();
-            const appointmentDate = now.toISOString().split("T")[0];
-
             const clinic_instance = new Clinic();
-            const result = await clinic_instance.scheduleRemindersForUpcomingAppointments({
-                appointmentDate: appointmentDate
-            });
+            const result = await clinic_instance.scheduleRemindersForUpcomingAppointments({});
 
-            if (result && result.length === 0) {
+            if (!result || result.length === 0) {
                 return res.status(StatusCodes.BAD_REQUEST).json({
-                    message: "No appointments found for scheduling upcoming reminders"
+                    message: "No appointments found for scheduling upcoming reminders in the next hour",
+                    data: []
                 })
             };
 

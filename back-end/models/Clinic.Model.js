@@ -3384,13 +3384,10 @@ class Clinic {
                     throw new Error(`Invalid! Schedule reminders for upcoming appointments should be an object`);
                 }
 
-                const { appointmentDate } = params;
+                const now = new Date();
+                const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
 
-                if (!appointmentDate) {
-                    throw new Error(`Invalid! Appointment date should be a string`);
-                }
-
-                const appointment_date = String(appointmentDate);
+                const formatDate = (date) => date.toISOString().split("T")[0];
 
                 const patients_appointments_col = [
                     "pa.appointmentID",
@@ -3398,10 +3395,14 @@ class Clinic {
                     "pa.lastName",
                     "pa.email",
                     "pa.appointmentDate",
+                    "pa.reminder_sent",
                     "pa.preferredTime",
                     "pa.phoneNumber",
                     "pa.status",
                     "pa.purposeOfAppointment",
+                    "c.clinic_name",
+                    "c.clinic_address",
+                    "c.phoneNumber"
                 ]
 
                 const status_values = [
@@ -3415,56 +3416,89 @@ class Clinic {
                     SELECT
                         ${patients_appointments_col.join(",")}
                     FROM patientsappointment AS pa
+                    LEFT JOIN clinic AS c
+                    ON pa.clinic_id = c.clinic_id
                     WHERE pa.appointmentDate BETWEEN ? AND ?
                     AND pa.status IN (${status_placeholders})
-                `
+                    AND (pa.reminder_sent IS NULL OR pa.reminder_sent = ?)
+                    ORDER BY pa.appointmentDate ASC;
+                `;
 
                 const queryValues = [
-                    appointment_date,
-                    appointment_date,
-                    ...status_values
-                ]
+                    formatDate(now),
+                    formatDate(oneHourLater),
+                    ...status_values,
+                    false
+                ];
 
                 const [rows] = await this.connection.query(query, queryValues);
 
                 if (!rows || rows.length === 0) {
-                    logger.log(`error`, `No upcoming appointments found in this appointment date: ${appointment_date}`);
-                    throw new Error(`Failed to retrieve the schedule upcoming appointments`);
+                    logger.log(`error`, `No upcoming appointments found in the next hour`);
+                    return [];
                 }
 
-                await this.connection.commit();
+                const process_appointments = [];
 
                 for (const appointment of rows) {
                     try {
-                        /**
-                         * schedule a reminder for 1 hour
-                         */
-                        await scheduleAppointmentsReminder({
-                            ...appointment,
-                            reminderTime: 60
-                        })
+                        const appointment_time = new Date(appointment.appointmentDate);
+                        const timeUntilAppointment = appointment_time - now;
 
-                        const appointmentTime = new Date(appointment.appointmentDate);
-                        const timeUntilAppointment = appointmentTime - new Date();
+                        if (timeUntilAppointment > 0) {
+                            /**
+                             * schedules 1 hour reminder if not already sent
+                             */
+                            if (timeUntilAppointment <= 60 * 60 * 1000) {
+                                await scheduleAppointmentsReminder({
+                                    ...appointment,
+                                    reminderTime: 60
+                                });
+                            }
 
-                        /**
-                         * schedule a reminder for 24 hours
-                         */
-                        if (timeUntilAppointment > 24 * 60 * 60 * 1000) {
-                            await scheduleAppointmentsReminder({
-                                ...appointment,
-                                reminderTime: 24 * 60
-                            })
+                            /**
+                             * schedules 24 hour reminder if more than 24 hours
+                             */
+                            if (timeUntilAppointment > 24 * 60 * 60 * 1000) {
+                                await scheduleAppointmentsReminder({
+                                    ...appointment,
+                                    reminderTime: 24 * 60
+                                })
+                            }
+
+                            const updateQuery = `
+                                UPDATE patientsappointment 
+                                SET reminder_sent = ?
+                                WHERE appointmentID = ?;
+                            `
+
+                            const update_values = [
+                                true,
+                                appointment.appointmentID
+                            ];
+
+                            await this.connection.query(updateQuery, update_values);
+
+                            process_appointments.push({
+                                appointmentID: appointment.appointmentID,
+                                patient: `${appointment.firstName} ${appointment.lastName}`,
+                                appointmentDate: appointment.appointmentDate,
+                                reminderSent: true
+                            });
                         }
                     } catch (error) {
                         logger.log(`error`, `Failed in scheduling reminders for upcoming appointments in method: ${error}`);
-                        throw error;
+                        continue;
                     }
                 }
 
-                return rows;
+                await this.connection.commit();
+                return process_appointments;
             } catch (error) {
-                await this.connection.rollback();
+                const rollback = await this.connection.rollback();
+                if (!rollback) {
+                    logger.log(`error`, `Failed to rollback the transaction in schedule reminders for upcoming appointments method: ${error}`);
+                }
                 logger.log(`error`, `Failed in scheduling reminders for upcoming appointments in method: ${error}`);
                 throw error;
             } finally {

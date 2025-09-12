@@ -31,16 +31,19 @@ const FOLLOW_UP_MESSAGE_SCHEDULE = validateCronExpression(process.env.FOLLOW_UP_
 /**
  * @function schedule job to run every hour to check for upcoming appointments
  */
-const scheduleAppointmentReminders = () => {
+const scheduleAppointmentReminders = async () => {
     /**
      * run every hour at minute 0
      */
-    cron.schedule(APPOINTMENT_REMINDER_SCHEDULE, () => {
+    cron.schedule(APPOINTMENT_REMINDER_SCHEDULE, async () => {
         (async () => {
             try {
                 logger.log(`info`, `Running appointment reminders scheduler`)
 
-                const mockReq = {};
+                const mockReq = {
+                    method: "GET",
+                    url: "/CMS/schedule-appointment-reminders"
+                };
                 const mockRes = {
                     status: function (code) {
                         this.statusCode = code;
@@ -56,7 +59,7 @@ const scheduleAppointmentReminders = () => {
                     }
                 }
 
-                await scheduleReminderForUpcomingAppointments(mockReq, mockRes);
+                scheduleReminderForUpcomingAppointments(mockReq, mockRes);
             } catch (error) {
                 logger.log(`error`, `Failed to schedule appointment reminders: ${error}`);
             }
@@ -65,7 +68,8 @@ const scheduleAppointmentReminders = () => {
         })()
     }, {
         timezone: "Asia/Manila",
-        scheduled: true
+        scheduled: true,
+        name: "Appoimtment Reminder Scheduler"
     })
 
     logger.info(`Appointment reminder scheduler initialized: ${APPOINTMENT_REMINDER_SCHEDULE}`)
@@ -76,7 +80,7 @@ const scheduleAppointmentReminders = () => {
  * @function schedule job to run every 10 am daily to check for approved appointments for follow up
  */
 
-const scheduleFollowUpMessage = () => {
+const scheduleFollowUpMessage = async () => {
     /**
      * run every 10 am daily
      */
@@ -98,14 +102,14 @@ const scheduleFollowUpMessage = () => {
     logger.info(`Follow up message scheduler initialized: ${FOLLOW_UP_MESSAGE_SCHEDULE}`)
 }
 
-const initializeScheduler = () => {
+const initializeScheduler = async () => {
     try {
-        scheduleAppointmentReminders();
-        scheduleFollowUpMessage();
+        await scheduleAppointmentReminders();
+        await scheduleFollowUpMessage();
 
-        logger.log(`info`, `Appointment scheduler initialized`)
+        logger.log(`info`, `Automated Appointment Scheduler initialized`)
     } catch (error) {
-        logger.log(`error`, `Failed to initialize appointment scheduler: ${error}`)
+        logger.log(`error`, `Failed to initialize automated appointment scheduler: ${error}`)
     }
 }
 

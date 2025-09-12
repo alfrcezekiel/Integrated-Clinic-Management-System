@@ -3,7 +3,10 @@ import dotenv from "dotenv";
 import twilio from "twilio";
 import cron from "node-cron";
 import logger from "../config/winston.js";
-import { automatedEmailNotificationTemplate } from "./automate_email_template";
+import {
+    automatedEmailNotificationTemplate,
+} from "./automate_email_template";
+import { scheduledReminderTemplate } from "./automate_scheduled_reminder_template.js";
 dotenv.config();
 
 /**
@@ -119,47 +122,148 @@ export const sendSmsNotification = async (to, message) => {
  */
 export const scheduleAppointmentsReminder = async (appointment, reminderTime = 60) => {
     try {
-        const { appointmentDate, preferredTime, email, phoneNumber } = appointment;
+        const {
+            appointmentDate,
+            preferredTime,
+            email,
+            phoneNumber,
+            appointmentID,
+            firstName,
+            lastName,
+            clinic_name,
+            purposeOfAppointment
+        } = appointment;
 
-        const [hours, minutes] = preferredTime.split(":");
-        const reminderDate = new Date(appointmentDate);
-        reminderDate.setHours(hours, minutes, 0, 0)
+        if (!appointmentID || !preferredTime) {
+            throw new Error(`Missing required appointment details.`);
+        }
+
+        const [hours, minutes] = preferredTime.split(":").map(Number);
+        const appointmentDateTime = new Date(appointmentDate);
+        appointmentDateTime.setHours(hours, minutes, 0, 0)
 
         /**
          * calculate the reminder time
          */
-        const reminderTimeMs = reminderDate.getTime() - (reminderTime * 60 * 1000);
+        const reminderTimeMs = appointmentDateTime.getTime() - (reminderTime * 60 * 1000);
         const currentTime = new Date().getTime();
+        const timeUntilReminder = reminderTimeMs - currentTime;
 
-        if (reminderTimeMs > currentTime) {
-            const delay = reminderTimeMs - currentTime;
+        if (timeUntilReminder <= 0) {
+            logger.log(`warn`, `Appointment reminder time is in the past for appointment: ${firstName} ${lastName}`)
+            return {
+                success: false,
+                message: `Appointment reminder time is in the past for appointment: ${firstName} ${lastName}`,
+                scheduled: false
+            }
+        }
 
-            setTimeout(async () => {
-                const reminderMessage = automatedEmailNotificationTemplate(appointment);
-                const reminderSMSMessage = `Reminder: You have an appointment today at ${preferredTime}. Please be on time.`;
-                try {
+        /**
+         * generate a automated schedule reminder template via email
+         */
+        const reminderEmailTemplate = await scheduledReminderTemplate(appointment, reminderTime);
+
+        const hoursUntil = Math.floor(reminderTime / 60);
+        const minutesUntil = reminderTime % 60;
+        const timeUntilText = hoursUntil > 0 ?
+            `${hoursUntil} hour${hoursUntil > 1 ? 's' : ''}${minutesUntil > 0 ? ` and ${minutesUntil} minute${minutesUntil > 1 ? 's' : ''}` : ''}`
+            : `${minutesUntil} minute${minutesUntil > 1 ? 's' : ''}`;
+
+        const reminderSMSMessage = `REMINDER ${firstName}, your appointment at ${clinic_name} is in ${timeUntilText}.` +
+            `(${appointmentDateTime.toLocaleDateString("en-US", { hour: "2-digit", minute: "2-digit" })}). ` +
+            `Purpose of Appointment: ${purposeOfAppointment}. See you there!`;
+
+        const reminder_id = `reminder_${appointmentID}_${reminderTime}`;
+
+        if (reminderTimeouts.has(reminder_id)) {
+            clearTimeout(reminderTimeouts.get(reminder_id));
+            reminderTimeouts.delete(reminder_id);
+        }
+
+        const reminderTimeout = setTimeout(async () => {
+            try {
+                if (email) {
                     await sendEmailNotification(
                         email,
-                        "Appointment Reminder",
-                        reminderMessage
-                    )
+                        `Reminder: Appointment in ${timeUntilText}`,
+                        reminderEmailTemplate
+                    );
 
-                    if (phoneNumber) {
-                        await sendSmsNotification(
-                            phoneNumber,
-                            reminderSMSMessage
-                        )
-                    }
-                } catch (error) {
-                    logger.log(`error`, `Failed sending a reminder: ${error}`)
+                    logger.log(`info`, `Email reminder sent to ${email}`);
                 }
-            }, delay);
+
+                if (phoneNumber) {
+                    await sendSmsNotification(
+                        phoneNumber,
+                        reminderSMSMessage
+                    );
+
+                    logger.log(`info`, `SMS reminder sent to ${phoneNumber}`);
+                }
+
+                if (appointment.connection) {
+                    const query = `UPDATE patientsappointment SET reminder_sent = ? WHERE appointmentID = ?;`;
+                    await appointment.connection.query(query, [true, appointmentID]);
+                }
+            } catch (error) {
+                logger.log("error", `Failed to send appointment reminder: ${error}`)
+                throw error;
+            } finally {
+                reminderTimeouts.delete(reminder_id);
+            }
+        }, timeUntilReminder);
+
+        reminderTimeouts.set(reminder_id, reminderTimeout);
+        logger.log(`info`, `Scheduled ${reminderTime}min reminder for appointment: ${firstName} ${lastName}`);
+
+        return {
+            succcess: true,
+            message: `Reminder scheduled successfully for ${reminderTime}`,
+            reminderTime,
+            scheduledFor: new Date(reminderTimeMs).toISOString(),
+            timeUntilAppointment: timeUntilReminder
         }
     } catch (error) {
         logger.log("error", `Failed to schedule appointment reminder: ${error}`)
         throw new Error(`Failed to schedule appointment reminder: ${error}`)
     }
 }
+
+const reminderTimeouts = new Map();
+
+/**
+ * @function cancels a schedules reminder
+ */
+export const cancelScheduledReminder = (appointmentId, reminderTime) => {
+    const reminderId = `reminder_${appointmentId}_${reminderTime}`;
+    const timeout = reminderTimeouts.get(reminderId);
+
+    if (timeout) {
+        clearTimeout(timeout);
+        reminderTimeouts.delete(reminderId);
+        logger.log('info', `Cancelled reminder ${reminderId}`);
+        return true;
+    }
+    return false;
+};
+
+/**
+ * @function cancels all scheduled reminders for an appointment
+ */
+export const cancelAllRemindersForAppointment = (appointmentId) => {
+    let count = 0;
+    for (const [id, timeout] of reminderTimeouts.entries()) {
+        if (id.startsWith(`reminder_${appointmentId}_`)) {
+            clearTimeout(timeout);
+            reminderTimeouts.delete(id);
+            count++;
+        }
+    }
+    if (count > 0) {
+        logger.log('info', `Cancelled ${count} reminders for appointment ${appointmentId}`);
+    }
+    return count;
+};
 
 /**
  * @function to schedule a notification confirmation via sms, email
@@ -353,13 +457,12 @@ export const sendStatusUpdateReminder = async ({ email, phoneNumber, firstName, 
                                     <span class="font-medium">
                                         Status:
                                     </span>
-                                    <span class="px-2 py-1 rounded text-sm font-medium ${
-                                        patientStatus.toLowerCase() === "approved" ? "bg-green-200 text-green-800" : 
-                                        patientStatus.toLowerCase() === "pending" ? "bg-yellow-200 text-yellow-800" : 
-                                        patientStatus.toLowerCase() === "declined" ? "bg-red-200 text-red-800" : 
-                                        patientStatus.toLowerCase() === "cancelled" ? "bg-red-200 text-red-800" : 
-                                        "bg-gray-200 text-gray-800"
-                                    }">
+                                    <span class="px-2 py-1 rounded text-sm font-medium ${patientStatus.toLowerCase() === "approved" ? "bg-green-200 text-green-800" :
+                patientStatus.toLowerCase() === "pending" ? "bg-yellow-200 text-yellow-800" :
+                    patientStatus.toLowerCase() === "declined" ? "bg-red-200 text-red-800" :
+                        patientStatus.toLowerCase() === "cancelled" ? "bg-red-200 text-red-800" :
+                            "bg-gray-200 text-gray-800"
+            }">
                                         ${patientStatus}
                                     </span>
                                 </p>

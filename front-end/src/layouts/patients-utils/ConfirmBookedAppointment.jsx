@@ -59,12 +59,12 @@ const ConfirmAppointmentModal = ({ open, onClose, patientsData, onNextStep }) =>
                             <Grid container spacing={2} direction="column">
                                 {renderItem("Clinic Name", patientsData?.clinic?.clinic_name)}
                                 {renderItem("Clinic Address", patientsData?.clinic?.clinic_address)}
-                                {renderItem("Clinic Email Address", patientsData?.clinic?.email)}
+                                {renderItem("Email", patientsData?.clinic?.email)}
                                 {renderItem("Phone Number", patientsData?.clinic?.phoneNumber)}
                                 {renderItem("Consultation Fee", patientsData?.clinic?.consultation_fee)}
                                 {renderItem("Clinic Type", patientsData?.clinic?.clinic_type)}
-                                {renderItem("Date Open", patientsData?.clinic?.clinic_date_open && patientsData?.clinic?.clinic_close_date ? `${patientsData.clinic.clinic_date_open} - ${patientsData.clinic.clinic_close_date}` : "N/A")}
-                                {renderItem("Clinic Closed Time", patientsData?.clinic?.clinic_time && patientsData?.clinic?.clinic_close_time ? `${patientsData.clinic.clinic_time} - ${patientsData.clinic.clinic_close_time}` : "N/A")}
+                                {renderItem("Business Days Open", patientsData?.clinic?.clinic_date_open && patientsData?.clinic?.clinic_close_date ? `${patientsData.clinic.clinic_date_open} - ${patientsData.clinic.clinic_close_date}` : "N/A")}
+                                {renderItem("Business Hours", patientsData?.clinic?.clinic_time && patientsData?.clinic?.clinic_close_time ? `${patientsData.clinic.clinic_time} - ${patientsData.clinic.clinic_close_time}` : "N/A")}
                             </Grid>
                         </section>
                     </DialogContent>

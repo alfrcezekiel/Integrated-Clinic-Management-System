@@ -1,6 +1,7 @@
 import {
     useEffect,
-    useState
+    useState,
+    useCallback
 } from "react";
 import CMS from "../../API/CMS";
 import { Phone } from "@mui/icons-material";
@@ -153,6 +154,33 @@ const ClinicCards = () => {
         }
     };
 
+    // function to retrieve the patient data based on the patiente id to automate the input fields
+    const retrievePatientData = useCallback(async (patientID) => {
+        try {
+            const response = await CMS.get(`/CMS/patientsDashboard/getBookedAppointments/${patientID}`, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${tokenContext}`,
+                },
+            });
+
+            if (response.status === 200) {
+                setAppointmentData(prevData => ({
+                    ...prevData,
+                    firstName: response.data.firstName,
+                    lastName: response.data.lastName,
+                    email: response.data.email,
+                    phoneNumber: response.data.phoneNumber,
+                    gender: response.data.gender
+                }));
+            } else {
+                throw new Error(`Failed to automate the input fields`);
+            }
+        } catch (error) {
+            console.error(`Failed to retrieve patient data: ${error}`);
+        }
+    }, [tokenContext]);
+
     useEffect(() => {
         const fetchClinics = async () => {
             try {
@@ -175,30 +203,6 @@ const ClinicCards = () => {
 
         const retrievePatientId = user?.sid;
 
-        // function to retrieve the patient data based on the patiente id to automate the input fields
-        const retrievePatientData = async (patientID) => {
-            try {
-                const response = await CMS.get(`/CMS/patientsDashboard/getBookedAppointments/${patientID}`, {
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${tokenContext}`,
-                    },
-                });
-
-                if (response.status === 200) {
-                    setAppointmentData(prevData => ({
-                        ...prevData,
-                        firstName: response.data.firstName,
-                        lastName: response.data.lastName,
-                        email: response.data.email,
-                        phoneNumber: response.data.phoneNumber
-                    }));
-                }
-            } catch (error) {
-                console.error(`Failed to retrieve patient data: ${error}`);
-            }
-        }
-
         if (retrievePatientId) {
             setAppointmentID(retrievePatientId);
             retrievePatientData(retrievePatientId);
@@ -214,12 +218,14 @@ const ClinicCards = () => {
             }
         }
         confirmedBookedAppointment()
-    }, [appointmentID, location.pathname, navigate, showConfirmedBookAppointmentModal, user?.sid, tokenContext]);
+    }, [appointmentID, retrievePatientData, location.pathname, navigate, showConfirmedBookAppointmentModal, user?.sid, tokenContext]);
 
     // function to open a booking appointment dialog
-    const handleOpenModal = (clinic) => {
+    const handleOpenModal = async (clinic) => {
         setSelectedClinic(clinic);
-        setAppointmentID(appointmentID)
+        if (appointmentID) {
+            await retrievePatientData(appointmentID);
+        }
     };
 
     // function to close a booking appointment dialog
@@ -281,7 +287,7 @@ const ClinicCards = () => {
                 clinicID: selectedClinic?.clinic_id || selectedClinic?._id || selectedClinic?.id,
                 patientID: appointmentID
             }
-            
+
             const response = await CMS.post("/CMS/patientsDashboard/patientsBookedAppointments", payload, {
                 headers: {
                     "Content-Type": "application/json",

@@ -1,33 +1,19 @@
 import {
-    Modal,
-    Box,
-    Typography,
-    Button,
-    TextField,
-    MenuItem,
-    CardMedia,
-} from '@mui/material';
-import {
-    LocationOn,
-    Email,
-    MedicalServices,
-    CalendarMonth,
-    AccessTime,
-} from '@mui/icons-material';
-import {
     useMemo,
     useCallback
 } from 'react';
 import PropTypes from 'prop-types';
-import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
 import { PhilippinePeso } from 'lucide-react';
 import Phone from "@mui/icons-material/Phone"
+import TextField from "@mui/material/TextField";
+import MenuItem from "@mui/material/MenuItem";
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-
+import { Calendar, Clock, MapPin, Mail, Stethoscope } from 'lucide-react';
 const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooking, appointmentData, setAppointmentData, fieldErrors, setFieldErrors, appointmentID }) => {
     const memoizedFirstNameValue = useMemo(() => appointmentData.firstName, [appointmentData.firstName]);
     const memoizedLastNameValue = useMemo(() => appointmentData.lastName, [appointmentData.lastName]);
@@ -56,7 +42,7 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
 
     // function to handle appointment date change
     const handleDateChange = useCallback(async (newDate) => {
-        if(newDate){
+        if (newDate) {
             const selectedAppointmentDate = dayjs(newDate).format("YYYY-MM-DD");
             setAppointmentData((prev) => ({
                 ...prev,
@@ -128,96 +114,110 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
             return time; // Return original if parsing fails
         }
     };
-    
+
+    if (!selectedClinic) return null;
+
     return (
-        <Modal open={!!selectedClinic} onClose={handleCloseModal}>
-            <Box className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-8 rounded-2xl shadow-lg w-full max-w-[50vw] max-h-[80vh] overflow-y-auto">
-                {selectedClinic && (
-                    <>
-                        {/* Clinic Details Section */}
-                        <div className="flex mb-6">
-                            {/* Left side - Clinic Image */}
-                            <div className="w-1/3 mr-10">
-                                <CardMedia
-                                    component="img"
-                                    height="200"
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+            <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                {/* Overlay */}
+                <div className="fixed inset-0 transition-opacity bg-gray-900 opacity-70" onClick={handleCloseModal}></div>
+                {/* Modal Content */}
+                <div className="inline-block w-full max-w-5xl my-40 overflow-hidden text-left align-middle transition-all transform bg-white rounded-lg shadow-xl max-sm:my-10 sm:my-10 xl:my-40">
+                    <div className="relative p-6 overflow-y-auto max-h-[90vh]">
+                        {/* Clinic Information */}
+                        <div className="flex flex-col mb-8 md:flex-row">
+                            {/* Clinic Image */}
+                            <div className="w-full mb-6 md:w-1/3 md:mb-0 md:mr-8">
+                                <img
                                     src={`http://localhost:7506/uploads/clinic_images/${selectedClinic.clinic_image}`}
-                                    alt="Clinic"
-                                    className="rounded-md h-48 object-cover"
+                                    alt={selectedClinic.clinic_name}
+                                    className="object-cover w-full rounded-lg h-60"
                                 />
                             </div>
+                            {/* Clinic Details */}
+                            <div className="flex-1">
+                                <h3 className="text-2xl font-bold text-gray-900">{selectedClinic.clinic_name}</h3>
 
-                            {/* Right side - Clinic Information */}
-                            <div className="w-2/5">
-                                <Typography variant="h5" className="font-semibold text-blue-800 mb-2">
-                                    {selectedClinic.clinic_name}
-                                </Typography>
-                                <div className="flex items-center text-gray-700 mb-1">
-                                    <LocationOn className="mr-2 text-blue-600" />
-                                    <Typography variant="body1">{selectedClinic.clinic_address}</Typography>
-                                </div>
-                                <div className="flex items-center text-gray-700 mb-1">
-                                    <Phone className="mr-2 text-blue-600" />
-                                    <Typography variant="body1">{selectedClinic.phoneNumber}</Typography>
-                                </div>
-                                <div className="flex items-center text-gray-700 mb-1">
-                                    <Email className="mr-2 text-blue-600" />
-                                    <Typography variant="body1">{selectedClinic.email}</Typography>
-                                </div>
-                                <div className="flex items-center text-gray-700 mb-1">
-                                    <AccessTime className="mr-2  text-blue-600" />
-                                    <Typography variant="body1">
-                                        Opening Days: {selectedClinic.clinic_date_open ? selectedClinic.clinic_date_open : ""} - {selectedClinic.clinic_close_date ? selectedClinic.clinic_close_date : ""}
-                                    </Typography>
-                                </div>
-                                <div className="flex items-center text-gray-700 mb-1">
-                                    <AccessTime className="mr-2 text-blue-600" />
-                                    <Typography variant="body1">
-                                        Operating Hours: {formatTimeToAMPM(selectedClinic.clinic_time) ? formatTimeToAMPM(selectedClinic.clinic_time) : ""} - {formatTimeToAMPM(selectedClinic.clinic_close_time) ? formatTimeToAMPM(selectedClinic.clinic_close_time) : ""}
-                                    </Typography>
-                                </div>
-                                <div className="flex items-center text-gray-700 mb-1">
-                                    <PhilippinePeso className="mr-2 text-blue-600"/>
-                                    <Typography variant="body1">Consultation Fee: {selectedClinic.consultation_fee}</Typography>
-                                </div>
-                                <div className="flex items-center text-gray-700 mb-1">
-                                    <MedicalServices className="mr-2 text-blue-600" />
-                                    <Typography variant="body1">Clinic Type: {selectedClinic.clinic_type}</Typography>
+                                <div className="mt-4 space-y-3">
+                                    <div className="flex items-start">
+                                        <MapPin className="flex-shrink-0 w-5 h-5 mt-0.5 text-blue-600" />
+                                        <p className="ml-2 text-gray-700">{selectedClinic.clinic_address}</p>
+                                    </div>
+
+                                    <div className="flex items-center">
+                                        <Phone className="flex-shrink-0 w-5 h-5 text-blue-600" />
+                                        <p className="ml-2 text-gray-700">{selectedClinic.phoneNumber}</p>
+                                    </div>
+
+                                    <div className="flex items-center">
+                                        <Mail className="flex-shrink-0 w-5 h-5 text-blue-600" />
+                                        <p className="ml-2 text-gray-700">{selectedClinic.email}</p>
+                                    </div>
+
+                                    <div className="flex items-center">
+                                        <Clock className="flex-shrink-0 w-5 h-5 text-blue-600" />
+                                        <p className="ml-2 text-gray-700">
+                                            {selectedClinic.clinic_date_open && selectedClinic.clinic_close_date
+                                                ? `Business Days: ${selectedClinic.clinic_date_open} - ${selectedClinic.clinic_close_date}`
+                                                : 'Business Days: N/A'}
+                                        </p>
+                                    </div>
+
+                                    <div className="flex items-center">
+                                        <Clock className="flex-shrink-0 w-5 h-5 text-blue-600" />
+                                        <p className="ml-2 text-gray-700">
+                                            Business Hours: {formatTimeToAMPM(selectedClinic.clinic_time) || 'N/A'} - {formatTimeToAMPM(selectedClinic.clinic_close_time) || 'N/A'}
+                                        </p>
+                                    </div>
+
+                                    <div className="flex items-center">
+                                        <PhilippinePeso className="flex-shrink-0 w-5 h-5 text-blue-600" />
+                                        <p className="ml-2 text-gray-700">Consultation Fee: {selectedClinic.consultation_fee || 'N/A'}</p>
+                                    </div>
+
+                                    <div className="flex items-center">
+                                        <Stethoscope className="flex-shrink-0 w-5 h-5 text-blue-600" />
+                                        <p className="ml-2 text-gray-700">Clinic Type: {selectedClinic.clinic_type || 'N/A'}</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 gap-6">
-                            <form onSubmit={handleBooking} id='bookingForm'>
-                                <div className="hidden">
-                                    <TextField
-                                        value={appointmentID}
-                                        name="appointmentID"
-                                    />
-                                </div>
+                        {/* Booking Form */}
+                        <form onSubmit={handleBooking} id="bookingForm" className="mt-8">
+                            <input type="hidden" name="appointmentID" value={appointmentID} />
 
-                                {/* Form Layout - Top Row */}
-                                <div className="grid grid-cols-3 gap-6 cursor-pointer">
-                                    {/* First Name */}
+                            {/* First Row */}
+                            <div className="grid grid-cols-1 gap-6 mb-6 md:grid-cols-3">
+                                {/* First Name */}
+                                <div>
+                                    <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+                                        First Name <span className="text-red-500">*</span>
+                                    </label>
                                     <TextField
                                         fullWidth
                                         margin="dense"
-                                        label="First Name"
+                                        label="Enter First Name"
                                         variant="outlined"
                                         name="firstName"
-                                        placeholder="Enter first name"
                                         autoComplete="off"
                                         value={memoizedFirstNameValue}
                                         onChange={handleInputChange}
                                         error={!!fieldErrors.firstName}
                                         helperText={fieldErrors.firstName || ""}
                                     />
+                                </div>
 
-                                    {/* Last Name */}
+                                {/* Last Name */}
+                                <div>
+                                    <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
+                                        Last Name <span className="text-red-500">*</span>
+                                    </label>
                                     <TextField
                                         margin="dense"
                                         fullWidth
-                                        label="Last Name"
+                                        label="Enter Last Name"
                                         variant="outlined"
                                         autoComplete="off"
                                         placeholder="Enter last name"
@@ -227,16 +227,20 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
                                         helperText={fieldErrors.lastName || ""}
                                         name="lastName"
                                     />
+                                </div>
 
-                                    {/* Email Address */}
+                                {/* Email */}
+                                <div>
+                                    <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                                        Email <span className="text-red-500">*</span>
+                                    </label>
                                     <TextField
                                         fullWidth
-                                        label="Email Address"
-                                        type="email"
+                                        label="Enter Email"
+                                        type="text"
                                         margin="dense"
                                         autoComplete="off"
                                         variant="outlined"
-                                        placeholder="Enter email address"
                                         error={!!fieldErrors.email}
                                         helperText={fieldErrors.email || ""}
                                         value={memoizedEmailValue}
@@ -244,26 +248,35 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
                                         onChange={handleInputChange}
                                     />
                                 </div>
+                            </div>
 
-                                {/* Form Layout - Middle Row */}
-                                <div className="grid grid-cols-3 gap-6 mt-6">
-                                    {/* Phone Number */}
+                            {/* Second Row */}
+                            <div className="grid grid-cols-1 gap-6 mb-6 md:grid-cols-3">
+                                {/* Phone Number */}
+                                <div>
+                                    <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">
+                                        Phone Number <span className="text-red-500">*</span>
+                                    </label>
                                     <TextField
                                         fullWidth
                                         margin="dense"
-                                        label="Phone Number"
+                                        label="Enter Phone Number"
                                         name="phoneNumber"
-                                        placeholder="Enter phone number"
                                         autoComplete="off"
-                                        type="number"
+                                        type="tel"
                                         variant="outlined"
                                         value={memoizedPhoneNumberValue}
                                         onChange={handleInputChange}
                                         error={!!fieldErrors.phoneNumber}
                                         helperText={fieldErrors.phoneNumber || ""}
                                     />
+                                </div>
 
-                                    {/* Gender Selection */}
+                                {/* Gender */}
+                                <div>
+                                    <label htmlFor="gender" className="block text-sm font-medium text-gray-700">
+                                        Gender <span className="text-red-500">*</span>
+                                    </label>
                                     <TextField
                                         select
                                         placeholder="Select a Gender"
@@ -282,8 +295,13 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
                                             <MenuItem key={i} value={gender}>{gender}</MenuItem>
                                         ))}
                                     </TextField>
+                                </div>
 
-                                    {/* Date of Appointment */}
+                                {/* Appointment Date */}
+                                <div>
+                                    <label htmlFor="appointmentDate" className="block text-sm font-medium text-gray-700">
+                                        Appointment Date <span className="text-red-500">*</span>
+                                    </label>
                                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                                         <DemoContainer components={['DatePicker']}>
                                             <DatePicker
@@ -308,10 +326,15 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
                                         </DemoContainer>
                                     </LocalizationProvider>
                                 </div>
+                            </div>
 
-                                {/* Form Layout - Bottom Row */}
-                                <div className="grid grid-cols-3 gap-6 mt-6">
-                                    {/* Preferred Time */}
+                            {/* Third Row */}
+                            <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2">
+                                {/* Preferred Time */}
+                                <div>
+                                    <label htmlFor="preferredTime" className="block text-sm font-medium text-gray-700">
+                                        Appointment Time <span className="text-red-500">*</span>
+                                    </label>
                                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                                         <DemoContainer components={['TimePicker']}>
                                             <TimePicker
@@ -334,7 +357,13 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
                                             />
                                         </DemoContainer>
                                     </LocalizationProvider>
-                                    {/* Purpose of Appointment */}
+                                </div>
+
+                                {/* Purpose of Appointment */}
+                                <div>
+                                    <label htmlFor="purposeOfAppointment" className="block text-sm font-medium text-gray-700">
+                                        Purpose of Appointment <span className="text-red-500">*</span>
+                                    </label>
                                     <TextField
                                         fullWidth
                                         select
@@ -354,32 +383,30 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
                                         ))}
                                     </TextField>
                                 </div>
+                            </div>
 
-                                {/* Action Buttons */}
-                                <div className="flex justify-between mt-8">
-                                    <Button
-                                        onClick={handleCloseModal}
-                                        variant="outlined"
-                                        className="border-gray-400 text-gray-700"
-                                    >
-                                        Close
-                                    </Button>
-
-                                    <Button
-                                        type="submit"
-                                        variant="contained"
-                                        className="bg-green-600 hover:bg-green-700 text-white"
-                                        startIcon={<CalendarMonth />}
-                                    >
-                                        Confirm Book Appointment
-                                    </Button>
-                                </div>
-                            </form>
-                        </div>
-                    </>
-                )}
-            </Box>
-        </Modal>
+                            {/* Form Actions */}
+                            <div className="flex flex-col-reverse pt-5 mt-8 border-t border-gray-200 sm:flex-row sm:justify-end sm:space-x-3">
+                                <button
+                                    type="button"
+                                    onClick={handleCloseModal}
+                                    className="inline-flex items-center justify-center w-full px-4 py-2 mt-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:w-auto sm:text-sm cursor-pointer"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="inline-flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:w-auto sm:text-sm cursor-pointer"
+                                >
+                                    <Calendar className="w-4 h-4 mr-2" />
+                                    Confirm Booking
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 };
 
