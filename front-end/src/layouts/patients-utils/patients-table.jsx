@@ -54,11 +54,20 @@ const PatientsTable = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [isSearching, setIsSearching] = useState(false);
+    const [totalItems, setTotalItems] = useState(0);
+    const [pagination, setPagination] = useState({
+        total: 0,
+        limit: 10,
+        currentPage: 1,
+        totalPages: 0,
+        hasNextPage: false,
+        hasPreviousPage: false
+    });
 
     /**
      * Filter data based on search term of patient information
      */
-    const retrieveFilteredAppointments = useCallback(async (searchQuery) => {
+    const retrieveFilteredAppointments = useCallback(async (searchQuery, page = 1, limit = 10) => {
         if (!tokenContext) return;
 
         setIsSearching(true);
@@ -68,15 +77,19 @@ const PatientsTable = () => {
                 params: {
                     search: searchQuery,
                     email: user?.sem,
-                    page: currentPage,
-                    limit: itemsPerPage
+                    page: page,
+                    limit: limit
+                },
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${tokenContext}`
                 }
-            })
+            });
 
             if (response.status === 200) {
-                setRetrievedAppointmentsData(response.data.result.data)
-                setCurrentPage(response.data.result.currentPage);
-                setItemsPerPage(response.data.result.limit);
+                setRetrievedAppointmentsData(response.data.data);
+                setPagination(response.data.pagination);
+                setTotalItems(response.data.pagination?.total);
             } else {
                 throw new Error(`Failed to filtered all patient booked appointments`)
             }
@@ -85,7 +98,7 @@ const PatientsTable = () => {
         } finally {
             setIsSearching(false);
         }
-    }, [tokenContext, currentPage, itemsPerPage, user?.sem])
+    }, [tokenContext, user?.sem])
 
     /**
      * @function debouncing the search filtering when the user searched for information it waits for short delay in the interval period of time
@@ -93,42 +106,17 @@ const PatientsTable = () => {
     const handleSearch = useCallback((e) => {
         const searchValue = e.target.value;
         setSearchTerm(searchValue);
-
+        setCurrentPage(1)
         if (!searchValue.trim()) {
-            retrieveFilteredAppointments()
-            return;
+            retrieveFilteredAppointments("", currentPage, itemsPerPage);
         }
 
         const timer = setTimeout(() => {
-            retrieveFilteredAppointments(searchValue)
-        }, 500)
+            retrieveFilteredAppointments(searchValue, currentPage, itemsPerPage);
+        }, 500);
 
         return () => clearTimeout(timer)
-    }, [retrieveFilteredAppointments])
-
-    // const filteredData = useMemo(() => {
-    //     if (!searchTerm.trim()) return retrievedAppointmentsData;
-
-    //     const lowercasedSearch = searchTerm.toLowerCase();
-    //     return retrievedAppointmentsData.filter(item =>
-    //         Object.entries({
-    //             firstName: item.firstName,
-    //             lastName: item.lastName,
-    //             email: item.email,
-    //             phoneNumber: item.phoneNumber,
-    //             status: item.status,
-    //             purposeOfAppointment: item.purposeOfAppointment,
-    //             appointmentDate: item.appointmentDate
-    //         }).some(([, value]) => value?.toString().toLowerCase().includes(lowercasedSearch))
-    //     );
-    // }, [searchTerm, retrievedAppointmentsData]);
-
-    // Pagination
-    const totalItems = retrievedAppointmentsData.length;
-    const totalPages = Math.ceil(totalItems / itemsPerPage);
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = retrievedAppointmentsData.slice(indexOfFirstItem, indexOfLastItem);
+    }, [retrieveFilteredAppointments, itemsPerPage, currentPage])
 
     /**
      * @function retrieves the all booked appointment of patient infonrmation
@@ -163,13 +151,39 @@ const PatientsTable = () => {
         fetchAppointments();
     }, [fetchAppointments]);
 
+    /**
+     * initial data mounts the filtered appointments and unfiltered appointments
+     * when the search term changes
+     * when the current page changes
+     * when the items per page changes
+     */
+    useEffect(() => {
+        if (searchTerm.trim()) {
+            retrieveFilteredAppointments(searchTerm, currentPage, itemsPerPage);
+        } else {
+            retrieveFilteredAppointments("", currentPage, itemsPerPage);
+        }
+    }, [currentPage, itemsPerPage, retrieveFilteredAppointments, searchTerm]);
+
     const handlePageChange = (pageNumber) => {
         setCurrentPage(pageNumber);
+        if (searchTerm.trim()) {
+            retrieveFilteredAppointments(searchTerm, pageNumber, itemsPerPage);
+        } else {
+            retrieveFilteredAppointments("", pageNumber, itemsPerPage);
+        }
     };
 
     const handleItemsPerPageChange = (e) => {
-        setItemsPerPage(parseInt(e.target.value));
+        const newItemsPerPage = parseInt(e.target.value);
+        setItemsPerPage(newItemsPerPage);
         setCurrentPage(1);
+
+        if (searchTerm.trim()) {
+            retrieveFilteredAppointments(searchTerm, currentPage, newItemsPerPage);
+        } else {
+            retrieveFilteredAppointments("", currentPage, newItemsPerPage);
+        }
     };
 
     if (isLoading) {
@@ -218,28 +232,33 @@ const PatientsTable = () => {
                                 ))}
                             </tr>
                         </thead>
-                        {isSearching === isLoading && (
+                        {!isSearching && !isLoading && (
                             <AppointmentsTable
-                                retrievedAppointmentsData={currentItems}
+                                retrievedAppointmentsData={retrievedAppointmentsData}
                             />
                         )}
                     </table>
                 </div>
+                {!isLoading && retrievedAppointmentsData.length === 0 && (
+                    <div className="px-6 py-4 text-center text-gray-500">
+                        {searchTerm ? 'No searched appointments found' : 'No appointments found'}
+                    </div>
+                )}
                 {totalItems > 0 && (
                     <div className="px-6 py-4 flex flex-col sm:flex-row items-center justify-between border-t border-gray-200">
                         <div className="text-sm text-gray-700 mb-4 sm:mb-0">
                             Showing <span className="font-medium">
-                                {Math.min((currentPage - 1) * itemsPerPage + 1, totalItems)}
+                                {Math.min((pagination.currentPage - 1) * pagination.limit + 1, totalItems)}
                             </span> to{' '}
                             <span className="font-medium">
-                                {Math.min(currentPage * itemsPerPage, totalItems)}
+                                {Math.min(pagination.currentPage * pagination.limit, totalItems)}
                             </span>{' '}
                             of <span className="font-medium">{totalItems}</span> results
                         </div>
                         <div className="flex items-center space-x-4">
                             <select
                                 className="px-3 py-1 border rounded text-sm"
-                                value={itemsPerPage}
+                                value={pagination.limit}
                                 onChange={handleItemsPerPageChange}
                             >
                                 <option value={10}>10</option>
@@ -258,42 +277,37 @@ const PatientsTable = () => {
                             <div className="flex space-x-1 gap-1">
                                 <button
                                     onClick={() => handlePageChange(1)}
-                                    disabled={currentPage === 1}
+                                    disabled={pagination.currentPage === 1}
                                     className="px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer bg-black/100 text-white"
                                 >
                                     First
                                 </button>
                                 <button
-                                    onClick={() => handlePageChange(currentPage - 1)}
-                                    disabled={currentPage === 1}
+                                    onClick={() => handlePageChange(pagination.currentPage - 1)}
+                                    disabled={!pagination.hasPreviousPage}
                                     className="px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer bg-black/100 text-white"
                                 >
                                     Previous
                                 </button>
                                 <p className="py-1 text-center">
-                                    Page {currentPage} of {totalPages}
+                                    Page {pagination.currentPage} of {pagination.totalPages}
                                 </p>
                                 <button
                                     onClick={() => handlePageChange(currentPage + 1)}
-                                    disabled={currentPage >= totalPages}
+                                    disabled={!pagination.hasNextPage}
                                     className="px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer bg-black/100 text-white"
                                 >
                                     Next
                                 </button>
                                 <button
-                                    onClick={() => handlePageChange(totalPages)}
-                                    disabled={currentPage >= totalPages}
+                                    onClick={() => handlePageChange(pagination.totalPages)}
+                                    disabled={pagination.currentPage === pagination.totalPages}
                                     className="px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer bg-black/100 text-white"
                                 >
                                     Last
                                 </button>
                             </div>
                         </div>
-                    </div>
-                )}
-                {!isLoading && retrievedAppointmentsData.length === 0 && (
-                    <div className="px-6 py-4 text-center text-gray-500">
-                        {searchTerm ? 'No searched appointments found' : 'No appointments found'}
                     </div>
                 )}
             </div>

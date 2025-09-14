@@ -4659,6 +4659,28 @@ export const filterAllBookedAppointments = asyncHandler(
             const limit_value = parseInt(limit);
 
             const clinic_instance = new Clinic();
+
+            if (!search_value.trim()) {
+                const result = await clinic_instance.returnAllBookedAppointments({
+                    page: page_value,
+                    limit: limit_value,
+                    email: email_address,
+                });
+
+                if (!result || result.length === 0) {
+                    return res.status(StatusCodes.NOT_FOUND).json({
+                        message: "No returned all booked appointments found"
+                    });
+                }
+
+                return res.status(StatusCodes.OK).json({
+                    success: true,
+                    data: result.data,
+                    pagination: result.pagination,
+                    message: "Returned all booked appointment successfully"
+                });
+            }
+
             const result = await clinic_instance.filterAllBookedAppointments({
                 search: search_value,
                 page: page_value,
@@ -4668,8 +4690,10 @@ export const filterAllBookedAppointments = asyncHandler(
 
             return res.status(StatusCodes.OK).json({
                 success: true,
-                result
-            })
+                data: result.data,
+                pagination: result.pagination,
+                message: "Filtered all booked appointment successfully"
+            });
         } catch (error) {
             logger.log(`error`, `Failed to filter all booked appointments of a patient in controller: ${error}`);
             return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
@@ -4793,9 +4817,23 @@ export const processFollowUpMessage = asyncHandler(
     async (req, res) => {
         try {
             const clinic = new Clinic();
+
+            if (!(clinic instanceof Clinic)) {
+                return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                    message: "Failed to instantiate clinic model"
+                })
+            }
+
             const appointments = await clinic.getCompletedAppointmentsForFollowUp({
-                daysAfter: 1
-            })
+                daysAfter: 1,
+                clinicID: req.user.id
+            });
+
+            if (!appointments || appointments.length === 0) {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    message: "No appointments found for follow up message"
+                })
+            }
 
             for (const appt of appointments) {
                 try {
@@ -4803,8 +4841,10 @@ export const processFollowUpMessage = asyncHandler(
                     await clinic.markFollowUpSent({
                         appointmentID: appt.appointmentID
                     });
+                    logger.log(`info`, `Follow up message sent successfully for appointment ID: ${appt.appointmentID}`);
                 } catch (error) {
                     logger.error(`Failed to process follow up message in controller: ${error}`);
+                    continue;
                 }
             }
 

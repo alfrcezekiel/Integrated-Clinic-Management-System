@@ -2929,7 +2929,9 @@ class Clinic {
                 }
 
                 const offset = (params.page - 1) * params.limit;
-                const queryParams = [params.email];
+                const queryParams = [
+                    params.email
+                ];
                 const limit = parseInt(params.limit);
                 const page = parseInt(params.page);
 
@@ -3020,11 +3022,14 @@ class Clinic {
 
                 return {
                     success: true,
-                    count: rows.length,
-                    total,
-                    totalPages,
-                    limit,
-                    currentPage: page,
+                    pagination: {
+                        total: total,
+                        limit: limit,
+                        totalPages: totalPages,
+                        currentPage: page,
+                        hasNextPage: page < totalPages,
+                        hasPreviousPage: page > 1
+                    },
                     data: rows
                 }
             } catch (error) {
@@ -3566,12 +3571,19 @@ class Clinic {
 
                 const [rows] = await this.connection.query(query, queryValues);
 
+                await this.connection.commit();
+
                 if (!rows.length) {
                     throw new Error(`Failed to retrieve the completed appointments for follow-up`);
                 }
 
                 return rows;
             } catch (error) {
+                const rollbackQuery = this.connection.rollback();
+                if (!rollbackQuery) {
+                    logger.log(`error`, `Failed to rollback the transaction in retrieving completed appointments for follow-up in method: ${error}`);
+                }
+
                 logger.log(`error`, `Failed in retrieving completed appointments for follow-up in method: ${error}`);
                 throw error;
             } finally {
@@ -3892,6 +3904,127 @@ class Clinic {
             }
         },
         "Get All Approved Booked Appointment By Patient"
+    )
+
+    /**
+     * @method return all booked appointments when no search term is provided with pagination
+     */
+    returnAllBookedAppointments = modelErrorHandling(
+        async (params) => {
+            this.connection = await this.conn.getConnection();
+
+            try {
+                await this.connection.beginTransaction();
+
+                if (!params || typeof params !== "object") {
+                    throw new Error(`Invalid! Return all booked appointments should be an object`);
+                }
+
+                const {
+                    page = 1,
+                    limit = 10,
+                    email
+                } = params;
+
+                const page_value = parseInt(page);
+                const limit_value = parseInt(limit);
+                const email_address = String(email);
+
+                if (isNaN(page_value) || page_value < 1) {
+                    throw new Error(`Invalid page number`);
+                }
+                if (isNaN(limit_value) || limit_value < 1) {
+                    throw new Error(`Invalid limit value`);
+                }
+                if (!email_address) {
+                    throw new Error(`Email is required`);
+                }
+
+                const offset = (page_value - 1) * limit_value;
+
+                const patients_appointment_cols = [
+                    "firstName",
+                    "lastName",
+                    "email",
+                    "appointmentDate",
+                    "preferredTime",
+                    "status",
+                    "purposeOfAppointment",
+                    "phoneNumber",
+                ];
+
+                const countQuery = `
+                    SELECT COUNT(*) AS total
+                    FROM patientsappointment
+                    WHERE email = ?;
+                `
+                const countValue = [
+                    email_address
+                ]
+
+                // First get the total count
+                const [countResults] = await this.connection.query(
+                    countQuery,
+                    countValue
+                );
+
+                if (!countResults.length) {
+                    throw new Error(`Failed to retrieve total count of booked appointments of a patient`);
+                }
+
+                const query = `
+                    SELECT
+                        ${patients_appointment_cols.join(", ")}
+                    FROM patientsappointment
+                    WHERE email = ?
+                    ORDER BY appointmentDate DESC, preferredTime DESC
+                    LIMIT ? OFFSET ?;
+                `;
+
+                const values = [
+                    email_address,
+                    limit_value,
+                    offset
+                ];
+
+                const total = countResults[0]?.total || 0;
+                const totalPages = Math.ceil(total / limit_value);
+
+                // Then get the paginated results
+                const [results] = await this.connection.query(
+                    query,
+                    values
+                );
+
+                if (results.length === 0) {
+                    throw new Error(`Failed to retrieve all booked appointments of a patient`);
+                }
+
+                await this.connection.commit();
+
+                return {
+                    data: results,
+                    pagination: {
+                        total: total,
+                        currentPage: page_value,
+                        limit: limit_value,
+                        totalPages: totalPages,
+                        hasNextPage: page_value < totalPages,
+                        hasPreviousPage: page_value > 1
+                    },
+                    message: "Successfully retrieved all booked appointments"
+                };
+            } catch (error) {
+                await this.connection.rollback();
+                logger.log('error', `Failed to return all booked appointments: ${error}`);
+                throw error;
+            } finally {
+                if (this.connection) {
+                    await this.connection.release();
+                }
+            }
+        },
+        "Return All Booked Appointments"
     )
 }
 

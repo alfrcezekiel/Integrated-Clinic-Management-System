@@ -1,6 +1,6 @@
 import axios from "axios";
 
-// create an axios instance named CMS
+/** create an axios instance named CMS */
 const CMS = axios.create({
     baseURL: "http://localhost:7506",
     timeout: 40000,

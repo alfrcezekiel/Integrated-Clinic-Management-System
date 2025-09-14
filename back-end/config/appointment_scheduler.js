@@ -85,15 +85,36 @@ const scheduleFollowUpMessage = async () => {
      * run every 10 am daily
      */
     cron.schedule(FOLLOW_UP_MESSAGE_SCHEDULE, async () => {
-        try {
-            logger.log(`info`, `Running follow up message scheduler`)
-            const result = processFollowUpMessage();
-            logger.log(`info`, `Follow up message scheduled successfully: ${result} follow up message sent`);
-        } catch (error) {
-            logger.log(`error`, `Failed to schedule follow up message: ${error}`);
-        }
+        (async () => {
+            try {
+                logger.log(`info`, `Running follow up message scheduler`);
 
-        logger.log(`info`, `Follow up message scheduler started`)
+                const mockReq = {
+                    method: "GET",
+                    url: "/CMS/process-follow-up-message",
+                    clinicID: req.user.id
+                }
+
+                const mockRes = {
+                    status: function (code) {
+                        this.statusCode = code;
+                        return this;
+                    },
+                    json: function (data) {
+                        if (data && data.success) {
+                            logger.log(`info`, `Follow up message scheduled successfully: ${data.message}`);
+                        } else {
+                            logger.log(`warn`, `No appointments found for follow up message: ${data?.message}`);
+                        }
+                        return this;
+                    }
+                }
+                processFollowUpMessage(mockReq, mockRes);
+            } catch (error) {
+                logger.log(`error`, `Failed to schedule follow up message: ${error}`);
+            }
+            logger.log(`info`, `Follow up message scheduler started`)
+        })()
     }, {
         timezone: "Asia/Manila",
         scheduled: true
