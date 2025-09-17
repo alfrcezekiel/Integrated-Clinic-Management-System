@@ -59,30 +59,38 @@ const PendingAppointmentTable = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
-    const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(10);
     const [isSearching, setIsSearching] = useState(false);
-
-    const totalItems = retrievedAppointmentsData.length;
-    const totalPages = Math.ceil(totalItems / itemsPerPage);
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = retrievedAppointmentsData.slice(indexOfFirstItem, indexOfLastItem);
+    const [pagination, setPagination] = useState({
+        total: 0,
+        totalPages: 0,
+        currentPage: 1,
+        limit: 10,
+        hasNextPage: false,
+        hasPreviousPage: false
+    })
+    const [totalItems, setTotalItems] = useState(0);
+    const [searchLoading, setSearchLoading] = useState(false);
+    const [searchTimeout, setSearchTimeout] = useState(null);
 
     /**
      * @function to filter pending appointment infomration in search input
      */
-    const filteredPendingAppointments = useCallback(async (search) => {
+    const filteredPendingAppointments = useCallback(async (search, page = 1, limit = 10) => {
         if (!patientEmail) return;
 
-        setIsSearching(true);
+        const isSearching = search.trim !== "";
+        if (isSearching) {
+            setIsSearching(true);
+        } else {
+            setIsLoading(true);
+        }
 
         try {
             const response = await CMS.get(`/CMS/cms.api.com/patient/dashboard/searchPendingBookedAppointments`, {
                 params: {
                     search: search,
-                    page: currentPage,
-                    limit: itemsPerPage,
+                    page: page,
+                    limit: limit,
                     email: patientEmail
                 },
                 headers: {
@@ -92,9 +100,9 @@ const PendingAppointmentTable = () => {
             })
 
             if (response.status === 200) {
-                setRetrievedAppointmentsData(response.data.result.appointments);
-                setCurrentPage(response.data.result.pagination.currentPage);
-                setItemsPerPage(response.data.result.pagination.limit);
+                setRetrievedAppointmentsData(response.data.data);
+                setPagination(response.data.pagination);
+                setTotalItems(response.data.pagination?.total);
             } else {
                 throw new Error(`Failed to filter pending appointment information in server: ${response.status}`);
             }
@@ -103,35 +111,73 @@ const PendingAppointmentTable = () => {
         } finally {
             setIsSearching(false);
         }
-    }, [currentPage, itemsPerPage, patientEmail, tokenContext]);
+    }, [patientEmail, tokenContext]);
+
+    useEffect(() => {
+        if (searchTerm.trim()) {
+            filteredPendingAppointments(searchTerm, pagination.currentPage, pagination.limit);
+        } else {
+            filteredPendingAppointments("", pagination.currentPage, pagination.limit);
+        }
+    }, [pagination.currentPage, pagination.limit, searchTerm, filteredPendingAppointments]);
 
     /**
      * @function  to debounce the search filter to prevent too many requests
      */
-    const debouncedSearch = useCallback((searchValue) => {
-        const timer = setTimeout(() => {
-            filteredPendingAppointments(searchValue, 1);
-        }, 500)
+    const debouncedSearch = useCallback(async (searchValue) => {
+        const timer = setTimeout(async () => {
+            await filteredPendingAppointments(searchValue, 1, pagination.limit)
+            .finally(() => setSearchLoading(false));
+        }, 500);
 
-        return () => clearTimeout(timer)
-    }, [filteredPendingAppointments])
+        setSearchTimeout(timer);
+        return () => clearTimeout(timer);
+    }, [filteredPendingAppointments, pagination.limit])
 
-    const handleSearchChange = (e) => {
+    const handleSearchChange = async (e) => {
         const { value } = e.target;
         setSearchTerm(value);
-        if (value.trim() === "") {
-            filteredPendingAppointments("", 1)
+
+        if (searchTimeout) {
+            clearTimeout(searchTimeout);
         }
-        debouncedSearch(value)
+
+        setSearchLoading(true);
+
+        if (!value.trim()) {
+            await filteredPendingAppointments("", pagination.currentPage, pagination.limit)
+            .finally(() => setSearchLoading(false));
+            return;
+        }
+        await debouncedSearch(value);
     }
 
     const handlePageChange = (pageNumber) => {
-        setCurrentPage(pageNumber);
+        setPagination((prev) => ({
+            ...prev,
+            currentPage: pageNumber
+        }));
+
+        if (searchTerm.trim()) {
+            filteredPendingAppointments(searchTerm, pageNumber, pagination.limit);
+        } else {
+            filteredPendingAppointments("", pageNumber, pagination.limit);
+        }
     };
 
     const handleItemsPerPageChange = (e) => {
-        setItemsPerPage(parseInt(e.target.value));
-        setCurrentPage(1);
+        const newLimit = parseInt(e.target.value);
+        setPagination((prev) => ({
+            ...prev,
+            limit: newLimit,
+            currentPage: 1
+        }));
+
+        if (searchTerm.trim()) {
+            filteredPendingAppointments(searchTerm, 1, newLimit);
+        } else {
+            filteredPendingAppointments("", 1, newLimit);
+        }
     };
 
     useEffect(() => {
@@ -199,114 +245,114 @@ const PendingAppointmentTable = () => {
                             </div>
                         </div>
                     )}
-                    {!isLoading && !error && (
-                        <div className="overflow-x-auto">
-                            <div className="min-w-full">
-                                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-200">
-                                    <thead className="bg-gray-100">
-                                        <tr>
-                                            {appointmentsTableColumn.map((header) => (
-                                                <th
-                                                    key={header.key}
-                                                    scope="col"
-                                                    className={`px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider ${header.className}`}
-                                                >
-                                                    <div className="flex items-center justify-center">
-                                                        {header.label}
-                                                    </div>
-                                                </th>
-                                            ))}
-                                        </tr>
-                                    </thead>
-                                    {isSearching === isLoading && (
-                                        <PendingStatusAppointmentTable
-                                            retrievedAppointmentsData={currentItems}
-                                            appointmentsTableColumn={appointmentsTableColumn}
-                                        />
-                                    )}
-                                </table>
-                            </div>
-                            {isLoading && (
-                                <div className="py-6 text-center">
-                                    <div
-                                        className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-black/100"
-                                    >
-                                    </div>
-                                </div>
-                            )}
-                            {!isLoading && retrievedAppointmentsData.length === 0 && (
-                                <div className="text-center py-4">
-                                    <p className="text-gray-500 dark:text-gray-400">{searchTerm ? "No searched pending appointments found" : "No pending appointments found"}</p>
-                                </div>
-                            )}
-                            {totalItems > 0 && (
-                                <div className="px-6 py-4 flex flex-col sm:flex-row items-center justify-between border-t border-gray-200">
-                                    <div className="text-sm text-gray-700 mb-4 sm:mb-0">
-                                        Showing <span className="font-medium">
-                                            {Math.min((currentPage - 1) * itemsPerPage + 1, totalItems)}
-                                        </span> to{' '}
-                                        <span className="font-medium">
-                                            {Math.min(currentPage * itemsPerPage, totalItems)}
-                                        </span>{' '}
-                                        of <span className="font-medium">{totalItems}</span> results
-                                    </div>
-                                    <div className="flex items-center space-x-4">
-                                        <select
-                                            className="px-3 py-1 border rounded text-sm"
-                                            value={itemsPerPage}
-                                            onChange={handleItemsPerPageChange}
-                                        >
-                                            <option value={10}>10</option>
-                                            <option value={25}>25</option>
-                                            <option value={50}>50</option>
-                                            <option value={100}>100</option>
-                                            <option value={150}>150</option>
-                                            <option value={200}>200</option>
-                                            <option value={250}>250</option>
-                                            <option value={300}>300</option>
-                                            <option value={350}>350</option>
-                                            <option value={400}>400</option>
-                                            <option value={450}>450</option>
-                                            <option value={500}>500</option>
-                                        </select>
-                                        <div className="flex space-x-1 gap-1">
-                                            <button
-                                                onClick={() => handlePageChange(1)}
-                                                disabled={currentPage === 1}
-                                                className="px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer bg-black/100 text-white"
+                    <div className="overflow-x-auto">
+                        <div className="min-w-full">
+                            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-200">
+                                <thead className="bg-gray-100">
+                                    <tr>
+                                        {appointmentsTableColumn.map((header) => (
+                                            <th
+                                                key={header.key}
+                                                scope="col"
+                                                className={`px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider ${header.className}`}
                                             >
-                                                First
-                                            </button>
-                                            <button
-                                                onClick={() => handlePageChange(currentPage - 1)}
-                                                disabled={currentPage === 1}
-                                                className="px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer bg-black/100 text-white"
-                                            >
-                                                Previous
-                                            </button>
-                                            <p className="py-1 text-center">
-                                                Page {currentPage} of {totalPages}
-                                            </p>
-                                            <button
-                                                onClick={() => handlePageChange(currentPage + 1)}
-                                                disabled={currentPage >= totalPages}
-                                                className="px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer bg-black/100 text-white"
-                                            >
-                                                Next
-                                            </button>
-                                            <button
-                                                onClick={() => handlePageChange(totalPages)}
-                                                disabled={currentPage >= totalPages}
-                                                className="px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer bg-black/100 text-white"
-                                            >
-                                                Last
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
+                                                <div className="flex items-center justify-center">
+                                                    {header.label}
+                                                </div>
+                                            </th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                {(isSearching || searchLoading) ? (
+                                    <tr>
+                                        <td colSpan={appointmentsTableColumn.length} className="px-6 py-4 text-center">
+                                            <div className="flex justify-center items-center h-32">
+                                                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    <PendingStatusAppointmentTable
+                                        retrievedAppointmentsData={retrievedAppointmentsData}
+                                        appointmentsTableColumn={appointmentsTableColumn}
+                                    />
+                                )}
+                            </table>
                         </div>
-                    )}
+                        {!isLoading && retrievedAppointmentsData?.length === 0 && (
+                            <div className="text-center py-4">
+                                <p className="text-gray-500 dark:text-gray-400">
+                                    {searchTerm ? "No searched pending appointments found" : "No pending appointments found"}
+                                </p>
+                            </div>
+                        )}
+                        {totalItems > 0 && (
+                            <div className="px-6 py-4 flex flex-col sm:flex-row items-center justify-between border-t border-gray-200">
+                                <div className="text-sm text-gray-700 mb-4 sm:mb-0">
+                                    Showing <span className="font-medium">
+                                        {Math.min(pagination.limit, totalItems)}
+                                    </span> to{' '}
+                                    <span className="font-medium">
+                                        {Math.min(pagination.currentPage * pagination.limit, totalItems)}
+                                    </span>{' '}
+                                    of <span className="font-medium">{totalItems}</span> results
+                                </div>
+                                <div className="flex items-center space-x-4">
+                                    <select
+                                        className="px-3 py-1 border rounded text-sm"
+                                        value={pagination.limit}
+                                        onChange={handleItemsPerPageChange}
+                                    >
+                                        <option value={10}>10</option>
+                                        <option value={25}>25</option>
+                                        <option value={50}>50</option>
+                                        <option value={100}>100</option>
+                                        <option value={150}>150</option>
+                                        <option value={200}>200</option>
+                                        <option value={250}>250</option>
+                                        <option value={300}>300</option>
+                                        <option value={350}>350</option>
+                                        <option value={400}>400</option>
+                                        <option value={450}>450</option>
+                                        <option value={500}>500</option>
+                                    </select>
+                                    <div className="flex space-x-1 gap-1">
+                                        <button
+                                            onClick={() => handlePageChange(1)}
+                                            disabled={pagination.currentPage === 1}
+                                            className="px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer bg-black/100 text-white"
+                                        >
+                                            First
+                                        </button>
+                                        <button
+                                            onClick={() => handlePageChange(pagination.currentPage - 1)}
+                                            disabled={pagination.currentPage === 1}
+                                            className="px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer bg-black/100 text-white"
+                                        >
+                                            Previous
+                                        </button>
+                                        <p className="py-1 text-center">
+                                            Page {pagination.currentPage} of {pagination.totalPages}
+                                        </p>
+                                        <button
+                                            onClick={() => handlePageChange(pagination.currentPage + 1)}
+                                            disabled={pagination.currentPage >= pagination.totalPages}
+                                            className="px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer bg-black/100 text-white"
+                                        >
+                                            Next
+                                        </button>
+                                        <button
+                                            onClick={() => handlePageChange(pagination.totalPages)}
+                                            disabled={pagination.currentPage >= pagination.totalPages}
+                                            className="px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer bg-black/100 text-white"
+                                        >
+                                            Last
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div >
         </>

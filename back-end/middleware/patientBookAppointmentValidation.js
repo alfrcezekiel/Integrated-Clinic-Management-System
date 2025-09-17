@@ -16,7 +16,32 @@ const validatePatientBookAppointment = [
         .notEmpty()
         .withMessage("Email is required")
         .isEmail()
-        .withMessage("Invalid email address"),
+        .withMessage("Invalid email address")
+        .custom(async (email, { req }) => {
+            if (req && req.body.patientID) {
+                const verifyEmailQuery = `
+                    SELECT 
+                        email
+                    FROM
+                        patientsregisteraccount1
+                    WHERE
+                        patientID = ?
+                        AND
+                        email = ?
+                `;
+
+                const values = [
+                    req.body.patientID,
+                    email
+                ]
+                const [verifyRows] = await conn.query(verifyEmailQuery, values)
+
+                if (verifyRows.length === 0) {
+                    throw new Error(`You can't use a different email rather than your registered email`);
+                }
+            }
+            return true;
+        }),
     body("appointmentDate")
         .notEmpty()
         .withMessage("Appointment date is required")
@@ -97,14 +122,14 @@ const validatePatientBookAppointment = [
 
                 const formatTo12Hour = (timeStr) => {
                     let [hours, minutes] = timeStr.split(":").map(Number);
-                    
+
                     const parseHours = parseInt(hours, 10);
                     const parseMinutes = parseInt(minutes, 10);
-                    
-                    if(isNaN(parseHours) || isNaN(parseMinutes)){
+
+                    if (isNaN(parseHours) || isNaN(parseMinutes)) {
                         return "Invalid time format";
                     }
-                    
+
                     const ampm = parseHours >= 12 ? "PM" : "AM";
                     const adjustedHours = parseHours % 12 || 12; // Convert 0 to 12 for 12 AM
 
@@ -135,8 +160,8 @@ const validatePatientBookAppointment = [
                 const closingMinutes = timeToMinutes(clinic_close_time);
 
                 let isWithInOperatingHours = false;
-                
-                if(closingMinutes > openingMinutes) {
+
+                if (closingMinutes > openingMinutes) {
                     isWithInOperatingHours = preferredMinutes >= openingMinutes && preferredMinutes < closingMinutes;
                 } else {
                     isWithInOperatingHours = preferredMinutes >= openingMinutes || preferredMinutes < closingMinutes;

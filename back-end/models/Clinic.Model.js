@@ -3145,6 +3145,7 @@ class Clinic {
                         pa.email LIKE ? OR 
                         pa.appointmentDate LIKE ? OR
                         pa.preferredTime LIKE ? OR
+                        pa.status LIKE ? OR
                         pa.phoneNumber LIKE ? OR
                         pa.purposeOfAppointment LIKE ? OR
                         c.clinic_name LIKE ?
@@ -3156,6 +3157,7 @@ class Clinic {
                 const searchQueryValues = [
                     email_address,
                     patient_status,
+                    searchPattern,
                     searchPattern,
                     searchPattern,
                     searchPattern,
@@ -3178,7 +3180,9 @@ class Clinic {
                         total: total,
                         totalPages: totalPages,
                         currentPage: parseInt(page_value),
-                        limit: parseInt(limit_value)
+                        limit: parseInt(limit_value),
+                        hasNextPage: page_value < totalPages,
+                        hasPreviousPage: page_value > 1
                     }
                 }
             } catch (error) {
@@ -4025,6 +4029,141 @@ class Clinic {
             }
         },
         "Return All Booked Appointments"
+    )
+
+    /**
+     * @method logic to return all pending booked appointments when no search term provided in pending booked appointments table in patient side
+     */
+    returnPendingBookedAppointments = modelErrorHandling(
+        async (params) => {
+            this.connection = await this.conn.getConnection();
+            try {
+                if (!params || typeof params !== "object") {
+                    throw new Error(`Invalid! Return pending booked appointments should be an object`);
+                }
+
+                const {
+                    page = 1,
+                    limit = 10,
+                    email,
+                    status
+                } = params;
+
+                const page_value = parseInt(page);
+                const limit_value = parseInt(limit);
+                const email_address = String(email);
+                const patient_status = String(status);
+
+                if (!page_value) {
+                    throw new Error(`Invalid! page should have a value`)
+                } else if (!limit_value) {
+                    throw new Error(`Invalid! limit should have a value`)
+                } else if (!email_address) {
+                    throw new Error(`Invalid! email should have a value`)
+                } else if (!patient_status) {
+                    throw new Error(`Invalid! status should have a value`)
+                }
+
+                const offset = (page_value - 1) * limit_value;
+
+                const patient_appointments_columns = [
+                    "c.clinic_name",
+                    "pa.firstName",
+                    "pa.lastName",
+                    "pa.email",
+                    "pa.appointmentDate",
+                    "pa.phoneNumber",
+                    "pa.preferredTime",
+                    "pa.status",
+                    "pa.purposeOfAppointment"
+                ];
+
+                const countQuery = `
+                    SELECT COUNT(*) AS total
+                    FROM patientsappointment AS pa
+                    INNER JOIN clinic AS c
+                    ON pa.clinic_id = c.clinic_id
+                    WHERE pa.email = ?
+                    AND
+                    pa.status = ?;
+                `
+
+                const countValue = [
+                    email_address,
+                    patient_status
+                ]
+
+                const [countResults] = await this.connection.query(
+                    countQuery,
+                    countValue
+                );
+
+                if (!countResults.length) {
+                    throw new Error(`Failed to retrieve total count of pending booked appointments of a patient`);
+                }
+
+                const total = countResults[0]?.total;
+                const totalPages = Math.ceil(total / limit_value);
+
+                const returnedQuery = `
+                    SELECT
+                        ${patient_appointments_columns.join(", ")}
+                    FROM patientsappointment AS pa
+                    INNER JOIN clinic AS c
+                    ON pa.clinic_id = c.clinic_id
+                    WHERE pa.email = ?
+                    AND
+                    pa.status = ?
+                    ORDER BY pa.appointmentDate DESC, pa.preferredTime DESC
+                    LIMIT ? OFFSET ?;
+                `;
+
+                const returnedValue = [
+                    email_address,
+                    patient_status,
+                    limit_value,
+                    offset
+                ]
+
+                const [results] = await this.connection.query(
+                    returnedQuery,
+                    returnedValue
+                );
+
+                if (results.length === 0) {
+                    throw new Error(`Failed to retrieve all pending booked appointments of a patient`);
+                }
+
+                await this.connection.commit();
+
+                return {
+                    success: true,
+                    appointments: results,
+                    pagination: {
+                        total: total,
+                        currentPage: page_value,
+                        limit: limit_value,
+                        totalPages: totalPages,
+                        hasNextPage: page_value < totalPages,
+                        hasPreviousPage: page_value > 1
+                    },
+                    message: "Successfully retrieved all pending booked appointments"
+                }
+            } catch (error) {
+                const rollbackQuery = await this.connection.rollback();
+                if (!rollbackQuery) {
+                    logger.log(`error`, `Failed to rollback transaction in returned pending booked appointments: ${error}`);
+                }
+
+                logger.log(`error`, `Failed to return all pending booked appointments: ${error}`);
+                throw error;
+            } finally {
+                if (this.connection) {
+                    await this.connection.release();
+                }
+            }
+        },
+        "Return Pending Booked Appointments"
     )
 }
 

@@ -4709,7 +4709,12 @@ export const filterAllBookedAppointments = asyncHandler(
 export const searchPendingBookedAppointments = asyncHandler(
     async (req, res) => {
         try {
-            const { search = "", page = 1, limit = 10, email } = req.query;
+            const {
+                search = "",
+                page = 1,
+                limit = 10,
+                email
+            } = req.query;
 
             if (!email) {
                 return res.status(StatusCodes.BAD_REQUEST).json({
@@ -4723,6 +4728,31 @@ export const searchPendingBookedAppointments = asyncHandler(
             const limit_value = parseInt(limit);
 
             const clinic_instance = new Clinic();
+
+            const patient_status = String("Pending");
+
+            if (!search_value.trim()) {
+                const result = await clinic_instance.returnPendingBookedAppointments({
+                    page: page_value,
+                    limit: limit_value,
+                    email: email_address,
+                    status: patient_status
+                });
+
+                if (!result || result.length === 0) {
+                    return res.status(StatusCodes.NOT_FOUND).json({
+                        message: "No pending booked appointments found"
+                    })
+                }
+
+                return res.status(StatusCodes.OK).json({
+                    success: true,
+                    data: result.appointments,
+                    pagination: result.pagination,
+                    message: "Returned pending booked appointments successfully"
+                })
+            }
+
             const result = await clinic_instance.searchPendingBookedAppointments({
                 search: search_value,
                 page: page_value,
@@ -4730,9 +4760,16 @@ export const searchPendingBookedAppointments = asyncHandler(
                 email: email_address
             });
 
+            if (!result || result.length === 0) {
+                return res.status(StatusCodes.NOT_FOUND).json({
+                    message: "No pending booked appointments found"
+                })
+            }
             return res.status(StatusCodes.OK).json({
                 success: true,
-                result: result
+                data: result.appointments,
+                pagination: result.pagination,
+                message: "Filtered pending booked appointments successfully"
             })
         } catch (error) {
             logger.log(`error`, `Failed to search pending booked appointments of a patient in controller: ${error}`);
@@ -4880,24 +4917,6 @@ export const searchApprovedBookedAppointments = asyncHandler(
             const limit_value = parseInt(limit);
             const email_address = String(email);
 
-            if (!email_address) {
-                return res.status(StatusCodes.BAD_REQUEST).json({
-                    message: "Please enter a valid email address"
-                })
-            } else if (!search_term) {
-                return res.status(StatusCodes.BAD_REQUEST).json({
-                    message: "Please enter a valid search term"
-                })
-            } else if (!page_value) {
-                return res.status(StatusCodes.BAD_REQUEST).json({
-                    message: "Please enter a valid page number"
-                })
-            } else if (!limit_value) {
-                return res.status(StatusCodes.BAD_REQUEST).json({
-                    message: "Please enter a valid limit"
-                })
-            }
-
             const clinic_instance = new Clinic();
 
             if (!clinic_instance instanceof Clinic) {
@@ -4907,6 +4926,9 @@ export const searchApprovedBookedAppointments = asyncHandler(
             }
 
             if (!search_term || search_term.trim() === "") {
+                /**
+                 * returns all approved boooked appointment when no search term is provided
+                 */
                 const result = await clinic_instance.getAllApprovedBookedAppoinmentsByPatient({
                     patientEmail: email_address
                 })

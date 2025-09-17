@@ -41,7 +41,7 @@ const Footer = ({ brandName, brandLink }) => {
                                 <p className="text-gray-600">123 Clinic St.</p>
                                 <p className="text-gray-600">City, State 12345</p>
                                 <p className="text-gray-600">Phone: (123) 456-7890</p>
-                                <p className="text-gray-600">Email: info@clinic.com</p>
+                                <p className="text-gray-600">Email: clinicmanagementteam@gmail.com</p>
                             </div>
                         </div>
                     </div>

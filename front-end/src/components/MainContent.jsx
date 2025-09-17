@@ -38,7 +38,7 @@ const MainContent = () => {
     return (
         <> 
             <LandingPageHeader />
-            <main className="main">
+            <main>
                 <LandingPageHeroSection />
                 <LandingPageAboutSection />
                 <LandingPageServices />

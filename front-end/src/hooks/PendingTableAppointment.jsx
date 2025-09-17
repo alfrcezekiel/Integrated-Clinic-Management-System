@@ -80,7 +80,7 @@ const PendingStatusAppointmentTable = ({ retrievedAppointmentsData, appointmentT
                 </td>
                 <td className="px-6 py-3 whitespace-nowrap text-sm text-black dark:text-black">
                     {formatDate(appointment.appointmentDate)}
-                </td>
+                </td>   
                 <td className="px-6 py-3 whitespace-nowrap text-sm text-black dark:text-black">
                     {appointment.phoneNumber}
                 </td>

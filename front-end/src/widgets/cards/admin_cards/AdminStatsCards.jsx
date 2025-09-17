@@ -3,7 +3,6 @@ import { adminStats } from '../../../data/AdminData/AdminCardData';
 import {
     BuildingStorefrontIcon,
     UserGroupIcon,
-    UserIcon,
     RectangleGroupIcon,
     ShieldCheckIcon
 } from "@heroicons/react/24/solid";
@@ -28,12 +27,6 @@ const AdminStatsCards = () => {
             Icon: UserGroupIcon,
             value: totalNumberOfRegisteredPatientsAccounts,
             bgColor: "bg-green-500"
-        },
-        {
-            title: "Doctors",
-            Icon: UserIcon,
-            value: adminStats.doctors,
-            bgColor: "bg-purple-500"
         },
         {
             title: "Clinic Types",

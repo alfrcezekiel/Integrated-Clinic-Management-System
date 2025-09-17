@@ -63,6 +63,8 @@ const PatientsTable = () => {
         hasNextPage: false,
         hasPreviousPage: false
     });
+    const [searchLoading, setSearchLoading] = useState(false);
+    const [searchTimeout, setSearchTimeout] = useState(null);
 
     /**
      * Filter data based on search term of patient information
@@ -107,16 +109,31 @@ const PatientsTable = () => {
         const searchValue = e.target.value;
         setSearchTerm(searchValue);
         setCurrentPage(1)
+
+        if (searchTimeout) {
+            clearTimeout(searchTimeout);
+        }
+
+        setSearchLoading(true);
+
         if (!searchValue.trim()) {
-            retrieveFilteredAppointments("", currentPage, itemsPerPage);
+            retrieveFilteredAppointments("", 1, itemsPerPage)
+                .finally(() => setSearchLoading(false));
+            return;
         }
 
         const timer = setTimeout(() => {
-            retrieveFilteredAppointments(searchValue, currentPage, itemsPerPage);
+            retrieveFilteredAppointments(searchValue, 1, itemsPerPage)
+                .finally(() => setSearchLoading(false));
         }, 500);
 
-        return () => clearTimeout(timer)
-    }, [retrieveFilteredAppointments, itemsPerPage, currentPage])
+        setSearchTimeout(timer);
+
+        return () => {
+            clearTimeout(timer);
+        }
+
+    }, [retrieveFilteredAppointments, itemsPerPage, searchTimeout]);
 
     /**
      * @function retrieves the all booked appointment of patient infonrmation
@@ -159,40 +176,32 @@ const PatientsTable = () => {
      */
     useEffect(() => {
         if (searchTerm.trim()) {
-            retrieveFilteredAppointments(searchTerm, currentPage, itemsPerPage);
+            retrieveFilteredAppointments(searchTerm, 1, itemsPerPage);
         } else {
-            retrieveFilteredAppointments("", currentPage, itemsPerPage);
+            retrieveFilteredAppointments("", 1, itemsPerPage);
         }
-    }, [currentPage, itemsPerPage, retrieveFilteredAppointments, searchTerm]);
+    }, [itemsPerPage, retrieveFilteredAppointments, searchTerm]);
 
-    const handlePageChange = (pageNumber) => {
+    const handlePageChange = async (pageNumber) => {
         setCurrentPage(pageNumber);
         if (searchTerm.trim()) {
-            retrieveFilteredAppointments(searchTerm, pageNumber, itemsPerPage);
+            await retrieveFilteredAppointments(searchTerm, pageNumber, itemsPerPage);
         } else {
-            retrieveFilteredAppointments("", pageNumber, itemsPerPage);
+            await retrieveFilteredAppointments("", pageNumber, itemsPerPage);
         }
     };
 
-    const handleItemsPerPageChange = (e) => {
+    const handleItemsPerPageChange = async (e) => {
         const newItemsPerPage = parseInt(e.target.value);
         setItemsPerPage(newItemsPerPage);
         setCurrentPage(1);
 
         if (searchTerm.trim()) {
-            retrieveFilteredAppointments(searchTerm, currentPage, newItemsPerPage);
+            await retrieveFilteredAppointments(searchTerm, 1, newItemsPerPage);
         } else {
-            retrieveFilteredAppointments("", currentPage, newItemsPerPage);
+            await retrieveFilteredAppointments("", 1, newItemsPerPage);
         }
     };
-
-    if (isLoading) {
-        return (
-            <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-            </div>
-        );
-    }
 
     return (
         <div className="mt-16 mb-8 w-full">
@@ -211,7 +220,13 @@ const PatientsTable = () => {
                             placeholder="Search patients..."
                             value={searchTerm}
                             onChange={handleSearch}
+                            disabled={isLoading}
                         />
+                        {searchLoading && (
+                            <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-blue-500"></div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -232,7 +247,15 @@ const PatientsTable = () => {
                                 ))}
                             </tr>
                         </thead>
-                        {!isSearching && !isLoading && (
+                        {isSearching || searchLoading ? (
+                            <tr>
+                                <td colSpan={columns.length} className="px-6 py-4 text-center">
+                                    <div className="flex justify-center items-center h-32">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                        ) : (
                             <AppointmentsTable
                                 retrievedAppointmentsData={retrievedAppointmentsData}
                             />
@@ -248,7 +271,7 @@ const PatientsTable = () => {
                     <div className="px-6 py-4 flex flex-col sm:flex-row items-center justify-between border-t border-gray-200">
                         <div className="text-sm text-gray-700 mb-4 sm:mb-0">
                             Showing <span className="font-medium">
-                                {Math.min((pagination.currentPage - 1) * pagination.limit + 1, totalItems)}
+                                {Math.min(pagination.limit, totalItems)}
                             </span> to{' '}
                             <span className="font-medium">
                                 {Math.min(pagination.currentPage * pagination.limit, totalItems)}
