@@ -127,7 +127,7 @@ const PendingAppointmentTable = () => {
     const debouncedSearch = useCallback(async (searchValue) => {
         const timer = setTimeout(async () => {
             await filteredPendingAppointments(searchValue, 1, pagination.limit)
-            .finally(() => setSearchLoading(false));
+                .finally(() => setSearchLoading(false));
         }, 500);
 
         setSearchTimeout(timer);
@@ -146,26 +146,26 @@ const PendingAppointmentTable = () => {
 
         if (!value.trim()) {
             await filteredPendingAppointments("", pagination.currentPage, pagination.limit)
-            .finally(() => setSearchLoading(false));
+                .finally(() => setSearchLoading(false));
             return;
         }
         await debouncedSearch(value);
     }
 
-    const handlePageChange = (pageNumber) => {
+    const handlePageChange = async (pageNumber) => {
         setPagination((prev) => ({
             ...prev,
             currentPage: pageNumber
         }));
 
         if (searchTerm.trim()) {
-            filteredPendingAppointments(searchTerm, pageNumber, pagination.limit);
+            await filteredPendingAppointments(searchTerm, pageNumber, pagination.limit);
         } else {
-            filteredPendingAppointments("", pageNumber, pagination.limit);
+            await filteredPendingAppointments("", pageNumber, pagination.limit);
         }
     };
 
-    const handleItemsPerPageChange = (e) => {
+    const handleItemsPerPageChange = async (e) => {
         const newLimit = parseInt(e.target.value);
         setPagination((prev) => ({
             ...prev,
@@ -174,9 +174,9 @@ const PendingAppointmentTable = () => {
         }));
 
         if (searchTerm.trim()) {
-            filteredPendingAppointments(searchTerm, 1, newLimit);
+            await filteredPendingAppointments(searchTerm, 1, newLimit);
         } else {
-            filteredPendingAppointments("", 1, newLimit);
+            await filteredPendingAppointments("", 1, newLimit);
         }
     };
 
@@ -263,14 +263,16 @@ const PendingAppointmentTable = () => {
                                         ))}
                                     </tr>
                                 </thead>
-                                {(isSearching || searchLoading) ? (
-                                    <tr>
-                                        <td colSpan={appointmentsTableColumn.length} className="px-6 py-4 text-center">
-                                            <div className="flex justify-center items-center h-32">
-                                                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                {isSearching || searchLoading ? (
+                                    <tbody>
+                                        <tr>
+                                            <td colSpan={appointmentsTableColumn.length} className="px-6 py-4 text-center">
+                                                <div className="flex justify-center items-center h-32">
+                                                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
                                 ) : (
                                     <PendingStatusAppointmentTable
                                         retrievedAppointmentsData={retrievedAppointmentsData}

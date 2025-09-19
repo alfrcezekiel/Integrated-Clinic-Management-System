@@ -4822,7 +4822,6 @@ export const scheduleReminderForUpcomingAppointments = asyncHandler(
             if (!result || result.length === 0) {
                 return res.status(StatusCodes.BAD_REQUEST).json({
                     message: "No appointments found for scheduling upcoming reminders in the next hour",
-                    data: []
                 })
             };
 
@@ -4925,13 +4924,18 @@ export const searchApprovedBookedAppointments = asyncHandler(
                 })
             }
 
-            if (!search_term || search_term.trim() === "") {
+            const patientStatus = String("Approved");
+
+            if (!search_term.trim()) {
                 /**
                  * returns all approved boooked appointment when no search term is provided
                  */
                 const result = await clinic_instance.getAllApprovedBookedAppoinmentsByPatient({
-                    patientEmail: email_address
-                })
+                    page: page_value,
+                    limit: limit_value,
+                    patientEmail: email_address,
+                    status: patientStatus
+                });
 
                 if (!result || result.length === 0) {
                     return res.status(StatusCodes.NOT_FOUND).json({
@@ -4942,7 +4946,9 @@ export const searchApprovedBookedAppointments = asyncHandler(
                 return res.status(StatusCodes.OK).json({
                     sucess: true,
                     message: "No filtered approved booked appointments found",
-                    result: result
+                    result: result.appointments,
+                    pagination: result.pagination,
+                    model_message: result.message
                 })
             }
 
@@ -4962,7 +4968,9 @@ export const searchApprovedBookedAppointments = asyncHandler(
             return res.status(StatusCodes.OK).json({
                 sucess: true,
                 message: "Filtered approved booked appointments found",
-                result: result
+                result: result.appointments,
+                pagination: result.pagination,
+                model_message: result.message
             })
         } catch (error) {
             logger.log(`error`, `Failed to search approved booked appointments in controller: ${error}`);

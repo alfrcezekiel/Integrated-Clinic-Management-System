@@ -3795,10 +3795,12 @@ class Clinic {
                     return {
                         appointments: [],
                         pagination: {
-                            total: 0,
+                            total: total,
                             currentPage: parseInt(page_value),
-                            totalPages: 0,
-                            limit: parseInt(limit_value)
+                            totalPages: totalPages,
+                            limit: parseInt(limit_value),
+                            hasNextPage: page_value  < totalPages,
+                            hasPreviousPage: page_value > 1
                         },
                         message: "No approved booked appointments found"
                     }
@@ -3812,8 +3814,11 @@ class Clinic {
                         total: total,
                         totalPages: totalPages,
                         currentPage: parseInt(page_value),
-                        limit: parseInt(limit_value)
-                    }
+                        limit: parseInt(limit_value),
+                        hasNextPage: page_value < totalPages,
+                        hasPreviousPage: page_value > 1
+                    },
+                    message: "Filtered approved booked appointments found"
                 }
             } catch (error) {
                 const rollbackQuery = this.connection.rollback();
@@ -3845,13 +3850,29 @@ class Clinic {
 
                 await this.connection.beginTransaction();
 
-                const { patientEmail } = params;
+                const {
+                    patientEmail,
+                    limit = 10,
+                    page = 1,
+                    status
+                } = params;
 
                 const email_address = String(patientEmail);
+                const page_value = parseInt(page);
+                const limit_value = parseInt(limit);
+                const patient_status = String(status);
 
                 if (!email_address) {
                     throw new Error(`Invalid! Patient email should be a string`);
+                } else if (!page_value) {
+                    throw new Error(`Invalid! Page should have a value`);
+                } else if (!limit_value) {
+                    throw new Error(`Invalid! Limit should have a value`);
+                } else if (!patient_status) {
+                    throw new Error(`Invalid! Patient status should have a value`)
                 }
+
+                const offset = (page_value - 1) * limit_value;
 
                 const patients_appintments_cols = [
                     "c.clinic_name",
@@ -3864,12 +3885,40 @@ class Clinic {
                     "pa.phoneNumber",
                     "pa.purposeOfAppointment"
                 ]
-                const patient_status = String("Approved");
+
+                const countQuery = `
+                    SELECT COUNT(*) AS total
+                    FROM patientsappointment AS pa
+                    INNER JOIN clinic AS c
+                    ON pa.clinic_id = c.clinic_id
+                    WHERE pa.email = ?
+                    AND
+                    pa.status = ?
+                `;
+
+                const countValue = [
+                    email_address,
+                    patient_status
+                ];
+
+                const [countResults] = await this.connection.query(
+                    countQuery,
+                    countValue
+                );
+
+                if (!countResults) {
+                    throw new Error(`Failed to retrieve total count of approved booked appointments of a patient`);
+                }
+
+                const total = countResults[0].total;
+                const totalPages = Math.ceil(total / limit_value);
 
                 const values = [
                     email_address,
-                    patient_status
-                ]
+                    patient_status,
+                    limit_value,
+                    offset
+                ];
 
                 const query = `
                     SELECT 
@@ -3877,8 +3926,11 @@ class Clinic {
                     FROM patientsappointment AS pa
                     INNER JOIN clinic AS c
                     ON pa.clinic_id = c.clinic_id
-                    WHERE pa.email = ? AND pa.status = ?
-                    ORDER BY pa.appointmentDate DESC, pa.preferredTime DESC;
+                    WHERE pa.email = ?
+                    AND
+                    pa.status = ?
+                    ORDER BY pa.appointmentDate DESC, pa.preferredTime DESC
+                    LIMIT ? OFFSET ?
                 `
 
                 const [results] = await this.connection.query(query, values);
@@ -3890,15 +3942,24 @@ class Clinic {
                 await this.connection.commit();
 
                 return {
+                    success: true,
                     appointments: results,
                     pagination: {
-                        total: results.length,
-                        totalPages: 1,
-                        currentPage: 1,
-                        limit: results.length
-                    }
+                        total: total,
+                        totalPages: totalPages,
+                        currentPage: page_value,
+                        limit: limit_value,
+                        hasNextPage: page_value < totalPages,
+                        hasPreviousPage: page_value > 1
+                    },
+                    message: "Successfully returned all approved booked appointments when no filter term provided"
                 };
             } catch (error) {
+                const rollbackQuery = await this.connection.rollback();
+                if (!rollbackQuery) {
+                    logger.log(`error`, `Failed to rollback transaction in returning all approved booked appointments when no filter term provided`);
+                }
+
                 logger.log(`error`, `Failed to return all approved booked appointments when no filter term provided: ${error}`);
                 throw error;
             } finally {
@@ -4147,7 +4208,7 @@ class Clinic {
                         hasNextPage: page_value < totalPages,
                         hasPreviousPage: page_value > 1
                     },
-                    message: "Successfully retrieved all pending booked appointments"
+                    message: "Successfully returned all pending booked appointments"
                 }
             } catch (error) {
                 const rollbackQuery = await this.connection.rollback();

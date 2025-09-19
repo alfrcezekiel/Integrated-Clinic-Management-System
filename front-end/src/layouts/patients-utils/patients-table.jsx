@@ -51,7 +51,6 @@ const PatientsTable = () => {
     const [retrievedAppointmentsData, setRetrievedAppointmentsData] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
-    const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [isSearching, setIsSearching] = useState(false);
     const [totalItems, setTotalItems] = useState(0);
@@ -108,7 +107,6 @@ const PatientsTable = () => {
     const handleSearch = useCallback((e) => {
         const searchValue = e.target.value;
         setSearchTerm(searchValue);
-        setCurrentPage(1)
 
         if (searchTimeout) {
             clearTimeout(searchTimeout);
@@ -183,7 +181,11 @@ const PatientsTable = () => {
     }, [itemsPerPage, retrieveFilteredAppointments, searchTerm]);
 
     const handlePageChange = async (pageNumber) => {
-        setCurrentPage(pageNumber);
+        setPagination((prev) => ({
+            ...prev,
+            currentPage: pageNumber
+        }))
+
         if (searchTerm.trim()) {
             await retrieveFilteredAppointments(searchTerm, pageNumber, itemsPerPage);
         } else {
@@ -194,7 +196,11 @@ const PatientsTable = () => {
     const handleItemsPerPageChange = async (e) => {
         const newItemsPerPage = parseInt(e.target.value);
         setItemsPerPage(newItemsPerPage);
-        setCurrentPage(1);
+        setPagination((prev) => ({
+            ...prev,
+            limit: newItemsPerPage,
+            currentPage: 1
+        }))
 
         if (searchTerm.trim()) {
             await retrieveFilteredAppointments(searchTerm, 1, newItemsPerPage);
@@ -248,13 +254,15 @@ const PatientsTable = () => {
                             </tr>
                         </thead>
                         {isSearching || searchLoading ? (
-                            <tr>
-                                <td colSpan={columns.length} className="px-6 py-4 text-center">
-                                    <div className="flex justify-center items-center h-32">
-                                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-                                    </div>
-                                </td>
-                            </tr>
+                            <tbody>
+                                <tr>
+                                    <td colSpan={columns.length} className="px-6 py-4 text-center">
+                                        <div className="flex justify-center items-center h-32">
+                                            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
                         ) : (
                             <AppointmentsTable
                                 retrievedAppointmentsData={retrievedAppointmentsData}
@@ -316,15 +324,15 @@ const PatientsTable = () => {
                                     Page {pagination.currentPage} of {pagination.totalPages}
                                 </p>
                                 <button
-                                    onClick={() => handlePageChange(currentPage + 1)}
-                                    disabled={!pagination.hasNextPage}
+                                    onClick={() => handlePageChange(pagination.currentPage + 1)}
+                                    disabled={pagination.currentPage >= pagination.totalPages}
                                     className="px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer bg-black/100 text-white"
                                 >
                                     Next
                                 </button>
                                 <button
                                     onClick={() => handlePageChange(pagination.totalPages)}
-                                    disabled={pagination.currentPage === pagination.totalPages}
+                                    disabled={pagination.currentPage >= pagination.totalPages}
                                     className="px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer bg-black/100 text-white"
                                 >
                                     Last
