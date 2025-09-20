@@ -51,35 +51,43 @@ const DeclinedAppointmentStatusTable = () => {
 
     const [searchTerm, setSearchTerm] = useState("");
     const [retrievedAppointmentsData, setRetrievedAppointmentsData] = useState([]);
-    const [itemsPerPage, setItemsPerPage] = useState(10);
-    const [currentPage, setCurrentPage] = useState(1);
     const [isLoading, setIsLoading] = useState(true);
     const patientEmail = user?.sem || "";
     const tokenContext = token;
     const [isSearching, setIsSearching] = useState(false);
-
-    const totalItems = retrievedAppointmentsData.length;
-    const totalPages = Math.ceil(totalItems / itemsPerPage);
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = retrievedAppointmentsData.slice(indexOfFirstItem, indexOfLastItem);
+    const [pagination, setPagination] = useState({
+        total: 0,
+        totalPages: 0,
+        currentPage: 1,
+        limit: 10,
+        hasNextPage: false,
+        hasPreviousPage: false
+    });
+    const [totalItems, setTotalItems] = useState(0);
+    const [searchLoading, setSearchLoading] = useState(false);
+    const [searchTimeout, setSearchTimeout] = useState(null);
 
     if (!tokenContext) {
         console.error("No token found in context or localStorage");
     }
 
-    const filteredDeclinedAppointments = useCallback(async (searchQuery) => {
+    const filteredDeclinedAppointments = useCallback(async (searchQuery, page = 1, limit = 10) => {
         if (!patientEmail && !tokenContext) return;
 
-        setIsSearching(true);
+        const filterSearching = searchQuery.trim() !== "";
+        if (filterSearching) {
+            setIsSearching(true);
+        } else {
+            setIsLoading(true);
+        }
 
         try {
             const response = await CMS.get(`/CMS/cms.api.com/patient/dashboard/searchDeclinedBookedAppointments`, {
                 params: {
                     search: searchQuery,
                     email: patientEmail,
-                    page: currentPage,
-                    limit: itemsPerPage
+                    page: page,
+                    limit: limit
                 },
                 headers: {
                     "Content-Type": "application/json",
@@ -88,9 +96,9 @@ const DeclinedAppointmentStatusTable = () => {
             })
 
             if (response.status === 200) {
-                setRetrievedAppointmentsData(response.data.result.appointments);
-                setCurrentPage(response.data.result.pagination.currentPage);
-                setItemsPerPage(response.data.result.pagination.limit);
+                setRetrievedAppointmentsData(response.data.data);
+                setPagination(response.data.pagination);
+                setTotalItems(response.data.pagination?.total);
             } else {
                 throw new Error(`Failed to filter declined appointment information in server: ${response.status}`);
             }
@@ -99,23 +107,46 @@ const DeclinedAppointmentStatusTable = () => {
         } finally {
             setIsSearching(false);
         }
-    }, [patientEmail, tokenContext, currentPage, itemsPerPage]);
+    }, [patientEmail, tokenContext]);
 
-    const debouncedSearch = useCallback((searchValue) => {
-        const timer = setTimeout(() => {
-            filteredDeclinedAppointments(searchValue);
-        }, 500)
+    const debouncedSearch = useCallback(async (searchValue) => {
+        const timer = setTimeout(async () => {
+            await filteredDeclinedAppointments(searchValue, pagination.currentPage, pagination.limit)
+                .finally(() => setSearchLoading(false));
+            return;
+        }, 500);
+
+        setSearchTimeout(timer);
 
         return () => clearTimeout(timer)
-    }, [filteredDeclinedAppointments])
+    }, [filteredDeclinedAppointments, pagination.currentPage, pagination.limit]);
 
-    const handleSearchChange = (e) => {
+    useEffect(() => {
+        if (searchTerm.trim()) {
+            filteredDeclinedAppointments(searchTerm, pagination.currentPage, pagination.limit)
+        } else {
+            filteredDeclinedAppointments("", pagination.currentPage, pagination.limit)
+        }
+
+    }, [searchTerm, pagination.currentPage, pagination.limit, filteredDeclinedAppointments]);
+
+    const handleSearchChange = async (e) => {
         const { value } = e.target;
         setSearchTerm(value);
-        if (value.trim() === "") {
-            filteredDeclinedAppointments("")
+
+        if (searchTimeout) {
+            clearTimeout(searchTimeout);
         }
-        debouncedSearch(value)
+
+        setSearchLoading(true);
+
+        if (!value.trim()) {
+            await filteredDeclinedAppointments("", pagination.currentPage, pagination.limit)
+                .finally(() => setSearchLoading(false));
+            return;
+        }
+
+        await debouncedSearch(value)
     }
 
     useEffect(() => {
@@ -145,13 +176,32 @@ const DeclinedAppointmentStatusTable = () => {
         retrieveDeclinedStatus();
     }, [patientEmail, tokenContext]);
 
-    const handlePageChange = (pageNumber) => {
-        setCurrentPage(pageNumber)
+    const handlePageChange = async (pageNumber) => {
+        setPagination((prev) => ({
+            ...prev,
+            currentPage: pageNumber
+        }))
+
+        if (searchTerm.trim()) {
+            await filteredDeclinedAppointments(searchTerm, pageNumber, pagination.limit)
+        } else {
+            await filteredDeclinedAppointments("", pageNumber, pagination.limit)
+        }
     }
 
-    const handleItemsPerPageChange = (e) => {
-        setItemsPerPage(parseInt(e.target.value))
-        setCurrentPage(1)
+    const handleItemsPerPageChange = async (e) => {
+        const newItemsPerPage = parseInt(e.target.value)
+        setPagination((prev) => ({
+            ...prev,
+            currentPage: 1,
+            limit: newItemsPerPage
+        }))
+
+        if (searchTerm.trim()) {
+            await filteredDeclinedAppointments(searchTerm, pagination.currentPage, newItemsPerPage)
+        } else {
+            await filteredDeclinedAppointments("", pagination.currentPage, newItemsPerPage)
+        }
     }
 
     return (
@@ -194,21 +244,26 @@ const DeclinedAppointmentStatusTable = () => {
                                             ))}
                                         </tr>
                                     </thead>
-                                    {isSearching === isLoading && (
+                                    {isSearching || searchLoading ? (
+                                        <tbody>
+                                            <tr>
+                                                <td
+                                                    colSpan={appointmentsTableColumn.length}
+                                                    className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center"
+                                                >
+                                                    <div className="flex justify-center items-center h-32">
+                                                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    ) : (
                                         <DeclinedAppointmentsTableValue
                                             appointmentsTableColumn={appointmentsTableColumn}
-                                            retrievedAppointmentsData={currentItems}
+                                            retrievedAppointmentsData={retrievedAppointmentsData}
                                         />
                                     )}
                                 </table>
-                                {isLoading && (
-                                    <div className="py-6 text-center">
-                                        <div
-                                            className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-black/100"
-                                        >
-                                        </div>
-                                    </div>
-                                )}
                             </div>
                             {retrievedAppointmentsData.length === 0 && !isLoading && (
                                 <div className="text-center py-4 text-gray-500">
@@ -219,16 +274,18 @@ const DeclinedAppointmentStatusTable = () => {
                                 <div className="px-6 py-4 flex flex-col sm:flex-row items-center justify-between border-t border-gray-200">
                                     <div className="text-sm text-gray-700 mb-4 sm:mb-0">
                                         Showing <span className="font-medium">
-                                            {Math.min((currentPage - 1) * itemsPerPage + 1, totalItems)}
+                                            {Math.min(pagination.limit, totalItems)}
                                         </span> to {" "}
                                         <span className="font-medium">
-                                            {Math.min(currentPage * itemsPerPage, totalItems)}
+                                            {Math.min(pagination.currentPage * pagination.limit, totalItems)}
                                         </span>
+                                        {" "}
+                                        of <span className="font-medium">{totalItems}</span> items
                                     </div>
                                     <div className="flex items-center space-x-4">
                                         <select
                                             className="px-3 py-1 border rounded text-sm"
-                                            value={itemsPerPage}
+                                            value={pagination.limit}
                                             onChange={handleItemsPerPageChange}
                                         >
                                             <option value={10}>10</option>
@@ -247,31 +304,31 @@ const DeclinedAppointmentStatusTable = () => {
                                         <div className="flex space-x-1 gap-1">
                                             <button
                                                 onClick={() => handlePageChange(1)}
-                                                disabled={currentPage === 1}
+                                                disabled={pagination.currentPage === 1}
                                                 className="px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer bg-black/100 text-white"
                                             >
                                                 First
                                             </button>
                                             <button
-                                                onClick={() => handlePageChange(currentPage - 1)}
-                                                disabled={currentPage === 1}
+                                                onClick={() => handlePageChange(pagination.currentPage - 1)}
+                                                disabled={pagination.currentPage === 1}
                                                 className="px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer bg-black/100 text-white"
                                             >
                                                 Previous
                                             </button>
                                             <p className="py-1 text-center">
-                                                Page {currentPage} of {totalPages}
+                                                Page {pagination.currentPage} of {pagination.totalPages}
                                             </p>
                                             <button
-                                                onClick={() => handlePageChange(currentPage + 1)}
-                                                disabled={currentPage >= totalPages}
+                                                onClick={() => handlePageChange(pagination.currentPage + 1)}
+                                                disabled={pagination.currentPage >= pagination.totalPages}
                                                 className="px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer bg-black/100 text-white"
                                             >
                                                 Next
                                             </button>
                                             <button
-                                                onClick={() => handlePageChange(totalPages)}
-                                                disabled={currentPage >= totalPages}
+                                                onClick={() => handlePageChange(pagination.totalPages)}
+                                                disabled={pagination.currentPage >= pagination.totalPages}
                                                 className="px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer bg-black/100 text-white"
                                             >
                                                 Last

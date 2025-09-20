@@ -3099,6 +3099,7 @@ class Clinic {
                         pa.email LIKE ? OR
                         pa.phoneNumber LIKE ? OR
                         pa.preferredTime LIKE ? OR
+                        pa.status LIKE ? OR
                         pa.appointmentDate LIKE ? OR
                         pa.purposeOfAppointment LIKE ? OR
                         c.clinic_name LIKE ?
@@ -3110,6 +3111,7 @@ class Clinic {
                 const countQueryValues = [
                     email_address,
                     patient_status,
+                    searchPattern,
                     searchPattern,
                     searchPattern,
                     searchPattern,
@@ -3799,7 +3801,7 @@ class Clinic {
                             currentPage: parseInt(page_value),
                             totalPages: totalPages,
                             limit: parseInt(limit_value),
-                            hasNextPage: page_value  < totalPages,
+                            hasNextPage: page_value < totalPages,
                             hasPreviousPage: page_value > 1
                         },
                         message: "No approved booked appointments found"
@@ -4225,6 +4227,321 @@ class Clinic {
             }
         },
         "Return Pending Booked Appointments"
+    )
+
+    /**
+     * @method logic to return all declined booked appointments when no search term provided in declined booked appointments table in patient side
+     */
+    returnDeclinedBookedAppointments = modelErrorHandling(
+        async (params) => {
+            this.connection = await this.conn.getConnection();
+            try {
+                await this.connection.beginTransaction();
+                if (!params || typeof params !== "object") {
+                    throw new Error(`Invalid! Return declined booked appointment should be an object`);
+                }
+
+                const {
+                    page = 1,
+                    limit = 10,
+                    email,
+                    status
+                } = params;
+
+                const page_value = parseInt(page);
+                const limit_value = parseInt(limit);
+                const email_address = String(email);
+                const patient_status = String(status);
+
+                if (!page_value) {
+                    throw new Error("Invalid! Current page should  have a value")
+                } else if (!limit_value) {
+                    throw new Error("Invalid! Limit should have a value")
+                } else if (!email_address) {
+                    throw new Error("Invalid! Email should have a value")
+                } else if (!patient_status) {
+                    throw new Error("Invalid! Patient Status should have a value")
+                }
+
+                const offset = (page_value - 1) * limit_value;
+
+                const patient_appointments_cols = [
+                    "c.clinic_name",
+                    "pa.firstName",
+                    "pa.lastName",
+                    "pa.email",
+                    "pa.appointmentDate",
+                    "pa.phoneNumber",
+                    "pa.preferredTime",
+                    "pa.status",
+                    "pa.purposeOfAppointment"
+                ]
+
+                const countQuery = `
+                    SELECT COUNT(*) AS total
+                    FROM patientsappointment AS pa
+                    INNER JOIN clinic AS c
+                    ON pa.clinic_id = c.clinic_id
+                    WHERE pa.email = ?
+                    AND
+                    pa.status = ?;
+                `;
+
+                const countValue = [
+                    email_address,
+                    patient_status
+                ]
+
+                const [countResults] = await this.connection.query(
+                    countQuery,
+                    countValue
+                );
+
+                if (!countResults || countResults.length === 0) {
+                    throw new Error(`Failed to retrieve count of all declined booked appointments of a patient`)
+                }
+
+                const total = countResults[0].total;
+                const totalPages = Math.ceil(total / limit_value);
+
+                const returnDeclinedQuery = `
+                    SELECT 
+                    ${patient_appointments_cols.join(", ")}
+                    FROM patientsappointment AS pa
+                    INNER JOIN clinic AS c
+                    ON pa.clinic_id = c.clinic_id
+                    WHERE pa.email = ?
+                    AND
+                    pa.status = ?
+                    ORDER BY pa.appointmentDate DESC, pa.preferredTime DESC
+                    LIMIT ? OFFSET ?;
+                `;
+
+                const returnDeclinedValue = [
+                    email_address,
+                    patient_status,
+                    limit_value,
+                    offset
+                ]
+
+                const [results] = await this.connection.query(
+                    returnDeclinedQuery,
+                    returnDeclinedValue
+                );
+
+                if (!results || results.length === 0) {
+                    throw new Error(`Failed to retrieve all declined booked appointments of a patient`)
+                }
+
+                await this.connection.commit();
+
+                return {
+                    appointments: results,
+                    pagination: {
+                        total: total,
+                        totalPages: totalPages,
+                        currentPage: page_value,
+                        limit: limit_value,
+                        hasNextPage: page_value < totalPages,
+                        hasPreviousPage: page_value > 1
+                    },
+                    message: "Successfully returned all declined booked appointments of a patient",
+                    success: true
+                }
+            } catch (error) {
+                const rollbackQuery = await this.connection.rollback();
+                if (!rollbackQuery) {
+                    logger.log(`error`, `Failed to rollback transaction in returned declined booked appointments: ${error}`);
+                }
+
+                logger.log(`error`, `Failed to return all declined booked appointments: ${error}`);
+                throw error;
+            } finally {
+                if (this.connection) {
+                    await this.connection.release();
+                }
+            }
+        },
+        "Returned Declined Booked Appointments"
+    );
+
+    /**
+     * @method filtering declined booked appointments of a patient based on search term in patient side table
+     */
+    searchDeclinedBookedAppointments = modelErrorHandling(
+        async (params) => {
+            this.connection = await this.conn.getConnection();
+
+            try {
+                if (!params || typeof params !== "object") {
+                    throw new Error(`Invalid parameters! Search declined booked appointments should be an object`);
+                }
+
+                const {
+                    search,
+                    page,
+                    limit,
+                    email,
+                    status
+                } = params;
+
+                const search_value = String(search);
+                const page_value = parseInt(page);
+                const limit_value = parseInt(limit);
+                const email_address = String(email);
+                const patient_status = String(status);
+
+                const offset = (page_value - 1) * limit_value;
+
+                const countQuery = `
+                    SELECT COUNT(*) AS total
+                    FROM patientsappointment AS pa
+                    INNER JOIN clinic AS c
+                    ON pa.clinic_id = c.clinic_id
+                    WHERE pa.email = ?
+                    AND
+                    pa.status = ?
+                    AND (
+                        c.clinic_name LIKE ? OR
+                        pa.firstName LIKE ? OR
+                        pa.lastName LIKE ? OR
+                        pa.appointmentDate LIKE ? OR
+                        pa.email LIKE ? OR
+                        pa.preferredTime LIKE ? OR
+                        pa.phoneNumber LIKE ? OR
+                        pa.status LIKE ? OR
+                        pa.purposeOfAppointment LIKE ?
+                    )
+                `;
+
+                const search_pattern = `%${search_value}%`;
+                const count_query_values = [
+                    email_address,
+                    patient_status,
+                    search_pattern,
+                    search_pattern,
+                    search_pattern,
+                    search_pattern,
+                    search_pattern,
+                    search_pattern,
+                    search_pattern,
+                    search_pattern,
+                    search_pattern
+                ];
+
+                const [count_result] = await this.connection.query(
+                    countQuery,
+                    count_query_values
+                );
+
+                if (!count_result || count_result.length === 0) {
+                    throw new Error(`Failed to count the declined booked appointments of a patient`);
+                }
+
+                const total = count_result[0].total;
+                const totalPages = Math.ceil(total / limit_value);
+
+                const patients_appointments_cols = [
+                    "c.clinic_name",
+                    "pa.firstName",
+                    "pa.lastName",
+                    "pa.email",
+                    "pa.appointmentDate",
+                    "pa.phoneNumber",
+                    "pa.preferredTime",
+                    "pa.status",
+                    "pa.purposeOfAppointment"
+                ];
+
+                const searchQuery = `
+                    SELECT 
+                        ${patients_appointments_cols.join(", ")}
+                    FROM patientsappointment AS pa
+                    INNER JOIN clinic AS c
+                    ON pa.clinic_id = c.clinic_id
+                    WHERE pa.email = ?
+                    AND
+                    pa.status = ?
+                    AND (
+                        c.clinic_name LIKE ? OR
+                        pa.firstName LIKE ? OR
+                        pa.lastName LIKE ? OR
+                        pa.email LIKE ? OR
+                        pa.appointmentDate LIKE ? OR
+                        pa.phoneNumber LIKE ? OR
+                        pa.preferredTime LIKE ? OR
+                        pa.status LIKE ? OR
+                        pa.purposeOfAppointment LIKE ?
+                    )
+                    ORDER BY pa.appointmentDate DESC, pa.preferredTime DESC
+                    LIMIT ? OFFSET ?
+                `;
+
+                const search_query_values = [
+                    email_address,
+                    patient_status,
+                    search_pattern,
+                    search_pattern,
+                    search_pattern,
+                    search_pattern,
+                    search_pattern,
+                    search_pattern,
+                    search_pattern,
+                    search_pattern,
+                    search_pattern,
+                    limit_value,
+                    offset
+                ];
+
+                const [search_result] = await this.connection.query(
+                    searchQuery,
+                    search_query_values
+                );
+
+                if (!search_result || search_result.length === 0) {
+                    return {
+                        appointments: [],
+                        pagination: {
+                            total: total,
+                            totalPages: totalPages,
+                            currentPage: page_value,
+                            limit: limit_value,
+                            hasNextPage: page_value < totalPages,
+                            hasPreviousPage: page_value > 1
+                        },
+                        message: "No searched declined booked appointments found"
+                    }
+                }
+
+                await this.connection.rollback();
+
+                return {
+                    appointments: search_result,
+                    pagination: {
+                        total: total,
+                        totalPages: totalPages,
+                        currentPage: page_value,
+                        limit: limit_value,
+                        hasNextPage: page_value < totalPages,
+                        hasPreviousPage: page_value > 1
+                    },
+                    message: "Search declined booked appointments found"
+                };
+            } catch (error) {
+                const rollbackQuery = await this.connection.rollback();
+                if (!rollbackQuery) {
+                    logger.log(`error`, `Failed to rollback transaction in search declined booked appointments of a patient: ${error}`);
+                }
+
+                logger.log(`error`, `Failed to search declined booked appointments of a patient: ${error}`);
+                throw error;
+            } finally {
+                if (this.connection) {
+                    await this.connection.release();
+                }
+            }
+        },
+        "Search Declined Booked Appointments of a Patient"
     )
 }
 

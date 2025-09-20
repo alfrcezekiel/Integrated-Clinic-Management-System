@@ -4987,3 +4987,92 @@ export const searchApprovedBookedAppointments = asyncHandler(
         }
     }
 )
+
+/**
+ * @function controller logic to filter declined booked appointemtn details in patient side table
+ */
+export const searchDeclinedBookedAppointments = asyncHandler(
+    async (req, res) => {
+        try {
+            const {
+                search = "",
+                page = 1,
+                limit = 10,
+                email
+            } = req.query;
+
+            const search_term = String(search);
+            const page_value = parseInt(page);
+            const limit_value = parseInt(limit);
+            const email_address = String(email);
+            
+            const patient_status = String("Declined");
+
+            const clinic_instance = new Clinic();
+            if (!clinic_instance instanceof Clinic) {
+                return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                    message: "Failed to instantiate clinic instance in filtering declined booked appointments"
+                })
+            }
+
+            if (!search_term.trim()) {
+                /**
+                 * return declined booked appointment when there is no search term provided
+                 */
+
+                const result = await clinic_instance.returnDeclinedBookedAppointments({
+                    page: page_value,
+                    limit: limit_value,
+                    email: email_address,
+                    status: patient_status
+                });
+
+                if (!result || result.length === 0) {
+                    return res.status(StatusCodes.NOT_FOUND).json({
+                        message: "No returned declined booked appointments found"
+                    })
+                }
+
+                return res.status(StatusCodes.OK).json({
+                    message: "Successfully returned declined booked appointments",
+                    success: true,
+                    data: result.appointments,
+                    pagination: result.pagination,
+                    model_message: result.message
+                })
+            }
+
+            /**
+             * @method searchDeclinedBookedAppointments
+             * filter declined booked appointments based on search term provided
+             */
+            const result = await clinic_instance.searchDeclinedBookedAppointments({
+                search: search_term,
+                page: page_value,
+                limit: limit_value,
+                email: email_address,
+                status: patient_status
+            });
+
+            if (!result || result.length === 0) {
+                return res.status(StatusCodes.NOT_FOUND).json({
+                    message: "No returned declined booked appointments found"
+                })
+            }
+
+            return res.status(StatusCodes.OK).json({
+                message: "Successfully filtered declined booked appointments",
+                success: true,
+                data: result.appointments,
+                pagination: result.pagination,
+                model_message: result.message
+            })
+        } catch (error) {
+            logger.log(`error`, `Failed to filter declined booked appointment in controller: ${error}`);
+
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "Failed to filter declined booked appointment"
+            })
+        }
+    }
+)

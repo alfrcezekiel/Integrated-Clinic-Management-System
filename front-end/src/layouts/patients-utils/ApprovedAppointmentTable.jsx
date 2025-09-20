@@ -179,7 +179,7 @@ const ApprovedAppointmentsTable = () => {
         await debouncedSearch(value);
     }
 
-    const handlePageChange = async(pageNumber) => {
+    const handlePageChange = async (pageNumber) => {
         setPagination((prev) => ({
             ...prev,
             currentPage: pageNumber

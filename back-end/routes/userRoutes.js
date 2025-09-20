@@ -80,7 +80,8 @@ import {
     autoGenerateMedicalReport,
     filterAllBookedAppointments,
     searchPendingBookedAppointments,
-    searchApprovedBookedAppointments
+    searchApprovedBookedAppointments,
+    searchDeclinedBookedAppointments
 } from "../controllers/cms.js";
 import validateRegister from "../middleware/validation.js";
 import patientsLoginValidation from "../middleware/patientsLoginValidation.js";
@@ -404,5 +405,10 @@ router.get("/cms.api.com/patient/dashboard/searchPendingBookedAppointments", ver
  * @exports router to searched approved booked appointments of a patient in patient side
  */
 router.get("/cms.api.com/patient/dashboard/searchedApprovedBookedAppointments", verifyToken, searchApprovedBookedAppointments);
+
+/**
+ * @exports router to searched declined booked appointments of a patient in patient side
+ */
+router.get("/cms.api.com/patient/dashboard/searchDeclinedBookedAppointments", verifyToken, searchDeclinedBookedAppointments);
 
 export default router;

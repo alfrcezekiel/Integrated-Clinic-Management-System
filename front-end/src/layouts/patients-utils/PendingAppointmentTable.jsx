@@ -246,40 +246,42 @@ const PendingAppointmentTable = () => {
                         </div>
                     )}
                     <div className="overflow-x-auto">
-                        <div className="min-w-full">
-                            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-200">
-                                <thead className="bg-gray-100">
-                                    <tr>
-                                        {appointmentsTableColumn.map((header) => (
-                                            <th
-                                                key={header.key}
-                                                scope="col"
-                                                className={`px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider ${header.className}`}
-                                            >
-                                                <div className="flex items-center justify-center">
-                                                    {header.label}
-                                                </div>
-                                            </th>
-                                        ))}
-                                    </tr>
-                                </thead>
-                                {isSearching || searchLoading ? (
-                                    <tbody>
+                        <div className="min-w-full inline-block align-middle">
+                            <div className="overflow-hidden">
+                                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-200">
+                                    <thead className="bg-gray-100">
                                         <tr>
-                                            <td colSpan={appointmentsTableColumn.length} className="px-6 py-4 text-center">
-                                                <div className="flex justify-center items-center h-32">
-                                                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-                                                </div>
-                                            </td>
+                                            {appointmentsTableColumn.map((header) => (
+                                                <th
+                                                    key={header.key}
+                                                    scope="col"
+                                                    className={`px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider ${header.className}`}
+                                                >
+                                                    <div className="flex items-center justify-center">
+                                                        {header.label}
+                                                    </div>
+                                                </th>
+                                            ))}
                                         </tr>
-                                    </tbody>
-                                ) : (
-                                    <PendingStatusAppointmentTable
-                                        retrievedAppointmentsData={retrievedAppointmentsData}
-                                        appointmentsTableColumn={appointmentsTableColumn}
-                                    />
-                                )}
-                            </table>
+                                    </thead>
+                                    {isSearching || searchLoading ? (
+                                        <tbody>
+                                            <tr>
+                                                <td colSpan={appointmentsTableColumn.length} className="px-6 py-4 text-center">
+                                                    <div className="flex justify-center items-center h-32">
+                                                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    ) : (
+                                        <PendingStatusAppointmentTable
+                                            retrievedAppointmentsData={retrievedAppointmentsData}
+                                            appointmentsTableColumn={appointmentsTableColumn}
+                                        />
+                                    )}
+                                </table>
+                            </div>
                         </div>
                         {!isLoading && retrievedAppointmentsData?.length === 0 && (
                             <div className="text-center py-4">
