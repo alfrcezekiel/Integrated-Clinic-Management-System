@@ -320,13 +320,13 @@ const ClinicCards = () => {
                 throw new Error(`Failed to book appointment: ${response.status}`);
             }
         } catch (error) {
-            if (error.response || error.response.data.status === 400) {
+            if (error.response || error.response?.data?.status === 400) {
                 const errors = error.response.data.errors;
                 setFieldErrors((prev) => ({
                     ...prev,
                     ...errors
                 }));
-            } else if (error.response || error.response.data.status === 500) {
+            } else if (error.response || error.response?.data?.status === 500) {
                 setFieldErrors({ preferredTime: error.response.data.errors.preferredTime });
             } else {
                 throw new Error(`Failed to book appointment: ${error}`);
@@ -357,7 +357,9 @@ const ClinicCards = () => {
                 throw new Error(`Failed to cancel appointment: ${response.status}`);
             }
         } catch (error) {
-            console.error(`Error in cancelling an booked appointment ${error}`)
+            if (error.response || error.response?.data?.status === 500) {
+                console.error(`Error in cancelling an booked appointment ${error}`)
+            }
         }
     };
 

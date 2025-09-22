@@ -3469,7 +3469,7 @@ class Clinic {
                     formatDateTime(now),
                     formatDateTime(oneHourLater),
                     ...status_values,
-                    false
+                    0
                 ];
 
                 const [rows] = await this.connection.query(query, queryValues);
@@ -3514,17 +3514,19 @@ class Clinic {
                             `
 
                             const update_values = [
-                                true,
+                                1,
                                 appointment.appointmentID
                             ];
 
                             await this.connection.query(updateQuery, update_values);
 
+                            logger.log(`info`, `Succesfully updated reminder_sent for appointment ID: ${appointment.appointmentID}`);
+
                             process_appointments.push({
                                 appointmentID: appointment.appointmentID,
                                 patient: `${appointment.firstName} ${appointment.lastName}`,
                                 appointmentDate: appointment.appointmentDate,
-                                reminderSent: true
+                                reminderSent: 1
                             });
                         }
                     } catch (error) {
@@ -4577,6 +4579,107 @@ class Clinic {
             }
         },
         "Search Declined Booked Appointments of a Patient"
+    )
+
+    /**
+     * @method validate the appointment date in previous booked appointments either the status are Cancelled, Approved or Declined
+     */
+    validatePreviousAppointmentDate = modelErrorHandling(
+        async (params) => {
+            this.connection = await this.conn.getConnection();
+            try {
+                await this.connection.beginTransaction();
+
+                if (!params || typeof params !== "object") {
+                    throw new Error(`Invalid parameters! Validate previous appointment date should be an object`);
+                }
+
+                const {
+                    appointmentID,
+                    appointmentDate
+                } = params;
+
+                const appointmentDateValue = dayjs(appointmentDate).format("YYYY-MM-DD");
+                const currentDate = dayjs().format("YYYY-MM-DD");
+                const appointment_id = parseInt(appointmentID);
+
+                if (isNaN(appointment_id)) {
+                    throw new Error(`Invalid appointment ID! Validate previous appointment date should be a number`);
+                }
+
+                if (!appointmentDateValue || typeof appointmentDateValue !== "string") {
+                    throw new Error(`Invalid appointment date! Validate previous appointment date should be a string`);
+                }
+
+                const patient_appointment_cols = [
+                    "pa.appointmentDate",
+                    "pa.status"
+                ]
+
+                const patient_status = [
+                    "Approved",
+                    "Cancelled",
+                    "Declined"
+                ];
+
+                const placeholders_status = patient_status.map(() => "?").join(", ");
+
+                const query = `
+                    SELECT 
+                        ${patient_appointment_cols.join(", ")}
+                    FROM patientsappointment AS pa
+                    WHERE pa.appointmentID = ?
+                    AND pa.status IN (${placeholders_status})
+                    ORDER BY pa.appointmentDate DESC
+                    LIMIT 1;
+                `;
+
+                const query_values = [
+                    appointment_id,
+                    ...patient_status
+                ];
+
+                const [result] = await this.connection.query(query, query_values);
+
+                if (!result || result.length === 0) {
+                    return {
+                        message: "No previous appointment found",
+                        isValid: true,
+                    }
+                }
+
+                const lastAppointment = result[0];
+                const newDate = dayjs(appointmentDateValue);
+                const lastAppointmentDate = dayjs(lastAppointment.appointmentDate);
+
+                if (newDate.isBefore(lastAppointmentDate)) {
+                    return {
+                        message: "Appointment date should not be earlier than the last appointment date",
+                        isValid: false,
+                    }
+                } else if (newDate.isAfter(lastAppointmentDate.add(1, "month"), "day")) {
+                    return {
+                        message: "Appointment date should not be later than one month from the last appointment date",
+                        isValid: false,
+                    }
+                }
+
+                return {
+                    message: "Appointment date is valid",
+                    isValid: true,
+                }
+            } catch (error) {
+                await this.connection.rollback();
+
+                logger.log(`error`, `Failed to validate previous appointment date: ${error}`);
+                throw error;
+            } finally {
+                if (this.connection) {
+                    await this.connection.release();
+                }
+            }
+        },
+        "Validate Previous Appointment Date"
     )
 }
 

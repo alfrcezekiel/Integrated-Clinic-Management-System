@@ -106,7 +106,7 @@ export const sendSmsNotification = async (to, message) => {
             to: formattedPhoneNumber,
             body: message
         })
-        logger.log("info", `[SMS notification] sent to ${to}. SID: ${response.sid}`)
+        logger.log("info", `2MS notification] sent to ${to}. SID: ${response.sid}`)
         return {
             success: true,
             sid: response.sid
@@ -188,7 +188,7 @@ export const scheduleAppointmentsReminder = async (appointment, reminderTime = 6
 
                 if (appointment.connection) {
                     const query = `UPDATE patientsappointment SET reminder_sent = ? WHERE appointmentID = ?;`;
-                    await appointment.connection.query(query, [true, appointmentID]);
+                    await appointment.connection.query(query, [1, appointmentID]);
                 }
             } catch (error) {
                 logger.log("error", `Failed to send appointment reminder: ${error}`)

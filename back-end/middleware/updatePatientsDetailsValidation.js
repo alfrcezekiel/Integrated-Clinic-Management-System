@@ -1,6 +1,8 @@
 import { body, validationResult } from 'express-validator';
 import { StatusCodes } from "http-status-codes"
 import dayjs from "dayjs"
+import Clinic from "../models/Clinic.Model.js";
+
 // validation for patient book appointment
 const validatePatientsDetails = [
     body("firstName")
@@ -17,18 +19,33 @@ const validatePatientsDetails = [
     body("appointmentDate")
         .notEmpty()
         .withMessage("Appointment date is required")
-        .custom((value) => {
-            const appointmentDate = dayjs(value)
+        .custom(async (value, { req }) => {
+            const appointmentDate = dayjs(value).format("YYYY-MM-DD");
             const currentDate = dayjs()
 
             if (!dayjs(appointmentDate).isValid()) {
                 throw new Error("Invalid appointment date format.")
             }
 
-            if (appointmentDate.isBefore(currentDate, "day") || appointmentDate.isSame(currentDate, "day")) {
-                throw new Error("Appointment date must not be earlier than the current date");
-            } else if (appointmentDate.isAfter(currentDate.add(1, "month"), "day")) {
-                throw new Error("Appointment date must not be later than one month from now");  
+            // if (appointmentDate.isBefore(currentDate, "day") || appointmentDate.isSame(currentDate, "day")) {
+            //     throw new Error("Appointment date must not be earlier than the current date");
+            // } else if (appointmentDate.isAfter(currentDate.add(1, "month"), "day")) {
+            //     throw new Error("Appointment date must not be later than one month from now");
+            // }
+
+            const appointmentID = req.body.appointmentID;
+
+            if (appointmentID) {
+                const clinic_instance = new Clinic();
+
+                const { isValid, message } = await clinic_instance.validatePreviousAppointmentDate({
+                    appointmentID: appointmentID,
+                    appointmentDate: appointmentDate
+                })
+
+                if (!isValid) {
+                    throw new Error(message)
+                }
             }
             return true;
         }),

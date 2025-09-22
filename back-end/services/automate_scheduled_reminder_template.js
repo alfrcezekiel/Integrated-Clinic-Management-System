@@ -1,3 +1,5 @@
+import logger from "../config/winston.js";
+
 /**
  * @function generates an email template for scheduled appointment reminders
  */
@@ -7,24 +9,54 @@ export const scheduledReminderTemplate = async (appointment, minutesUntilAppoint
         lastName,
         appointmentDate,
         preferredTime,
-        clinic_name,
+        clinicName,
         purposeOfAppointment,
     } = appointment;
 
-    // Format the appointment date and time
-    const appointmentDateTime = new Date(`${appointmentDate}T${preferredTime}`);
-    const formattedDate = appointmentDateTime.toLocaleDateString('en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
+    let formattedDate;
+    let formattedTime;
 
-    const formattedTime = appointmentDateTime.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
-    });
+    try {
+        let year, month, day, hours, minutes;
+
+        if (typeof appointmentDate === "string") {
+            [year, month, day] = appointmentDate.split("-").map(Number);
+            console.log(year, month, day)
+        } else if (appointmentDate instanceof Date) {
+            year = appointmentDate.getFullYear();
+            month = appointmentDate.getMonth() + 1;
+            day = appointmentDate.getDate();
+        } else {
+            throw new Error(`Invalid appointment date format`);
+        }
+
+        if (preferredTime) {
+            [hours, minutes] = preferredTime.split(":").map(Number);
+        } else {
+            hours = 0;
+            minutes = 0;
+        }
+
+        const appointmentDateTime = new Date(year, month - 1, day, hours, minutes);
+
+        if (!isNaN(appointmentDateTime.getTime())) {
+            formattedDate = appointmentDate.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                timeZone: "Asia/Manila"
+            });
+        }
+
+        formattedTime = appointmentDateTime.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+            timeZone: "Asia/Manila"
+        });
+    } catch (error) {
+        logger.log(`error`, `Failed to format appointment date and time: ${error}`)
+    }
 
     // Calculate the time until the appointment in hours and minutes
     const hours = Math.floor(minutesUntilAppointment / 60);
@@ -62,7 +94,7 @@ export const scheduledReminderTemplate = async (appointment, minutesUntilAppoint
             <div class="content">
                 <p>Dear ${firstName} ${lastName},</p>
                 
-                <p>This is a friendly reminder about your upcoming appointment at ${clinic_name}.</p>
+                <p>This is a friendly reminder about your upcoming appointment at ${clinicName || "Clinic Team"}.</p>
                 
                 <div style="background-color: #f5f9ff; padding: 15px; border-radius: 5px; margin: 15px 0;">
                     <p><strong>Appointment Details:</strong></p>
@@ -76,11 +108,11 @@ export const scheduledReminderTemplate = async (appointment, minutesUntilAppoint
                 
                 <p>We look forward to seeing you soon!</p>
                 
-                <p>Best regards,<br>${clinic_name} Team</p>
+                <p>Best regards,<br>${clinicName || "Clinic Management System"} Team</p>
             </div>
             <div class="footer">
                 <p>This is an automated message. Please do not reply to this email.</p>
-                <p>© ${new Date().getFullYear()} ${clinic_name}. All rights reserved.</p>
+                <p>© ${new Date().getFullYear()} ${clinicName || "Clinic Management System"}. All rights reserved.</p>
             </div>
         </div>
     </body>

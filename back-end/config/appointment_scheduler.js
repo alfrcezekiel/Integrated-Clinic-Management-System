@@ -1,11 +1,12 @@
 import cron from "node-cron";
 import {
-    scheduleReminderForUpcomingAppointments,
     processFollowUpMessage
 } from "../controllers/cms.js";
 import logger from "./winston.js";
 import dotenv from "dotenv"
+import Clinic from "../models/Clinic.Model.js";
 dotenv.config();
+import { scheduleAppointmentsReminder } from "../services/automate_notification_service.js";
 
 const validateCronExpression = (expression, defaultValue) => {
     try {
@@ -40,26 +41,27 @@ const scheduleAppointmentReminders = async () => {
             try {
                 logger.log(`info`, `Running appointment reminders scheduler`)
 
-                const mockReq = {
-                    method: "GET",
-                    url: "/CMS/schedule-appointment-reminders"
-                };
-                const mockRes = {
-                    status: function (code) {
-                        this.statusCode = code;
-                        return this;
-                    },
-                    json: function (data) {
-                        if (data && data.success) {
-                            logger.log(`info`, `Appointment reminders scheduled successfully: ${data.message}`);
-                        } else {
-                            logger.log(`warn`, `No appointments found for scheduling upcoming reminders: ${data?.message}`)
-                        }
-                        return this;
-                    }
+                const now = new Date();
+                const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
+
+                const clinic_instance = new Clinic();
+                const upcoming_appointments = await clinic_instance.scheduleRemindersForUpcomingAppointments({});
+
+                if (upcoming_appointments.length === 0 || oneHourLater > new Date(upcoming_appointments[0].appointmentDate)) {
+                    logger.log(`warn`, `No upcoming appointments found for reminders`);
+                    return;
                 }
 
-                scheduleReminderForUpcomingAppointments(mockReq, mockRes);
+                for (const appointment of upcoming_appointments) {
+                    try {
+                        await scheduleAppointmentsReminder({
+                            ...appointment,
+                            reminderTime: 60
+                        });
+                    } catch (error) {
+                        logger.log(`error`, `Failed to schedule appointment reminders: ${error}`);
+                    }
+                }
             } catch (error) {
                 logger.log(`error`, `Failed to schedule appointment reminders: ${error}`);
             }
@@ -91,8 +93,7 @@ const scheduleFollowUpMessage = async () => {
 
                 const mockReq = {
                     method: "GET",
-                    url: "/CMS/process-follow-up-message",
-                    clinicID: req.user.id
+                    url: "/CMS/process-follow-up-message"
                 }
 
                 const mockRes = {
