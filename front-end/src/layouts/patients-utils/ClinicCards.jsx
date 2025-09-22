@@ -336,7 +336,10 @@ const ClinicCards = () => {
         }
     };
 
-    // function to close the confirmed booked appointment dialog
+    /**
+     * @function to close the confirmed booked appointment dialog
+     * cancels booked appointment if the patient wants to cancel its appointment
+     */
     const handleCallbackCloseConfirmedBookedAppointmentModal = async (appointmentID) => {
         // setShowConfirmedBookAppointmentModal(false);
         try {

@@ -245,7 +245,7 @@ router.get("/clinic-dashboard/retrieveClinicalAssessmentQuestionnaires/:clinicID
 router.get("/clinic-dashboard/retrieveOralHygieneConsultationQuestionnaires/:clinicID", verifyToken, retrieveOralHygieneQuestionnaires);
 
 // router for cancelling the booked appointment in patient side
-router.put("/patients-dashboard/cancelBookedAppointment/:appointmentID", cancelBookedAppointment);
+router.put("/patients-dashboard/cancelBookedAppointment/:appointmentID", verifyToken, cancelBookedAppointment);
 
 // router for deleting the booked appointment information in clinic side
 router.delete("/clinicDashboard/deleteBookedAppointment/:appointmentID", deleteBookedAppointment);

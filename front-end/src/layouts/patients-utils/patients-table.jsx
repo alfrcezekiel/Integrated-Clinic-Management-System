@@ -10,6 +10,11 @@ import { useAuthorization } from "../../context/auth/useAuthorization";
 const PatientsTable = () => {
     const columns = [
         {
+            key: 'clinic_name',
+            label: 'Clinic Name',
+            className: 'text-center'
+        },
+        {
             key: 'name',
             label: 'Name',
             className: 'text-center'

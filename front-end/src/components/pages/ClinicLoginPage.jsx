@@ -174,86 +174,92 @@ function ClinicLoginPortal() {
 
     return (
         <section className="m-3 flex gap-4">
-            <div className="w-full lg:w-3/5 mt-24">
+            <div className="w-full lg:w-3/5 py-55">
                 <div className="text-center">
                     <Typography variant="h5" className="font-bold mb-4" color="black">Clinic  Login Portal</Typography>
                 </div>
-                <form className="mt-8 mb-2 mx-auto w-80 max-w-screen-lg lg:w-1/2" autoComplete="off" onSubmit={handleLoggedInPatient} id="patients-login-form">
-                    <div className="mb-4 flex flex-col gap-6">
-                        <label className="-mb-3 font-medium">Email</label>
-                        <TextField
-                            label="Enter your email"
-                            variant="outlined"
-                            fullWidth
-                            autoComplete="off"
-                            helperText={fieldErrors.email ? fieldErrors.email : ""}
-                            value={memoizedClinicLoginFormData.email}
-                            name="email"
-                            type="text"
-                            onChange={handleInputChange}
-                            error={Boolean(fieldErrors.email)}
-                        />
-                    </div>
-                    <div className="mb-4 flex flex-col gap-6">
-                        <label className="-mb-3 font-medium">Password</label>
-                        <FormControl variant="outlined" className="register-input-password" sx={{ width: '100%' }} error={Boolean(fieldErrors.password)}>
-                            <InputLabel htmlFor="outlined-adornment-password">Enter your password</InputLabel>
-                            <OutlinedInput
+                <div className="py-4">
+                    <form className="mt-8 mb-2 mx-auto w-80 max-w-screen-lg lg:w-1/2" autoComplete="off" onSubmit={handleLoggedInPatient} id="patients-login-form">
+                        <div className="mb-4 flex flex-col gap-6">
+                            <label className="-mb-3 font-medium">Email</label>
+                            <TextField
+                                label="Enter your email"
+                                variant="outlined"
                                 fullWidth
-                                name="password"
-                                onChange={handleInputChange}
-                                value={memoizedClinicLoginFormData.password}
                                 autoComplete="off"
-                                type={showPassword ? "text" : "password"}
-                                endAdornment={
-                                    <InputAdornment position="end">
-                                        <IconButton
-                                            aria-label={
-                                                showPassword ? "hide password" : "show password"
-                                            }
-                                            onClick={handleClickShowPassword}
-                                            onMouseDown={handleMouseDownPassword}
-                                            onMouseUp={handleMouseUpPassword}
-                                            edge="end"
-                                        >
-                                            {showPassword ? <VisibilityOff /> : <Visibility />}
-                                        </IconButton>
-                                    </InputAdornment>
-                                }
-                                label="Enter your password"
+                                helperText={fieldErrors.email ? fieldErrors.email : ""}
+                                value={memoizedClinicLoginFormData.email}
+                                name="email"
+                                type="text"
+                                onChange={handleInputChange}
+                                error={Boolean(fieldErrors.email)}
                             />
-                            {fieldErrors.password && <FormHelperText>{fieldErrors.password}</FormHelperText>}
-                        </FormControl>
-                    </div>
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                checked={rememberMe}
-                                onChange={handleRememberMeChange}
-                            />
-                        }
-                        label={
-                            <>
-                                <Typography variant="body2" className="text-black">
-                                    Remember me
-                                </Typography>
-                            </>
-                        }
-                    />
-                    <div className="flex justify-end items-center">
-                        <Typography variant="body2" className="text-black">
-                            <a href="/ForgotPassword" className="text-black no-underline">Forgot Password</a>
-                        </Typography>
-                    </div>
-                    <div className="mt-6 flex flex-col gap-6 bg-black p-[0.30rem] rounded-[3rem] text-white">
-                        <Button className="mt-9" fullWidth color="white" type="submit">
-                            Login
-                        </Button>
-                    </div>
-                </form>
+                        </div>
+                        <div className="mb-4 flex flex-col gap-6">
+                            <label className="-mb-3 font-medium">Password</label>
+                            <FormControl variant="outlined" className="register-input-password" sx={{ width: '100%' }} error={Boolean(fieldErrors.password)}>
+                                <InputLabel htmlFor="outlined-adornment-password">Enter your password</InputLabel>
+                                <OutlinedInput
+                                    fullWidth
+                                    name="password"
+                                    onChange={handleInputChange}
+                                    value={memoizedClinicLoginFormData.password}
+                                    autoComplete="off"
+                                    type={showPassword ? "text" : "password"}
+                                    endAdornment={
+                                        <InputAdornment position="end">
+                                            <IconButton
+                                                aria-label={
+                                                    showPassword ? "hide password" : "show password"
+                                                }
+                                                onClick={handleClickShowPassword}
+                                                onMouseDown={handleMouseDownPassword}
+                                                onMouseUp={handleMouseUpPassword}
+                                                edge="end"
+                                            >
+                                                {showPassword ? <VisibilityOff /> : <Visibility />}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    }
+                                    label="Enter your password"
+                                />
+                                {fieldErrors.password && <FormHelperText>{fieldErrors.password}</FormHelperText>}
+                            </FormControl>
+                        </div>
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={rememberMe}
+                                    onChange={handleRememberMeChange}
+                                />
+                            }
+                            label={
+                                <>
+                                    <Typography variant="body2" className="text-black">
+                                        Remember me
+                                    </Typography>
+                                </>
+                            }
+                        />
+                        <div className="flex justify-end items-center">
+                            <Typography variant="body2" className="text-black">
+                                <a href="/ForgotPassword" className="text-black no-underline">Forgot Password</a>
+                            </Typography>
+                        </div>
+                        <div className="mt-6 flex flex-col gap-6 bg-black p-[0.30rem] rounded-[3rem] text-white">
+                            <Button className="mt-9" fullWidth color="white" type="submit">
+                                Login
+                            </Button>
+                        </div>
+                    </form>
+                </div>
             </div>
-            <div className="w-2/5 h-screen hidden lg:block">
-                <img src="/img/clinic-bg-2.jpg" className="h-full w-full object-cover rounded-3xl" alt="Doctor" />
+            <div className="py-10 px-4 hidden w-2/5 lg:block">
+                <img
+                    src="/img/clinic-bg-2.jpg"
+                    className="max-h-[90dvh] w-full object-cover rounded-3xl"
+                    alt="Doctor"
+                />
             </div>
         </section>
     );

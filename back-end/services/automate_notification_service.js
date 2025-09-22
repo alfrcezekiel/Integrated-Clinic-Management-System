@@ -126,12 +126,10 @@ export const scheduleAppointmentsReminder = async (appointment, reminderTime = 6
             appointmentDate,
             preferredTime,
             email,
-            phoneNumber,
             appointmentID,
             firstName,
             lastName,
-            clinic_name,
-            purposeOfAppointment
+            clinicName,
         } = appointment;
 
         if (!appointmentID || !preferredTime) {
@@ -169,10 +167,6 @@ export const scheduleAppointmentsReminder = async (appointment, reminderTime = 6
             `${hoursUntil} hour${hoursUntil > 1 ? 's' : ''}${minutesUntil > 0 ? ` and ${minutesUntil} minute${minutesUntil > 1 ? 's' : ''}` : ''}`
             : `${minutesUntil} minute${minutesUntil > 1 ? 's' : ''}`;
 
-        const reminderSMSMessage = `REMINDER ${firstName}, your appointment at ${clinic_name} is in ${timeUntilText}.` +
-            `(${appointmentDateTime.toLocaleDateString("en-US", { hour: "2-digit", minute: "2-digit" })}). ` +
-            `Purpose of Appointment: ${purposeOfAppointment}. See you there!`;
-
         const reminder_id = `reminder_${appointmentID}_${reminderTime}`;
 
         if (reminderTimeouts.has(reminder_id)) {
@@ -192,15 +186,6 @@ export const scheduleAppointmentsReminder = async (appointment, reminderTime = 6
                     logger.log(`info`, `Email reminder sent to ${email}`);
                 }
 
-                if (phoneNumber) {
-                    await sendSmsNotification(
-                        phoneNumber,
-                        reminderSMSMessage
-                    );
-
-                    logger.log(`info`, `SMS reminder sent to ${phoneNumber}`);
-                }
-
                 if (appointment.connection) {
                     const query = `UPDATE patientsappointment SET reminder_sent = ? WHERE appointmentID = ?;`;
                     await appointment.connection.query(query, [true, appointmentID]);
@@ -214,7 +199,7 @@ export const scheduleAppointmentsReminder = async (appointment, reminderTime = 6
         }, timeUntilReminder);
 
         reminderTimeouts.set(reminder_id, reminderTimeout);
-        logger.log(`info`, `Scheduled ${reminderTime}min reminder for appointment: ${firstName} ${lastName}`);
+        logger.log(`info`, `Scheduled ${reminderTime} min reminder for upcoming appointment: ${firstName} ${lastName} in ${clinicName}`);
 
         return {
             succcess: true,
@@ -271,15 +256,10 @@ export const cancelAllRemindersForAppointment = (appointmentId) => {
 export const sendAppointmentsConfirmation = async (appointment) => {
     const {
         email,
-        phoneNumber,
         appointmentDate,
-        preferredTime
     } = appointment;
 
     const confirmationEmailTemplate = automatedEmailNotificationTemplate(appointment);
-    const confirmationSMSMessage = `Confirmation: Your apppointment has been scheduled for ${appointmentDate} at ${preferredTime}.
-        You will receive a reminder before your appointment.
-    `;
 
     try {
         await sendEmailNotification(
@@ -287,13 +267,6 @@ export const sendAppointmentsConfirmation = async (appointment) => {
             "Appointment Confirmation",
             confirmationEmailTemplate
         );
-
-        if (phoneNumber) {
-            await sendSmsNotification(
-                phoneNumber,
-                confirmationSMSMessage
-            );
-        }
 
         /**
          * schedule a reminder for 24 hours
@@ -321,7 +294,6 @@ export const sendFollowUpMessage = async (appointment) => {
     try {
         const {
             email,
-            phoneNumber,
             firstName,
             clinicName
         } = appointment;
@@ -344,12 +316,6 @@ export const sendFollowUpMessage = async (appointment) => {
             )
         }
 
-        if (phoneNumber) {
-            await sendSmsNotification(
-                phoneNumber,
-                `Hi ${firstName}, ${message}. Best regards, ${clinicName}`
-            )
-        }
     } catch (error) {
         logger.log(`error`, `Failed sending a follow up message via email, sms: ${error}`)
         throw error;
@@ -501,28 +467,9 @@ export const sendStatusUpdateReminder = async ({ email, phoneNumber, firstName, 
             html: emailBody
         })
 
-        const smsBody = `
-            Hi ${firstName} ${lastName}, your appointment scheduled on ${formattedDate} at ${preferredTime} has been updated to ${patientStatus} - ${clinicName}
-
-            Please contact the clinic if you have any questions or concerns.
-
-            Best regards,
-            ${clinicName} Team.
-        `
-
-        let smsInfo;
-
-        if (phoneNumber && process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
-            smsInfo = await sendSmsNotification(
-                phoneNumber,
-                smsBody
-            )
-        }
-
         return {
             success: true,
             emailInfo,
-            smsInfo: smsInfo
         }
     } catch (error) {
         logger.log(`error`, `Failed sending a status update reminder via email, sms: ${error}`)

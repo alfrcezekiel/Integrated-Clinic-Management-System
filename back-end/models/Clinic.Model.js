@@ -6,7 +6,6 @@ import dayjs from "dayjs";
 import crypto from "crypto";
 import {
     scheduleAppointmentsReminder,
-    sendSmsNotification,
     sendStatusUpdateReminder
 } from "../services/automate_notification_service.js";
 
@@ -624,6 +623,36 @@ class Clinic {
                 throw new Error("Invalid appointment ID");
             }
 
+            const patient_appointment_cols = [
+                "c.clinic_name",
+                "c.clinic_address",
+                "pa.firstName",
+                "pa.lastName",
+                "pa.email",
+                "pa.appointmentDate",
+                "pa.phoneNumber",
+                "pa.preferredTime",
+                "pa.status",
+                "pa.purposeOfAppointment",
+                "pa.appointmentID"
+            ]
+
+            const retrieveAppointmentQuery = `
+                SELECT 
+                    ${patient_appointment_cols.join(", ")}
+                FROM patientsappointment AS pa
+                    INNER JOIN clinic AS c
+                    ON pa.clinic_id = c.clinic_id
+                    WHERE pa.appointmentID = ?;
+            `
+
+            const [rows] = await connection.query(retrieveAppointmentQuery, [appointmentID]);
+            const appointment = rows[0];
+
+            if (!appointment) {
+                throw new Error("Appointment details not found");
+            }
+
             const query = `
                 UPDATE patientsappointment
                     SET status = ?
@@ -637,12 +666,16 @@ class Clinic {
 
             const [result] = await connection.query(query, value);
 
+            if (!result) {
+                throw new Error("Failed to cancel booked appointment");
+            }
+
             const commitQuery = await connection.commit(); // commit the transaction query if successful
             if (!commitQuery) {
                 throw new Error("Failed to commit transaction in cancelling booked appointment");
             }
 
-            return result;
+            return rows;
         } catch (error) {
             const rollbackQuery = await connection.rollback();
             if (!rollbackQuery) {
@@ -2937,6 +2970,7 @@ class Clinic {
 
                 let query = `
                     SELECT 
+                        c.clinic_name,
                         pa.firstName,
                         pa.lastName,
                         pa.email,
@@ -2946,12 +2980,15 @@ class Clinic {
                         pa.purposeOfAppointment,
                         pa.phoneNumber
                     FROM patientsappointment AS pa
+                    INNER JOIN clinic AS c
+                    ON pa.clinic_id = c.clinic_id
                     WHERE pa.email = ?
                 `
 
                 if (params.search) {
                     query += `
                         AND (
+                            c.clinic_name LIKE ? OR
                             pa.firstName LIKE ? OR
                             pa.lastName LIKE ? OR
                             pa.email LIKE ? OR
@@ -2971,6 +3008,7 @@ class Clinic {
                         searchTerm,
                         searchTerm,
                         searchTerm,
+                        searchTerm,
                         searchTerm
                     );
                 }
@@ -2981,6 +3019,8 @@ class Clinic {
                 let countQuery = `
                     SELECT COUNT(*) AS total
                     FROM patientsappointment AS pa
+                    INNER JOIN clinic AS c
+                    ON pa.clinic_id = c.clinic_id
                     WHERE pa.email = ?
                 `
 
@@ -2989,6 +3029,7 @@ class Clinic {
                 if (params.search) {
                     countQuery += `
                     AND (
+                            c.clinic_name LIKE ? OR
                             pa.firstName LIKE ? OR
                             pa.lastName LIKE ? OR
                             pa.email LIKE ? OR
@@ -3001,6 +3042,7 @@ class Clinic {
                     `
                     const searchTerm = `%${params.search}%`;
                     countParams.push(
+                        searchTerm,
                         searchTerm,
                         searchTerm,
                         searchTerm,
@@ -3309,21 +3351,6 @@ class Clinic {
                     clinicName: current_appointment.clinic_name,
                 })
 
-                const statusMessage = patient_status === "Approved" ?
-                    `Your appointment on ${current_appointment.appointmentDate} at ${current_appointment.preferredTime} has been approved` :
-                    `Your appointment on ${current_appointment.appointmentDate} at ${current_appointment.preferredTime} has been ${patient_status.toLowerCase()}`;
-
-                const confirmationSMSMessage = `
-                    Hi ${current_appointment.firstName}, ${statusMessage.toLowerCase()},
-                `;
-
-                if (current_appointment.phoneNumber) {
-                    sendSmsNotification(
-                        current_appointment.phoneNumber,
-                        confirmationSMSMessage
-                    );
-                }
-
                 await this.connection.commit();
 
                 return {
@@ -3398,7 +3425,10 @@ class Clinic {
                 const now = new Date();
                 const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
 
-                const formatDate = (date) => date.toISOString().split("T")[0];
+                const formatDateTime = (date) => {
+                    const pad = (num) => num.toString().padStart(2, '0');
+                    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+                };
 
                 const patients_appointments_col = [
                     "pa.appointmentID",
@@ -3427,17 +3457,17 @@ class Clinic {
                     SELECT
                         ${patients_appointments_col.join(",")}
                     FROM patientsappointment AS pa
-                    LEFT JOIN clinic AS c
+                    INNER JOIN clinic AS c
                     ON pa.clinic_id = c.clinic_id
-                    WHERE pa.appointmentDate BETWEEN ? AND ?
+                    WHERE CONCAT(pa.appointmentDate, ' ', pa.preferredTime) BETWEEN ? AND ?
                     AND pa.status IN (${status_placeholders})
                     AND (pa.reminder_sent IS NULL OR pa.reminder_sent = ?)
-                    ORDER BY pa.appointmentDate ASC;
+                    ORDER BY pa.appointmentDate DESC;
                 `;
 
                 const queryValues = [
-                    formatDate(now),
-                    formatDate(oneHourLater),
+                    formatDateTime(now),
+                    formatDateTime(oneHourLater),
                     ...status_values,
                     false
                 ];
@@ -4010,20 +4040,23 @@ class Clinic {
                 const offset = (page_value - 1) * limit_value;
 
                 const patients_appointment_cols = [
-                    "firstName",
-                    "lastName",
-                    "email",
-                    "appointmentDate",
-                    "preferredTime",
-                    "status",
-                    "purposeOfAppointment",
-                    "phoneNumber",
+                    "c.clinic_name",
+                    "pa.firstName",
+                    "pa.lastName",
+                    "pa.email",
+                    "pa.appointmentDate",
+                    "pa.preferredTime",
+                    "pa.status",
+                    "pa.purposeOfAppointment",
+                    "pa.phoneNumber",
                 ];
 
                 const countQuery = `
                     SELECT COUNT(*) AS total
-                    FROM patientsappointment
-                    WHERE email = ?;
+                    FROM patientsappointment AS pa
+                    INNER JOIN clinic AS c
+                    ON pa.clinic_id = c.clinic_id
+                    WHERE pa.email = ?;
                 `
                 const countValue = [
                     email_address
@@ -4042,9 +4075,11 @@ class Clinic {
                 const query = `
                     SELECT
                         ${patients_appointment_cols.join(", ")}
-                    FROM patientsappointment
-                    WHERE email = ?
-                    ORDER BY appointmentDate DESC, preferredTime DESC
+                    FROM patientsappointment AS pa
+                    INNER JOIN clinic AS c
+                    ON pa.clinic_id = c.clinic_id
+                    WHERE pa.email = ?
+                    ORDER BY pa.appointmentDate DESC, pa.preferredTime DESC
                     LIMIT ? OFFSET ?;
                 `;
 

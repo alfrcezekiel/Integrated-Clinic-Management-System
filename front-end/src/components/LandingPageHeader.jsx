@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import CMS from "../API/CMS.jsx";
 import AOS from "aos";
 import "aos/dist/aos.css";
+import ScrollLink from "./Scroll_Link/scroll_link";
 
 const LandingPageHeader = () => {
     const [whatWeServeTitle, setWhatWeServeTitle] = useState("");
@@ -64,12 +65,12 @@ const LandingPageHeader = () => {
     }, []);
 
     const navLinks = [
-        { name: "Home", href: "/cms" },
-        { name: "About", href: "#about" },
-        { name: "Services", href: "#services" },
+        { name: "Home", href: "/", isScroll: false },
+        { name: "About", href: "#about", isScroll: true },
+        { name: "Services", href: "#services", isScroll: true },
         { name: whatWeServeTitle, type: "dropdown" },
-        { name: "Contact", href: "#contact" },
-        { name: "Patients Registration Portal", href: "/PatientRegistration", className: "md:hidden lg:block" },
+        { name: "Contact", href: "#contact", isScroll: true },
+        { name: "Patient Registration Portal", href: "/PatientRegistration", isScroll: false },
     ];
 
     const servicesDropdown = [
@@ -93,7 +94,7 @@ const LandingPageHeader = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-16">
                     {/* Logo */}
-                    <Link to="/cms" className="flex-shrink-0 flex items-center">
+                    <Link to="/" className="flex-shrink-0 flex items-center">
                         <h1 className="text-2xl font-bold text-white">CMS</h1>
                     </Link>
 
@@ -102,12 +103,22 @@ const LandingPageHeader = () => {
                         {navLinks.map((item, index) => (
                             <div key={index} className="relative group" ref={item.type === "dropdown" ? dropdownRef : null}>
                                 {item.href ? (
-                                    <Link
-                                        to={item.href}
-                                        className={`px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-white hover:text-black transition-colors duration-200 ${item.className || ''}`}
-                                    >
-                                        {item.name}
-                                    </Link>
+                                    item.isScroll ? (
+                                        <ScrollLink
+                                            to="/cms"
+                                            targetId={item.href.split('#')[1]}
+                                            className={`px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-white hover:text-black transition-colors duration-200 ${item.className || ''}`}
+                                        >
+                                            {item.name}
+                                        </ScrollLink>
+                                    ) : (
+                                        <Link
+                                            to={item.href}
+                                            className={`px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-white hover:text-black transition-colors duration-200 ${item.className || ''}`}
+                                        >
+                                            {item.name}
+                                        </Link>
+                                    )
                                 ) : (
                                     <button
                                         onClick={() => toggleDropdown('services')}
@@ -142,7 +153,6 @@ const LandingPageHeader = () => {
                                 )}
                             </div>
                         ))}
-                        
                         {/* Login Dropdown */}
                         <div className="relative group ml-2" ref={dropdownRef}>
                             <button
@@ -259,7 +269,7 @@ const LandingPageHeader = () => {
                             )}
                         </div>
                     ))}
-                    
+
                     {/* Mobile Login Dropdown */}
                     <div className="pt-4 pb-2 border-t border-white">
                         <div className="space-y-1">

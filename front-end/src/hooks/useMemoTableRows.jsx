@@ -66,6 +66,9 @@ const AppointmentsTable = ({ retrievedAppointmentsData }) => {
                 className={`${i % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-gray-50 transition-colors duration-150 text-center`}
             >
                 <td className="px-4 py-3 text-sm text-black whitespace-nowrap">
+                    {appointment.clinic_name}
+                </td>
+                <td className="px-4 py-3 text-sm text-black whitespace-nowrap">
                     {appointment.firstName}
                     {" "}
                     {appointment.lastName}

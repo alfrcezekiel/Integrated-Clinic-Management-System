@@ -752,8 +752,6 @@ export const patientsBookedAppointments = async (req, res) => {
 
         const clinicData = clinicRows[0];
 
-        await connection.commit();
-
         await sendAppointmentsConfirmation({
             ...appointmentRows[0],
             clinicName: clinicData.clinic_name,
@@ -761,6 +759,8 @@ export const patientsBookedAppointments = async (req, res) => {
         }).catch((error) => {
             logger.log(`error`, `Failed to send appointment via sms and email: ${error}`);
         })
+
+        await connection.commit();
 
         return res.status(StatusCodes.OK).json({
             message: "Appointment booked successfully",
@@ -864,17 +864,22 @@ export const getPatientsAppointments = async (req, res) => {
         }
 
         const query = `SELECT
-            firstName,
-            lastName,
-            email,
-            appointmentDate,
-            phoneNumber,
-            status,
-            preferredTime,
-            purposeOfAppointment
-            FROM patientsappointment
-            WHERE email = ?
-            ORDER BY appointmentDate DESC;
+            c.clinic_name,
+            p.appointmentID,
+            p.firstName,
+            p.lastName,
+            p.email,
+            p.appointmentDate,
+            p.gender,
+            p.preferredTime,
+            p.phoneNumber,
+            p.status,
+            p.purposeOfAppointment
+            FROM patientsappointment p
+            INNER JOIN clinic c
+            ON p.clinic_id = c.clinic_id
+            WHERE p.email = ?
+            ORDER BY p.appointmentDate DESC;
         `;
 
         const value = [
@@ -2794,12 +2799,24 @@ export const cancelBookedAppointment = async (req, res) => {
         const status = "Cancelled";
         const result = await new Clinic().cancelBookedAppointment(appointment_id, status);
 
+        const appointmentDetails = result[0];
+
         if (!result || result.affectedRows === 0) {
             return res.status(StatusCodes.NOT_FOUND).json({
                 message: "No appointment id found"
             })
         }
 
+        await sendAppointmentsConfirmation({
+            ...appointmentDetails,
+            status: status,
+            clinicName: appointmentDetails.clinic_name,
+            clinicAddress: appointmentDetails.clinic_address
+        }).catch((error) => {
+            console.error(`Failed to send appointment confirmation in controller: ${error}`);
+        });
+
+        logger.log(`info`, `Appointment cancelled successfully for appointment ID: ${appointment_id}`);
         return res.status(StatusCodes.OK).json({
             cancelledBookedAppoinment: "Cancelled Booked Appointment Successfully",
             appointment_id
@@ -5005,7 +5022,7 @@ export const searchDeclinedBookedAppointments = asyncHandler(
             const page_value = parseInt(page);
             const limit_value = parseInt(limit);
             const email_address = String(email);
-            
+
             const patient_status = String("Declined");
 
             const clinic_instance = new Clinic();
