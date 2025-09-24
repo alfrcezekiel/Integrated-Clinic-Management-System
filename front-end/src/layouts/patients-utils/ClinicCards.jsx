@@ -545,6 +545,7 @@ const ClinicCards = () => {
                                 Appointment Confirmed!
                             </h2>
                             <p className="text-gray-600 mb-4">
+                                You will receive a confirmation email with the details of your appointment.
                                 Thank you! Your appointment was booked successfully.
                             </p>
                             <button

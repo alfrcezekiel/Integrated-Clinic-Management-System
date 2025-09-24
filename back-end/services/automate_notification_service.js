@@ -7,6 +7,7 @@ import {
     automatedEmailNotificationTemplate,
 } from "./automate_email_template";
 import { scheduledReminderTemplate } from "./automate_scheduled_reminder_template.js";
+import { sendWelcomeEmailNotification } from "./welcome_create_account.js";
 dotenv.config();
 
 /**
@@ -490,6 +491,37 @@ export const handleAutomatedUpdateStatus = async ({ appointmentID, patientStatus
         }
     } catch (error) {
         logger.log(`error`, `Failed handling automated update status: ${error}`)
+        throw error;
+    }
+}
+
+/**
+ * @function sends a welcome email in newly registered patient account
+ */
+export const sendWelcomeEmail = async (patient) => {
+    try {
+        const {
+            email
+        } = patient;
+
+        const emailSubject = "Welcome to Clinic Management";
+        const welcomeEmailTemplate = await sendWelcomeEmailNotification(patient);
+
+        await sendEmailNotification(
+            email,
+            emailSubject,
+            welcomeEmailTemplate
+        )
+
+        logger.log(`info`, `Welcome email has been sent successfully to ${email}`);
+
+        return {
+            success: true,
+            message: "Welcome email has been sent successfully",
+            email,
+        }
+    } catch (error) {
+        logger.log(`error`, `Failed sending a welcome email: ${error}`)
         throw error;
     }
 }

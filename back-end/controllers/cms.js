@@ -20,7 +20,8 @@ import {
 dotenv.config();
 import {
     sendAppointmentsConfirmation,
-    sendFollowUpMessage
+    sendFollowUpMessage,
+    sendWelcomeEmail
 } from '../services/automate_notification_service.js';
 
 // controller logic for a global route
@@ -125,13 +126,23 @@ export const registerPatientAccount = async (req, res) => {
             status
         ]);
 
+        try {
+            await sendWelcomeEmail({
+                email,
+                firstName,
+                lastName
+            })
+        } catch (error) {
+            logger.log(`error`, `Failed to send a welcome email in controller of registerPatientAccount: ${error}`);
+        }
+
         const payload = {
             id: patientID,
             email: email
         }
 
         const token = jwt.sign(payload, SECRET_KEY, {
-            expiresIn: "15mins"
+            expiresIn: "1hr"
         });
 
         return res.status(StatusCodes.OK).json({
@@ -1134,7 +1145,7 @@ export const getDoctorsLists = async (req, res) => {
 
         return res.status(StatusCodes.OK).json({
             doctors: rows
-        })
+        })  
     } catch (error) {
         console.error(`Failed to get doctors lists: ${error}`);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({

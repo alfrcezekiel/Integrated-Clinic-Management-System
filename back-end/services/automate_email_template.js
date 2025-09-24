@@ -4,6 +4,13 @@
 export const automatedEmailNotificationTemplate = (appointment) => {
     const { firstName, appointmentDate, preferredTime, status, clinicName, purposeOfAppointment, clinicAddress } = appointment;
 
+    const formatAppointmentTimeTOAMPMFormat = (appointmentTime) => {
+        const [hours, minutes] = appointmentTime.split(":").map(Number);
+        const period = hours >= 12 ? "PM" : "AM";
+        const formattedHours = hours % 12 || 12;
+        return `${formattedHours}:${String(minutes).padStart(2, "0")} ${period}`;
+    }
+
     const formattedDate = new Date(appointmentDate).toLocaleDateString("en-US", {
         weekday: "long",
         year: "numeric",
@@ -18,7 +25,7 @@ export const automatedEmailNotificationTemplate = (appointment) => {
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Appointment Confirmation</title>
-            <script src="https://cdn.tailwindcss.com"></script>
+            <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
             <style>
                 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
                 body { font-family: 'Inter', sans-serif; }
@@ -50,7 +57,7 @@ export const automatedEmailNotificationTemplate = (appointment) => {
                                 <div>
                                     <h3 class="font-medium text-gray-900">Appointment Details</h3>
                                     <p class="text-gray-600">Appointment Date: ${formattedDate}</p>
-                                    <p class="text-gray-600">Appointment Time: ${preferredTime}</p>
+                                    <p class="text-gray-600">Appointment Time: ${formatAppointmentTimeTOAMPMFormat(preferredTime)}</p>
                                     <p class="text-gray-600">Appointment Status: ${status}</p>
                                     <p class="text-gray-600">Purpose of Appointment: ${purposeOfAppointment}</p>
                                 </div>
