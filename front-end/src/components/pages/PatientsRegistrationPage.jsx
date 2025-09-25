@@ -159,6 +159,18 @@ const PatientsRegistrationPortal = () => {
 
             if (response.data.token && response.status === 200) {
                 setFieldsErrors({})
+                setFormRegistrationPatientsData({
+                    firstName: "",
+                    lastName: "",
+                    email: "",
+                    address: "",
+                    gender: "",
+                    civilStatus: "",
+                    dateOfBirth: null,
+                    phoneNumber: "",
+                    password: "",
+                    confirmPassword: ""
+                })
                 if (response.data.message === "Patient account registered successfully. Your Account is Pending. Please wait for the admin approval") {
                     setOpenPatientStatusDialog(true);
                 }

@@ -8,6 +8,7 @@ import {
 } from "./automate_email_template";
 import { scheduledReminderTemplate } from "./automate_scheduled_reminder_template.js";
 import { sendWelcomeEmailNotification } from "./welcome_create_account.js";
+import { patientAccountStatusTemplate } from "./patient_account_status_template.js";
 dotenv.config();
 
 /**
@@ -158,6 +159,7 @@ export const scheduleAppointmentsReminder = async (appointment, reminderTime = 6
         }
 
         /**
+         * 
          * generate a automated schedule reminder template via email
          */
         const reminderEmailTemplate = await scheduledReminderTemplate(appointment, reminderTime);
@@ -522,6 +524,43 @@ export const sendWelcomeEmail = async (patient) => {
         }
     } catch (error) {
         logger.log(`error`, `Failed sending a welcome email: ${error}`)
+        throw error;
+    }
+}
+
+/**
+ * @functions sends a patient account status update via email
+ */
+export const sendPatientAccountStatusNotification = async (patient) => {
+    try {
+        const {
+            email,
+            status
+        } = patient;
+
+        if (!email) {
+            throw new Error(`Recipient email is required for sending a patient account status update via email`);
+        }
+
+        const emailSubject = `Account Status Update - ${status}`;
+
+        const emailBody = patientAccountStatusTemplate(patient, status);
+
+        await sendEmailNotification(
+            email,
+            emailSubject,
+            emailBody
+        )
+
+        logger.log(`info`, `Patient account status update email has been sent successfully to ${email}`);
+
+        return {
+            success: true,
+            message: "Patient account status update email has been sent successfully",
+            email,
+        }
+    } catch (error) {
+        logger.log(`error`, `Failed sending a patient account status update via email: ${error}`);
         throw error;
     }
 }

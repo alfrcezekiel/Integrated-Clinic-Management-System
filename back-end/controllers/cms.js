@@ -21,7 +21,8 @@ dotenv.config();
 import {
     sendAppointmentsConfirmation,
     sendFollowUpMessage,
-    sendWelcomeEmail
+    sendWelcomeEmail,
+    sendPatientAccountStatusNotification
 } from '../services/automate_notification_service.js';
 
 // controller logic for a global route
@@ -1145,7 +1146,7 @@ export const getDoctorsLists = async (req, res) => {
 
         return res.status(StatusCodes.OK).json({
             doctors: rows
-        })  
+        })
     } catch (error) {
         console.error(`Failed to get doctors lists: ${error}`);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
@@ -2000,7 +2001,10 @@ export const getRegisteredPatientsAccountInAdmin = async (req, res) => {
 
 // controller logic for updating the registered patients account in admin dashboard
 export const updateRegisteredPatientsAccountInAdmin = async (req, res) => {
+    const connection = await conn.getConnection();
     try {
+        await connection.beginTransaction();
+
         const {
             firstName,
             lastName,
@@ -2051,7 +2055,9 @@ export const updateRegisteredPatientsAccountInAdmin = async (req, res) => {
             patientID
         ];
 
-        const [result] = await conn.query(query, values);
+        const [result] = await connection.query(query, values);
+
+        await connection.commit();
 
         if (result.affectedRows === 0) {
             return res.status(StatusCodes.NOT_FOUND).json({
@@ -2059,15 +2065,33 @@ export const updateRegisteredPatientsAccountInAdmin = async (req, res) => {
             })
         }
 
+        try {
+            await sendPatientAccountStatusNotification({
+                email: email_address,
+                firstName: first_name,
+                lastName: last_name,
+                status: patient_status
+            });
+        } catch (error) {
+            logger.log(`error`, `Failed to send a patient account status update via email: ${error}`);
+        }
+
         return res.status(StatusCodes.OK).json({
             message: "Registered patients account updated successfully"
         })
 
     } catch (error) {
-        console.error(`Failed to update registered patients account: ${error}`);
+        const rollbackQuery = await connection.rollback();
+        if (!rollbackQuery) {
+            logger.log(`error`, `Failed to rollback transaction when updating the registered patients account: ${error}`);
+        }
+
+        logger.log(`error`, `Failed to update registered patients account: ${error}`);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             message: "Failed to update registered patients account"
         })
+    } finally {
+        connection.release();
     }
 }
 
