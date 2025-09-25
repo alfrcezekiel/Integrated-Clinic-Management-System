@@ -117,35 +117,35 @@ const PendingAppointmentClinicTable = () => {
         console.error("No token found in context or localStorage");
     }
 
-    useEffect(() => {
-        const retrievedAppointmentPendingStatus = async () => {
-            try {
-                const response = await CMS.get(`/CMS/doctors-dashboard/getPatientPendingStatus/${clinicID}`, {
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${tokenContext}`
-                    }
-                });
-
-                if (!response.data) {
-                    throw new Error("No retrieved data for appointments");
+    const retrievedAppointmentPendingStatus = useCallback(async () => {
+        try {
+            const response = await CMS.get(`/CMS/doctors-dashboard/getPatientPendingStatus/${clinicID}`, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${tokenContext}`
                 }
+            });
 
-                if (response.status === 200) {
-                    setAppointmentsData(response.data.patientsPendingStatus);
-                }
-            } catch (error) {
-                console.error(`Code functionality error for fetching appointments data: ${error}`);
+            if (!response.data) {
+                throw new Error("No retrieved data for appointments");
             }
-        }
 
+            if (response.status === 200) {
+                setAppointmentsData(response.data.patientsPendingStatus);
+            }
+        } catch (error) {
+            console.error(`Code functionality error for fetching appointments data: ${error}`);
+        }
+    }, [clinicID, tokenContext]);
+
+    useEffect(() => {
         const titleHeader = () => {
             document.title = "Clinic's Dashboard | Patient's Appointment | CMS"
         }
         titleHeader();
 
         retrievedAppointmentPendingStatus();
-    }, [location.pathname, clinicID, tokenContext]);
+    }, [location.pathname, clinicID, tokenContext, retrievedAppointmentPendingStatus]);
 
     // function to format to MM/DD/YYYY to display in the table
     const dateFormat = (dateString) => {
@@ -330,9 +330,10 @@ const PendingAppointmentClinicTable = () => {
     }
 
     // function to close the delete booked appointment dialog
-    const handleCloseDeleteBookedAppointmentDialog = () => {
+    const handleCloseDeleteBookedAppointmentDialog = async () => {
         setOpenDeleteBookedAppointmentDialog(false);
         setSelectedBookedAppointment(null);
+        await retrievedAppointmentPendingStatus();
     }
 
     // function to handles transaction in deleting the booked appointment
@@ -441,7 +442,7 @@ const PendingAppointmentClinicTable = () => {
                                                     {appointment.purposeOfAppointment}
                                                 </Typography>
                                             </TableCell>
-                                            <TableCell align="center" className="border-b border-blue-gray-50 text-center" sx={{display: "flex"}}>
+                                            <TableCell align="center" className="border-b border-blue-gray-50 text-center" sx={{ display: "flex" }}>
                                                 <IconButton aria-label="edit" onClick={() => handleClickOpen(appointment)}>
                                                     <EditIcon color="primary" />
                                                 </IconButton>

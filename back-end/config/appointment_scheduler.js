@@ -41,25 +41,27 @@ const scheduleAppointmentReminders = async () => {
             try {
                 logger.log(`info`, `Running appointment reminders scheduler`)
 
-                const now = new Date();
-                const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
-
                 const clinic_instance = new Clinic();
                 const upcoming_appointments = await clinic_instance.scheduleRemindersForUpcomingAppointments({});
 
-                if (upcoming_appointments.length === 0 || oneHourLater > new Date(upcoming_appointments[0].appointmentDate)) {
+                if (upcoming_appointments.length === 0) {
                     logger.log(`warn`, `No upcoming appointments found for reminders`);
-                    return;
                 }
 
                 for (const appointment of upcoming_appointments) {
-                    try {
-                        await scheduleAppointmentsReminder({
-                            ...appointment,
-                            reminderTime: 60
-                        });
-                    } catch (error) {
-                        logger.log(`error`, `Failed to schedule appointment reminders: ${error}`);
+                    const appointmentTime = new Date(`${appointment.appointmentDate} ${appointment.preferredTime}`);
+                    const currentTime = new Date();
+                    const minuteUntilAppointment = Math.round((appointmentTime - currentTime) / (1000 * 60));
+
+                    if (minuteUntilAppointment > 0 && minuteUntilAppointment <= 1440) {
+                        try {
+                            await scheduleAppointmentsReminder({
+                                ...appointment,
+                                reminderTime: minuteUntilAppointment
+                            });
+                        } catch (error) {
+                            logger.log(`error`, `Failed to schedule appointment reminders: ${error}`);
+                        }
                     }
                 }
             } catch (error) {

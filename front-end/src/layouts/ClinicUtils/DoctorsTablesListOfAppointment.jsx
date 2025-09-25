@@ -125,38 +125,39 @@ const DoctorsTablesListOfAppointments = () => {
         console.error("No token found in context or localStorage");
     }
 
+    const clinicID = user?.sid;
+
+    const retrievedAppointmentsData = useCallback(async () => {
+        try {
+            const response = await CMS.get(`/CMS/doctors-dashboard/appointments/${clinicID}`, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${tokenContext}`
+                }
+            });
+
+            if (!response.data) {
+                throw new Error("No retrieved data for appointments");
+            }
+
+            if (response.status === 200) {
+                setAppointmentsData(response.data.patientsAppointments);
+            } else {
+                throw new Error(`Unexpected error in status ${response.status}`);
+            }
+        } catch (error) {
+            console.error(`Code functionality error for fetching appointments data: ${error}`);
+        }
+    }, [clinicID, tokenContext]);
+
     useEffect(() => {
         const titleHeader = () => {
             document.title = "Clinic's Dashboard | Patient's Appointment | CMS"
         }
         titleHeader();
 
-        const clinicID = user?.sid;
-
-        const retrievedAppointmentsData = async () => {
-            try {
-                const response = await CMS.get(`/CMS/doctors-dashboard/appointments/${clinicID}`, {
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${tokenContext}`
-                    }
-                });
-
-                if (!response.data) {
-                    throw new Error("No retrieved data for appointments");
-                }
-
-                if (response.status === 200) {
-                    setAppointmentsData(response.data.patientsAppointments);
-                } else {
-                    throw new Error(`Unexpected error in status ${response.status}`);
-                }
-            } catch (error) {
-                console.error(`Code functionality error for fetching appointments data: ${error}`);
-            }
-        }
         retrievedAppointmentsData();
-    }, [location.pathname, tokenContext, user?.sid]);
+    }, [location.pathname, tokenContext, user?.sid, retrievedAppointmentsData]);
 
     // this function is used to format the time to AM/PM
     const formatTimeToAMPM = (time) => {
@@ -339,6 +340,7 @@ const DoctorsTablesListOfAppointments = () => {
     const closedBookedAppointmentDialog = async () => {
         setSelectedBookedAppointment(null)
         setOpenDeleteBookedAppointmentDialog(false)
+        await retrievedAppointmentsData()
     }
 
     // function to handles transaction in deleting the booked appointment

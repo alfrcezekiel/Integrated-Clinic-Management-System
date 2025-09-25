@@ -81,7 +81,8 @@ import {
     filterAllBookedAppointments,
     searchPendingBookedAppointments,
     searchApprovedBookedAppointments,
-    searchDeclinedBookedAppointments
+    searchDeclinedBookedAppointments,
+    scheduleReminderForUpcomingAppointments
 } from "../controllers/cms.js";
 import validateRegister from "../middleware/validation.js";
 import patientsLoginValidation from "../middleware/patientsLoginValidation.js";
@@ -165,7 +166,7 @@ router.put("/admin-dashboard/updateDoctor/:doctorsID", [validateUpdatingDoctor],
 router.delete("/admin-dashboard/deleteDoctor/:doctorsID", deleteDoctorsDetails);
 
 // router for creating a clinic in admin dashboard
-router.post("/adminDashboard/createClinicAccount",clinicUploadedFiles, validateUploadedFiles, [validateCreateClinicDetails], createClinic);
+router.post("/adminDashboard/createClinicAccount", clinicUploadedFiles, validateUploadedFiles, [validateCreateClinicDetails], createClinic);
 
 // router for getting the clinic details in admin dashboard
 router.get("/admin-dashboard/clinics", verifyToken, getClinics);
@@ -410,5 +411,10 @@ router.get("/cms.api.com/patient/dashboard/searchedApprovedBookedAppointments", 
  * @exports router to searched declined booked appointments of a patient in patient side
  */
 router.get("/cms.api.com/patient/dashboard/searchDeclinedBookedAppointments", verifyToken, searchDeclinedBookedAppointments);
+
+/**
+ * @exports router to test the schedule reminder for upcoming appointments
+ */
+router.get("/cms.api.com/patient/dashboard/testUpcomingAppointment", scheduleReminderForUpcomingAppointments);
 
 export default router;

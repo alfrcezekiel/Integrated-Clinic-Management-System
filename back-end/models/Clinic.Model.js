@@ -3479,6 +3479,15 @@ class Clinic {
                     return [];
                 }
 
+                logger.log('info', `Found ${rows.length} appointments in the query window`);
+                logger.log('debug', {
+                    queryWindow: {
+                        start: formatDateTime(now),
+                        end: formatDateTime(oneHourLater)
+                    },
+                    statusValues: status_values
+                });
+
                 const process_appointments = [];
 
                 for (const appointment of rows) {
@@ -3486,25 +3495,16 @@ class Clinic {
                         const appointment_time = new Date(appointment.appointmentDate);
                         const timeUntilAppointment = appointment_time - now;
 
-                        if (timeUntilAppointment > 0) {
+                        if (timeUntilAppointment > 60 * 60 * 1000) {
+                            const hoursUntilAppointment = timeUntilAppointment / (60 * 60 * 1000);
                             /**
                              * schedules 1 hour reminder if not already sent
                              */
-                            if (timeUntilAppointment <= 60 * 60 * 1000) {
+                            if (hoursUntilAppointment <= 24) {
                                 await scheduleAppointmentsReminder({
                                     ...appointment,
-                                    reminderTime: 60
+                                    reminderTime: Math.floor(timeUntilAppointment / (60 * 1000)) - 60
                                 });
-                            }
-
-                            /**
-                             * schedules 24 hour reminder if more than 24 hours
-                             */
-                            if (timeUntilAppointment > 24 * 60 * 60 * 1000) {
-                                await scheduleAppointmentsReminder({
-                                    ...appointment,
-                                    reminderTime: 24 * 60
-                                })
                             }
 
                             const updateQuery = `
@@ -3536,7 +3536,10 @@ class Clinic {
                 }
 
                 await this.connection.commit();
-                return process_appointments;
+
+                return {
+                    process_appointments: process_appointments
+                };
             } catch (error) {
                 const rollback = await this.connection.rollback();
                 if (!rollback) {

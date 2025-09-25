@@ -4880,8 +4880,9 @@ export const scheduleReminderForUpcomingAppointments = asyncHandler(
             return res.status(StatusCodes.OK).json({
                 success: true,
                 message: "Reminders scheduled successfully",
-                data: result
-            })
+                data: result,
+                process_appointments: result.process_appointments
+            });
         } catch (error) {
             logger.log(`error`, `Failed to schedule reminder for upcoming appointments in controller: ${error}`);
 

@@ -42,7 +42,7 @@ export const automatedEmailNotificationTemplate = (appointment) => {
                 <!-- Appointment Details -->
                 <div class="p-8">
                     <div class="mb-8">
-                        <h2 class="text-xl font-semibold text-gray-800 mb-4">Hello ${firstName},</h2>
+                        <p class="text-xl font-semibold text-gray-800 mb-4">Hello ${firstName},</p>
                         <p class="text-gray-600 mb-6">
                             Your appointment has been successfully scheduled. Here are the details:
                         </p>

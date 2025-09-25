@@ -193,6 +193,8 @@ export const scheduleAppointmentsReminder = async (appointment, reminderTime = 6
                     const query = `UPDATE patientsappointment SET reminder_sent = ? WHERE appointmentID = ?;`;
                     await appointment.connection.query(query, [1, appointmentID]);
                 }
+
+                logger.log(`info`, `Appointment reminder sent successfully for appointment: ${firstName} ${lastName} in ${clinicName}`);
             } catch (error) {
                 logger.log("error", `Failed to send appointment reminder: ${error}`)
                 throw error;
@@ -469,6 +471,8 @@ export const sendStatusUpdateReminder = async ({ email, phoneNumber, firstName, 
             subject: emailSubject,
             html: emailBody
         })
+
+        logger.log(`info`, `Successfully sent a status update reminder via email: ${email}`);
 
         return {
             success: true,
