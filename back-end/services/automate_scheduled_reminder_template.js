@@ -1,19 +1,60 @@
-const formatAppointmentDateTime = (dateStr, timeStr) => {
-    const dateTime = new Date(`${dateStr} ${timeStr}`);
-    return {
-        formattedDate: dateTime.toLocaleDateString('en-US', {
-            weekday: 'long',
+import logger from "../config/winston.js";
+
+/**
+ * Formats a date string into a human-readable format
+ * @param {string} dateStr - Date string in YYYY-MM-DD format
+ * @returns {string} Formatted date string (e.g., "Thursday, September 26, 2024")
+ */
+const formatAppointmentDate = (dateStr) => {
+    try {
+        let date;
+
+        if (dateStr instanceof Date) {
+            date = dateStr;
+        } else if (typeof dateStr === "string") {
+            if (dateStr.includes("T")) {
+                date = new Date(dateStr);
+            } else {
+                const [year, month, day] = dateStr.split("-").map(Number);
+                date = new Date(year, month - 1, day);
+            }
+        } else {
+            throw new Error(`Invalid appointment date format: ${error}`);
+        }
+
+        return date.toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'long',
             day: 'numeric'
-        }),
-        formattedTime: dateTime.toLocaleTimeString('en-US', {
+        });
+    } catch (error) {
+        logger.error('Error formatting date:');
+        return dateStr || 'Date not available';
+    }
+};
+
+/**
+ * Formats a time string into a 12-hour format with AM/PM
+ * @param {string} timeStr - Time string in HH:MM or HH:MM:SS format
+ * @returns {string} Formatted time string (e.g., "2:30 PM")
+ */
+const formatAppointmentTime = (timeStr) => {
+    try {
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        const date = new Date();
+        date.setHours(hours, minutes, 0, 0);
+
+        return date.toLocaleTimeString('en-US', {
             hour: '2-digit',
             minute: '2-digit',
             hour12: true
-        })
-    };
+        });
+    } catch (error) {
+        logger.error('Error formatting time:');
+        return timeStr || 'Time not available';
+    }
 };
+
 
 /**
  * @function generates an email template for scheduled appointment reminders
@@ -28,7 +69,8 @@ export const scheduledReminderTemplate = async (appointment, minutesUntilAppoint
         purposeOfAppointment,
     } = appointment;
 
-    const { formattedDate, formattedTime } = formatAppointmentDateTime(appointmentDate, preferredTime);
+    const formattedDate = formatAppointmentDate(appointmentDate);
+    const formattedTime = formatAppointmentTime(preferredTime);
 
     // Calculate the time until the appointment in hours and minutes
     const hours = Math.floor(minutesUntilAppointment / 60);
