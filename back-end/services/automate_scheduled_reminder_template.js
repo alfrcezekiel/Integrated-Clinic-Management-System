@@ -1,4 +1,19 @@
-import logger from "../config/winston.js";
+const formatAppointmentDateTime = (dateStr, timeStr) => {
+    const dateTime = new Date(`${dateStr} ${timeStr}`);
+    return {
+        formattedDate: dateTime.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        }),
+        formattedTime: dateTime.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        })
+    };
+};
 
 /**
  * @function generates an email template for scheduled appointment reminders
@@ -13,50 +28,7 @@ export const scheduledReminderTemplate = async (appointment, minutesUntilAppoint
         purposeOfAppointment,
     } = appointment;
 
-    let formattedDate;
-    let formattedTime;
-
-    try {
-        let year, month, day, hours, minutes;
-
-        if (typeof appointmentDate === "string") {
-            [year, month, day] = appointmentDate.split("-").map(Number);
-            console.log(year, month, day)
-        } else if (appointmentDate instanceof Date) {
-            year = appointmentDate.getFullYear();
-            month = appointmentDate.getMonth() + 1;
-            day = appointmentDate.getDate();
-        } else {
-            throw new Error(`Invalid appointment date format`);
-        }
-
-        if (preferredTime) {
-            [hours, minutes] = preferredTime.split(":").map(Number);
-        } else {
-            hours = 0;
-            minutes = 0;
-        }
-
-        const appointmentDateTime = new Date(year, month - 1, day, hours, minutes);
-
-        if (!isNaN(appointmentDateTime.getTime())) {
-            formattedDate = appointmentDate.toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                timeZone: "Asia/Manila"
-            });
-        }
-
-        formattedTime = appointmentDateTime.toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true,
-            timeZone: "Asia/Manila"
-        });
-    } catch (error) {
-        logger.log(`error`, `Failed to format appointment date and time: ${error}`)
-    }
+    const { formattedDate, formattedTime } = formatAppointmentDateTime(appointmentDate, preferredTime);
 
     // Calculate the time until the appointment in hours and minutes
     const hours = Math.floor(minutesUntilAppointment / 60);

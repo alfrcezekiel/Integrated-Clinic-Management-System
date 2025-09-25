@@ -138,18 +138,16 @@ export const scheduleAppointmentsReminder = async (appointment, reminderTime = 6
             throw new Error(`Missing required appointment details.`);
         }
 
-        const [hours, minutes] = preferredTime.split(":").map(Number);
-        const appointmentDateTime = new Date(appointmentDate);
-        appointmentDateTime.setHours(hours, minutes, 0, 0)
+        const appointmentDateTime = new Date(`${appointmentDate}`);
+        const currentTime = new Date(`${preferredTime}`);
 
         /**
          * calculate the reminder time
          */
-        const reminderTimeMs = appointmentDateTime.getTime() - (reminderTime * 60 * 1000);
-        const currentTime = new Date().getTime();
-        const timeUntilReminder = reminderTimeMs - currentTime;
+        const timeUntilReminder = appointmentDateTime.getTime() - currentTime.getTime();
+        const minutesUntilAppointment = Math.floor(timeUntilReminder / (1000 * 60));
 
-        if (timeUntilReminder <= 0) {
+        if (minutesUntilAppointment <= 0) {
             logger.log(`warn`, `Appointment reminder time is in the past for appointment: ${firstName} ${lastName}`)
             return {
                 success: false,
@@ -194,7 +192,7 @@ export const scheduleAppointmentsReminder = async (appointment, reminderTime = 6
                     await appointment.connection.query(query, [1, appointmentID]);
                 }
 
-                logger.log(`info`, `Appointment reminder sent successfully for appointment: ${firstName} ${lastName} in ${clinicName}`);
+                logger.log(`info`, `Automated appointment reminder sent successfully for appointment: ${firstName} ${lastName} in ${clinicName}`);
             } catch (error) {
                 logger.log("error", `Failed to send appointment reminder: ${error}`)
                 throw error;
@@ -210,7 +208,7 @@ export const scheduleAppointmentsReminder = async (appointment, reminderTime = 6
             succcess: true,
             message: `Reminder scheduled successfully for ${reminderTime}`,
             reminderTime,
-            scheduledFor: new Date(reminderTimeMs).toISOString(),
+            scheduledFor: new Date(appointmentDateTime).toISOString(),
             timeUntilAppointment: timeUntilReminder
         }
     } catch (error) {

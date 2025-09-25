@@ -3423,7 +3423,7 @@ class Clinic {
                 }
 
                 const now = new Date();
-                const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
+                const twentyFourHoursLater = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
                 const formatDateTime = (date) => {
                     const pad = (num) => num.toString().padStart(2, '0');
@@ -3462,12 +3462,12 @@ class Clinic {
                     WHERE CONCAT(pa.appointmentDate, ' ', pa.preferredTime) BETWEEN ? AND ?
                     AND pa.status IN (${status_placeholders})
                     AND (pa.reminder_sent IS NULL OR pa.reminder_sent = ?)
-                    ORDER BY pa.appointmentDate DESC;
+                    ORDER BY pa.appointmentDate DESC, pa.preferredTime DESC;
                 `;
 
                 const queryValues = [
                     formatDateTime(now),
-                    formatDateTime(oneHourLater),
+                    formatDateTime(twentyFourHoursLater),
                     ...status_values,
                     0
                 ];
@@ -3479,66 +3479,26 @@ class Clinic {
                     return [];
                 }
 
-                logger.log('info', `Found ${rows.length} appointments in the query window`);
-                logger.log('debug', {
-                    queryWindow: {
-                        start: formatDateTime(now),
-                        end: formatDateTime(oneHourLater)
-                    },
-                    statusValues: status_values
+                const updatePromise = rows.map(async (appointment) => {
+                    const updateQuery = `
+                        UPDATE patientsappointment
+                        SET reminder_sent = ?
+                        WHERE appointmentID = ?;
+                    `
+
+                    const updateValues = [
+                        1,
+                        appointment.appointmentID
+                    ];
+
+                    await this.connection.query(updateQuery, updateValues);
                 });
 
-                const process_appointments = [];
-
-                for (const appointment of rows) {
-                    try {
-                        const appointment_time = new Date(appointment.appointmentDate);
-                        const timeUntilAppointment = appointment_time - now;
-
-                        if (timeUntilAppointment > 60 * 60 * 1000) {
-                            const hoursUntilAppointment = timeUntilAppointment / (60 * 60 * 1000);
-                            /**
-                             * schedules 1 hour reminder if not already sent
-                             */
-                            if (hoursUntilAppointment <= 24) {
-                                await scheduleAppointmentsReminder({
-                                    ...appointment,
-                                    reminderTime: Math.floor(timeUntilAppointment / (60 * 1000)) - 60
-                                });
-                            }
-
-                            const updateQuery = `
-                                UPDATE patientsappointment 
-                                SET reminder_sent = ?
-                                WHERE appointmentID = ?;
-                            `
-
-                            const update_values = [
-                                1,
-                                appointment.appointmentID
-                            ];
-
-                            await this.connection.query(updateQuery, update_values);
-
-                            logger.log(`info`, `Succesfully updated reminder_sent for appointment ID: ${appointment.appointmentID}`);
-
-                            process_appointments.push({
-                                appointmentID: appointment.appointmentID,
-                                patient: `${appointment.firstName} ${appointment.lastName}`,
-                                appointmentDate: appointment.appointmentDate,
-                                reminderSent: 1
-                            });
-                        }
-                    } catch (error) {
-                        logger.log(`error`, `Failed in scheduling reminders for upcoming appointments in method: ${error}`);
-                        continue;
-                    }
-                }
-
+                await Promise.all(updatePromise);
                 await this.connection.commit();
 
                 return {
-                    process_appointments: process_appointments
+                    process_appointments: rows
                 };
             } catch (error) {
                 const rollback = await this.connection.rollback();
@@ -3555,6 +3515,38 @@ class Clinic {
         },
         "Schedule Reminders For Upcoming Appointments"
     )
+
+    markReminderAsSent = modelErrorHandling(
+        async ({ appointmentID }) => {
+            this.connection = await this.conn.getConnection();
+            try {
+                await this.connection.beginTransaction();
+
+                const query = `
+                    UPDATE patientsappointment 
+                    SET reminder_sent = ? 
+                    WHERE appointmentID = ?;
+                `;
+
+                await this.connection.query(query, [
+                    1,
+                    appointmentID
+                ]);
+                await this.connection.commit();
+
+                return {
+                    success: true
+                };
+            } catch (error) {
+                await this.connection.rollback();
+                logger.error(`Error in markReminderAsSent: ${error}`);
+                throw error;
+            } finally {
+                this.connection.release();
+            }
+        },
+        "Mark Reminder As Sent"
+    );
 
     /**
      * @method logic to retrieve approved appointments that needs follow-up messsages

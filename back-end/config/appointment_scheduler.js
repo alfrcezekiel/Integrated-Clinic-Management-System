@@ -34,7 +34,7 @@ const FOLLOW_UP_MESSAGE_SCHEDULE = validateCronExpression(process.env.FOLLOW_UP_
  */
 const scheduleAppointmentReminders = async () => {
     /**
-     * run every hour at minute 0
+     * run every hour
      */
     cron.schedule(APPOINTMENT_REMINDER_SCHEDULE, async () => {
         (async () => {
@@ -42,26 +42,31 @@ const scheduleAppointmentReminders = async () => {
                 logger.log(`info`, `Running appointment reminders scheduler`)
 
                 const clinic_instance = new Clinic();
-                const upcoming_appointments = await clinic_instance.scheduleRemindersForUpcomingAppointments({});
+                const result = await clinic_instance.scheduleRemindersForUpcomingAppointments({});
 
-                if (upcoming_appointments.length === 0) {
+                if (!result || result.process_appointments) {
                     logger.log(`warn`, `No upcoming appointments found for reminders`);
+                    return;
                 }
 
-                for (const appointment of upcoming_appointments) {
-                    const appointmentTime = new Date(`${appointment.appointmentDate} ${appointment.preferredTime}`);
-                    const currentTime = new Date();
-                    const minuteUntilAppointment = Math.round((appointmentTime - currentTime) / (1000 * 60));
+                const appointments = result.process_appointments;
 
-                    if (minuteUntilAppointment > 0 && minuteUntilAppointment <= 1440) {
-                        try {
+                logger.log(`info`, `Found ${appointments.length} upcoming appointments for reminders`);
+
+                for (const appointment of appointments) {
+                    try {
+                        const appointmentTime = new Date(`${appointment.appointmentDate} ${appointment.preferredTime}`);
+                        const currentTime = new Date();
+                        const minuteUntilAppointment = Math.round((appointmentTime - currentTime) / (1000 * 60));
+
+                        if (minuteUntilAppointment > 0 && minuteUntilAppointment <= 1440) {
                             await scheduleAppointmentsReminder({
                                 ...appointment,
                                 reminderTime: minuteUntilAppointment
                             });
-                        } catch (error) {
-                            logger.log(`error`, `Failed to schedule appointment reminders: ${error}`);
                         }
+                    } catch (error) {
+                        logger.log(`error`, `Failed to schedule appointment reminders: ${error}`);
                     }
                 }
             } catch (error) {

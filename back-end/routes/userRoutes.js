@@ -415,6 +415,6 @@ router.get("/cms.api.com/patient/dashboard/searchDeclinedBookedAppointments", ve
 /**
  * @exports router to test the schedule reminder for upcoming appointments
  */
-router.get("/cms.api.com/patient/dashboard/testUpcomingAppointment", scheduleReminderForUpcomingAppointments);
+router.get("/cms.api.com/patient/dashboard/testUpcomingAppointment", verifyToken, scheduleReminderForUpcomingAppointments);
 
 export default router;
