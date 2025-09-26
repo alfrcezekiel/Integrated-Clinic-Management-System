@@ -7,6 +7,7 @@ import dotenv from "dotenv"
 import Clinic from "../models/Clinic.Model.js";
 dotenv.config();
 import { scheduleAppointmentsReminder } from "../services/automate_notification_service.js";
+import parseAppointmentDateTime from "../utils/appointmentDateTimeUtil.js";
 
 const validateCronExpression = (expression, defaultValue) => {
     try {
@@ -44,7 +45,7 @@ const scheduleAppointmentReminders = async () => {
                 const clinic_instance = new Clinic();
                 const result = await clinic_instance.scheduleRemindersForUpcomingAppointments({});
 
-                if (!result || result.process_appointments) {
+                if (!result || !result.process_appointments || !Array.isArray(result.process_appointments)) {
                     logger.log(`warn`, `No upcoming appointments found for reminders`);
                     return;
                 }
@@ -55,15 +56,20 @@ const scheduleAppointmentReminders = async () => {
 
                 for (const appointment of appointments) {
                     try {
-                        const appointmentTime = new Date(`${appointment.appointmentDate} ${appointment.preferredTime}`);
+                        const appointmentTime = parseAppointmentDateTime(appointment.appointmentDate, appointment.preferredTime);
                         const currentTime = new Date();
+                        const oneHourFromNow = new Date(currentTime.getTime() + 60 * 60 * 1000);
                         const minuteUntilAppointment = Math.round((appointmentTime - currentTime) / (1000 * 60));
 
-                        if (minuteUntilAppointment > 0 && minuteUntilAppointment <= 1440) {
-                            await scheduleAppointmentsReminder({
-                                ...appointment,
-                                reminderTime: minuteUntilAppointment
-                            });
+                        if (appointmentTime > currentTime && appointmentTime <= oneHourFromNow) {
+                            if (minuteUntilAppointment >= 1) {
+                                await scheduleAppointmentsReminder({
+                                    ...appointment,
+                                    reminderTime: minuteUntilAppointment
+                                });
+
+                                logger.log(`info`, `Scheduled ${minuteUntilAppointment} min reminder for upcoming appointment: ${appointment.firstName} ${appointment.lastName} in ${appointment.clinicName}`);
+                            }
                         }
                     } catch (error) {
                         logger.log(`error`, `Failed to schedule appointment reminders: ${error}`);

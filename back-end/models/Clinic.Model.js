@@ -3423,7 +3423,7 @@ class Clinic {
                 }
 
                 const now = new Date();
-                const twentyFourHoursLater = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+                const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
 
                 const formatDateTime = (date) => {
                     const pad = (num) => num.toString().padStart(2, '0');
@@ -3467,7 +3467,7 @@ class Clinic {
 
                 const queryValues = [
                     formatDateTime(now),
-                    formatDateTime(twentyFourHoursLater),
+                    formatDateTime(oneHourLater),
                     ...status_values,
                     0
                 ];
@@ -3475,7 +3475,7 @@ class Clinic {
                 const [rows] = await this.connection.query(query, queryValues);
 
                 if (!rows || rows.length === 0) {
-                    logger.log(`error`, `No upcoming appointments found in the next hour`);
+                    logger.log(`info`, `No upcoming appointments found in the next hour`);
                     return [];
                 }
 

@@ -9,6 +9,8 @@ import {
 import { scheduledReminderTemplate } from "./automate_scheduled_reminder_template.js";
 import { sendWelcomeEmailNotification } from "./welcome_create_account.js";
 import { patientAccountStatusTemplate } from "./patient_account_status_template.js";
+import parseAppointmentDateTime from "../utils/appointmentDateTimeUtil.js";
+import getNewDatabaseConnection from "../utils/getConnection.js";
 dotenv.config();
 
 /**
@@ -138,14 +140,39 @@ export const scheduleAppointmentsReminder = async (appointment, reminderTime = 6
             throw new Error(`Missing required appointment details.`);
         }
 
-        const appointmentDateTime = new Date(`${appointmentDate}`);
-        const currentTime = new Date(`${preferredTime}`);
+        const appointmentDateTime = parseAppointmentDateTime(appointmentDate, preferredTime);
 
         /**
-         * calculate the reminder time
+         * get the current time
          */
-        const timeUntilReminder = appointmentDateTime.getTime() - currentTime.getTime();
-        const minutesUntilAppointment = Math.floor(timeUntilReminder / (1000 * 60));
+        const currentTime = new Date();
+        /**
+         * get the time until the reminder
+         */
+        const timeUntilReminder = appointmentDateTime - currentTime;
+
+        /**
+         * convert the reminder time to milliseconds
+         */
+        const reminderTimeMs = reminderTime * 60 * 1000;
+
+        const reminderTimeFromNow = timeUntilReminder - reminderTimeMs;
+        
+        if (reminderTimeFromNow <= 0) {
+            const status = reminderTimeFromNow <= reminderTimeMs ?
+                "Appointment time is in the past" :
+                "Reminder time is too close to or past the appointment time";
+
+            logger.log(`warn`, `${status} for appointment: ${firstName} ${lastName}`);
+
+            return {
+                success: false,
+                message: status,
+                scheduled: false
+            }
+        }
+
+        const minutesUntilAppointment = Math.floor(reminderTimeFromNow / (1000 * 60));
 
         if (minutesUntilAppointment <= 0) {
             logger.log(`warn`, `Appointment reminder time is in the past for appointment: ${firstName} ${lastName}`)
@@ -187,9 +214,23 @@ export const scheduleAppointmentsReminder = async (appointment, reminderTime = 6
                     logger.log(`info`, `Email reminder sent to ${email}`);
                 }
 
-                if (appointment.connection) {
+                const pool_connection = await getNewDatabaseConnection();
+                try {
+                    await pool_connection.beginTransaction();
                     const query = `UPDATE patientsappointment SET reminder_sent = ? WHERE appointmentID = ?;`;
-                    await appointment.connection.query(query, [1, appointmentID]);
+                    await pool_connection.query(query, [1, appointmentID]);
+                    await pool_connection.commit();
+                } catch (error) {
+                    const rollbackQuery = await pool_connection.rollback();
+                    if (!rollbackQuery) {
+                        logger.log(`error`, `Failed to rollback transaction to update reminder sent status for appointment: ${error}`)
+                    }
+
+                    logger.log(`error`, `Failed to update reminder sent status for appointment: ${error}`)
+                } finally {
+                    if (pool_connection) {
+                        pool_connection.release();
+                    }
                 }
 
                 logger.log(`info`, `Automated appointment reminder sent successfully for appointment: ${firstName} ${lastName} in ${clinicName}`);
@@ -199,7 +240,7 @@ export const scheduleAppointmentsReminder = async (appointment, reminderTime = 6
             } finally {
                 reminderTimeouts.delete(reminder_id);
             }
-        }, timeUntilReminder);
+        }, reminderTimeFromNow);
 
         reminderTimeouts.set(reminder_id, reminderTimeout);
         logger.log(`info`, `Scheduled ${reminderTime} min reminder for upcoming appointment: ${firstName} ${lastName} in ${clinicName}`);
