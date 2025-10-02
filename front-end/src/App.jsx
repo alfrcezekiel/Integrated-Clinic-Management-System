@@ -67,7 +67,6 @@ const App = () => {
   return (
     <BrowserRouter>
       <AuthorizationProvider>
-        <RouteLoader>
           <Routes>
             <Route
               path="/"
@@ -132,7 +131,6 @@ const App = () => {
             <Route path="/admin-dashboard/*" element={<AdminDashboard />} />
             <Route path="*" element={<PageNotFound />} />
           </Routes>
-        </RouteLoader>
       </AuthorizationProvider>
     </BrowserRouter>
   )

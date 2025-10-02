@@ -55,7 +55,7 @@ const validatePatientBookAppointment = [
             // Ensure the appointment date is within one month from the current date
             const oneMonthFromNow = dayjs().add(1, "month").startOf("day");
 
-            if (appointmentDate.isBefore(currentDate, "day") || appointmentDate.isSame(currentDate, "day")) {
+            if (appointmentDate.isBefore(currentDate, "day")) {
                 throw new Error("Appointment date must be not earlier than the current date");
             } else if (appointmentDate.isAfter(oneMonthFromNow, "day")) {
                 throw new Error("Appointment date must not be later than one month from current date");

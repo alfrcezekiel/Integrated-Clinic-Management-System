@@ -156,7 +156,7 @@ const startServer = async () => {
     try {
 
         if (process.env.NODE_ENV === "development") {
-            initializeScheduler();
+            await initializeScheduler();
         }
 
         app.listen(app.get("port"), app.get("host"), () => {

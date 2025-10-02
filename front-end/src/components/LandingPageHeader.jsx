@@ -86,7 +86,6 @@ const LandingPageHeader = () => {
     const loginDropdown = [
         { name: "Patients Login Portal", to: "/PatientLogin" },
         { name: "Clinic Login Portal", to: "/ClinicLogin" },
-        { name: "Admin Portal", to: "/AdminLogin" }
     ];
 
     return (

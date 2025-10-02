@@ -73,7 +73,7 @@ const resolveBackupDir = () => {
         const distro = getDefaultDistro();
         const user = getCurrentUser();
         return `\\\\wsl$\\${distro}\\home\\${user}\\database_backups\\mysql`;
-    }
+    } 
 
     const user = getCurrentUser();
     return `/home/${user}/database_backups/mysql`;

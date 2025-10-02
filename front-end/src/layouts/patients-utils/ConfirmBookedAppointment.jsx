@@ -25,7 +25,7 @@ const ConfirmAppointmentModal = ({ open, onClose, patientsData, onNextStep }) =>
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
             <DialogTitle className="flex justify-between items-center">
-                Confirm Booked Appointment
+                Appointment Details
             </DialogTitle>
 
 
@@ -86,7 +86,7 @@ const ConfirmAppointmentModal = ({ open, onClose, patientsData, onNextStep }) =>
                     className="cursor-pointer"
                     onClick={onNextStep}
                 >
-                    Submit
+                    Confirm Appointment
                 </Button>
             </DialogActions>
         </Dialog>
