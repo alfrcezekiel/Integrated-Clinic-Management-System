@@ -65,7 +65,7 @@ const LandingPageHeader = () => {
     }, []);
 
     const navLinks = [
-        { name: "Home", href: "/", isScroll: false },
+        { name: "Home", href: "#home", isScroll: false },
         { name: "About", href: "#about", isScroll: true },
         { name: "Services", href: "#services", isScroll: true },
         { name: whatWeServeTitle, type: "dropdown" },
@@ -93,9 +93,9 @@ const LandingPageHeader = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-16">
                     {/* Logo */}
-                    <Link to="/" className="flex-shrink-0 flex items-center">
+                    <ScrollLink to="/cms" targetId="home" className="flex-shrink-0 flex items-center">
                         <h1 className="text-2xl font-bold text-white">CMS</h1>
-                    </Link>
+                    </ScrollLink>
 
                     {/* Desktop Navigation */}
                     <nav className="hidden md:flex items-center space-x-1">

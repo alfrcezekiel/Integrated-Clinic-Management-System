@@ -929,6 +929,7 @@ export const getBookedAppointmentsToDisplayInDoctorsDashboard = async (req, res)
             INNER JOIN clinic c
             ON p.clinic_id = c.clinic_id
             WHERE p.clinic_id = ?
+            ORDER BY p.appointmentDate DESC, p.preferredTime DESC;
         `;
 
         const [rows] = await conn.query(query, [clinicID]);
@@ -1836,7 +1837,7 @@ export const getPendingAppointmentStatus = async (req, res) => {
             INNER JOIN clinic c
             ON p.clinic_id = c.clinic_id
             WHERE p.clinic_id = ? AND p.status = ?
-            ORDER BY p.appointmentDate ASC;
+            ORDER BY p.appointmentDate DESC, p.preferredTime DESC;
         `;
 
         const [rows] = await conn.query(query, [clinicID, status]);
@@ -1888,7 +1889,7 @@ export const getApprovedAppointmentStatusInClinic = async (req, res) => {
             INNER JOIN clinic c
             ON p.clinic_id = c.clinic_id
             WHERE p.clinic_id = ? AND p.status = ?
-            ORDER BY p.appointmentDate ASC;
+            ORDER BY p.appointmentDate DESC, p.preferredTime DESC;
         `;
 
         const [rows] = await conn.query(query, [clinicID, status]);
@@ -1938,7 +1939,7 @@ export const getDeclinedAppointmentStatusInClinic = async (req, res) => {
             INNER JOIN clinic c
             ON p.clinic_id = c.clinic_id
             WHERE p.clinic_id = ? AND p.status = ?
-            ORDER BY p.appointmentDate ASC;
+            ORDER BY p.appointmentDate DESC, p.preferredTime DESC;
         `;
 
         const [rows] = await conn.query(query, [clinicID, status]);
@@ -1978,6 +1979,7 @@ export const getRegisteredPatientsAccountInAdmin = async (req, res) => {
             FROM patientsregisteraccount1
             INNER JOIN patientsregisteraccount2
             ON patientsregisteraccount1.patientID = patientsregisteraccount2.patientID
+            ORDER BY patientsregisteraccount1.patientID DESC;
         `
 
         const [rows] = await conn.query(query);

@@ -77,7 +77,7 @@ class Clinic {
                 INNER JOIN consultedpatients AS cp
                 ON pa.appointmentID = cp.appointmentID
                 WHERE pa.clinic_id  = ?  AND pa.status = ?
-                ORDER BY pa.appointmentDate ASC
+                ORDER BY pa.appointmentDate DESC, pa.preferredTime DESC;
             `
 
             const [rows] = await connection.query(query, [
