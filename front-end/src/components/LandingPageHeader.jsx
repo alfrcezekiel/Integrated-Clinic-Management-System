@@ -4,7 +4,7 @@ import CMS from "../API/CMS.jsx";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import ScrollLink from "./Scroll_Link/scroll_link";
-
+import ClinicLogo from "../assets/img/ClinicManagementLogo.png"
 const LandingPageHeader = () => {
     const [whatWeServeTitle, setWhatWeServeTitle] = useState("");
     const [isOpen, setIsOpen] = useState(false);
@@ -90,11 +90,15 @@ const LandingPageHeader = () => {
 
     return (
         <header className="fixed w-full bg-gradient-to-b from-black to-black/80 shadow-lg z-50">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                 <div className="flex justify-between items-center h-16">
                     {/* Logo */}
                     <ScrollLink to="/cms" targetId="home" className="flex-shrink-0 flex items-center">
-                        <h1 className="text-2xl font-bold text-white">CMS</h1>
+                        <img 
+                            src={ClinicLogo}
+                            alt="Clinic Logo"
+                            className="object-center w-32 h-26"
+                        />
                     </ScrollLink>
 
                     {/* Desktop Navigation */}

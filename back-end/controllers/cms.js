@@ -173,7 +173,18 @@ export const contactMessageManagement = async (req, res) => {
             ) VALUES (?, ?, ?, ?);
         `;
 
-        await conn.query(query, [contactName, contactEmailAddress, contactSubject, contactMessage])
+        const [result] = await conn.query(query, [
+            contactName,
+            contactEmailAddress,
+            contactSubject,
+            contactMessage]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                contactMessage: "Request contact has not been submitted!"
+            })
+        }
 
         return res.status(StatusCodes.OK).json({
             contactMessage: "Request contact has been submitted!"

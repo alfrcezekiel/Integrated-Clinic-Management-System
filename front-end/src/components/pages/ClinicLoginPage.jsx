@@ -29,6 +29,8 @@ import {
     getLocalStorage,
     removeLocalStorage
 } from "../../utils/storage/localStorage"
+import { Link } from "react-router-dom";
+import ArrowBack from "@mui/icons-material/ArrowBack";
 
 function ClinicLoginPortal() {
     const [showPassword, setShowPassword] = useState(false);
@@ -175,6 +177,13 @@ function ClinicLoginPortal() {
     return (
         <section className="m-3 flex gap-4">
             <div className="w-full lg:w-3/5 py-55">
+                <Link
+                    to="/cms"
+                    className="absolute py-6 px-6 top-0 left-0 flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+                >
+                    <ArrowBack className="mr-1" />
+                    <span>Back</span>
+                </Link>
                 <div className="text-center">
                     <Typography variant="h5" className="font-bold mb-4" color="black">Clinic  Login Portal</Typography>
                 </div>

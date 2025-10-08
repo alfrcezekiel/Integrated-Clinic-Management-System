@@ -12,7 +12,7 @@ const LandingPageContact = () => {
 
     const [fieldErrors, setFieldErrors] = useState({
         contactName: "",
-        contactEmail: "",
+        contactEmailAddress: "",
         contactSubject: "",
         contactMessage: ""
     })
@@ -120,13 +120,13 @@ const LandingPageContact = () => {
                                 <div>
                                     <input
                                         name="contactEmailAddress"
-                                        type="email"
+                                        type="text"
                                         className={inputClasses}
                                         placeholder="Your Email"
                                         value={contactFormData.contactEmailAddress}
                                         onChange={(e) => setContactFormData({ ...contactFormData, contactEmailAddress: e.target.value })}
                                     />
-                                    {fieldErrors.contactEmail && <p className={errorClasses}>{fieldErrors.contactEmail}</p>}
+                                    {fieldErrors.contactEmailAddress && <p className={errorClasses}>{fieldErrors.contactEmailAddress}</p>}
                                 </div>
                             </div>
                             <div>
@@ -153,7 +153,7 @@ const LandingPageContact = () => {
                             <div className="text-center">
                                 <button
                                     type="submit"
-                                    className="px-8 py-3 bg-black/100 text-white font-bold rounded-4xl hover:bg-white  focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 transition-colors duration-200"
+                                    className="px-8 py-3 bg-black/100 text-white font-bold rounded-4xl cursor-pointer focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 transition-colors duration-200"
                                 >
                                     Send Message
                                 </button>
