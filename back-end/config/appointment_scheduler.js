@@ -8,6 +8,8 @@ import Clinic from "../models/Clinic.Model.js";
 dotenv.config();
 import { scheduleAppointmentsReminder } from "../services/automate_notification_service.js";
 import parseAppointmentDateTime from "../utils/appointmentDateTimeUtil.js";
+import { parseAppointmentDate } from "../utils/parse_appointment_date.js";
+import { parseAppointmentTime } from "../utils/parse_appointment_time.js";
 
 const validateCronExpression = (expression, defaultValue) => {
     try {
@@ -51,7 +53,7 @@ const scheduleAppointmentReminders = async () => {
                 }
 
                 const appointments = result.process_appointments;
-                
+
                 logger.log(`info`, `Found ${appointments.length} upcoming appointments for reminders`);
                 let successCount = 0;
                 let failedCount = 0;
@@ -70,9 +72,9 @@ const scheduleAppointmentReminders = async () => {
                                     reminderTime: minuteUntilAppointment
                                 });
 
-                                if (result && result.succcess !== false) {
+                                if (result && result.success !== false) {
                                     successCount++;
-                                    logger.log(`info`, `✓ Scheduled ${minuteUntilAppointment} minutes reminder for: ${appointment.firstName} ${appointment.lastName} at ${appointment.clinicName}`);
+                                    logger.log(`info`, `✓ Scheduled ${minuteUntilAppointment} minutes reminder for: ${appointment.firstName} ${appointment.lastName} at ${appointment.clinic_name} - Appointment Date: (${parseAppointmentDate(appointment.appointmentDate)}) Appointment Time: (${parseAppointmentTime(appointment.preferredTime)}) - ${appointment.appointmentID}`);
                                 } else {
                                     failedCount++;
                                     logger.log(`warn`, `Failed to schedule reminder for ${appointment.firstName} ${appointment.lastName} - ${result?.message}`);

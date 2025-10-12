@@ -11,6 +11,8 @@ import { sendWelcomeEmailNotification } from "./welcome_create_account.js";
 import { patientAccountStatusTemplate } from "./patient_account_status_template.js";
 import parseAppointmentDateTime from "../utils/appointmentDateTimeUtil.js";
 import getNewDatabaseConnection from "../utils/getConnection.js";
+import { parseAppointmentDate } from "../utils/parse_appointment_date.js";
+import { parseAppointmentTime } from "../utils/parse_appointment_time.js";
 dotenv.config();
 
 /**
@@ -150,38 +152,43 @@ export const scheduleAppointmentsReminder = async (appointment, reminderTime = 6
          * get the time until the reminder
          */
         const timeUntilReminder = appointmentDateTime - currentTime;
+        
+        /**
+         * checks the condition of appointment time itself is in the past
+         */
+        if (timeUntilReminder <= 0) {
+            logger.log(`warn`, `Appointment time is in the past for appointment: ${firstName} ${lastName} at ${clinicName} - Appointment Date: (${parseAppointmentDate(appointment.appointmentDate)}) Appointment Time: (${parseAppointmentTime(appointment.preferredTime)}) - ${appointmentID}`);
 
+            return {
+                success: false,
+                message: "Appointment time is in the past",
+                scheduled: false
+            }
+        }
+        
         /**
          * convert the reminder time to milliseconds
          */
         const reminderTimeMs = reminderTime * 60 * 1000;
 
         const reminderTimeFromNow = timeUntilReminder - reminderTimeMs;
-        
+        /**
+         * checks the condition of reminder time has passed but the appointment time is still upcoming, schedule immediate reminder
+         */
         if (reminderTimeFromNow <= 0) {
-            const status = reminderTimeFromNow <= reminderTimeMs ?
-                "Appointment time is in the past" :
-                "Reminder time is too close to or past the appointment time";
-
-            logger.log(`warn`, `${status} for appointment: ${firstName} ${lastName}`);
-
-            return {
-                success: false,
-                message: status,
-                scheduled: false
-            }
+            logger.log(`info`, `Appointment time is less than ${reminderTime} minutes away. Scheduling immediate reminder for: ${firstName} ${lastName} at ${clinicName} - ${appointmentID}`)
         }
 
-        const minutesUntilAppointment = Math.floor(reminderTimeFromNow / (1000 * 60));
+        // const minutesUntilAppointment = Math.floor(reminderTimeFromNow / (1000 * 60));
 
-        if (minutesUntilAppointment <= 0) {
-            logger.log(`warn`, `Appointment reminder time is in the past for appointment: ${firstName} ${lastName}`)
-            return {
-                success: false,
-                message: `Appointment reminder time is in the past for appointment: ${firstName} ${lastName}`,
-                scheduled: false
-            }
-        }
+        // if (minutesUntilAppointment <= 0) {
+        //     logger.log(`warn`, `Appointment reminder time is in the past for appointment: ${firstName} ${lastName} at ${appointment.clinic_name} - Appointment Date: (${parseAppointmentDate(appointment.appointmentDate)}) Appointment Time: (${parseAppointmentTime(appointment.preferredTime)}) - ${appointmentID}`)
+        //     return {
+        //         success: false,
+        //         message: `Appointment reminder time is in the past for appointment: ${firstName} ${lastName} at ${appointment.clinic_name} - Appointment Date: (${parseAppointmentDate(appointment.appointmentDate)}) Appointment Time: (${parseAppointmentTime(appointment.preferredTime)}) - ${appointmentID}`,
+        //         scheduled: false
+        //     }
+        // }
 
         /**
          * 
@@ -211,7 +218,7 @@ export const scheduleAppointmentsReminder = async (appointment, reminderTime = 6
                         reminderEmailTemplate
                     );
 
-                    logger.log(`info`, `Email reminder sent to ${email}`);
+                    logger.log(`info`, `Appointment email reminder sent to ${email}`);
                 }
 
                 const pool_connection = await getNewDatabaseConnection();
@@ -243,10 +250,10 @@ export const scheduleAppointmentsReminder = async (appointment, reminderTime = 6
         }, reminderTimeFromNow);
 
         reminderTimeouts.set(reminder_id, reminderTimeout);
-        logger.log(`info`, `Scheduled ${reminderTime} min reminder for upcoming appointment: ${firstName} ${lastName} at ${clinicName}`);
+        logger.log(`info`, `Scheduled ${reminderTime} min reminder for upcoming appointment: ${firstName} ${lastName} at ${clinicName} - Appointment Date: (${parseAppointmentDate(appointment.appointmentDate)}) Appointment Time: (${parseAppointmentTime(appointment.preferredTime)}) - ${appointmentID}`);
 
         return {
-            succcess: true,
+            success: true,
             message: `Reminder scheduled successfully for ${reminderTime}`,
             reminderTime,
             scheduledFor: new Date(appointmentDateTime).toISOString(),
