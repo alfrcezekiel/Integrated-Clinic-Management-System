@@ -3479,22 +3479,22 @@ class Clinic {
                     return [];
                 }
 
-                const updatePromise = rows.map(async (appointment) => {
-                    const updateQuery = `
-                        UPDATE patientsappointment
-                        SET reminder_sent = ?
-                        WHERE appointmentID = ?;
-                    `
+                // const updatePromise = rows.map(async (appointment) => {
+                //     const updateQuery = `
+                //         UPDATE patientsappointment
+                //         SET reminder_sent = ?
+                //         WHERE appointmentID = ?;
+                //     `
 
-                    const updateValues = [
-                        1,
-                        appointment.appointmentID
-                    ];
+                //     const updateValues = [
+                //         1,
+                //         appointment.appointmentID
+                //     ];
 
-                    await this.connection.query(updateQuery, updateValues);
-                });
+                //     await this.connection.query(updateQuery, updateValues);
+                // });
 
-                await Promise.all(updatePromise);
+                // await Promise.all(updatePromise);
                 await this.connection.commit();
 
                 return {

@@ -233,7 +233,7 @@ export const scheduleAppointmentsReminder = async (appointment, reminderTime = 6
                     }
                 }
 
-                logger.log(`info`, `Automated appointment reminder sent successfully for appointment: ${firstName} ${lastName} in ${clinicName}`);
+                logger.log(`info`, `Automated appointment reminder sent successfully for appointment: ${firstName} ${lastName} at ${clinicName}`);
             } catch (error) {
                 logger.log("error", `Failed to send appointment reminder: ${error}`)
                 throw error;
@@ -243,7 +243,7 @@ export const scheduleAppointmentsReminder = async (appointment, reminderTime = 6
         }, reminderTimeFromNow);
 
         reminderTimeouts.set(reminder_id, reminderTimeout);
-        logger.log(`info`, `Scheduled ${reminderTime} min reminder for upcoming appointment: ${firstName} ${lastName} in ${clinicName}`);
+        logger.log(`info`, `Scheduled ${reminderTime} min reminder for upcoming appointment: ${firstName} ${lastName} at ${clinicName}`);
 
         return {
             succcess: true,

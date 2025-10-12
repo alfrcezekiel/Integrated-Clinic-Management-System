@@ -89,7 +89,7 @@ export const automatedEmailNotificationTemplate = (appointment) => {
                             </div>
                             <div class="ml-3">
                                 <p class="text-sm text-yellow-700">
-                                    Please arrive 15 minutes before your scheduled time. Bring any necessary documents or identification.
+                                    Please arrive 15 minutes before your scheduled time. Bring any necessary documents for identification.
                                 </p>
                             </div>
                         </div>

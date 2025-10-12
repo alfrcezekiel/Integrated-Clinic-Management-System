@@ -51,8 +51,10 @@ const scheduleAppointmentReminders = async () => {
                 }
 
                 const appointments = result.process_appointments;
-
+                
                 logger.log(`info`, `Found ${appointments.length} upcoming appointments for reminders`);
+                let successCount = 0;
+                let failedCount = 0;
 
                 for (const appointment of appointments) {
                     try {
@@ -63,23 +65,36 @@ const scheduleAppointmentReminders = async () => {
 
                         if (appointmentTime > currentTime && appointmentTime <= oneHourFromNow) {
                             if (minuteUntilAppointment >= 1) {
-                                await scheduleAppointmentsReminder({
+                                const result = await scheduleAppointmentsReminder({
                                     ...appointment,
                                     reminderTime: minuteUntilAppointment
                                 });
 
-                                logger.log(`info`, `Scheduled ${minuteUntilAppointment} min reminder for upcoming appointment: ${appointment.firstName} ${appointment.lastName} in ${appointment.clinicName}`);
+                                if (result && result.succcess !== false) {
+                                    successCount++;
+                                    logger.log(`info`, `✓ Scheduled ${minuteUntilAppointment} minutes reminder for: ${appointment.firstName} ${appointment.lastName} at ${appointment.clinicName}`);
+                                } else {
+                                    failedCount++;
+                                    logger.log(`warn`, `Failed to schedule reminder for ${appointment.firstName} ${appointment.lastName} - ${result?.message}`);
+                                }
+                            } else {
+                                logger.log(`warn`, `Appointment too close (${minuteUntilAppointment} minutes) for: (${appointment.firstName} ${appointment.lastName})`);
                             }
+                        } else {
+                            logger.log(`debug`, `Appointment outside 1-hour window for ${appointment.firstName} ${appointment.lastName}`);
                         }
                     } catch (error) {
-                        logger.log(`error`, `Failed to schedule appointment reminders: ${error}`);
+                        failedCount++;
+                        logger.log(`error`, `Failed to schedule appointment reminder for ${appointment.firstName} ${appointment.lastName}: ${error}`);
                     }
                 }
+
+                logger.log(`info`, `Reminder scheduling complete: ${successCount} successful, ${failedCount} failed`)
             } catch (error) {
                 logger.log(`error`, `Failed to schedule appointment reminders: ${error}`);
             }
 
-            logger.log(`info`, `Appoinntment reminder scheduler started.`)
+            logger.log(`info`, `Appoinntment reminder scheduler cycle completed.`)
         })()
     }, {
         timezone: "Asia/Manila",

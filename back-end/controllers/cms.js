@@ -962,7 +962,10 @@ export const getBookedAppointmentsToDisplayInDoctorsDashboard = async (req, res)
     }
 }
 
-// controller logic for updating patients appointments details
+/**
+ * @function controller logic for updating patients appointments details in clinic side
+ * it will send a automated reminder to the patient email if the clinic staff updated the patient status
+ */
 export const updatePatientsAppointments = async (req, res) => {
     const connection = await conn.getConnection();
     try {

@@ -59,7 +59,7 @@ const formatAppointmentTime = (timeStr) => {
 /**
  * @function generates an email template for scheduled appointment reminders
  */
-export const scheduledReminderTemplate = async (appointment, minutesUntilAppointment) => {
+export const scheduledReminderTemplate = async (appointment, reminderTime) => {
     const {
         firstName,
         lastName,
@@ -73,8 +73,8 @@ export const scheduledReminderTemplate = async (appointment, minutesUntilAppoint
     const formattedTime = formatAppointmentTime(preferredTime);
 
     // Calculate the time until the appointment in hours and minutes
-    const hours = Math.floor(minutesUntilAppointment / 60);
-    const minutes = minutesUntilAppointment % 60;
+    const hours = Math.floor(reminderTime / 60);
+    const minutes = reminderTime % 60;
     const timeUntil = hours > 0
         ? `${hours} hour${hours > 1 ? 's' : ''}${minutes > 0 ? ` and ${minutes} minute${minutes > 1 ? 's' : ''}` : ''}`
         : `${minutes} minute${minutes > 1 ? 's' : ''}`;
