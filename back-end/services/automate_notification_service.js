@@ -151,12 +151,16 @@ export const scheduleAppointmentsReminder = async (appointment, reminderTime = 6
         /**
          * get the time until the reminder
          */
-        const timeUntilReminder = appointmentDateTime - currentTime;
-        
+        const timeUntilAppointment = appointmentDateTime - currentTime;
+        /**
+         * convert the reminder time to milliseconds
+         */
+        const reminderTimeMs = reminderTime * 60 * 1000;
+
         /**
          * checks the condition of appointment time itself is in the past
          */
-        if (timeUntilReminder <= 0) {
+        if (timeUntilAppointment <= 0) {
             logger.log(`warn`, `Appointment time is in the past for appointment: ${firstName} ${lastName} at ${clinicName} - Appointment Date: (${parseAppointmentDate(appointment.appointmentDate)}) Appointment Time: (${parseAppointmentTime(appointment.preferredTime)}) - ${appointmentID}`);
 
             return {
@@ -165,18 +169,19 @@ export const scheduleAppointmentsReminder = async (appointment, reminderTime = 6
                 scheduled: false
             }
         }
-        
-        /**
-         * convert the reminder time to milliseconds
-         */
-        const reminderTimeMs = reminderTime * 60 * 1000;
 
-        const reminderTimeFromNow = timeUntilReminder - reminderTimeMs;
+
+        /**
+         * calculate when to send the reminder (reminder time before appointment)
+         */
+        const reminderTimeFromNow = timeUntilAppointment - reminderTimeMs;
         /**
          * checks the condition of reminder time has passed but the appointment time is still upcoming, schedule immediate reminder
          */
         if (reminderTimeFromNow <= 0) {
             logger.log(`info`, `Appointment time is less than ${reminderTime} minutes away. Scheduling immediate reminder for: ${firstName} ${lastName} at ${clinicName} - ${appointmentID}`)
+        } else if (reminderTimeFromNow > 0) {
+            logger.log(`info`, `Appointment time is more than ${reminderTime} minutes away. Scheduling reminder for: ${firstName} ${lastName} at ${clinicName} - ${appointmentID}`)
         }
 
         // const minutesUntilAppointment = Math.floor(reminderTimeFromNow / (1000 * 60));
@@ -194,13 +199,13 @@ export const scheduleAppointmentsReminder = async (appointment, reminderTime = 6
          * 
          * generate a automated schedule reminder template via email
          */
-        const reminderEmailTemplate = await scheduledReminderTemplate(appointment, reminderTime);
+        // const reminderEmailTemplate = await scheduledReminderTemplate(appointment);
 
-        const hoursUntil = Math.floor(reminderTime / 60);
-        const minutesUntil = reminderTime % 60;
-        const timeUntilText = hoursUntil > 0 ?
-            `${hoursUntil} hour${hoursUntil > 1 ? 's' : ''}${minutesUntil > 0 ? ` and ${minutesUntil} minute${minutesUntil > 1 ? 's' : ''}` : ''}`
-            : `${minutesUntil} minute${minutesUntil > 1 ? 's' : ''}`;
+        // const hoursUntil = Math.floor(reminderTime / 60);
+        // const minutesUntil = reminderTime % 60;
+        // const timeUntilText = hoursUntil > 0 ?
+        //     `${hoursUntil} hour${hoursUntil > 1 ? 's' : ''}${minutesUntil > 0 ? ` and ${minutesUntil} minute${minutesUntil > 1 ? 's' : ''}` : ''}`
+        //     : `${minutesUntil} minute${minutesUntil > 1 ? 's' : ''}`;
 
         const reminder_id = `reminder_${appointmentID}_${reminderTime}`;
 
@@ -212,6 +217,23 @@ export const scheduleAppointmentsReminder = async (appointment, reminderTime = 6
         const reminderTimeout = setTimeout(async () => {
             try {
                 if (email) {
+                    /**
+                     * calculate actual time remaining at the moment patient received the reminder
+                     */
+                    const currentTimeNow = new Date();
+                    const timeRemainingMs = appointmentDateTime - currentTimeNow;
+                    const minutesRemaining = Math.max(0, Math.floor(timeRemainingMs / (1000 * 60)));
+                    const hoursUntil = Math.floor(minutesRemaining / 60);
+                    const minutesUntil = minutesRemaining % 60;
+                    const timeUntilText = hoursUntil > 0 ?
+                        `${hoursUntil} hour${hoursUntil > 1 ? "s" : ""}${minutesUntil > 0 ? ` and ${minutesUntil} minutes${minutesUntil > 1 ? "s" : ""} left` : ""}`
+                        : `${minutesUntil} minute${minutesUntil > 1 ? "s" : ""} left`;
+
+                    /**
+                     * generate the appointment reminder template with current time information
+                     */
+                    const reminderEmailTemplate = await scheduledReminderTemplate(appointment);
+
                     await sendEmailNotification(
                         email,
                         `Reminder: Appointment in ${timeUntilText}`,
@@ -257,7 +279,7 @@ export const scheduleAppointmentsReminder = async (appointment, reminderTime = 6
             message: `Reminder scheduled successfully for ${reminderTime}`,
             reminderTime,
             scheduledFor: new Date(appointmentDateTime).toISOString(),
-            timeUntilAppointment: timeUntilReminder
+            timeUntilAppointment: timeUntilAppointment
         }
     } catch (error) {
         logger.log("error", `Failed to schedule appointment reminder: ${error}`)
@@ -313,28 +335,44 @@ export const sendAppointmentsConfirmation = async (appointment) => {
     const confirmationEmailTemplate = automatedEmailNotificationTemplate(appointment);
 
     try {
+        /**
+         * send a appointment confirmation email in patient email address after they booked appointment
+         */
         await sendEmailNotification(
             email,
             "Appointment Confirmation",
             confirmationEmailTemplate
         );
 
+        logger.log(`info`, `Appointment confirmation email sent to ${email}`);
+
         /**
-         * schedule a reminder for 24 hours
+         * schedule a reminder for 24 hour before appointment
          */
-        await scheduleAppointmentsReminder({
+        const reminder24Hours = await scheduleAppointmentsReminder({
             ...appointment,
             appointmentDate: appointmentDate,
         }, 1440);
         /**
-         * schedule a reminder for 1 hour
+         * schedule a reminder for 1 hour before appointment
          */
-        await scheduleAppointmentsReminder({
+        const reminder1Hour = await scheduleAppointmentsReminder({
             ...appointment,
             appointmentDate: appointmentDate
         }, 60);
+
+        return {
+            success: true,
+            message: `Appointment confirmation sent and reminders scheduled`,
+            confirmationSent: true,
+            reminders: {
+                twentFourHours: reminder24Hours,
+                oneHour: reminder1Hour
+            }
+        }
     } catch (error) {
-        logger.log(`error`, `Failed sending a confirmation via email, sms: ${error}`)
+        logger.log(`error`, `Failed sending a confirmation via email or scheduling reminders: ${error}`);
+        throw error;
     }
 }
 
