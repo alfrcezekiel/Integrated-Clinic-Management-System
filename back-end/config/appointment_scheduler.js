@@ -69,6 +69,7 @@ const scheduleAppointmentReminders = async () => {
                             if (minuteUntilAppointment >= 1) {
                                 const result = await scheduleAppointmentsReminder({
                                     ...appointment,
+                                    clinicName: appointment.clinic_name,
                                     reminderTime: minuteUntilAppointment
                                 });
 
