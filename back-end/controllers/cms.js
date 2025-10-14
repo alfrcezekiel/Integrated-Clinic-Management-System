@@ -24,6 +24,7 @@ import {
     sendWelcomeEmail,
     sendPatientAccountStatusNotification
 } from '../services/automate_notification_service.js';
+import { cancelAllRemindersForAppointment } from "../services/automate_notification_service.js";
 
 // controller logic for a global route
 export const CMS = async (req, res) => {
@@ -2867,6 +2868,8 @@ export const cancelBookedAppointment = async (req, res) => {
             console.error(`Failed to send appointment confirmation in controller: ${error}`);
         });
 
+        await cancelAllRemindersForAppointment(appointment_id);
+
         logger.log(`info`, `Appointment cancelled successfully for appointment ID: ${appointment_id}`);
         return res.status(StatusCodes.OK).json({
             cancelledBookedAppoinment: "Cancelled Booked Appointment Successfully",
@@ -4897,7 +4900,8 @@ export const scheduleReminderForUpcomingAppointments = asyncHandler(
                 success: true,
                 message: "Reminders scheduled successfully",
                 data: result,
-                process_appointments: result.process_appointments
+                process_appointments: result.process_appointments,
+                model_message: result.success
             });
         } catch (error) {
             logger.log(`error`, `Failed to schedule reminder for upcoming appointments in controller: ${error}`);

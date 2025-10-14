@@ -214,6 +214,12 @@ export const scheduleAppointmentsReminder = async (appointment, reminderTime = 6
             reminderTimeouts.delete(reminder_id);
         }
 
+        /**
+         * ensures the timeout value if never negative to prevent TimeoutNegativeWarning
+         * if reminder time has passed but appointment is still upcoming, schedule immediate reminder
+         */
+        const safeReminderTime = Math.max(0, reminderTimeFromNow);
+
         const reminderTimeout = setTimeout(async () => {
             try {
                 if (email) {
@@ -226,7 +232,7 @@ export const scheduleAppointmentsReminder = async (appointment, reminderTime = 6
                     const hoursUntil = Math.floor(minutesRemaining / 60);
                     const minutesUntil = minutesRemaining % 60;
                     const timeUntilText = hoursUntil > 0 ?
-                        `${hoursUntil} hour${hoursUntil > 1 ? "s" : ""}${minutesUntil > 0 ? ` and ${minutesUntil} minutes${minutesUntil > 1 ? "s" : ""} left` : ""}`
+                        `${hoursUntil} hour${hoursUntil > 1 ? "s" : ""}${minutesUntil > 0 ? ` and ${minutesUntil} minute${minutesUntil > 1 ? "s" : ""} left` : ""}`
                         : `${minutesUntil} minute${minutesUntil > 1 ? "s" : ""} left`;
 
                     /**
@@ -269,7 +275,7 @@ export const scheduleAppointmentsReminder = async (appointment, reminderTime = 6
             } finally {
                 reminderTimeouts.delete(reminder_id);
             }
-        }, reminderTimeFromNow);
+        }, safeReminderTime);
 
         reminderTimeouts.set(reminder_id, reminderTimeout);
         logger.log(`info`, `Scheduled ${reminderTime} min reminder for upcoming appointment: ${firstName} ${lastName} at ${clinicName} - Appointment Date: (${parseAppointmentDate(appointment.appointmentDate)}) Appointment Time: (${parseAppointmentTime(appointment.preferredTime)}) - ${appointmentID}`);
@@ -308,19 +314,25 @@ export const cancelScheduledReminder = (appointmentId, reminderTime) => {
 /**
  * @function cancels all scheduled reminders for an appointment
  */
-export const cancelAllRemindersForAppointment = (appointmentId) => {
-    let count = 0;
-    for (const [id, timeout] of reminderTimeouts.entries()) {
-        if (id.startsWith(`reminder_${appointmentId}_`)) {
-            clearTimeout(timeout);
-            reminderTimeouts.delete(id);
-            count++;
+export const cancelAllRemindersForAppointment = async (appointmentId) => {
+    try {
+
+        let count = 0;
+        for (const [id, timeout] of reminderTimeouts.entries()) {
+            if (id.startsWith(`reminder_${appointmentId}_`)) {
+                clearTimeout(timeout);
+                reminderTimeouts.delete(id);
+                count++;
+            }
         }
+        if (count > 0) {
+            logger.log('info', `Cancelled ${count} reminders for current booked appointment: ${appointmentId}`);
+        }
+        return count;
+    } catch (error) {
+        logger.log("error", `Failed to cancel all reminders for appointment: ${error}`)
+        throw new Error(`Failed to cancel all reminders for appointment: ${error}`)
     }
-    if (count > 0) {
-        logger.log('info', `Cancelled ${count} reminders for appointment ${appointmentId}`);
-    }
-    return count;
 };
 
 /**

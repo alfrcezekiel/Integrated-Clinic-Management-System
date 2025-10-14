@@ -67,6 +67,7 @@ export const scheduledReminderTemplate = async (appointment) => {
         preferredTime,
         clinicName,
         purposeOfAppointment,
+        status
     } = appointment;
 
     const formattedDate = formatAppointmentDate(appointmentDate);
@@ -108,17 +109,18 @@ export const scheduledReminderTemplate = async (appointment) => {
                     <p>Appointment Date: ${formattedDate}</p>
                     <p>Appointment Time: ${formattedTime}</p>
                     <p>Purpose of Appointment: ${purposeOfAppointment}</p>
+                    <p>Appointment Status: ${status}</p>
                 </div>
                 
                 <p>If you need to reschedule or have any questions, please contact us at your earliest convenience.</p>
                 
                 <p>We look forward to seeing you soon!</p>
                 
-                <p>Best regards,<br>${clinicName || "Clinic Management System"} Team</p>
+                <p>Best regards,<br>${clinicName || "Clinic Management"} Team</p>
             </div>
             <div class="footer">
                 <p>This is an automated message. Please do not reply to this email.</p>
-                <p>© ${new Date().getFullYear()} ${clinicName || "Clinic Management System"}. All rights reserved.</p>
+                <p>© ${new Date().getFullYear()} ${clinicName || "Clinic Management"}. All rights reserved.</p>
             </div>
         </div>
     </body>

@@ -623,6 +623,10 @@ class Clinic {
                 throw new Error("Invalid appointment ID");
             }
 
+            if (!status || typeof status !== "string") {
+                throw new Error("Invalid status");
+            }
+
             const patient_appointment_cols = [
                 "c.clinic_name",
                 "c.clinic_address",
@@ -634,7 +638,8 @@ class Clinic {
                 "pa.preferredTime",
                 "pa.status",
                 "pa.purposeOfAppointment",
-                "pa.appointmentID"
+                "pa.appointmentID",
+                "pa.reminder_sent"
             ]
 
             const retrieveAppointmentQuery = `
@@ -655,12 +660,14 @@ class Clinic {
 
             const query = `
                 UPDATE patientsappointment
-                    SET status = ?
+                    SET status = ?,
+                    reminder_sent = ?
                 WHERE appointmentID = ?;
             `
 
             const value = [
                 status,
+                0,
                 appointmentID
             ]
 
@@ -3498,7 +3505,9 @@ class Clinic {
                 await this.connection.commit();
 
                 return {
-                    process_appointments: rows
+                    process_appointments: rows,
+                    success: true,
+                    message: "Reminders scheduled successfully"
                 };
             } catch (error) {
                 const rollback = await this.connection.rollback();
