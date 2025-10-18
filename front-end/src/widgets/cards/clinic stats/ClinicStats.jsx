@@ -4,7 +4,7 @@ const ClinicStatsCards = () => {
     const clinicStatsData = useClinicStatsData();
     
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4 min-w-[81svw]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 min-w-[81svw] md:min-w-[95svw] lg:min-w-[96svw] xl:min-w-[80svw]">
             {clinicStatsData.map(({label, value, Icon, bgColor, color}, index) => (
                 <div
                     key={index}

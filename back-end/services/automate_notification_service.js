@@ -5,7 +5,7 @@ import cron from "node-cron";
 import logger from "../config/winston.js";
 import {
     automatedEmailNotificationTemplate,
-} from "./automate_email_template";
+} from "./automate_email_template.js";
 import { scheduledReminderTemplate } from "./automate_scheduled_reminder_template.js";
 import { sendWelcomeEmailNotification } from "./welcome_create_account.js";
 import { patientAccountStatusTemplate } from "./patient_account_status_template.js";

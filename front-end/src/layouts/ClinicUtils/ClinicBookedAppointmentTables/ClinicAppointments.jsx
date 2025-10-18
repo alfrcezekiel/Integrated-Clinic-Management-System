@@ -85,6 +85,8 @@ const ClinicAppointments = () => {
                 return "text-black bg-green-200"
             case "Declined":
                 return "text-black bg-red-200"
+            case "Consulted":
+                return "text-black bg-blue-200"
             case "Cancelled":
                 return "text-black bg-yellow-200"
             default:

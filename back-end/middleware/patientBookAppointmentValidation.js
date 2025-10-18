@@ -169,7 +169,7 @@ const validatePatientBookAppointment = [
 
                 // Validate that the preferred time is within the clinic's operating hours
                 if (!isWithInOperatingHours) {
-                    throw new Error(`Appointment time (${formatTo12Hour(normalizedTime)}) is outside clinic operating hours (${formatTo12Hour(clinic_time)} - ${formatTo12Hour(clinic_close_time)})`);
+                    throw new Error(`Appointment time (${formatTo12Hour(normalizedTime)}) is outside business hours (${formatTo12Hour(clinic_time)} - ${formatTo12Hour(clinic_close_time)})`);
                 }
 
                 // Check if the appointment time is already booked

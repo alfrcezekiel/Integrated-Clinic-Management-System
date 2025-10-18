@@ -42,7 +42,7 @@ const validateBookAppointmentInClinic = [
                 throw new Error("Invalid appointment date format.");
             }
 
-            if (appointmentDate.isBefore(currentDate, "day") || appointmentDate.isSame(currentDate, "day")) {
+            if (appointmentDate.isBefore(currentDate, "day")) {
                 throw new Error("Appointment date must not be earlier than the current date");
             } else if (appointmentDate.isAfter(currentDate.add(1, "month"), "day")) {
                 throw new Error("Appointment date must not be later than one month from now");
