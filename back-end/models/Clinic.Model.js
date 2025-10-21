@@ -1025,6 +1025,69 @@ class Clinic {
         }
     }
 
+    /**
+     * method to check if patient has exceeded daily appointment limit (max 3 per day)
+     * */
+    checkDailyAppointmentOfPatientAppointment = modelErrorHandling(
+        async (params) => {
+            this.connection = await conn.getConnection();
+            try {
+                await this.connection.beginTransaction();
+
+                const { email, appointmentDate, patientID } = params;
+
+                if (!email || typeof email !== 'string') {
+                    throw new Error('Invalid email address');
+                }
+
+                if (!appointmentDate || !dayjs(appointmentDate).isValid()) {
+                    throw new Error('Invalid appointment date');
+                }
+
+                // Format the date to YYYY-MM-DD to compare only the date part
+                const formattedDate = dayjs(appointmentDate).format('YYYY-MM-DD');
+                const status = [
+                    "Pending",
+                    "Approved"
+                ];
+
+                const statusPlaceholder = status.map(() => "?").join(", ");
+
+                const query = `
+                    SELECT COUNT(*) as appointmentCount
+                    FROM patientsappointment
+                    WHERE email = ? AND
+                    DATE(appointmentDate) = ?
+                    AND status IN (${statusPlaceholder})
+                    AND patientID = ?
+                    FOR UPDATE
+                `;
+
+                const [rows] = await this.connection.query(query, [
+                    email,
+                    formattedDate,
+                    ...status,
+                    patientID
+                ]);
+
+                await this.connection.commit();
+
+                // Return true if patient has less than 3 appointments for the day
+                return rows[0].appointmentCount < 3;
+
+            } catch (error) {
+                const rollbackQuery = await this.connection.rollback();
+                if (!rollbackQuery) {
+                    logger.log(`error`, `Error rolling back transaction in checking daily appointment limit: ${error}`);
+                }
+                logger.error(`Error checking daily appointment limit: ${error}`);
+                throw error;
+            } finally {
+                this.connection.release();
+            }
+        }
+    );
+
     // method for calculating the total number of pending booked appoinments in specific clinic
     calculateTotalNumberOfPendingBookedAppointments = async (clinicID, bookAppointmentStatus) => {
         const connection = await conn.getConnection();
@@ -1042,7 +1105,7 @@ class Clinic {
                 FROM (
                     SELECT appointmentID FROM patientsappointment
                     WHERE clinic_id = ? 
-                    AND status = ?
+                    AND status IN (${statusPlaceholder})
                     UNION ALL
                     SELECT id FROM clinic_appointments
                     WHERE clinic_id = ?
@@ -4684,6 +4747,149 @@ class Clinic {
             }
         },
         "Validate Previous Appointment Date"
+    )
+
+    /**
+     * @method validates and limit the patient daily book appointment in current day in patient side book appointment
+     */
+    checkDailyBookAppointmentOfPatient = modelErrorHandling(
+        async (params) => {
+            this.connection = await this.conn.getConnection();
+            try {
+                await this.connection.beginTransaction();
+
+                if (!params || typeof params !== "object") {
+                    throw new Error(`Invalid parameters! Check daily book appointment of patient should be an object`);
+                }
+
+                const { patientID, today } = params;
+
+                const patient_id = Number(patientID);
+                const today_value = dayjs(today).format("YYYY-MM-DD");
+
+                if (isNaN(patient_id)) {
+                    throw new Error(`Invalid patient ID! Check daily book appointment of patient should be a number`);
+                }
+
+                if (!today_value || typeof today_value !== "string") {
+                    throw new Error(`Invalid today! Check daily book appointment of patient should be a string`);
+                }
+
+                const appointment_status = [
+                    "Pending",
+                    "Approved"
+                ]
+
+                const placeholders_status = appointment_status.map(() => "?").join(", ");
+
+                const query = `
+                    SELECT COUNT(*) AS appointmentCount
+                    FROM patientsappointment
+                    WHERE patientID = ? 
+                    AND appointmentDate = ? 
+                    AND status IN (${placeholders_status})
+                    FOR UPDATE
+                `;
+
+                const query_values = [
+                    patient_id,
+                    today_value,
+                    ...appointment_status
+                ];
+
+                const [results] = await this.connection.query(query, query_values);
+
+                const appointmentCount = results[0].appointmentCount || 0;
+
+                await this.connection.commit();
+
+                return appointmentCount < 1;
+            } catch (error) {
+                const rollbackQuery = await this.connection.rollback();
+                if (!rollbackQuery) {
+                    logger.log(`error`, `Failed to rollback transaction in check daily book appointment of patient: ${error}`);
+                }
+
+                logger.log(`error`, `Failed to check daily book appointment of patient within current date: ${error}`);
+                throw error;
+            } finally {
+                if (this.connection) {
+                    await this.connection.release();
+                }
+            }
+        },
+        "Check Daily Book Appointment of Patient"
+    )
+
+    /**
+     *  @method counts the number of daily book appointment of patient on specific appointment date
+     */
+    countDailyAppointments = modelErrorHandling(
+        async (params) => {
+            this.connection = await this.conn.getConnection();
+            try {
+                await this.connection.beginTransaction();
+
+                if (!params || typeof params !== "object") {
+                    throw new Error(`Invalid parameters! Count daily appointments should be an object`);
+                }
+
+                const { patientID, appointmentDate } = params;
+
+                const patient_id = Number(patientID);
+                
+                if (isNaN(patient_id)) {
+                    throw new Error(`Invalid patient ID! Count daily appointments should be a number`);
+                }
+
+                if (!appointmentDate || typeof appointmentDate !== "string") {
+                    throw new Error(`Invalid appointment date! Count daily appointments should be a string`);
+                }
+                
+                const appointment_status = [
+                    "Pending",
+                    "Approved"
+                ]
+
+                const status_placeholders = appointment_status.map(() => "?").join(", ")
+
+                const query = `
+                    SELECT COUNT(*) AS appointmentCount
+                    FROM patientsappointment
+                    WHERE patientID = ?
+                    AND DATE(appointmentDate) = ?
+                    AND status IN (${status_placeholders})
+                    FOR UPDATE
+                `;
+
+                const query_values = [
+                    patient_id,
+                    appointmentDate,
+                    ...appointment_status
+                ];
+
+                const [results] = await this.connection.query(query, query_values);
+
+                const count = results[0].appointmentCount || 0;
+
+                await this.connection.commit();
+
+                return count;
+            } catch (error) {
+                const rollbackQuery = await this.connection.rollback();
+                if (!rollbackQuery) {
+                    logger.log(`error`, `Failed to rollback transaction in count daily appointments: ${error}`);
+                }
+
+                logger.log(`error`, `Failed to count daily appointments in patient side book appointment: ${error}`);
+                throw error;
+            } finally {
+                if (this.connection) {
+                    await this.connection.release();
+                }
+            }
+        },
+        "Count Daily Appointments in patient side book appointment"
     )
 }
 

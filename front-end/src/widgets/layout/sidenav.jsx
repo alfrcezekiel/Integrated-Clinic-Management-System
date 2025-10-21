@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { useState, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
@@ -7,7 +7,17 @@ const SideNav = ({ brandName, routes }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [clinicOpen, setClinicOpen] = useState(false);
     const [appointmentOpen, setAppointmentOpen] = useState(false);
-    const isMobile = window.innerWidth <= 768;
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 1280); // xl breakpoint is 1280px in Tailwind
+
+    // Update isMobile state on window resize
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 1280); // xl breakpoint
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const toggleMobileMenu = useCallback(() => {
         setIsOpen(!isOpen);
@@ -35,10 +45,11 @@ const SideNav = ({ brandName, routes }) => {
 
     return (
         <>
-            {/* Mobile menu button */}
+            {/* Mobile menu button - shown on lg screens and below */}
             <button
                 onClick={toggleMobileMenu}
-                className="fixed top-4 left-4 z-50 p-2 rounded-lg bg-white shadow-md md:hidden"
+                className="fixed top-4 left-4 z-50 p-2 rounded-lg bg-white shadow-md lg:block xl:hidden"
+                aria-label="Toggle menu"
             >
                 <div className="w-6 flex flex-col space-y-1.5">
                     <span className={`block h-0.5 bg-gray-600 transition-all duration-200 ${isOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
@@ -49,8 +60,9 @@ const SideNav = ({ brandName, routes }) => {
 
             {/* Sidebar */}
             <div
-                className={`fixed inset-y-0 left-0 z-40 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${isMobile && !isOpen ? '-translate-x-full' : 'translate-x-0'
-                    }`}
+                className={`fixed inset-y-0 left-0 z-40 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${
+                    isMobile ? (isOpen ? 'translate-x-0' : '-translate-x-full') : 'translate-x-0'
+                }`}
             >
                 <div className="flex flex-col h-full overflow-y-auto mt-12">
                     {/* Brand */}
@@ -157,10 +169,10 @@ const SideNav = ({ brandName, routes }) => {
                 </div>
             </div>
 
-            {/* Overlay for mobile */}
+            {/* Overlay for mobile and lg screens when menu is open */}
             {isMobile && isOpen && (
                 <div
-                    className="fixed inset-0 z-30 bg-opacity-50 md:hidden"
+                    className="fixed inset-0 z-30 bg-opacity-50 lg:bg-opacity-30 xl:hidden"
                     onClick={() => setIsOpen(false)}
                 />
             )}

@@ -21,6 +21,7 @@ import {
 import ConfirmAppointmentModal from "./ConfirmBookedAppointment";
 import { useAuthorization } from "../../context/auth/useAuthorization";
 import dayjs from "dayjs";
+import DailyBookAppointmentbox from "../../components/dialog_box/daily_book_appointment_box";
 
 const ClinicCards = () => {
     const [clinics, setClinics] = useState([]);
@@ -53,6 +54,9 @@ const ClinicCards = () => {
     });
     const [confirmedAppointmentData, setConfirmedAppointmentData] = useState(null)
     const [showSuccessConfirmedBookedAppointmentDialogBox, setShowSuccessConfirmedBookedAppointmentDialogBox] = useState(false);
+    const [showDailyLimitDialog, setShowDailyLimitDialog] = useState(false);
+    const [dailyAppointmentCount, setDailyAppointmentCount] = useState(0);
+    const MAX_DAILY_APPOINTMENTS = 2; // Set 2 your daily limit here
 
     const navigate = useNavigate();
     const { user, token } = useAuthorization();
@@ -153,6 +157,47 @@ const ClinicCards = () => {
             return time; // Return original if parsing fails
         }
     };
+
+    /**
+     * @function to check daily book appointment limit per day
+     */
+    const checkDailyAppointmentLimit = useCallback(async (selectedDate) => {
+        try {
+            const dateToCheck = selectedDate ? dayjs(selectedDate).format("YYYY-MM-DD") : dayjs().format("YYYY-MM-DD");
+            const patient_id = user?.sid;
+
+            const response = await CMS.get(`/CMS/cms.api.com/patient/dashboard/appointments/daily-count`, {
+                params: {
+                    patientID: patient_id,
+                    appointmentDate: dateToCheck
+                },
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${tokenContext}`,
+                }
+            })
+
+            if (response.status === 200) {
+                const count = response.data.count;
+                setDailyAppointmentCount(count);    
+
+                return count < MAX_DAILY_APPOINTMENTS;
+            } else {
+                throw new Error(`Failed to check daily appointment limit: ${response.status}`);
+            }
+        } catch (error) {
+            if (error.response.status === 500) {
+                console.error(`Failed to check daily appointment limit: ${error.response.data.message}`);
+            }
+        }
+    }, [tokenContext, user]);
+
+    /**
+     * @function close the daily book appointment limit
+     */
+    const closeDailyBookAppointmentBox = useCallback(async () => {
+        setShowDailyLimitDialog(false);
+    }, []);
 
     // function to retrieve the patient data based on the patiente id to automate the input fields
     const retrievePatientData = useCallback(async (patientID) => {
@@ -277,10 +322,19 @@ const ClinicCards = () => {
             }
         }
     }
+
     // function to handle the booking appointment
     const handleBooking = async (e) => {
+        e.preventDefault();
+
+        // Check daily appointment limit first
+        const canBook = await checkDailyAppointmentLimit(appointmentData.appointmentDate);
+        if (!canBook) {
+            setShowDailyLimitDialog(true);
+            return;
+        }
+
         try {
-            e.preventDefault();
             const payload = {
                 ...appointmentData,
                 appointmentDate: appointmentData.appointmentDate ? dayjs(appointmentData.appointmentDate).format("YYYY-MM-DD") : null,
@@ -512,6 +566,16 @@ const ClinicCards = () => {
                     fieldErrors={fieldErrors}
                     setFieldErrors={setFieldErrors}
                     appointmentID={appointmentID}
+                />
+            )}
+
+            {showDailyLimitDialog && (
+                <DailyBookAppointmentbox
+                    onClose={closeDailyBookAppointmentBox}
+                    patientID={user?.sid}
+                    onOpen={setShowDailyLimitDialog}
+                    dailyAppointmentCount={dailyAppointmentCount}
+                    maxDailyAppointments={MAX_DAILY_APPOINTMENTS}
                 />
             )}
 

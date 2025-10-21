@@ -4711,6 +4711,61 @@ export const autoGenerateMedicalReport = asyncHandler(
 )
 
 /**
+ * @controller Check the daily appointment count for a patient
+ * @route GET /cms.api.com/patient/dashboard/appointments/daily-count
+ * @access Private
+ */
+export const getDailyAppointmentCount = asyncHandler(async (req, res) => {
+    try {
+        const {
+            patientID,
+            appointmentDate
+        } = req.query;
+
+        const patient_id = parseInt(patientID);
+
+        if (isNaN(patient_id)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: 'Patient ID is required'
+            });
+        }
+
+        if (!appointmentDate) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Appointment date is required"
+            })
+        }
+
+        const formattedDate = dayjs(appointmentDate).format("YYYY-MM-DD");
+        if (formattedDate === "Invalid Date") {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid appointment date"
+            })
+        }
+
+        const clinic = new Clinic();
+        const count = await clinic.countDailyAppointments({
+            patientID: patient_id,
+            appointmentDate: formattedDate
+        });
+
+        logger.log(`info`, `Daily appointment count for patient ${patient_id} on ${formattedDate}: ${count}`);
+
+        return res.status(StatusCodes.OK).json({
+            success: true,
+            count: count,
+            message: "Daily appointment count retrieved successfully"
+        });
+    } catch (error) {
+        logger.error(`Error getting daily appointment count: ${error.message}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: 'Failed to get daily appointment count',
+            error: error.message
+        });
+    }
+});
+
+/**
  * @controller controller logic to filter all booked appointment of a patient in patient side
  */
 export const filterAllBookedAppointments = asyncHandler(

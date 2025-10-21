@@ -82,7 +82,8 @@ import {
     searchPendingBookedAppointments,
     searchApprovedBookedAppointments,
     searchDeclinedBookedAppointments,
-    scheduleReminderForUpcomingAppointments
+    scheduleReminderForUpcomingAppointments,
+    getDailyAppointmentCount
 } from "../controllers/cms.js";
 import validateRegister from "../middleware/validation.js";
 import patientsLoginValidation from "../middleware/patientsLoginValidation.js";
@@ -209,6 +210,7 @@ router.post("/clinic-dashboard/consultPatient", consultPatientInClinicDashboard)
 // router for getting the appointment history of the patients in clinic dashboard
 router.get("/clinic-dashboard/getAppointmentHistory/:clinicID", verifyToken, getAppointmentHistoryInClinic);
 
+
 // router for session verification
 router.get("/retrieveSession", requireLogin, getLoggedInUser);
 
@@ -304,7 +306,7 @@ router.get(`/clinicDashboard/calculatedConsultedPatients`, verifyToken, calculat
 
 /**
  * @exports router for calculating the cancelled booked appointment in specific clinic side
- */
+*/
 
 router.get("/clinicDashboard/calculateCancelledBookedAppointments", verifyToken, calculateCancelledBookedAppointments);
 
@@ -379,7 +381,7 @@ router.post("/cms.api.com/logoutRefreshToken", verifyToken, logoutRefreshToken);
 
 /**
  * @exports router to delete pending booked appointment details in clinic side table by filtering the id
- */
+*/
 router.delete("/cms.api.com/clinic/dashboard/deletePendingBookedAppointmentDetails", verifyToken, deletePendingBookedAppointmentDetailsByFindingId);
 
 /**
@@ -416,5 +418,11 @@ router.get("/cms.api.com/patient/dashboard/searchDeclinedBookedAppointments", ve
  * @exports router to test the schedule reminder for upcoming appointments
  */
 router.get("/cms.api.com/patient/dashboard/testUpcomingAppointment", verifyToken, scheduleReminderForUpcomingAppointments);
+
+/**
+ * route for checking daily appointment limit
+*/
+
+router.get("/cms.api.com/patient/dashboard/appointments/daily-count", verifyToken, getDailyAppointmentCount);
 
 export default router;

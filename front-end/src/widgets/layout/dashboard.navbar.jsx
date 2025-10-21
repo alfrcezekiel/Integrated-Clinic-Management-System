@@ -99,7 +99,7 @@ const DashboardNavbar = () => {
                             <FiMenu className="h-6 w-6" />
                         </button>
 
-                        <div className="hidden md:ml-6 md:flex md:items-center space-x-2">
+                        <div className="hidden md:ml-10 md:flex md:items-center space-x-2 lg:ml-8 xl:flex">
                             <nav className="flex" aria-label="Breadcrumb">
                                 <ol className="flex items-center space-x-2">
                                     <li>

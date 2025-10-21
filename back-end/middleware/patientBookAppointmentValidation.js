@@ -3,6 +3,7 @@ import { StatusCodes } from "http-status-codes"
 import conn from "../db/mysql/conn.js"
 import dayjs from 'dayjs';
 import Clinic from '../models/Clinic.Model.js';
+import logger from "../config/winston.js";
 
 // validation for patient book appointment
 const validatePatientBookAppointment = [
@@ -207,6 +208,44 @@ const validatePatientBookAppointment = [
     body("purposeOfAppointment")
         .notEmpty()
         .withMessage("Purpose of appointment is required"),
+    // body("patientID")
+    //     .notEmpty()
+    //     .withMessage("Patient ID is required")
+    //     .custom(async (patientID, { req }) => {
+    //         try {
+    //             const { appointmentDate } = req.body;
+    //             /**
+    //              * Get today's date at midnight
+    //             */
+    //             const MAX_APPOINTMENTS_PER_DAY = 1;
+
+    //             const today = dayjs(appointmentDate).format('YYYY-MM-DD');
+    //             /**
+    //              * Query to count today's appointments for this patient
+    //               */
+    //             const clinic_instance = new Clinic();
+
+    //             /**
+    //              *  instance of clinic class with method name of check daily book appointment of patient
+    //              * particularly in patient side book appointment
+    //              */
+    //             const appointmentCount = await clinic_instance.checkDailyBookAppointmentOfPatient({
+    //                 patientID,
+    //                 today,
+    //             });
+
+    //             if (!appointmentCount) {
+    //                 throw new Error(`You have reached the maximum number of appointments (${MAX_APPOINTMENTS_PER_DAY}) allowed for today. Please try again tomorrow.`);
+    //             }
+
+    //             return true;
+    //         } catch (error) {
+    //             // Log the error for debugging
+    //             logger.log(`error`, `Appointment limit validation error: ${error}`);
+
+    //             throw new Error(error.message || "Failed to validate appointment limit. Please try again later.");
+    //         }
+    //     }),
     (req, res, next) => {
         const errors = validationResult(req);
 
