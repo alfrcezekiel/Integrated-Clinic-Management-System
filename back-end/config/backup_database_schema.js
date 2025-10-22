@@ -9,6 +9,11 @@ import crypto from "crypto"
 import zlib from "zlib"
 import parser from "cron-parser"
 import logger from "./winston.js"
+import {
+    withTimeout,
+    measureExecutionTime
+} from "../utils/timeoutProtection.js"
+
 /**
  * converts __dirname to ES modules
 */
@@ -73,7 +78,7 @@ const resolveBackupDir = () => {
         const distro = getDefaultDistro();
         const user = getCurrentUser();
         return `\\\\wsl$\\${distro}\\home\\${user}\\database_backups\\mysql`;
-    } 
+    }
 
     const user = getCurrentUser();
     return `/home/${user}/database_backups/mysql`;
@@ -298,16 +303,30 @@ export const scheduleBackup = async (schedule = null) => {
     }
 
     cron.schedule(effectiveSchedule, async () => {
-        console.log(`[${new Date().toLocaleString()}] Running schedule database backup`);
-
-        const result = await createBackup();
-        if (result.success) {
-            const deletedCount = await cleanOldBackups();
-            console.log(`Backup completed successfully. Cleaned up ${deletedCount} old backups.`);
-        } else {
-            console.log(`Backup Failed: ${result.message}`);
-        }
-    }, { timezone: "Asia/Manila" })
+        setImmediate(async () => {
+            await measureExecutionTime(
+                async () => {
+                    logger.log(`info`, `[${new Date().toLocaleString()}] Running schedule database backup`);
+        
+                    try {
+                        const result = await createBackup();
+                        if (result.success) {
+                            const deletedCount = await cleanOldBackups();
+                            logger.log(`info`, `Backup completed successfully. Cleaned up ${deletedCount} old backups.`);
+                        } else {
+                            logger.log(`error`, `Backup Failed: ${result.message}`);
+                        }
+                    } catch (error) {
+                        logger.log(`info`, `Failed to run schedule database backup: ${error}`);
+                    }
+                },
+                "Database Backup Process"
+            )
+        });
+    }, {
+        timezone: "Asia/Manila",
+        name: "Database Backup Scheduler"
+    })
 
     logger.log(`info`, `Database backup scheduled to run at: ${effectiveSchedule} - (${new Date().toLocaleString()}) - (${process.env.NODE_ENV || "development"}) - (${nextRun ? `Next Run: ${nextRun.toLocaleString("en-US", { timeZone: "Asia/Manila" })}` : ""})`);
 

@@ -18,11 +18,11 @@ async function createConnection() {
             queueLimit: 0
         });
 
-        logger.log("info", "Server connected successfully!");
+        logger.log(`info`, `MySQL Server connected successfully!`);
 
         return pool;
     } catch (error) {
-        logger.error(`Failed to connect to server: ${error}`);
+        logger.error(`Failed to connect to MySQL server: ${error}`);
     }
 }
 
