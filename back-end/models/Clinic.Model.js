@@ -1105,7 +1105,7 @@ class Clinic {
                 FROM (
                     SELECT appointmentID FROM patientsappointment
                     WHERE clinic_id = ? 
-                    AND status IN (${statusPlaceholder})
+                    AND status = ?
                     UNION ALL
                     SELECT id FROM clinic_appointments
                     WHERE clinic_id = ?

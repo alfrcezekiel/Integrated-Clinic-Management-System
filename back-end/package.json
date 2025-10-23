@@ -4,7 +4,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "bun --watch main.js"
+    "start": "bun --watch main.js",
+    "dev": "bun --watch main.js"
   },
   "keywords": [],
   "author": "",

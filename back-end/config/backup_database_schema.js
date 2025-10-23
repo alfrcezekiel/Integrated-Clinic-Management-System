@@ -307,7 +307,7 @@ export const scheduleBackup = async (schedule = null) => {
             await measureExecutionTime(
                 async () => {
                     logger.log(`info`, `[${new Date().toLocaleString()}] Running schedule database backup`);
-        
+
                     try {
                         const result = await createBackup();
                         if (result.success) {

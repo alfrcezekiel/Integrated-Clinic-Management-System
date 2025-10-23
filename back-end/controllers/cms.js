@@ -3071,7 +3071,11 @@ export const calculateTotalBookedAppointmentsOfClinic = async (req, res) => {
     }
 }
 
-// controller logic for calculating the total number of pending booked appointments in specific clinic
+/**
+ * @function controller logic for calculating the total number of pending booked appointments in specific clinic
+ * @route GET /clinicDashboard/calculatePendingBookedAppointments
+ * @access Private
+ */
 export const calculatePendingBookedAppointments = async (req, res) => {
     try {
         const { clinicID } = req.query;
@@ -3100,6 +3104,8 @@ export const calculatePendingBookedAppointments = async (req, res) => {
                 message: "No pending booked appointments found for this clinic"
             });
         }
+
+        logger.log(`info`, `Total pending booked appointments in clinic side: ${pending_booked_appointments_result[0].total_pending_booked_appointments}`);
 
         return res.status(StatusCodes.OK).json({
             totalPendingBookedAppointments: pending_booked_appointments_result[0].total_pending_booked_appointments
