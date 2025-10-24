@@ -72,7 +72,7 @@ const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-app.set("port", process.env.PORT);
+// app.set("port", process.env.PORT);
 // app.set("host", process.env.SERVER_HOST);
 // app.set("baseURL", process.env.SERVER_BASE_URL)
 
@@ -159,8 +159,9 @@ const startServer = async () => {
             await initializeScheduler();
         }
 
-        app.listen(app.get("port"), () => {
-            logger.log(`info`, `Server running and listening on port ${app.get("port")}`);
+        const PORT = process.env.PORT || 3000;
+        app.listen(PORT, () => {
+            logger.log(`info`, `Server running and listening on port ${PORT}`);
         })
     } catch (error) {
         logger.error(`Error starting server: ${error}`);
