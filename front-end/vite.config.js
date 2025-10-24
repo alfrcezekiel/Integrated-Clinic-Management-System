@@ -5,6 +5,9 @@ import path from "path"
 import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const VITE_ENV = import.meta.env.VITE_ENV || 'development'
+const BASE_API_URL = import.meta.env.VITE_BASE_API_URL || 'http://localhost:7506'
+
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -16,9 +19,9 @@ export default defineConfig({
     historyApiFallback: true,
     proxy: {
       "/CMS":{
-        target: import.meta.env.VITE_ENV === "production" ? import.meta.env.VITE_BASE_API_URL : "http://localhost:7506",
+        target: VITE_ENV === "production" ? BASE_API_URL : "http://localhost:7506",
         changeOrigin: true,
-        secure: import.meta.env.VITE_ENV === "production",
+        secure: VITE_ENV === "production",
         ws: true,
         rewrite: (path) => path.replace(/^\/CMS/, "")
       }
