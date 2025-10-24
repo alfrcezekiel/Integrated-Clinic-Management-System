@@ -16,9 +16,9 @@ export default defineConfig({
     historyApiFallback: true,
     proxy: {
       "/CMS":{
-        target: "http://localhost:7506",
+        target: import.meta.env.VITE_ENV === "production" ? import.meta.env.VITE_BASE_API_URL : "http://localhost:7506",
         changeOrigin: true,
-        secure: false,
+        secure: import.meta.env.VITE_ENV === "production",
         ws: true,
         rewrite: (path) => path.replace(/^\/CMS/, "")
       }

@@ -2,7 +2,7 @@ import axios from "axios";
 
 /** create an axios instance named CMS */
 const CMS = axios.create({
-    baseURL: "http://localhost:7506",
+    baseURL: import.meta.env.VITE_ENV === "production" ? import.meta.env.VITE_BASE_API_URL : "http://localhost:7506",
     timeout: 5000,
     headers: {
         "Content-Type": "application/json",

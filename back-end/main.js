@@ -83,7 +83,7 @@ app.use(session({
     saveUninitialized: false,
     rolling: true,
     cookie: {
-        secure: false,
+        secure: process.env.NODE_ENV === "production",
         httpOnly: true,
         maxAge: 1000 * 60 * 60 * 24,
         sameSite: true
@@ -114,7 +114,7 @@ app.use(requestLogger);
 app.use("/uploads/clinic_images", (req, res, next) => {
     res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
     res.setHeader("Cross-Origin-Opener-Policy", "cross-origin");
-    res.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
+    res.setHeader("Access-Control-Allow-Origin", process.env.NODE_ENV === "production" ? process.env.VITE_BASE_CLIENT_URL : "http://localhost:5173");
     next();
 })
 
