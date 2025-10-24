@@ -72,7 +72,7 @@ const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-app.set("port", process.env.SERVER_PORT);
+app.set("port", process.env.PORT);
 app.set("host", process.env.SERVER_HOST);
 app.set("baseURL", process.env.SERVER_BASE_URL)
 
@@ -122,7 +122,7 @@ app.use("/uploads/clinic_images", (req, res, next) => {
 const clinicImagesPath = path.join(__dirname, "uploads/clinic_images");
 app.use("/uploads/clinic_images", express.static(clinicImagesPath));
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: process.env.NODE_ENV === "production" ? process.env.VITE_BASE_CLIENT_URL: "http://localhost:5173",
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"]
