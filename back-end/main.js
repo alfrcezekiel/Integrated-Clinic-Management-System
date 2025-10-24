@@ -73,8 +73,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 app.set("port", process.env.PORT);
-app.set("host", process.env.SERVER_HOST);
-app.set("baseURL", process.env.SERVER_BASE_URL)
+// app.set("host", process.env.SERVER_HOST);
+// app.set("baseURL", process.env.SERVER_BASE_URL)
 
 // session configuration
 app.use(session({
@@ -159,8 +159,8 @@ const startServer = async () => {
             await initializeScheduler();
         }
 
-        app.listen(app.get("port"), app.get("host"), () => {
-            logger.log(`info`, `Server is running on http://${app.get("host")}:${app.get("port")}${app.get("baseURL")}`);
+        app.listen(app.get("port"), () => {
+            logger.log(`info`, `Server running and listening on port ${app.get("port")}`);
         })
     } catch (error) {
         logger.error(`Error starting server: ${error}`);

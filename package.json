@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "cross-env concurrently -n BACKEND,FRONTEND -c blue,green \"bun run server\" \"bun run client\"",
-    "server" : "cd \"back-end\" && bun start",
+    "server" : "cd \"back-end\" && bun dev",
     "client" : "cd \"front-end\" && bun dev"
   },
   "dependencies": {
