@@ -73,8 +73,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // app.set("port", process.env.PORT);
-// app.set("host", process.env.SERVER_HOST);
-// app.set("baseURL", process.env.SERVER_BASE_URL)
+app.set("host", process.env.SERVER_HOST);
+app.set("baseURL", process.env.SERVER_BASE_URL)
 
 // session configuration
 app.use(session({
@@ -83,10 +83,10 @@ app.use(session({
     saveUninitialized: false,
     rolling: true,
     cookie: {
-        secure: process.env.NODE_ENV === "production",
+        secure: false,
         httpOnly: true,
         maxAge: 1000 * 60 * 60 * 24,
-        sameSite: true
+        sameSite: "lax"
     },
 }))
 app.use(express.json());
@@ -114,19 +114,25 @@ app.use(requestLogger);
 app.use("/uploads/clinic_images", (req, res, next) => {
     res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
     res.setHeader("Cross-Origin-Opener-Policy", "cross-origin");
-    res.setHeader("Access-Control-Allow-Origin", process.env.NODE_ENV === "production" ? process.env.VITE_BASE_CLIENT_URL : "http://localhost:5173");
+    res.setHeader("Access-Control-Allow-Origin", process.env.VITE_BASE_CLIENT_URL || "http://localhost:5173");
     next();
 })
 
 // Ensure the directory exists before serving it as static content
 const clinicImagesPath = path.join(__dirname, "uploads/clinic_images");
 app.use("/uploads/clinic_images", express.static(clinicImagesPath));
-app.use(cors({
-    origin: process.env.NODE_ENV === "production" ? process.env.VITE_BASE_CLIENT_URL: "http://localhost:5173",
+
+const corsOptions = {
+    origin: [
+        process.env.VITE_BASE_CLIENT_URL,
+        "http://localhost:5173"
+    ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"]
-}))
+}
+
+app.use(cors(corsOptions));
 
 const medicalReportPath = path.join(__dirname, "uploads/medical_reports");
 app.use("/uploads/medical_reports", express.static(medicalReportPath));
@@ -160,8 +166,8 @@ const startServer = async () => {
         }
 
         const PORT = process.env.PORT || 3000;
-        app.listen(PORT, () => {
-            logger.log(`info`, `Server running and listening on port ${PORT}`);
+        app.listen(PORT, app.get("host"), () => {
+            logger.log(`info`, `Server running in http://${app.get("host")}:${PORT}${app.get("baseURL")}`);
         })
     } catch (error) {
         logger.error(`Error starting server: ${error}`);

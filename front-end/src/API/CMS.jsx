@@ -1,8 +1,9 @@
 import axios from "axios";
+import config from "./config.js"
 
 /** create an axios instance named CMS */
 const CMS = axios.create({
-    baseURL: import.meta.env.VITE_ENV === "production" ? import.meta.env.VITE_BASE_API_URL : "http://localhost:7506",
+    baseURL: config.api.baseURL,
     timeout: 5000,
     headers: {
         "Content-Type": "application/json",
@@ -39,19 +40,19 @@ const processQueue = (error, token = null) => {
 
 CMS.interceptors.response.use((response) => response,
     async (error) => {
-        const { config, response} = error;
+        const { config, response } = error;
 
         const originalRequest = config;
-        if(response && response.status === 401 && !originalRequest._retry) {
-            if(isRefreshing){
+        if (response && response.status === 401 && !originalRequest._retry) {
+            if (isRefreshing) {
                 return new Promise((resolve, reject) => {
-                    failedQueue.push({resolve, reject})
+                    failedQueue.push({ resolve, reject })
                 })
-                .then((token) => {
-                    originalRequest.headers.Authorization = `Bearer ${token}`;
-                    return CMS(originalRequest);
-                })
-                .catch((error) => Promise.reject(error));
+                    .then((token) => {
+                        originalRequest.headers.Authorization = `Bearer ${token}`;
+                        return CMS(originalRequest);
+                    })
+                    .catch((error) => Promise.reject(error));
             }
 
             originalRequest._retry = true;
@@ -62,21 +63,21 @@ CMS.interceptors.response.use((response) => response,
                     withCredentials: true,
                 });
 
-                if(response.status === 401 && refreshTokenResponse.status === 200) {
+                if (response.status === 401 && refreshTokenResponse.status === 200) {
                     const newAccessToken = refreshTokenResponse.data.token;
                     localStorage.setItem("authToken", newAccessToken);
                     originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-                    
+
                     // Process the queue with the new token
                     processQueue(null, newAccessToken);
-                    
+
                     return CMS(originalRequest);
-                } else {    
+                } else {
                     // If the refresh token request fails, reject the queue
                     processQueue(new Error("Refresh token request failed"), null);
                     return Promise.reject(new Error("Refresh token request failed"));
                 }
-            } catch (refreshTokenError)  {
+            } catch (refreshTokenError) {
                 isRefreshing = false;
                 processQueue(refreshTokenError, null);
                 localStorage.removeItem("authToken");
