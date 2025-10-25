@@ -86,7 +86,7 @@ const AdminRegisterationAccount = () => {
                 confirmPassword: adminRegistrationFormData.confirmPassword
             }
 
-            const response = await CMS.post("/CMS/adminDashboard/createAdminAccount", payload, {
+            const response = await CMS.post("/adminDashboard/createAdminAccount", payload, {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${tokenContext}`,

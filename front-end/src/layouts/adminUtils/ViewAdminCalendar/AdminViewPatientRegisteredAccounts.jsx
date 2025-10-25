@@ -30,7 +30,7 @@ const AdminViewPatientRegisteredAccountCalendar = () => {
   useEffect(() => {
     const retrievedPatientsRegisteredAccounts = async () => {
       try {
-        const response = await CMS.get("/CMS/admin-dashboard/registeredPatientAccount", {
+        const response = await CMS.get("/admin-dashboard/registeredPatientAccount", {
           headers: {
             "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
             "Content-Type": "application/json"

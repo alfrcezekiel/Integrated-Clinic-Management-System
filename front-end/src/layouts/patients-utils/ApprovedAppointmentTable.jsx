@@ -76,7 +76,7 @@ const ApprovedAppointmentsTable = () => {
 
             setIsLoading(true);
             try {
-                const response = await CMS.get(`/CMS/patients-dashboard/getPatientApprovedStatus/${patientEmail}`, {
+                const response = await CMS.get(`/patients-dashboard/getPatientApprovedStatus/${patientEmail}`, {
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${tokenContext}`,
@@ -115,7 +115,7 @@ const ApprovedAppointmentsTable = () => {
         }
 
         try {
-            const response = await CMS.get(`/CMS/cms.api.com/patient/dashboard/searchedApprovedBookedAppointments`, {
+            const response = await CMS.get(`/cms.api.com/patient/dashboard/searchedApprovedBookedAppointments`, {
                 params: {
                     search: searchQuery,
                     email: patientEmail,

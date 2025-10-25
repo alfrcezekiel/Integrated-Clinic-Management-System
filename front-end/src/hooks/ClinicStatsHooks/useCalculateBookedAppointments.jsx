@@ -22,7 +22,7 @@ const CalculateBookedAppointments = () => {
                     return;
                 }
 
-                const response = await CMS.get(`/CMS/clinicDashboard/calculateTotalBookedAppointments`, {
+                const response = await CMS.get(`/clinicDashboard/calculateTotalBookedAppointments`, {
                     params: {
                         clinicID: clinic_id
                     }

@@ -125,7 +125,7 @@ const ViewClinicDetails = () => {
                 })
             })
 
-            const response = await CMS.post(`CMS/admin-dashboard/submittedConsultationQuestionnaire`, { responses }, {
+            const response = await CMS.post(`/admin-dashboard/submittedConsultationQuestionnaire`, { responses }, {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${tokenContext}`

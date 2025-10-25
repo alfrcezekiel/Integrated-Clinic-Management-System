@@ -120,7 +120,7 @@ function AdminLoginPage() {
             removeLocalStorage("authToken");
             removeLocalStorage("userData");
 
-            const response = await CMS.post("/CMS/adminAccount", adminLoginFormData, {
+            const response = await CMS.post("/adminAccount", adminLoginFormData, {
                 headers: {
                     "Content-Type": "application/json",
                 },

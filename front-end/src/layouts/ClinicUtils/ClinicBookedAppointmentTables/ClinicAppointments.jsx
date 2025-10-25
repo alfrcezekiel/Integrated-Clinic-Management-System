@@ -40,7 +40,7 @@ const ClinicAppointments = () => {
                     return;
                 }
 
-                const response = await CMS.get(`/CMS/clinicDashboard/clinicBookedAppointments/${clinic_id}`, {
+                const response = await CMS.get(`/clinicDashboard/clinicBookedAppointments/${clinic_id}`, {
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${tokenContext}`
@@ -107,7 +107,7 @@ const ClinicAppointments = () => {
                 return;
             }
 
-            const response = await CMS.delete(`/CMS/cms.api.com/clinic/dashboard/deleteBookedAppointmentInClinicSideTable`, {
+            const response = await CMS.delete(`/cms.api.com/clinic/dashboard/deleteBookedAppointmentInClinicSideTable`, {
                 params: {
                     bookedAppointmentID: selectedBookedAppointment.id
                 }

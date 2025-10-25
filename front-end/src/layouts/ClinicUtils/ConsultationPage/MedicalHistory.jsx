@@ -55,7 +55,7 @@ const MedicalHistoryStepper = ({ patientFormData, handleChange, fieldErrors, set
 
         const retrievedMedicalHistoryQuestions = async () => {
             try {
-                const response = await CMS.get(`CMS/clinic-dashboard/retrievedMedicalHistoryConsultationQuestionnaires/${clinicID}`, {
+                const response = await CMS.get(`/clinic-dashboard/retrievedMedicalHistoryConsultationQuestionnaires/${clinicID}`, {
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${tokenContext}`

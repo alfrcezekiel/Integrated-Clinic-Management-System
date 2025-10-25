@@ -59,7 +59,7 @@ CMS.interceptors.response.use((response) => response,
             isRefreshing = true;
 
             try {
-                const refreshTokenResponse = await CMS.get(`/CMS/refreshAccessToken`, {
+                const refreshTokenResponse = await CMS.get(`/refreshAccessToken`, {
                     withCredentials: true,
                 });
 

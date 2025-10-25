@@ -82,7 +82,7 @@ const DeclinedAppointmentStatusTable = () => {
         }
 
         try {
-            const response = await CMS.get(`/CMS/cms.api.com/patient/dashboard/searchDeclinedBookedAppointments`, {
+            const response = await CMS.get(`/cms.api.com/patient/dashboard/searchDeclinedBookedAppointments`, {
                 params: {
                     search: searchQuery,
                     email: patientEmail,
@@ -154,7 +154,7 @@ const DeclinedAppointmentStatusTable = () => {
             try {
                 setIsLoading(true)
 
-                const response = await CMS.get(`/CMS/patients-dashboard/getPatientDeclinedStatus/${patientEmail}`, {
+                const response = await CMS.get(`/patients-dashboard/getPatientDeclinedStatus/${patientEmail}`, {
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${tokenContext}`,

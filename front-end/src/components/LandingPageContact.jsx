@@ -33,7 +33,7 @@ const LandingPageContact = () => {
     const handleContactMessage = async (e) => {
         e.preventDefault();
         try {
-            const response = await CMS.post("/CMS/contactUs", contactFormData, {
+            const response = await CMS.post("/contactUs", contactFormData, {
                 headers: {
                     "Content-Type": "application/json"
                 }

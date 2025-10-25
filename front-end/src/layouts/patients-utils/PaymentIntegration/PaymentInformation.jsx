@@ -50,7 +50,7 @@ const PaymentInformationDialog = ({ open, onBack, onNextStep }) => {
 
                 if (!retrievePatientID) return;
 
-                const response = await CMS.get(`/CMS/patients-dashboard/retrievedPatientDetails/${retrievePatientID}`, {
+                const response = await CMS.get(`/patients-dashboard/retrievedPatientDetails/${retrievePatientID}`, {
                     headers: {
                         "Content-Type": "application/json",
                     }
@@ -140,7 +140,7 @@ const PaymentInformationDialog = ({ open, onBack, onNextStep }) => {
                 });
             }
 
-            const response = await CMS.post(`CMS/patients-dashboard/payment`, payload, {
+            const response = await CMS.post(`/patients-dashboard/payment`, payload, {
                 headers: {
                     "Content-Type": "application/json",
                 }

@@ -113,7 +113,7 @@ const DoctorsDashboard = () => {
         // function to retrieve the clinic session data after logged in
         const fetchUserSession = async () => {
             try {
-                const response = await CMS.get("CMS/retrieveSession", {
+                const response = await CMS.get("/retrieveSession", {
                     withCredentials: true,
                     headers: {
                         "Content-Type": "application/json",
@@ -139,7 +139,7 @@ const DoctorsDashboard = () => {
         // function to confirm the verification token
         const confirmedTokenVerification = async () => {
             try {
-                const response = await CMS.get("/CMS/confirmVerificationToken", {
+                const response = await CMS.get("/confirmVerificationToken", {
                     withCredentials: true,
                     headers: {
                         "Content-Type": "application/json",
@@ -173,7 +173,7 @@ const DoctorsDashboard = () => {
             const MAX_RETRIES = 1
             const RETRY_DELAYS = 1000;
             try {
-                const refreshResponse = await CMS.get(`CMS/refreshAccessToken`, {
+                const refreshResponse = await CMS.get(`/refreshAccessToken`, {
                     withCredentials: true,
                     headers: {
                         "Cache-Control": "no-cache",

@@ -48,7 +48,7 @@ export const AuthorizationProvider = ({ children }) => {
      */
     const logout = async () => {
         try {
-            await CMS.post(`/CMS/cms.api.com/logoutRefreshToken`, {}, {
+            await CMS.post(`/cms.api.com/logoutRefreshToken`, {}, {
                 withCredentials: true,
                 headers: {
                     "Content-Type": "application/json",

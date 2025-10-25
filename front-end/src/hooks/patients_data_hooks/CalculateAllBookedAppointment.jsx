@@ -19,7 +19,7 @@ const CalculateAllBookedAppointments = () => {
                     return;
                 }
 
-                const response = await CMS.get(`/CMS/patient/dashboard/calculateAllBookedAppointments`, {
+                const response = await CMS.get(`/patient/dashboard/calculateAllBookedAppointments`, {
                     params: {
                         patientEmail: patientEmail
                     }

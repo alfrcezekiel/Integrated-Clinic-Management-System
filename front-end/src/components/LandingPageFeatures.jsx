@@ -41,7 +41,7 @@ const LandingPageFeatures = () => {
         });
 
         const retrieveDataFeatures = async () => {
-            const response = await CMS.get("/CMS");
+            const response = await CMS.get("/");
 
             if (!response.data || !response.data.featuresTitle || !response.data.ehrText || !response.data.appointmentSchedulingText || !response.data.paymentIntegrationText || !response.data.inventoryText) {
                 throw new Error("No retrieved data features in server");

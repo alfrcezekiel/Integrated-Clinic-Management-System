@@ -20,7 +20,7 @@ const CalculateConsultedPatients = () => {
                     return;
                 }
 
-                const response = await CMS.get(`/CMS/clinicDashboard/calculatedConsultedPatients`, {
+                const response = await CMS.get(`/clinicDashboard/calculatedConsultedPatients`, {
                     params: {
                         clinicID: clinic_id
                     }

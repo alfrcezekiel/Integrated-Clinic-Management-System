@@ -195,7 +195,7 @@ const ModifyClinicBookedAppointment = () => {
                 appointmentTime: modifyBookedAppointmentDetails.appointmentTime ? modifyBookedAppointmentDetails.appointmentTime : null
             }
 
-            const response = await CMS.put("/CMS/cms.api.com/clinic/dashboard/modifyBookedAppointmentDetails", payload, {
+            const response = await CMS.put("/cms.api.com/clinic/dashboard/modifyBookedAppointmentDetails", payload, {
                 params: {
                     bookedAppointmentID: bookedAppointment.id
                 }

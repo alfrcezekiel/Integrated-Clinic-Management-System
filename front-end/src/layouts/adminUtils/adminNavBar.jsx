@@ -36,7 +36,7 @@ const AdminDashboardNavbar = () => {
 
     const handleLogoutConfirm = async () => {
         try {
-            const response = await CMS.get("/CMS/admin-dashboard/logout", {
+            const response = await CMS.get("/admin-dashboard/logout", {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${tokenContext}`,

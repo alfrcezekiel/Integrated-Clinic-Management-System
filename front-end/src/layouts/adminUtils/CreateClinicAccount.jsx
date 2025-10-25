@@ -232,7 +232,7 @@ const CreateClinicAccount = () => {
             formData.append("ltoFile", clinicLtoFile);
             formData.append("adminID", clinic_id)
 
-            const response = await CMS.post("/CMS/adminDashboard/createClinicAccount", formData, {
+            const response = await CMS.post("/adminDashboard/createClinicAccount", formData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                     "Authorization": `Bearer ${tokenContext}`,

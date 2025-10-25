@@ -54,7 +54,7 @@ const ClinicAssessmentStepper = ({ patientFormData, handleChange, fieldErrors, s
                     setLoading(false);
                 }
                 
-                const response = await CMS.get(`CMS/clinic-dashboard/retrieveClinicalAssessmentQuestionnaires/${clinicID}`, {
+                const response = await CMS.get(`/clinic-dashboard/retrieveClinicalAssessmentQuestionnaires/${clinicID}`, {
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${tokenContext}`

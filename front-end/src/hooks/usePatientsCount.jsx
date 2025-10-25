@@ -7,7 +7,7 @@ function PatientsCount() {
     useEffect(() => {
         const retrievePatientsData = async () => {
             try {
-                const response = await CMS.get("/CMS/patientsDashboard", {
+                const response = await CMS.get("/patientsDashboard", {
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${localStorage.getItem("authToken")}`,

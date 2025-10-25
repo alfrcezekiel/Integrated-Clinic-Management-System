@@ -144,7 +144,7 @@ const RegisterPatientsAccountTable = () => {
         try {
             e.preventDefault();
 
-            const response = await CMS.put(`/CMS/admin-dashboard/updateRegisteredPatientAccount/${selectedPatient.patientID}`, {
+            const response = await CMS.put(`/admin-dashboard/updateRegisteredPatientAccount/${selectedPatient.patientID}`, {
                 ...selectedPatient,
                 dateOfBirth: selectedPatient.dateOfBirth ? dayjs(selectedPatient.dateOfBirth).format("YYYY-MM-DD") : null
             }, {
@@ -178,7 +178,7 @@ const RegisterPatientsAccountTable = () => {
     // arrow function to retrieved the registered patients accounts
     const retrievedPatientsAccountData = async () => {
         try {
-            const response = await CMS.get("/CMS/admin-dashboard/registeredPatientAccount", {
+            const response = await CMS.get("/admin-dashboard/registeredPatientAccount", {
                 headers: {
                     "Content-Type":"application/json",
                     "Authorization": `Bearer ${localStorage.getItem("authToken")}`
@@ -206,7 +206,7 @@ const RegisterPatientsAccountTable = () => {
     // function to handle the deletion of patient registerd account
     const handleConfirmDeletePatientRegisteredAccount = async () => {
         try {
-            const response = await CMS.delete(`CMS/admin-dashboard/deleteRegisteredPatientAccount/${selectedPatient.patientID}`, {
+            const response = await CMS.delete(`/admin-dashboard/deleteRegisteredPatientAccount/${selectedPatient.patientID}`, {
                 headers: {
                     "Content-Type":"application/json",
                     "Authorization": `Bearer ${localStorage.getItem("authToken")}`

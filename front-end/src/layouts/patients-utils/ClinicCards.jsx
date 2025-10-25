@@ -75,7 +75,7 @@ const ClinicCards = () => {
         const searchFilterClinics = async () => {
             try {
 
-                const response = await CMS.get(`/CMS/patients-dashboard/filter_search`, {
+                const response = await CMS.get(`/patients-dashboard/filter_search`, {
                     params: {
                         clinicName: searchQuery,
                         clinicType: searchQuery,
@@ -166,7 +166,7 @@ const ClinicCards = () => {
             const dateToCheck = selectedDate ? dayjs(selectedDate).format("YYYY-MM-DD") : dayjs().format("YYYY-MM-DD");
             const patient_id = user?.sid;
 
-            const response = await CMS.get(`/CMS/cms.api.com/patient/dashboard/appointments/daily-count`, {
+            const response = await CMS.get(`/cms.api.com/patient/dashboard/appointments/daily-count`, {
                 params: {
                     patientID: patient_id,
                     appointmentDate: dateToCheck
@@ -202,7 +202,7 @@ const ClinicCards = () => {
     // function to retrieve the patient data based on the patiente id to automate the input fields
     const retrievePatientData = useCallback(async (patientID) => {
         try {
-            const response = await CMS.get(`/CMS/patientsDashboard/getBookedAppointments/${patientID}`, {
+            const response = await CMS.get(`/patientsDashboard/getBookedAppointments/${patientID}`, {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${tokenContext}`,
@@ -229,7 +229,7 @@ const ClinicCards = () => {
     useEffect(() => {
         const fetchClinics = async () => {
             try {
-                const response = await CMS.get("/CMS/admin-dashboard/clinics", {
+                const response = await CMS.get("/admin-dashboard/clinics", {
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${tokenContext}`,
@@ -342,7 +342,7 @@ const ClinicCards = () => {
                 patientID: appointmentID
             }
 
-            const response = await CMS.post("/CMS/patientsDashboard/patientsBookedAppointments", payload, {
+            const response = await CMS.post("/patientsDashboard/patientsBookedAppointments", payload, {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${tokenContext}`,
@@ -397,7 +397,7 @@ const ClinicCards = () => {
     const handleCallbackCloseConfirmedBookedAppointmentModal = async (appointmentID) => {
         // setShowConfirmedBookAppointmentModal(false);
         try {
-            const response = await CMS.put(`/CMS/patients-dashboard/cancelBookedAppointment/${appointmentID}`, {
+            const response = await CMS.put(`/patients-dashboard/cancelBookedAppointment/${appointmentID}`, {
                 headers: {
                     "Authorization": `Bearer ${tokenContext}`,
                     "Content-Type": "application/json"

@@ -151,7 +151,7 @@ const PatientsRegistrationPortal = () => {
                 ...formRegistrationPatientsData,
                 dateOfBirth: formRegistrationPatientsData.dateOfBirth ? dayjs(formRegistrationPatientsData.dateOfBirth).format("YYYY-MM-DD") : null,
             }
-            const response = await CMS.post("/CMS/registerPatientsAccount", payload, {
+            const response = await CMS.post("/registerPatientsAccount", payload, {
                 headers: {
                     "Content-Type": "application/json",
                 },

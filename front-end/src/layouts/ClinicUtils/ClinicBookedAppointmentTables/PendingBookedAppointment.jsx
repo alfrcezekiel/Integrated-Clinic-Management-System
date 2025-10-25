@@ -40,7 +40,7 @@ const PendingBookedAppointment = () => {
                     console.warn("Token is not available in context state or local storage.");
                 }
 
-                const response = await CMS.get(`/CMS/clinicDashboard/clinic/retrievePendingBookedAppointments`, {
+                const response = await CMS.get(`/clinicDashboard/clinic/retrievePendingBookedAppointments`, {
                     params: {
                         clinicID: clinic_id
                     }
@@ -156,7 +156,7 @@ const PendingBookedAppointment = () => {
                 return;
             }
 
-            const response = await CMS.delete(`/CMS/cms.api.com/clinic/dashboard/deletePendingBookedAppointmentDetails`, {
+            const response = await CMS.delete(`/cms.api.com/clinic/dashboard/deletePendingBookedAppointmentDetails`, {
                 params: {
                     pendingBookedAppointmentID: selectedBookedAppointment.id
                 },

@@ -51,7 +51,7 @@ const DashboardNavbar = () => {
         }
 
         try {
-            const response = await CMS.get("/CMS/patientsDashboard/logout", {
+            const response = await CMS.get("/patientsDashboard/logout", {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${tokenContext}`,

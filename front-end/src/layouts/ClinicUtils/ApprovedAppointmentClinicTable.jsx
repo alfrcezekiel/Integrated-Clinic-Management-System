@@ -94,7 +94,7 @@ const ApprovedAppointmentClinicTable = () => {
     useEffect(() => {
         const retrieveAppoinmentApprovedStatus = async () => {
             try {
-                const response = await CMS.get(`/CMS/doctors-dashboard/getPatientApprovedStatus/${clinicID}`, {
+                const response = await CMS.get(`/doctors-dashboard/getPatientApprovedStatus/${clinicID}`, {
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${tokenContext}`,

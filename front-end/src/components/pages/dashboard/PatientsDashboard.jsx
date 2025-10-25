@@ -130,7 +130,7 @@ const PatientsDashboard = () => {
 
         const fetchUserSession = async () => {
             try {
-                const response = await CMS.get("CMS/retrieveSession", {
+                const response = await CMS.get("/retrieveSession", {
                     withCredentials: true,
                     headers: {
                         "Content-Type": "application/json",
@@ -156,7 +156,7 @@ const PatientsDashboard = () => {
 
         const confirmTokenVerification = async () => {
             try {
-                const response = await CMS.get("/CMS/confirmVerificationToken", {
+                const response = await CMS.get("/confirmVerificationToken", {
                     withCredentials: true,
                     headers: {
                         "Content-Type": "application/json",
@@ -191,7 +191,7 @@ const PatientsDashboard = () => {
             const RETRY_DELAY = 1000;
             try {
 
-                const refreshResponse = await CMS.get(`CMS/refreshAccessToken`, {
+                const refreshResponse = await CMS.get(`/refreshAccessToken`, {
                     withCredentials: true,
                     headers: {
                         "Cache-Control": "no-cache",

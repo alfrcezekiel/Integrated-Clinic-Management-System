@@ -50,7 +50,7 @@ const LandingPageHeader = () => {
 
         const retrieveWhatWeServeTitle = async () => {
             try {
-                const response = await CMS.get("/CMS");
+                const response = await CMS.get("/");
                 if (!response.data?.whatWeServeTitle) {
                     throw new Error("No retrieved data what we serve title");
                 }

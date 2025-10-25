@@ -52,7 +52,7 @@ const ConfirmPaymentDialogBox = ({ open, onClose, onNextStep }) => {
                     return;
                 }
     
-                const response = await CMS.get(`/CMS/patients-dashboard/retrievedConfirmedPaymentDetails/${patientID}`, {
+                const response = await CMS.get(`/patients-dashboard/retrievedConfirmedPaymentDetails/${patientID}`, {
                     headers: {
                         "Content-Type": "application/json",
                     }

@@ -24,7 +24,7 @@ const CalculatePendingBookedAppointments = () => {
                     return;
                 }
 
-                const response = await CMS.get(`/CMS/patient/dashboard/calculatePendingBookedAppointments`, {
+                const response = await CMS.get(`/patient/dashboard/calculatePendingBookedAppointments`, {
                     params: {
                         patientEmail: patientEmail
                     }

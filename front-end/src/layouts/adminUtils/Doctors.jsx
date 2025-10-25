@@ -91,7 +91,7 @@ const AddDoctor = () => {
     useEffect(() => {
         const retrieveListsOfDoctors = async () => {
             try {
-                const response = await CMS.get("/CMS/admin-dashboard/listOfDoctors", {
+                const response = await CMS.get("/admin-dashboard/listOfDoctors", {
                     headers: {
                         "Content-Type": "application/json",
                     },
@@ -116,7 +116,7 @@ const AddDoctor = () => {
         e.preventDefault();
         try {
             setIsLoading(true);
-            const endpoint = isEditableText ? `/CMS/admin-dashboard/updateDoctor/${currentDoctorID}` : "/CMS/admin-dashboard/addDoctor";
+            const endpoint = isEditableText ? `/admin-dashboard/updateDoctor/${currentDoctorID}` : "/admin-dashboard/addDoctor";
             const method = isEditableText ? "put" : "post";
             const response = await CMS[method](endpoint, formData, {
                 headers: {
@@ -141,7 +141,7 @@ const AddDoctor = () => {
                 // function to refresh the list of doctors
                 const retrieveListsOfDoctors = async () => {
                     try {
-                        const response = await CMS.get("/CMS/admin-dashboard/listOfDoctors", {
+                        const response = await CMS.get("/admin-dashboard/listOfDoctors", {
                             headers: {
                                 "Content-Type": "application/json",
                             },
@@ -238,7 +238,7 @@ const AddDoctor = () => {
                 return;
             }
 
-            const response = await CMS.delete(`/CMS/admin-dashboard/deleteDoctor/${selectedDoctor.doctorsID}`, {
+            const response = await CMS.delete(`/admin-dashboard/deleteDoctor/${selectedDoctor.doctorsID}`, {
                 headers: {
                     "Content-Type": "application/json",
                 }

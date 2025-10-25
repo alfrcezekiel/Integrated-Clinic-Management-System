@@ -19,7 +19,7 @@ const CalculateAdminAccounts = () => {
 
         const retrieveCalculateAdminAccounts = async () => {
             try {
-                const response = await CMS.get(`/CMS/adminDashboard/totalNumberOfAdminAccounts`, {
+                const response = await CMS.get(`/adminDashboard/totalNumberOfAdminAccounts`, {
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${tokenContext}`

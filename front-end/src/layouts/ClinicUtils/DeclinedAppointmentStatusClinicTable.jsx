@@ -49,7 +49,7 @@ const DeclinedAppointmentStatusClinicTable = () => {
 
         const retrieveAppoinmentDeclinedStatus = async () => {
             try {
-                const response = await CMS.get(`/CMS/doctors-dashboard/getPatientDeclinedStatus/${clinicID}`, {
+                const response = await CMS.get(`/doctors-dashboard/getPatientDeclinedStatus/${clinicID}`, {
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${tokenContext}}`,

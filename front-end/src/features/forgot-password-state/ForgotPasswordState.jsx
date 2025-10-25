@@ -20,7 +20,7 @@ export const submitResetEmail = createAsyncThunk(
     'forgotPassword/sendResetEmail',
     async ({ email, userType }, { rejectWithValue }) => {
         try {
-            const response = await CMS.post(`/CMS/cms.api.com/sendResetEmail`, { email, userType }, {
+            const response = await CMS.post(`/cms.api.com/sendResetEmail`, { email, userType }, {
                 headers: {
                     "Content-Type": "application/json"
                 }
@@ -56,7 +56,7 @@ export const resetPassword = createAsyncThunk(
     'forgotPassword/resetPassword',
     async ({ token, newPassword, confirmPassword, userType }, { rejectWithValue }) => {
         try {
-            const response = await CMS.post(`/CMS/cms.api.com/resetPassword`, {
+            const response = await CMS.post(`/cms.api.com/resetPassword`, {
                 newPassword,
                 confirmPassword,
                 userType

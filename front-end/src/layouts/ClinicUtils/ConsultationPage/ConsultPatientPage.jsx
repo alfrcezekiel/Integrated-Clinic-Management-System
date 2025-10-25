@@ -233,7 +233,7 @@ const ConsultationPatientPage = () => {
                 return;
             }
 
-            const endpoint = patientFormData.type === "Patient" ? "/CMS/clinic-dashboard/consultPatient" : "/CMS/cms.api.com/clinic/dashboard/clinicConsultPatient";
+            const endpoint = patientFormData.type === "Patient" ? "/clinic-dashboard/consultPatient" : "/cms.api.com/clinic/dashboard/clinicConsultPatient";
             if (!endpoint) {
                 console.error("Endpoint not found.");
                 return;
@@ -285,7 +285,7 @@ const ConsultationPatientPage = () => {
         }, {});
 
         try {
-            const response = await CMS.post(`/CMS/clinic-dashboard/validatePatientConsultation/${activeStep}`, currentData, {
+            const response = await CMS.post(`/clinic-dashboard/validatePatientConsultation/${activeStep}`, currentData, {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${tokenContext}`

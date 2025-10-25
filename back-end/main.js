@@ -140,7 +140,7 @@ const medicalReportPath = path.join(__dirname, "uploads/medical_reports");
 app.use("/uploads/medical_reports", express.static(medicalReportPath));
 
 // route for CMS
-app.use("/CMS", cms);
+app.use("/", cms);
 
 app.disable("etag");
 
@@ -170,8 +170,10 @@ const startServer = async () => {
         const PORT = process.env.PORT || 3000;
 
         if (process.env.NODE_ENV === "production") {
-            app.listen(PORT, () => {
-                logger.log(`info`, `Server is running in ${PORT} for production environment`);
+            const host = process.env.RAILWAY_BASE_API_URL;
+
+            app.listen(PORT, host, () => {
+                logger.log(`info`, `Server is running in ${host}:${PORT} for production environment`);
             })
         } else {
             app.listen(PORT, app.get("host"), () => {

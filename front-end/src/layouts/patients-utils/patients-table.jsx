@@ -79,7 +79,7 @@ const PatientsTable = () => {
         setIsSearching(true);
 
         try {
-            const response = await CMS.get(`/CMS/cms.api.com/patient/dashboard/filterAllBookedAppointments`, {
+            const response = await CMS.get(`/cms.api.com/patient/dashboard/filterAllBookedAppointments`, {
                 params: {
                     search: searchQuery,
                     email: user?.sem,
@@ -150,7 +150,7 @@ const PatientsTable = () => {
 
         try {
             const email = user?.sem;
-            const response = await CMS.get(`/CMS/patientsDashboard/bookedAppointments/${email}`, {
+            const response = await CMS.get(`/patientsDashboard/bookedAppointments/${email}`, {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${tokenContext}`,

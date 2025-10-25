@@ -50,7 +50,7 @@ const OralHygieneStepper = ({ patientFormData, handleChange, fieldErrors, setDyn
                     setLoading(false);
                 }   
                 
-                const response = await CMS.get(`CMS/clinic-dashboard/retrieveOralHygieneConsultationQuestionnaires/${clinicID}`, {
+                const response = await CMS.get(`/clinic-dashboard/retrieveOralHygieneConsultationQuestionnaires/${clinicID}`, {
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${tokenContext}`

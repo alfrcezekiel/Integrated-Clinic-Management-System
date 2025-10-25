@@ -59,7 +59,7 @@ const LifeStyleInformationStepper = ({ patientFormData, handleChange, fieldError
                     throw new Error("Clinic ID is not available in local storage.");
                 }
 
-                const response = await CMS.get(`CMS/clinic-dashboard/retrieveLifestyleInformationQuestionnaires/${clinicID}`, {
+                const response = await CMS.get(`/clinic-dashboard/retrieveLifestyleInformationQuestionnaires/${clinicID}`, {
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${tokenContext}`

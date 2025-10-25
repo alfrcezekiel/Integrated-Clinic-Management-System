@@ -266,10 +266,10 @@ const AppointmentHistoryTable = () => {
 
         const retrieveAppointmentHistory = async () => {
             try {
-                const response = await CMS.get(`/CMS/clinic-dashboard/getAppointmentHistory/${clinicID}`, {
+                const response = await CMS.get(`/clinic-dashboard/getAppointmentHistory/${clinicID}`, {
                     headers: {
                         "Content-Type": "application/json",
-                        Authorization: `Bearer ${tokenContext}`,
+                        "Authorization": `Bearer ${tokenContext}`,
                     },
                 });
 

@@ -86,7 +86,7 @@ const PendingAppointmentTable = () => {
         }
 
         try {
-            const response = await CMS.get(`/CMS/cms.api.com/patient/dashboard/searchPendingBookedAppointments`, {
+            const response = await CMS.get(`/cms.api.com/patient/dashboard/searchPendingBookedAppointments`, {
                 params: {
                     search: search,
                     page: page,
@@ -185,7 +185,7 @@ const PendingAppointmentTable = () => {
             setIsLoading(true);
             setError(null);
             try {
-                const response = await CMS.get(`/CMS/patients-dashboard/getPatientPendingStatus/${patientEmail}`, {
+                const response = await CMS.get(`/patients-dashboard/getPatientPendingStatus/${patientEmail}`, {
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${tokenContext}`,

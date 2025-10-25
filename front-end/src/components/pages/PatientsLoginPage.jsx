@@ -136,7 +136,7 @@ function PatientsLoginPortal() {
             removeLocalStorage("authToken");
             removeLocalStorage("userData");
 
-            const response = await CMS.post("/CMS/loginPatientsAccount", patientsLoginFormData, {
+            const response = await CMS.post("/loginPatientsAccount", patientsLoginFormData, {
                 headers: {
                     "Content-Type": "application/json",
                 },

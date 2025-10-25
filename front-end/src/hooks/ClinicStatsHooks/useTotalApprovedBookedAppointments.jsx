@@ -21,7 +21,7 @@ const TotalApprovedBookedAppointments = () => {
                     return;
                 }
 
-                const response = await CMS.get(`/CMS/clinicDashboard/calculateTotalNumberOfApprovedBookedAppointments`, {
+                const response = await CMS.get(`/clinicDashboard/calculateTotalNumberOfApprovedBookedAppointments`, {
                     params: {
                         clinicID: clinic_id
                     }

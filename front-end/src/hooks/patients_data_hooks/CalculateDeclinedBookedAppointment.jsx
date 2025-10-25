@@ -26,7 +26,7 @@ const CalculateDeclinedBookedAppointment = () => {
                     return;
                 }
 
-                const response = await CMS.get(`/CMS/patient/dashboard/calculateDeclinedBookedAppointments`, {
+                const response = await CMS.get(`/patient/dashboard/calculateDeclinedBookedAppointments`, {
                     params: {
                         patientEmail: patientEmail
                     }

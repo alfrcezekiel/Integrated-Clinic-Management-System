@@ -25,7 +25,7 @@ const LandingPageAboutSection = () => {
 
         const retrieveDataAboutTitle = async () => {
             try {
-                const response = await CMS.get("/CMS");
+                const response = await CMS.get("/");
 
                 if (!response.data || !response.data.title, !response.data.description) {
                     throw new Error("No retrieved data about title");

@@ -24,7 +24,7 @@ const CalculateRegisteredClinics = () => {
                     return;
                 }
 
-                const response = await CMS.get(`/CMS/adminDashboard/totalNumberOfRegisteredClinics`, {
+                const response = await CMS.get(`/adminDashboard/totalNumberOfRegisteredClinics`, {
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${tokenContext}`,

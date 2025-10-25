@@ -7,7 +7,7 @@ const LandingPageFooter = () => {
     useEffect(() => {
         const retrieveDataTitle = async () => {
             try {
-                const response = await CMS.get("/CMS");
+                const response = await CMS.get("/");
                 if (!response.data || !response.data.title) {
                     throw new Error("No retrieved data title");
                 } else {

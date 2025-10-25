@@ -28,7 +28,7 @@ const ApprovedBookedAppointmentTable = () => {
                     return;
                 }
 
-                const response = await CMS.get("/CMS/clinic/dashboard/retrieveApprovedBookedAppointments", {
+                const response = await CMS.get("/clinic/dashboard/retrieveApprovedBookedAppointments", {
                     params: {
                         clinicID: clinicID
                     }

@@ -73,7 +73,7 @@ const AddClinic = () => {
         try {
             setLoading(true);
             setError(null);
-            const response = await CMS.get('/CMS/admin-dashboard/clinics', {
+            const response = await CMS.get('/admin-dashboard/clinics', {
                 headers: {
                     "Content-Type": 'application/json',
                     "Authorization": `Bearer ${localStorage.getItem('authToken')}`

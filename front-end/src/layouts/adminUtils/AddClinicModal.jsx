@@ -128,7 +128,7 @@ const ClinicRegistrationModal = ({ open, onClose, fieldErrors, setFieldErrors, f
                 data.append("clinicImage", formData.clinicImage);
             }
 
-            const response = await CMS.post("/CMS/admin-dashboard/create-clinic", data, {
+            const response = await CMS.post("/admin-dashboard/create-clinic", data, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     "Authorization": `Bearer ${localStorage.getItem("authToken")}`

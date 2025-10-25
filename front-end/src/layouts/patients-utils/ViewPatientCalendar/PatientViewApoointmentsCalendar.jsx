@@ -47,7 +47,7 @@ const PatientsViewAppointmentCalendar = () => {
 
     const retrievePatientsAppointments = async () => {
       try {
-        const response = await CMS.get(`/CMS/patientsDashboard/bookedAppointments/${patient_email}`, {
+        const response = await CMS.get(`/patientsDashboard/bookedAppointments/${patient_email}`, {
           headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${tokenContext}`,

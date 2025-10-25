@@ -22,7 +22,7 @@ const CalculateRegisteredPatientsAccounts = () => {
 
         const retrieveCalculateRegisteredPatientAccounts = async () => {
             try {
-                const response = await CMS.get(`/CMS/adminDashboard/totalNumberOfRegisteredPatientsAccounts`, {
+                const response = await CMS.get(`/adminDashboard/totalNumberOfRegisteredPatientsAccounts`, {
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${tokenContext}`

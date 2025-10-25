@@ -26,7 +26,7 @@ const CalculateConsultedPatients = () => {
                     return;
                 }
 
-                const response = await CMS.get(`/CMS/patient/dashboard/calculateConsultedPatients`, {
+                const response = await CMS.get(`/patient/dashboard/calculateConsultedPatients`, {
                     params: {
                         patientEmail: patientEmail
                     }

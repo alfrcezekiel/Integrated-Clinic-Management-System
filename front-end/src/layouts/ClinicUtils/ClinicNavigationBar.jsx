@@ -55,7 +55,7 @@ const DoctorsDashboardNavbar = () => {
 
     const handleLogoutConfirm = async () => {
         try {
-            const response = await CMS.get("/CMS/doctors-dashboard/logout", {
+            const response = await CMS.get("/doctors-dashboard/logout", {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${tokenContext}`

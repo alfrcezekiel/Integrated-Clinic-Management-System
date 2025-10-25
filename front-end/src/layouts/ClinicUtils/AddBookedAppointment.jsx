@@ -81,7 +81,7 @@ const AddBookAppointment = () => {
             console.log('Appointment Data:', formData);
             // Add your API call here
 
-            const response = await CMS.post(`CMS/clinicDashboard/addBookedAppointment`, {
+            const response = await CMS.post(`/clinicDashboard/addBookedAppointment`, {
                 ...formData,
                 appointmentDate: formData.appointmentDate ? dayjs(formData.appointmentDate).format("YYYY-MM-DD") : null,
                 clinicID: clinic_id,

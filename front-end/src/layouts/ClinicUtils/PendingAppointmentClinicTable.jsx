@@ -119,7 +119,7 @@ const PendingAppointmentClinicTable = () => {
 
     const retrievedAppointmentPendingStatus = useCallback(async () => {
         try {
-            const response = await CMS.get(`/CMS/doctors-dashboard/getPatientPendingStatus/${clinicID}`, {
+            const response = await CMS.get(`/doctors-dashboard/getPatientPendingStatus/${clinicID}`, {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${tokenContext}`
@@ -178,7 +178,7 @@ const PendingAppointmentClinicTable = () => {
                 preferredTime: memoizedFormDataValue.preferredTime ? memoizedFormDataValue.preferredTime : null
             };
 
-            const response = await CMS.put(`/CMS/doctors-dashboard/updateAppointment/${formData.appointmentID}`, updatedData, {
+            const response = await CMS.put(`/doctors-dashboard/updateAppointment/${formData.appointmentID}`, updatedData, {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${tokenContext}`
@@ -339,7 +339,7 @@ const PendingAppointmentClinicTable = () => {
     // function to handles transaction in deleting the booked appointment
     const handleConfirmedDeletedBookedAppointment = async () => {
         try {
-            const response = await CMS.delete(`CMS/clinicDashboard/deleteBookedAppointment/${selectedBookedAppointment.appointmentID}`, {
+            const response = await CMS.delete(`/clinicDashboard/deleteBookedAppointment/${selectedBookedAppointment.appointmentID}`, {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${tokenContext}`
