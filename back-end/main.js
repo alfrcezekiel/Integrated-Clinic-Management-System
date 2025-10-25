@@ -76,6 +76,8 @@ const __dirname = path.dirname(__filename);
 app.set("host", process.env.SERVER_HOST);
 app.set("baseURL", process.env.SERVER_BASE_URL)
 
+app.set("trust proxy", 1);
+
 // session configuration
 app.use(session({
     secret: process.env.SESSION_SECRET,
