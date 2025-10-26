@@ -32,7 +32,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 // })
 
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, __dirname, "VITE_");
+  loadEnv(mode, __dirname, "VITE_");
 
   const isProduction = mode === "production";
 

@@ -12,10 +12,7 @@ const LandingPageHeroSection = () => {
         setIsMounted(true);
         const retriveDataTitle = async () => {
             try {
-                const isProduction = import.meta.env.VITE_ENV === "production";
-                const endpoint = isProduction ? `${import.meta.env.VITE_BASE_API_URL}/` : "/";
-
-                const response = await CMS.get(endpoint);
+                const response = await CMS.get("/");
                 if (!response.data || !response.data.title || !response.data.healthQuotes) {
                     throw new Error("No retrieved data title");
                 } else {

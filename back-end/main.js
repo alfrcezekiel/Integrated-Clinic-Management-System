@@ -19,7 +19,7 @@ import {
 import parser from "cron-parser"
 import logger from "./config/winston.js";
 import initializeScheduler from "./config/appointment_scheduler.js";
-import initializeSessionStore from "./db/mysql/session_store.js";
+// import initializeSessionStore from "./db/mysql/session_store.js";
 dotenv.config();
 
 const nextRuns = await getNextBackupRun(5);
@@ -78,12 +78,12 @@ const __dirname = path.dirname(__filename);
 
 app.set("trust proxy", 1);
 
-const sessionStore = await initializeSessionStore();
+// const sessionStore = await initializeSessionStore();
 
 // session configuration
 app.use(session({
     secret: process.env.SESSION_SECRET,
-    store: sessionStore,
+    // store: sessionStore,
     resave: false,
     saveUninitialized: false,
     rolling: true,
@@ -95,13 +95,13 @@ app.use(session({
     },
 }))
 
-await sessionStore.sync()
-    .then(() => {
-        logger.log(`info`, `Session store synced successfully!`);
-    })
-    .catch((error) => {
-        logger.log(`error`, `Failed to sync session store: ${error}`);
-    })
+// await sessionStore.sync()
+//     .then(() => {
+//         logger.log(`info`, `Session store synced successfully!`);
+//     })
+//     .catch((error) => {
+//         logger.log(`error`, `Failed to sync session store: ${error}`);
+//     })
 
 app.use(express.json());
 app.use(bodyParser.json());
@@ -182,14 +182,13 @@ const startServer = async () => {
 
         if (process.env.NODE_ENV === "production") {
             app.listen(PORT, () => {
-                logger.log(`info`, `Server is running in ${PORT} for production environment`);
+                logger.log(`info`, `Server is running in ${PORT} for ${process.env.NODE_ENV} environment`);
+            })
+        } else {
+            app.listen(PORT, () => {
+                logger.log(`info`, `Server is running in http://localhost:${PORT} for ${process.env.NODE_ENV} environment`);
             })
         }
-
-        app.listen(PORT, () => {
-            logger.log(`info`, `Server is running in http://localhost:${PORT}`);
-        })
-
     } catch (error) {
         logger.error(`Error starting server: ${error}`);
     }
