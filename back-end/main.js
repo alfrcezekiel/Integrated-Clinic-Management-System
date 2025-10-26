@@ -124,6 +124,18 @@ app.use(cookieParser());
 // logging middleware for requests
 app.use(requestLogger);
 
+const corsOptions = {
+    origin: env === "production" ? process.env.VITE_BASE_CLIENT_URL : "http://localhost:5173",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"]
+}
+
+app.use(cors(corsOptions));
+
+// error handling for server error
+app.options("*", cors(corsOptions));
+
 // set custom headers for static file image for clinic images
 app.use("/uploads/clinic_images", (req, res, next) => {
     res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
@@ -135,15 +147,6 @@ app.use("/uploads/clinic_images", (req, res, next) => {
 // Ensure the directory exists before serving it as static content
 const clinicImagesPath = path.join(__dirname, "uploads/clinic_images");
 app.use("/uploads/clinic_images", express.static(clinicImagesPath));
-
-const corsOptions = {
-    origin: env === "production" ? process.env.VITE_BASE_CLIENT_URL : "http://localhost:5173",
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization"]
-}
-
-app.use(cors(corsOptions));
 
 const medicalReportPath = path.join(__dirname, "uploads/medical_reports");
 app.use("/uploads/medical_reports", express.static(medicalReportPath));
@@ -159,9 +162,6 @@ app.use((req, res) => {
         routeMessage: "Server route not found"
     })
 })
-
-// error handling for server error
-app.options("*", cors(corsOptions));
 
 /**
  * error handler

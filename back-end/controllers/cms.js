@@ -47,6 +47,9 @@ export const CMS = async (req, res) => {
         })
     } catch (error) {
         console.error(`Failed to fetch CMS data: ${error}`);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to fetch CMS data"
+        });
     }
 }
 
