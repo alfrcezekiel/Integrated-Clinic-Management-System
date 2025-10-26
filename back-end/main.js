@@ -74,7 +74,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // app.set("port", process.env.PORT);
-app.set("host", process.env.SERVER_HOST);
+// app.set("host", process.env.SERVER_HOST);
 
 app.set("trust proxy", 1);
 
@@ -136,10 +136,7 @@ const clinicImagesPath = path.join(__dirname, "uploads/clinic_images");
 app.use("/uploads/clinic_images", express.static(clinicImagesPath));
 
 const corsOptions = {
-    origin: [
-        process.env.VITE_BASE_CLIENT_URL,
-        "http://localhost:5173"
-    ],
+    origin: env === "production" ? process.env.VITE_BASE_CLIENT_URL : "http://localhost:5173",
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"]
@@ -186,11 +183,12 @@ const startServer = async () => {
             app.listen(PORT, () => {
                 logger.log(`info`, `Server is running in ${PORT} for production environment`);
             })
-        } else {
-            app.listen(PORT, app.get("host"), () => {
-                logger.log(`info`, `Server is running in http://${app.get("host")}:${PORT}`);
-            })
         }
+
+        app.listen(PORT, () => {
+            logger.log(`info`, `Server is running in http://localhost:${PORT}`);
+        })
+
     } catch (error) {
         logger.error(`Error starting server: ${error}`);
     }

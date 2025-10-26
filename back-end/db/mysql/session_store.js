@@ -5,28 +5,12 @@ import logger from "../../config/winston.js";
 
 const isProduction = process.env.NODE_ENV === "production";
 
-const dbConfig = isProduction ? {
-    /**
-     * production database configuration of railway
-     */
+const dbConfig = {
     database: process.env.DATABASE_NAME,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
-    ssl: {
-        rejectUnauthorized: true,
-        ca: process.env.MYSQL_SSL_CA
-    }
-} : {
-    /**
-     * development database configuration
-     */
-    database: process.env.DATABASE_NAME,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    host: process.env.DB_HOST || "localhost",
-    port: process.env.DB_PORT || 3306,
 }
 
 // Initialize Sequelize with retry logic
@@ -36,13 +20,15 @@ const sequelize = new Sequelize(
     dbConfig.password,
     {
         host: dbConfig.host,
-        port: parseInt(dbConfig.port, 10),
+        port: Number(dbConfig.port),
         dialect: "mysql",
         logging: !isProduction ? console.log : false,
-        dialectOptions: {
-            ssl: isProduction
-                ? dbConfig.ssl : false
-        },
+        dialectOptions: isProduction ? {
+            ssl: {
+                rejectUnauthorized: false,
+                require: true,
+            }
+        } : {},
         retry: {
             max: 5,
             timeout: 60000
@@ -77,6 +63,7 @@ const testConnectionWithRetry = async (retries = MAX_RETRIES) => {
             logger.log('error', `Database connection attempt ${i + 1} failed: ${error.message}`);
         }
 
+        logger.log('warn', `Retrying database connection attempt ${i + 1}...`);
         if (i < retries - 1) {
             await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
         }
