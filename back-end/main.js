@@ -124,11 +124,39 @@ app.use(cookieParser());
 // logging middleware for requests
 app.use(requestLogger);
 
+// const corsOptions = {
+//     origin: env === "production" ? process.env.VITE_BASE_CLIENT_URL : "http://localhost:5173",
+//     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+//     credentials: true,
+//     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"]
+// }
+
 const corsOptions = {
-    origin: env === "production" ? process.env.VITE_BASE_CLIENT_URL : "http://localhost:5173",
+    origin: (origin, callback) => {
+        // Allow requests with no origin (mobile apps, Postman, etc.)
+        if (!origin) return callback(null, true);
+
+        const allowedOrigins = env === "production"
+            ? [
+                process.env.VITE_BASE_CLIENT_URL, // Your Railway frontend URL
+                "https://integratedclinicmanagement.vercel.app", // Vercel URL
+                // Add any other production frontend URLs here
+            ].filter(Boolean) // Remove any undefined values
+            : ["http://localhost:5173", "http://localhost:3000"];
+
+        if (allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            // Log for debugging
+            logger.log("warn", `CORS blocked origin: ${origin}`);
+            callback(new Error("Not allowed by CORS"));
+        }
+    },
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"]
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    exposedHeaders: ["Content-Range", "X-Content-Range"],
+    maxAge: 86400 // Cache preflight for 24 hours
 }
 
 app.use(cors(corsOptions));
@@ -137,10 +165,25 @@ app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
 
 // set custom headers for static file image for clinic images
+// app.use("/uploads/clinic_images", (req, res, next) => {
+//     res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+//     res.setHeader("Cross-Origin-Opener-Policy", "cross-origin");
+//     res.setHeader("Access-Control-Allow-Origin", env === "production" ? process.env.VITE_BASE_CLIENT_URL : "http://localhost:5173");
+//     next();
+// })
 app.use("/uploads/clinic_images", (req, res, next) => {
     res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
     res.setHeader("Cross-Origin-Opener-Policy", "cross-origin");
-    res.setHeader("Access-Control-Allow-Origin", env === "production" ? process.env.VITE_BASE_CLIENT_URL : "http://localhost:5173");
+
+    // Allow multiple origins for static files
+    const allowedOrigins = env === "production"
+        ? [process.env.VITE_BASE_CLIENT_URL, "https://integrated-clinic-management-system.vercel.app"].filter(Boolean)
+        : ["http://localhost:5173", "http://localhost:3000"];
+
+    const origin = req.headers.origin;
+    if (origin && allowedOrigins.includes(origin)) {
+        res.setHeader("Access-Control-Allow-Origin", origin);
+    }
     next();
 })
 
