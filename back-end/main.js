@@ -19,6 +19,7 @@ import {
 import parser from "cron-parser"
 import logger from "./config/winston.js";
 import initializeScheduler from "./config/appointment_scheduler.js";
+import initializeSessionStore from "./db/mysql/session_store.js";
 dotenv.config();
 
 const nextRuns = await getNextBackupRun(5);
@@ -74,23 +75,33 @@ const __dirname = path.dirname(__filename);
 
 // app.set("port", process.env.PORT);
 app.set("host", process.env.SERVER_HOST);
-app.set("baseURL", process.env.SERVER_BASE_URL)
 
 app.set("trust proxy", 1);
+
+const sessionStore = await initializeSessionStore();
 
 // session configuration
 app.use(session({
     secret: process.env.SESSION_SECRET,
+    store: sessionStore,
     resave: false,
     saveUninitialized: false,
     rolling: true,
     cookie: {
-        secure: false,
+        secure: process.env.NODE_ENV === "production",
         httpOnly: true,
         maxAge: 1000 * 60 * 60 * 24,
         sameSite: "lax"
     },
 }))
+
+await sessionStore.sync()
+    .then(() => {
+        logger.log(`info`, `Session store synced successfully!`);
+    })
+    .catch((error) => {
+        logger.log(`error`, `Failed to sync session store: ${error}`);
+    })
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -163,21 +174,19 @@ app.use(errorHandler.internalServerError)
 const startServer = async () => {
     try {
 
-        if (process.env.NODE_ENV === "development") {
+        if (process.env.NODE_ENV === "production") {
             await initializeScheduler();
         }
 
         const PORT = process.env.PORT || 3000;
 
         if (process.env.NODE_ENV === "production") {
-            const host = process.env.RAILWAY_BASE_API_URL;
-
-            app.listen(PORT, host, () => {
-                logger.log(`info`, `Server is running in ${host}:${PORT} for production environment`);
+            app.listen(PORT, () => {
+                logger.log(`info`, `Server is running in ${PORT} for production environment`);
             })
         } else {
             app.listen(PORT, app.get("host"), () => {
-                logger.log(`info`, `Server is running in http://${app.get("host")}:${PORT}${app.get("baseURL")}`);
+                logger.log(`info`, `Server is running in http://${app.get("host")}:${PORT}`);
             })
         }
     } catch (error) {
