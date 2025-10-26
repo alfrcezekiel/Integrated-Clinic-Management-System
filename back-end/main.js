@@ -176,6 +176,8 @@ const startServer = async () => {
 
         if (process.env.NODE_ENV === "production") {
             await initializeScheduler();
+        } else {
+            await initializeScheduler();
         }
 
         const PORT = process.env.PORT || 3000;

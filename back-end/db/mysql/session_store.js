@@ -3,20 +3,45 @@ import connectSessionSequelize from "connect-session-sequelize";
 import session from "express-session";
 import logger from "../../config/winston.js";
 
+const isProduction = process.env.NODE_ENV === "production";
+
+const dbConfig = isProduction ? {
+    /**
+     * production database configuration of railway
+     */
+    database: process.env.MYSQLDATABASE,
+    user: process.env.MYSQLUSER,
+    password: process.env.MYSQLPASSWORD,
+    host: process.env.RAILWAY_PRIVATE_DOMAIN || process.env.MYSQLHOST,
+    port: process.env.MYSQLPORT,
+    ssl: {
+        rejectUnauthorized: true,
+        ca: process.env.MYSQL_SSL_CA
+    }
+} : {
+    /**
+     * development database configuration
+     */
+    database: process.env.DATABASE_NAME,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    host: process.env.DB_HOST || "localhost",
+    port: process.env.DB_PORT || 3306,
+}
+
 // Initialize Sequelize with retry logic
 const sequelize = new Sequelize(
-    process.env.DATABASE_NAME,
-    process.env.DB_USER,
-    process.env.DB_PASSWORD,
+    dbConfig.database,
+    dbConfig.user,
+    dbConfig.password,
     {
-        host: process.env.DB_HOST,
-        port: process.env.DB_PORT || 3306,
+        host: dbConfig.host,
+        port: parseInt(dbConfig.port, 10),
         dialect: "mysql",
-        logging: process.env.NODE_ENV !== "production" ? console.log : false,
+        logging: !isProduction ? console.log : false,
         dialectOptions: {
-            ssl: process.env.NODE_ENV === "production"
-                ? { rejectUnauthorized: false }
-                : false
+            ssl: isProduction
+                ? dbConfig.ssl : false
         },
         retry: {
             max: 5,
@@ -24,6 +49,10 @@ const sequelize = new Sequelize(
         }
     }
 );
+
+// Add retry logic to database connection
+const MAX_RETRIES = 5;
+const RETRY_DELAY = 3000;
 
 // Test the database connection first
 const testConnection = async () => {
@@ -37,12 +66,30 @@ const testConnection = async () => {
     }
 };
 
+const testConnectionWithRetry = async (retries = MAX_RETRIES) => {
+    for (let i = 0; i < retries; i++) {
+        try {
+            const isConnected = await testConnection();
+            if (isConnected) {
+                return true;
+            }
+        } catch (error) {
+            logger.log('error', `Database connection attempt ${i + 1} failed: ${error.message}`);
+        }
+
+        if (i < retries - 1) {
+            await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
+        }
+    }
+    return false;
+}
+
 // Initialize session store only after successful connection
 let sessionStore;
 const initializeSessionStore = async () => {
-    const isConnected = await testConnection();
+    const isConnected = await testConnectionWithRetry();
     if (!isConnected) {
-        throw new Error('Failed to connect to database');
+        throw new Error('All database connection attempts failed! Please check your database connection.');
     }
 
     const SequelizeStore = connectSessionSequelize(session.Store);
