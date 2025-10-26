@@ -53,20 +53,9 @@ export default defineConfig(({ mode }) => {
         }
       }
     },
-    define: {
-      'import.meta.env.VITE_BASE_API_URL': JSON.stringify(
-        isProduction ?
-          env.VITE_BASE_API_URL
-          : "http://localhost:7506"
-      ),
-      'import.meta.env.VITE_ENV': JSON.stringify(mode)
-    },
     build: {
       target: "es2020",
       sourcemap: !isProduction,
-      define: {
-        'process.env': {}
-      }
     }
   }
 

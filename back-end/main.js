@@ -102,6 +102,7 @@ await sessionStore.sync()
     .catch((error) => {
         logger.log(`error`, `Failed to sync session store: ${error}`);
     })
+
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));

@@ -2,6 +2,8 @@ import { Sequelize } from "sequelize";
 import connectSessionSequelize from "connect-session-sequelize";
 import session from "express-session";
 import logger from "../../config/winston.js";
+import dotenv from "dotenv";
+dotenv.config();
 
 const isProduction = process.env.NODE_ENV === "production";
 

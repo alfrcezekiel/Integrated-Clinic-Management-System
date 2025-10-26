@@ -6,3 +6,5 @@ node_modules/
 .vscode/
 logs
 **/node_modules/
+.env.production
+.railwayignore

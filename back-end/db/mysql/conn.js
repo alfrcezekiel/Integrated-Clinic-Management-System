@@ -37,7 +37,6 @@ async function createConnection() {
         return pool;
     } catch (error) {
         logger.error(`Failed to connect to MySQL server: ${error}`);
-        process.exit(1);
     }
 }
 
