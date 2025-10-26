@@ -12,16 +12,19 @@ async function createConnection() {
          * Create a connection pool to the MySQL database
          * betwwen railway and local development database
          */
-        const connectionConfig = process.env.NODE_ENV === "production" && process.env.RAILWAY_DATABASE_URL ? {
-            uri: process.env.RAILWAY_DATABASE_URL,
+        const connectionConfig = process.env.NODE_ENV === "production" ? {
+            host: process.env.DB_HOST,
+            user: process.env.DB_USER,
+            database: process.env.DATABASE_NAME,
+            password: process.env.DB_PASSWORD,
             connectionLimit: 10,
             waitForConnections: true,
             queueLimit: 0
         } : {
-            host: process.env.RAILWAY_DATABASE_HOST || process.env.DB_HOST,
-            user: process.env.RAILWAY_DATABASE_USER || process.env.DB_USER,
-            database: process.env.RAILWAY_DATABASE_NAME || process.env.DATABASE_NAME,
-            password: process.env.RAILWAY_DATABASE_PASSWORD || process.env.DB_PASSWORD,
+            host: process.env.DB_HOST,
+            user: process.env.DB_USER,
+            database: process.env.DATABASE_NAME,
+            password: process.env.DB_PASSWORD,
             connectionLimit: 10,
             waitForConnections: true,
             queueLimit: 0

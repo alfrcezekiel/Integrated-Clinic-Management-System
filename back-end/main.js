@@ -127,7 +127,7 @@ app.use(requestLogger);
 app.use("/uploads/clinic_images", (req, res, next) => {
     res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
     res.setHeader("Cross-Origin-Opener-Policy", "cross-origin");
-    res.setHeader("Access-Control-Allow-Origin", process.env.VITE_BASE_CLIENT_URL || "http://localhost:5173");
+    res.setHeader("Access-Control-Allow-Origin", env === "production" ? process.env.VITE_BASE_CLIENT_URL : "http://localhost:5173");
     next();
 })
 
@@ -140,7 +140,7 @@ const corsOptions = {
         process.env.VITE_BASE_CLIENT_URL,
         "http://localhost:5173"
     ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"]
 }
@@ -163,7 +163,7 @@ app.use((req, res) => {
 })
 
 // error handling for server error
-app.options("*", cors());
+app.options("*", cors(corsOptions));
 
 /**
  * error handler
