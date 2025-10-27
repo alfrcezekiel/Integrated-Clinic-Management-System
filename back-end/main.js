@@ -99,7 +99,7 @@ try {
 // session configuration
 app.use(session({
     secret: process.env.SESSION_SECRET,
-    // store: sessionStore,
+    store: sessionStore,
     resave: false,
     saveUninitialized: false,
     rolling: true,

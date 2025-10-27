@@ -8,18 +8,30 @@ dotenv.config();
 
 const isProduction = process.env.NODE_ENV === "production";
 
+const rawPort = process.env.DB_PORT ?? 3306;
+const rawDatabase = process.env.DATABASE_NAME;
+const rawUser = process.env.DB_USER;
+const rawPassword = process.env.DB_PASSWORD;
+const rawHost = process.env.DB_HOST;
+
+/* Normalize & trim quotes from env values (Railway sometimes shows values with surrounding quotes) */
+const trim = (v) => (v === undefined || v === null) ? v : String(v).replace(/^['"]|['"]$/g, '').trim();
+
 const dbConfig = {
-    database: process.env.DATABASE_NAME,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT || 3306,
+    database: trim(rawDatabase),
+    user: trim(rawUser),
+    password: trim(rawPassword),
+    host: trim(rawHost),
+    port: trim(rawPort) || 3306,
 }
 
 // Initialize Sequelize with retry logic
 let sequelize;
 try {
-    const databaseURL = process.env.DATABASE_URL;
+    const rawDatabaseURL = process.env.DATABASE_URL;
+    const databaseURL = trim(rawDatabaseURL);
+
+    logger.log('info', `SessionStore: using ${databaseURL ? 'DATABASE_URL' : 'individual env vars'} for sequelize initialization`);
 
     if (databaseURL) {
         sequelize = new Sequelize(databaseURL,
@@ -53,7 +65,7 @@ try {
             dialectOptions: isProduction ? { ssl: { rejectUnauthorized: false } } : {},
             retry: {
                 max: 5,
-                timeout:60000
+                timeout: 60000
             }
         })
     }
