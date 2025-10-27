@@ -140,18 +140,22 @@ const corsOptions = {
             ? [
                 process.env.VITE_BASE_CLIENT_URL, // Your Railway frontend URL
                 "https://integrated-clinic-management-system.vercel.app", // Vercel URL
+                "https://integrated-clinic-management-system.vercel.app/", // Vercel URL with trailing slash
                 // Add any other production frontend URLs here
             ].filter(Boolean) // Remove any undefined values
-            : ["http://localhost:5173", "http://localhost:3000"];
+            : [
+                "http://localhost:5173",
+                "http://localhost:3000"
+            ];
 
         const normalizedOrigin = origin.replace(/\/$/, "");
-        const isAllowed = allowedOrigins.some(allowed => allowed.replace(/\/$/, "") === normalizedOrigin);
+        const isAllowed = allowedOrigins.some(allowed => allowed.replace(/\/$/, "").toLocaleLowerCase() === normalizedOrigin);
 
         if (isAllowed) {
             callback(null, true);
         } else {
             // Log for debugging
-            logger.log("warn", `CORS blocked origin: ${origin}`);
+            logger.log("warn", `CORS blocked origin: ${origin} | Allowed Origins: ${allowedOrigins.join(", ")}`);
             callback(new Error("Not allowed by CORS"));
         }
     },
