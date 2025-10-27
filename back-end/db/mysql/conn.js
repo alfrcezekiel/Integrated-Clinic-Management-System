@@ -18,11 +18,13 @@ async function createConnection() {
             database: process.env.DATABASE_NAME,
             password: process.env.DB_PASSWORD,
             connectionLimit: 10,
+            port: process.env.DB_PORT,
             waitForConnections: true,
             queueLimit: 0
         } : {
             host: process.env.DB_HOST,
             user: process.env.DB_USER,
+            port: process.env.DB_PORT,
             database: process.env.DATABASE_NAME,
             password: process.env.DB_PASSWORD,
             connectionLimit: 10,

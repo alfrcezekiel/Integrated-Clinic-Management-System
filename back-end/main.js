@@ -90,6 +90,9 @@ try {
     if (process.env.NODE_ENV === "production") {
         // fail-fast in production so app doesn't accidentally use MemoryStore
         throw error;
+    } else {
+        logger.log(`warn`, `Falling back to default in-memory session store for development`);
+        sessionStore = null;
     }
 }
 

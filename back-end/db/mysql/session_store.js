@@ -3,6 +3,7 @@ import connectSessionSequelize from "connect-session-sequelize";
 import session from "express-session";
 import logger from "../../config/winston.js";
 import dotenv from "dotenv";
+import db from "./conn.js";
 dotenv.config();
 
 const isProduction = process.env.NODE_ENV === "production";
@@ -16,27 +17,50 @@ const dbConfig = {
 }
 
 // Initialize Sequelize with retry logic
-const sequelize = new Sequelize(
-    dbConfig.database,
-    dbConfig.user,
-    dbConfig.password,
-    {
-        host: dbConfig.host,
-        port: parseInt(dbConfig.port, 10),
-        dialect: "mysql",
-        logging: !isProduction ? console.log : false,
-        dialectOptions: isProduction ? {
-            ssl: {
-                rejectUnauthorized: false,
-                require: true,
+let sequelize;
+try {
+    const databaseURL = process.env.DATABASE_URL;
+
+    if (databaseURL) {
+        sequelize = new Sequelize(databaseURL,
+            {
+                dialect: "mysql",
+                logging: !isProduction ? console.log : false,
+                dialectOptions: isProduction ? {
+                    ssl: {
+                        rejectUnauthorized: false,
+                    }
+                } : {},
+                retry: {
+                    max: 5,
+                    timeout: 60000
+                }
             }
-        } : {},
-        retry: {
-            max: 5,
-            timeout: 60000
+        );
+    } else {
+        const portNumber = parseInt(dbConfig.port, 10);
+        const finalPort = Number.isInteger(portNumber) && portNumber > 0 ? portNumber : 3306;
+
+        if (!dbConfig.database || !dbConfig.user) {
+            throw new Error("Missing database name or user in environment variables");
         }
+
+        sequelize = new Sequelize(dbConfig.database, dbConfig.user, dbConfig.password, {
+            host: dbConfig.host,
+            port: finalPort,
+            dialect: "mysql",
+            logging: !isProduction ? console.log : false,
+            dialectOptions: isProduction ? { ssl: { rejectUnauthorized: false } } : {},
+            retry: {
+                max: 5,
+                timeout:60000
+            }
+        })
     }
-);
+} catch (error) {
+    logger.log(`error`, `Sequelize initialization error: ${error.message}`);
+    throw error;
+}
 
 // Add retry logic to database connection
 const MAX_RETRIES = 5;
