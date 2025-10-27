@@ -139,7 +139,7 @@ const corsOptions = {
         const allowedOrigins = env === "production"
             ? [
                 process.env.VITE_BASE_CLIENT_URL, // Your Railway frontend URL
-                "https://integratedclinicmanagement.vercel.app", // Vercel URL
+                "https://integrated-clinic-management-system.vercel.app/", // Vercel URL
                 // Add any other production frontend URLs here
             ].filter(Boolean) // Remove any undefined values
             : ["http://localhost:5173", "http://localhost:3000"];
