@@ -19,7 +19,7 @@ import {
 import parser from "cron-parser"
 import logger from "./config/winston.js";
 import initializeScheduler from "./config/appointment_scheduler.js";
-// import initializeSessionStore from "./db/mysql/session_store.js";
+import initializeSessionStore from "./db/mysql/session_store.js";
 dotenv.config();
 
 const nextRuns = await getNextBackupRun(5);
@@ -78,7 +78,20 @@ const __dirname = path.dirname(__filename);
 
 app.set("trust proxy", 1);
 
-// const sessionStore = await initializeSessionStore();
+let sessionStore;
+try {
+    sessionStore = await initializeSessionStore();
+    if (sessionStore && typeof sessionStore.sync === "function") {
+        await sessionStore.sync();
+        logger.log(`info`, `Session store synced successfully`);
+    }
+} catch (error) {
+    logger.log(`error`, `Failed to initialize or sync session store: ${errror}`);
+    if (process.env.NODE_ENV === "production") {
+        // fail-fast in production so app doesn't accidentally use MemoryStore
+        throw error;
+    }
+}
 
 // session configuration
 app.use(session({
@@ -94,14 +107,6 @@ app.use(session({
         sameSite: "lax"
     },
 }))
-
-// await sessionStore.sync()
-//     .then(() => {
-//         logger.log(`info`, `Session store synced successfully!`);
-//     })
-//     .catch((error) => {
-//         logger.log(`error`, `Failed to sync session store: ${error}`);
-//     })
 
 app.use(express.json());
 app.use(bodyParser.json());

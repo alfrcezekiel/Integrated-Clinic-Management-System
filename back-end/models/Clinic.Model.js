@@ -4859,7 +4859,6 @@ class Clinic {
                     WHERE patientID = ?
                     AND DATE(appointmentDate) = ?
                     AND status IN (${status_placeholders})
-                    FOR UPDATE
                 `;
 
                 const query_values = [
@@ -4872,15 +4871,8 @@ class Clinic {
 
                 const count = results[0].appointmentCount || 0;
 
-                await this.connection.commit();
-
                 return count;
             } catch (error) {
-                const rollbackQuery = await this.connection.rollback();
-                if (!rollbackQuery) {
-                    logger.log(`error`, `Failed to rollback transaction in count daily appointments: ${error}`);
-                }
-
                 logger.log(`error`, `Failed to count daily appointments in patient side book appointment: ${error}`);
                 throw error;
             } finally {

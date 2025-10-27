@@ -14,6 +14,8 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { Calendar, Clock, MapPin, Mail, Stethoscope } from 'lucide-react';
+import config from "../../API/config.js";
+
 const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooking, appointmentData, setAppointmentData, fieldErrors, setFieldErrors, appointmentID }) => {
     const memoizedFirstNameValue = useMemo(() => appointmentData.firstName, [appointmentData.firstName]);
     const memoizedLastNameValue = useMemo(() => appointmentData.lastName, [appointmentData.lastName]);
@@ -130,7 +132,7 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
                             {/* Clinic Image */}
                             <div className="w-full mb-6 md:w-1/3 md:mb-0 md:mr-8">
                                 <img
-                                    src={`http://localhost:7506/uploads/clinic_images/${selectedClinic.clinic_image}`}
+                                    src={`${config.api.baseURL}/uploads/clinic_images/${selectedClinic.clinic_image}`}
                                     alt={selectedClinic.clinic_name}
                                     className="object-cover w-full rounded-lg h-60"
                                 />

@@ -90,6 +90,12 @@ const initializeSessionStore = async () => {
         expiration: 24 * 60 * 60 * 1000, // 1 day
     });
 
+    try {
+        await sessionStore.sync();
+        logger.log(`info`, `Session table synced successfully`);
+    } catch (error) {
+        logger.log(`error`, `Failed to sync session store table: ${error}`);
+    }
     return sessionStore;
 };
 

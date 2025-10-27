@@ -26,7 +26,15 @@ const transporter = nodemailer.createTransport({
         user: process.env.SMTP_EMAIL_USER,
         pass: process.env.SMTP_EMAIL_PASSWORD
     },
-    secure: true
+    secure: true,
+    pool: true,
+    maxConnections: 5,
+    maxMessages: 100,
+    connectionTimeout: 30000, // 30s
+    greetingTimeout: 15000,
+    tls: {
+        rejectUnauthorized: false
+    }
 })
 
 /**
@@ -56,7 +64,7 @@ initialzeTwilioClient();
 /**
  * @function send a email notification in patient side for appointment confirmation / reminders
  */
-export const sendEmailNotification = async (to, subject, html) => {
+export const sendEmailNotification = async (to, subject, html, attempts = 2) => {
     try {
         const mailOptions = {
             from: `Clinic Management System <${process.env.SMTP_EMAIL_USER}>`,
@@ -65,11 +73,22 @@ export const sendEmailNotification = async (to, subject, html) => {
             html: html
         }
 
-        await transporter.sendMail(mailOptions);
-        logger.log("info", `Email notification sent to ${to}`)
-        return {
-            success: true
+        let lastError = null;
+        for (let i = 0; i < attempts; i++) {
+            try {
+                const info = await transporter.sendMail(mailOptions);
+                logger.log("info", `Email notification sent to ${to}: ${info.messageId}`);
+                return info;
+            } catch (error) {
+                lastError = error;
+                logger.log(`warn`, `Email send attempt: ${i + 1} failed for ${to}: ${error}`);
+
+                await new Promise((resolve) => setTimeout(resolve, 500 * (i + 1)))
+            }
         }
+        
+        logger.log('error', `Failed to send email notification after ${attempts} attempts: ${lastError}`);
+        throw lastError;
     } catch (error) {
         logger.log("error", `Failed to send email notification: ${error}`)
         throw new Error(`Failed to send email notification: ${error}`)

@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import logger from "../../config/winston.js";
 dotenv.config();
 /**
- * Function to create a connection pool to the MySQL database
+ * Function to create a connection pool to the MySQL database for develpoment and production enviroment
  * @returns {Promise} - A promise that resolves to the connection pool
  */
 async function createConnection() {
