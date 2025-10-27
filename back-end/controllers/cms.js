@@ -779,15 +779,45 @@ export const patientsBookedAppointments = async (req, res) => {
 
         const clinicData = clinicRows[0];
 
-        await sendAppointmentsConfirmation({
-            ...appointmentRows[0],
-            clinicName: clinicData.clinic_name,
-            clinicAddress: clinicData.clinic_address
-        }).catch((error) => {
-            logger.log(`error`, `Failed to send appointment via sms and email: ${error}`);
-        })
-
         await connection.commit();
+
+        /**
+         * retry helper with exponential backoff for transient network errors (e.g. connection timeout)
+         * sendFn must be an async function returning a Promise
+         */
+        const sendWithRetries = async (sendFn, attempts = 3, baseDelayMs = 2000) => {
+            let lastErr;
+            for (let i = 1; i <= attempts; i++) {
+                try {
+                    logger.log('info', `Attempting to send email (attempt ${i}) for ${email}`);
+                    const r = await sendFn();
+                    return r;
+                } catch (err) {
+                    lastErr = err;
+                    logger.log('warn', `Email send attempt: ${i} failed for ${email}: ${err}`);
+                    if (i < attempts) {
+                        const delay = baseDelayMs * Math.pow(2, i - 1);
+                        await new Promise((resolve) => setTimeout(resolve, delay));
+                    }
+                }
+            }
+            throw lastErr;
+        };
+
+        // send in background so booking response is not blocked by network issues
+        setImmediate(async () => {
+            try {
+                await sendWithRetries(() => sendAppointmentsConfirmation({
+                    ...appointmentRows[0],
+                    clinicName: clinicData.clinic_name,
+                    clinicAddress: clinicData.clinic_address
+                }), 3, 2000);
+                logger.log('info', `Appointment confirmation sent for appointment ID ${appointmentRows[0].appointmentID}`);
+            } catch (error) {
+                logger.log('error', `Failed to send appointment via sms and email: ${error}`);
+                // optionally schedule retry by pushing to a queue or DB for later processing
+            }
+        });
 
         return res.status(StatusCodes.OK).json({
             message: "Appointment booked successfully",
