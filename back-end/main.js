@@ -19,7 +19,7 @@ import {
 import parser from "cron-parser"
 import logger from "./config/winston.js";
 import initializeScheduler from "./config/appointment_scheduler.js";
-import initializeSessionStore from "./db/mysql/session_store.js";
+// import initializeSessionStore from "./db/mysql/session_store.js";
 dotenv.config();
 
 const nextRuns = await getNextBackupRun(5);
@@ -78,28 +78,28 @@ const __dirname = path.dirname(__filename);
 
 app.set("trust proxy", 1);
 
-let sessionStore;
-try {
-    sessionStore = await initializeSessionStore();
-    if (sessionStore && typeof sessionStore.sync === "function") {
-        await sessionStore.sync();
-        logger.log(`info`, `Session store synced successfully`);
-    }
-} catch (error) {
-    logger.log(`error`, `Failed to initialize or sync session store: ${error}`);
-    if (process.env.NODE_ENV === "production") {
-        // fail-fast in production so app doesn't accidentally use MemoryStore
-        throw error;
-    } else {
-        logger.log(`warn`, `Falling back to default in-memory session store for development`);
-        sessionStore = null;
-    }
-}
+// let sessionStore;
+// try {
+//     sessionStore = await initializeSessionStore();
+//     if (sessionStore && typeof sessionStore.sync === "function") {
+//         await sessionStore.sync();
+//         logger.log(`info`, `Session store synced successfully`);
+//     }
+// } catch (error) {
+//     logger.log(`error`, `Failed to initialize or sync session store: ${error}`);
+//     if (process.env.NODE_ENV === "production") {
+//         // fail-fast in production so app doesn't accidentally use MemoryStore
+//         throw error;
+//     } else {
+//         logger.log(`warn`, `Falling back to default in-memory session store for development`);
+//         sessionStore = null;
+//     }
+// }
 
 // session configuration
 app.use(session({
     secret: process.env.SESSION_SECRET,
-    store: sessionStore,
+    // store: sessionStore,
     resave: false,
     saveUninitialized: false,
     rolling: true,
