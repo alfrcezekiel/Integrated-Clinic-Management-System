@@ -86,7 +86,7 @@ try {
         logger.log(`info`, `Session store synced successfully`);
     }
 } catch (error) {
-    logger.log(`error`, `Failed to initialize or sync session store: ${errror}`);
+    logger.log(`error`, `Failed to initialize or sync session store: ${error}`);
     if (process.env.NODE_ENV === "production") {
         // fail-fast in production so app doesn't accidentally use MemoryStore
         throw error;
@@ -144,6 +144,7 @@ const corsOptions = {
         const allowedOrigins = env === "production"
             ? [
                 process.env.VITE_BASE_CLIENT_URL, // Your Railway frontend URL
+                process.env.CLIENT_VERCEL_DOMAIN,
                 // Add any other production frontend URLs here
             ].filter(Boolean) // Remove any undefined values
             : ["http://localhost:5173", "http://localhost:3000"];
