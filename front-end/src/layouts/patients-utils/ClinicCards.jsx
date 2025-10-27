@@ -22,6 +22,7 @@ import ConfirmAppointmentModal from "./ConfirmBookedAppointment";
 import { useAuthorization } from "../../context/auth/useAuthorization";
 import dayjs from "dayjs";
 import DailyBookAppointmentbox from "../../components/dialog_box/daily_book_appointment_box";
+import config from "../../API/config.js";
 
 const ClinicCards = () => {
     const [clinics, setClinics] = useState([]);
@@ -179,7 +180,7 @@ const ClinicCards = () => {
 
             if (response.status === 200) {
                 const count = response.data.count;
-                setDailyAppointmentCount(count);    
+                setDailyAppointmentCount(count);
 
                 return count < MAX_DAILY_APPOINTMENTS;
             } else {
@@ -484,7 +485,7 @@ const ClinicCards = () => {
                                     </div>
                                     <div className="py-2">
                                         <img
-                                            src={`http://localhost:7506/uploads/clinic_images/${clinic.clinic_image}`}
+                                            src={`${config.api.baseURL}/uploads/clinic_images/${clinic.clinic_image}`}
                                             alt="Clinic Management Image"
                                             className="object-center object-cover rounded-2xl min-h-[25dvh]"
                                         />

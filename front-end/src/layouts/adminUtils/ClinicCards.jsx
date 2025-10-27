@@ -14,6 +14,7 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import {
     useNavigate
 } from 'react-router-dom';
+import config from "../../API/config.js";
 
 const ClinicCard = ({ clinic, onViewDetails, onEditClinic }) => {
     const firstLetter = clinic.clinic_name ? clinic.clinic_name.charAt(0).toUpperCase() : 'C';
@@ -53,7 +54,7 @@ const ClinicCard = ({ clinic, onViewDetails, onEditClinic }) => {
         date.setMinutes(+minute);
         return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
     };
-    
+
     const navigate = useNavigate();
 
     const navigateToViewcClinic = () => {
@@ -73,7 +74,7 @@ const ClinicCard = ({ clinic, onViewDetails, onEditClinic }) => {
         <div className="max-w-md mx-auto bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200 hover:shadow-xl transition-transform transform hover:-translate-y-2">
             <img
                 className="w-full h-full object-cover p-4 rounded-3xl"
-                src={`http://localhost:7506/uploads/clinic_images/${clinic.clinic_image}`}
+                src={`${config.api.baseURL}/uploads/clinic_images/${clinic.clinic_image}`}
                 alt="Clinic"
             />
 
