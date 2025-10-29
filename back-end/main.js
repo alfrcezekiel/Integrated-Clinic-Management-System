@@ -20,6 +20,7 @@ import parser from "cron-parser"
 import logger from "./config/winston.js";
 import initializeScheduler from "./config/appointment_scheduler.js";
 // import initializeSessionStore from "./db/mysql/session_store.js";
+import requestMethod from "./utils/request_method.js";
 dotenv.config();
 
 const nextRuns = await getNextBackupRun(5);
@@ -207,6 +208,8 @@ app.use("/uploads/medical_reports", express.static(medicalReportPath));
 
 // route for CMS
 app.use("/", cms);
+
+app.all("/cms.api.com/*", requestMethod);
 
 app.disable("etag");
 

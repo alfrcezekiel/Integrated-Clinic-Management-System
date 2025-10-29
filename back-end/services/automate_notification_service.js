@@ -13,7 +13,13 @@ import parseAppointmentDateTime from "../utils/appointmentDateTimeUtil.js";
 import getNewDatabaseConnection from "../utils/getConnection.js";
 import { parseAppointmentDate } from "../utils/parse_appointment_date.js";
 import { parseAppointmentTime } from "../utils/parse_appointment_time.js";
+import { Resend } from "resend";
 dotenv.config();
+
+/**
+ * initialize resend email client
+ */
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 /**
  * email configuration
@@ -30,8 +36,9 @@ const transporter = nodemailer.createTransport({
     pool: true,
     maxConnections: 5,
     maxMessages: 100,
-    connectionTimeout: 30000, // 30s
+    connectionTimeout: 60000, // 60s
     greetingTimeout: 15000,
+    socketTimeout: 60000, // 60s
     tls: {
         rejectUnauthorized: false
     }
@@ -64,33 +71,37 @@ initialzeTwilioClient();
 /**
  * @function send a email notification in patient side for appointment confirmation / reminders
  */
-export const sendEmailNotification = async (to, subject, html, attempts = 2) => {
+export const sendEmailNotification = async (to, subject, html) => {
     try {
+        if (process.env.NODE_ENV === "production") {
+            try {
+                const emailResponse = await resend.emails.send({
+                    from: `Clinic Management System <${process.env.SMTP_EMAIL_USER}@resend.dev>`,
+                    to: to,
+                    subject: subject,
+                    html: html,
+                });
+
+                logger.log("info", `Email notification sent to ${to} via resend: ${emailResponse.id}`);
+                return emailResponse;
+            } catch (error) {
+                logger.log("error", `Failed to send email notification via resend: ${error}. Falling back to local SMTP.`);
+            }
+        }
+
         const mailOptions = {
             from: `Clinic Management System <${process.env.SMTP_EMAIL_USER}>`,
             to: to,
             subject: subject,
             html: html
-        }
+        };
 
-        let lastError = null;
-        for (let i = 0; i < attempts; i++) {
-            try {
-                const info = await transporter.sendMail(mailOptions);
-                logger.log("info", `Email notification sent to ${to}: ${info.messageId}`);
-                return info;
-            } catch (error) {
-                lastError = error;
-                logger.log(`warn`, `Email send attempt: ${i + 1} failed for ${to}: ${error}`);
+        const info = await transporter.sendMail(mailOptions);
+        logger.log("info", `Email notification sent to ${to} via local SMTP: ${info.messageId}`);
+        return info;
 
-                await new Promise((resolve) => setTimeout(resolve, 500 * (i + 1)))
-            }
-        }
-        
-        logger.log('error', `Failed to send email notification after ${attempts} attempts: ${lastError}`);
-        throw lastError;
     } catch (error) {
-        logger.log("error", `Failed to send email notification: ${error}`)
+        logger.log("error", `Failed to send email notification in local: ${error}`)
         throw new Error(`Failed to send email notification: ${error}`)
     }
 }
@@ -580,6 +591,23 @@ export const sendStatusUpdateReminder = async ({ email, phoneNumber, firstName, 
             </html>
         `;
 
+        if (process.env.NODE_ENV === "production") {
+            try {
+                const emailResponse = await resend.emails.send({
+                    from: `${clinicName} <${process.env.SMTP_EMAIL_USER}@resend.dev>`,
+                    to: email,
+                    subject: emailSubject,
+                    html: emailBody,
+                });
+
+                logger.log(`info`, `Successfully sent a status update reminder via email using Resend: ${email}`);
+                
+                return emailResponse;
+            } catch (error) {
+                logger.log(`error`, `Failed to send status update reminder via Resend: ${error}. Falling back to local SMTP.`);
+            }
+        }
+
         const emailInfo = await transporter.sendMail({
             from: `${clinicName} <${process.env.SMTP_EMAIL_USER}>`,
             to: email,
@@ -587,14 +615,14 @@ export const sendStatusUpdateReminder = async ({ email, phoneNumber, firstName, 
             html: emailBody
         })
 
-        logger.log(`info`, `Successfully sent a status update reminder via email: ${email}`);
+        logger.log(`info`, `Successfully sent a status update reminder via local email: ${email}`);
 
         return {
             success: true,
             emailInfo,
         }
     } catch (error) {
-        logger.log(`error`, `Failed sending a status update reminder via email, sms: ${error}`)
+        logger.log(`error`, `Failed sending a status update reminder via local email: ${error}`)
         throw error;
     }
 }

@@ -779,45 +779,20 @@ export const patientsBookedAppointments = async (req, res) => {
 
         const clinicData = clinicRows[0];
 
-        await connection.commit();
-
-        /**
-         * retry helper with exponential backoff for transient network errors (e.g. connection timeout)
-         * sendFn must be an async function returning a Promise
-         */
-        const sendWithRetries = async (sendFn, attempts = 3, baseDelayMs = 2000) => {
-            let lastErr;
-            for (let i = 1; i <= attempts; i++) {
-                try {
-                    logger.log('info', `Attempting to send email (attempt ${i}) for ${email}`);
-                    const r = await sendFn();
-                    return r;
-                } catch (err) {
-                    lastErr = err;
-                    logger.log('warn', `Email send attempt: ${i} failed for ${email}: ${err}`);
-                    if (i < attempts) {
-                        const delay = baseDelayMs * Math.pow(2, i - 1);
-                        await new Promise((resolve) => setTimeout(resolve, delay));
-                    }
-                }
-            }
-            throw lastErr;
-        };
-
         // send in background so booking response is not blocked by network issues
-        setImmediate(async () => {
-            try {
-                await sendWithRetries(() => sendAppointmentsConfirmation({
-                    ...appointmentRows[0],
-                    clinicName: clinicData.clinic_name,
-                    clinicAddress: clinicData.clinic_address
-                }), 3, 2000);
-                logger.log('info', `Appointment confirmation sent for appointment ID ${appointmentRows[0].appointmentID}`);
-            } catch (error) {
-                logger.log('error', `Failed to send appointment via sms and email: ${error}`);
-                // optionally schedule retry by pushing to a queue or DB for later processing
-            }
-        });
+        try {
+            sendAppointmentsConfirmation({
+                ...appointmentRows[0],
+                clinicName: clinicData.clinic_name,
+                clinicAddress: clinicData.clinic_address
+            });
+            logger.log('info', `Appointment confirmation sent for appointment ID ${appointmentRows[0].appointmentID}`);
+        } catch (error) {
+            logger.log('error', `Failed to send appointment via sms and email: ${error}`);
+            // optionally schedule retry by pushing to a queue or DB for later processing
+        }
+
+        await connection.commit();
 
         return res.status(StatusCodes.OK).json({
             message: "Appointment booked successfully",
@@ -999,6 +974,8 @@ export const getBookedAppointmentsToDisplayInDoctorsDashboard = async (req, res)
 /**
  * @function controller logic for updating patients appointments details in clinic side
  * it will send a automated reminder to the patient email if the clinic staff updated the patient status
+ * @access - {private}
+ * @route doctors-dashboard/updateAppointment/:appointmentID
  */
 export const updatePatientsAppointments = async (req, res) => {
     const connection = await conn.getConnection();
@@ -3897,6 +3874,8 @@ export const retrieveClinicByIdDeclinedBookedAppointments = asyncHandler(
 
 /**
  * @function controller logic to modify the booked appointment details of patient in all booked appointments in clinic side table
+ * @access {private}
+ * @route /cms.api.com/clinic/dashboard/modifyBookedAppointmentDetails
  */
 export const findBookedAppointmentByIdToModifyBookedAppointmentDetails = asyncHandler(
     async (req, res) => {
@@ -3978,7 +3957,17 @@ export const findBookedAppointmentByIdToModifyBookedAppointmentDetails = asyncHa
             })
         }
 
-        logger.log("info", `Modify Booked Appointment Details in All Appointments Clinic Side Table: ${all_appointments_modify_booked_appointments_result}`);
+        try {
+            const clinic_instance = new Clinic();
+            await clinic_instance.handleAutomatedUpdateStatusInClinicSideAppointments({
+                appointmentID: clinic_booked_appointment_id,
+                status: selected_status
+            });
+        } catch (error) {
+            logger.log(`error`, `Failed to update the patient book appointment in table of clinic appointmetns: ${error}`);
+        }
+
+        logger.log("info", `Modify Booked Appointment Details in All Appointments Clinic Side Table: ${clinic_booked_appointment_id}`);
         return res.status(StatusCodes.OK).json({
             message: "Booked Appointment Details Modified Successfully!"
         })

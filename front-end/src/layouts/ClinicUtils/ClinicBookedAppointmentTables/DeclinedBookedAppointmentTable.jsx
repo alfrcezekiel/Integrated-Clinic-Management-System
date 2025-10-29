@@ -127,12 +127,7 @@ const DeclinedBookedAppointmentTable = () => {
                                     >
                                         <td className="px-6 py-6`">
                                             <span className="text-center">
-                                                {declined.firstName}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-6`">
-                                            <span className="text-center">
-                                                {declined.lastName}
+                                                {declined.firstName} {declined.lastName}
                                             </span>
                                         </td>
                                         <td className="px-6 py-6`">

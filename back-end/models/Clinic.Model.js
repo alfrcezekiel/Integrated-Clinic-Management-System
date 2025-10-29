@@ -3318,6 +3318,7 @@ class Clinic {
 
     /**
      * @method logic to automatically updates a status of patient to reminder/confirmation via sms and email
+     * @contoller updatePatientsAppointments
      */
     handleAutomatedUpdateStatus = modelErrorHandling(
         async (params) => {
@@ -3443,6 +3444,131 @@ class Clinic {
             }
         },
         "Handle Automated Update Status"
+    )
+
+    /**
+     * @method logic to send patient status update reminder to the patient email address in clinic side appointment scheduling
+     * @controller findBookedAppointmentByIdToModifyBookedAppointmentDetails
+     */
+    handleAutomatedUpdateStatusInClinicSideAppointments = modelErrorHandling(
+        async (params) => {
+            this.connection = await this.conn.getConnection();
+            try {
+                await this.connection.beginTransaction();
+
+                if (!params || typeof params !== "object") {
+                    throw new Error(`Invalid! Handle automated update status in clinic side appointment should be an object`);
+                }
+
+                const { appointmentID, status } = params;
+
+                const appointment_id = parseInt(appointmentID);
+                const patient_status = String(status);
+
+                if (isNaN(appointment_id)) {
+                    throw new Error(`Invalid! Appointment id should be a number`);
+                }
+
+                if (!patient_status) {
+                    throw new Error(`Invalid! Patient status should be a string`);
+                }
+
+                /**
+                 * define the columns of clinic appointments table in database of clinicmanagement
+                 */
+                const clinic_appointments_columns = [
+                    "ca.id",
+                    "ca.firstName",
+                    "ca.lastName",
+                    "ca.email",
+                    "ca.phoneNumber",
+                    "ca.appointmentDate",
+                    "ca.appointmentTime",
+                    "ca.purposeOfAppointment",
+                    "ca.status",
+                    "c.clinic_name",
+                    "c.clinic_address"
+                ]
+
+                /**
+                 * @description query to retrieve the clinic appointment and clinic details
+                 */
+                const retrieve_clinic_appointments_and_clinic_query = `
+                    SELECT ${clinic_appointments_columns.join(",")}
+                    FROM clinic_appointments AS ca
+                    INNER JOIN clinic AS c
+                    ON ca.clinic_id = c.clinic_id
+                    WHERE ca.id = ?;
+                `
+
+                const retrieve_clinic_appointments_and_clinic_query_values = [
+                    appointment_id
+                ];
+
+                const [rows] = await this.connection.query(
+                    retrieve_clinic_appointments_and_clinic_query,
+                    retrieve_clinic_appointments_and_clinic_query_values,
+                );
+
+                if (!rows) {
+                    throw new Error(`Failed to retrieve infomration of clinic appointments and clinic`);
+                }
+
+                const current_appointment = rows[0];
+
+                const update_query = `
+                    UPDATE clinic_appointments
+                    SET status = ?
+                    WHERE id = ?;
+                `
+
+                const update_query_values = [
+                    patient_status,
+                    appointment_id
+                ];
+
+                const [update_rows] = await this.connection.query(
+                    update_query,
+                    update_query_values
+                );
+
+                if (!update_rows) {
+                    throw new Error(`Failed to automate update status of clinic appointments via email.`);
+                }
+
+                await this.connection.commit();
+
+                await this.sendStatusUpdateReminder({
+                    appointmentID: appointment_id,
+                    email: current_appointment.email,
+                    phoneNumber: current_appointment.phoneNumber,
+                    firstName: current_appointment.firstName,
+                    lastName: current_appointment.lastName,
+                    appointmentDate: `${current_appointment.appointmentDate}`,
+                    preferredTime: `${current_appointment.appointmentTime}`,
+                    patientStatus: patient_status,
+                    clinicName: current_appointment.clinic_name,
+                });
+
+                return  {
+                    success:true,
+                    message: "Successfully send a automated update status of clinic appoimtments via email"
+                }
+            } catch (error) {
+                const rollbackQuery = await this.connection.rollback();
+                if (!rollbackQuery) {
+                    throw new Error(`Failed to rollback transaction in automating update status in clinic appointment via email`)
+                }
+                
+                logger.log(`error`, `Failed in handling automated update status in clinic side appointment in method: ${error}`);
+                throw error;
+            } finally {
+                if (this.connection) {
+                    await this.connection.release();
+                }
+            }
+        },
+        "Handle automated update status in clinic side appointment"
     )
 
     /**
@@ -4837,7 +4963,7 @@ class Clinic {
                 const { patientID, appointmentDate } = params;
 
                 const patient_id = Number(patientID);
-                
+
                 if (isNaN(patient_id)) {
                     throw new Error(`Invalid patient ID! Count daily appointments should be a number`);
                 }
@@ -4845,7 +4971,7 @@ class Clinic {
                 if (!appointmentDate || typeof appointmentDate !== "string") {
                     throw new Error(`Invalid appointment date! Count daily appointments should be a string`);
                 }
-                
+
                 const appointment_status = [
                     "Pending",
                     "Approved"

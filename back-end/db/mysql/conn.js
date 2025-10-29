@@ -20,7 +20,10 @@ async function createConnection() {
             connectionLimit: 10,
             port: process.env.DB_PORT,
             waitForConnections: true,
-            queueLimit: 0
+            queueLimit: 0,
+            connectionTimeout: 60000,
+            acquireTimeout: 60000,        // 60s to wait for a free connection
+            timeout: 0
         } : {
             host: process.env.DB_HOST,
             user: process.env.DB_USER,
@@ -29,7 +32,10 @@ async function createConnection() {
             password: process.env.DB_PASSWORD,
             connectionLimit: 10,
             waitForConnections: true,
-            queueLimit: 0
+            queueLimit: 0,
+            connectionTimeout: 60000,
+            acquireTimeout: 60000,        // 60s to wait for a free connection
+            timeout: 0
         }
 
         const pool = mysql.createPool(connectionConfig);

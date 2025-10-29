@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "start": "bun main.js",
-    "dev": "bun --watch main.js"
+    "dev": "bun --watch main.js",
+    "test" : "jest --runInBand --detectOpenHandles",
+    "test:watch" : "jest --watch"
   },
   "keywords": [],
   "author": "",
@@ -47,6 +49,7 @@
     "pdfkit": "^0.17.1",
     "qrcode": "^1.5.4",
     "readable-stream": "^4.7.0",
+    "resend": "^6.3.0",
     "sequelize": "^6.37.7",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
@@ -54,5 +57,9 @@
     "util": "^0.12.5",
     "winston": "^3.17.0",
     "winston-daily-rotate-file": "^5.0.0"
+  },
+  "devDependencies": {
+    "jest": "^30.2.0",
+    "supertest": "^7.1.4"
   }
 }
