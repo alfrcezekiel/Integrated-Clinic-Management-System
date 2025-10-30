@@ -55,6 +55,7 @@ export const CMS = async (req, res) => {
 
 // controller logic for register patients accounts
 export const registerPatientAccount = async (req, res) => {
+    const connection = await conn.getConnection();
     try {
         const {
             firstName,
@@ -86,6 +87,7 @@ export const registerPatientAccount = async (req, res) => {
 
         const formattedDate = new Date(date_of_birth).toISOString().split('T')[0]; // '2003-02-20'
 
+        await connection.beginTransaction();
         // Use formattedDate in your query or insert
 
         // 1st table of patients register account
@@ -110,7 +112,7 @@ export const registerPatientAccount = async (req, res) => {
             status
         ) VALUES (?, ?, ?, ?, ?)`;
 
-        const [result] = await conn.query(query1, [
+        const [result] = await connection.query(query1, [
             firstName,
             lastName,
             email,
@@ -123,7 +125,7 @@ export const registerPatientAccount = async (req, res) => {
         ]);
         const patientID = result.insertId;
 
-        await conn.query(query2, [
+        await connection.query(query2, [
             phoneNumber,
             hashedPassword,
             hashedConfirmPassword,
@@ -131,6 +133,7 @@ export const registerPatientAccount = async (req, res) => {
             status
         ]);
 
+        await connection.commit();
         try {
             await sendWelcomeEmail({
                 email,
@@ -155,7 +158,13 @@ export const registerPatientAccount = async (req, res) => {
             token
         })
     } catch (error) {
-        console.error(`Failed to register patient account: ${error}`);
+        const rollbackQuery = await connection.rollback();
+        if (!rollbackQuery) {
+            logger.log(`error`, `Failed to rollback transaction in register patient account`)
+        }
+        logger.error(`Failed to register patient account: ${error}`);
+    } finally {
+        connection.release();
     }
 }
 
