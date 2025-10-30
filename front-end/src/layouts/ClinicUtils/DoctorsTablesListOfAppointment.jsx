@@ -295,7 +295,7 @@ const DoctorsTablesListOfAppointments = () => {
     }
 
     // function either of these selected status will redirect in respective route
-    const handleCloseSuccessfullAppointmentModal = () => {
+    const handleCloseSuccessfullAppointmentModal = useCallback(() => {
         setFieldsError({});
         setSuccessfullAppointmentModalOpen(false);
 
@@ -307,7 +307,7 @@ const DoctorsTablesListOfAppointments = () => {
         } else if (memoizedFormDataValue.status === "Declined") {
             navigate("/doctor-portal/dashboard/DeclinedAppointments");
         }
-    }
+    }, [memoizedFormDataValue.status, navigate]);
 
     // this function determines the color of the status of the patients
     const getStatusColor = (status) => {

@@ -23,7 +23,7 @@ async function createConnection() {
             queueLimit: 0,
             enableKeepAlive: true,
             keepAliveInitialDelay: 10000, // 10 seconds
-            connectTimeout: 30000, // 30 seconds
+            connectTimeout: 60000, // 60 seconds
         } : {
             host: process.env.DB_HOST,
             user: process.env.DB_USER,
@@ -32,7 +32,7 @@ async function createConnection() {
             password: process.env.DB_PASSWORD,
             connectionLimit: 10,
             waitForConnections: true,
-            connectTimeout: 30000, // 30 seconds
+            connectTimeout: 60000, // 60 seconds
             enableKeepAlive: true,
             keepAliveInitialDelay: 10000, // 10 seconds
             queueLimit: 0,

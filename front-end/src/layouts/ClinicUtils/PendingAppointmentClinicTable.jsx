@@ -218,7 +218,7 @@ const PendingAppointmentClinicTable = () => {
         setOpen(true);
     }
 
-    const handleCloseSuccessfullAppointmentModal = () => {
+    const handleCloseSuccessfullAppointmentModal = useCallback(() => {
         setFieldsError({});
         setSuccessfullAppointmentModalOpen(false);
 
@@ -230,8 +230,7 @@ const PendingAppointmentClinicTable = () => {
         } else if (memoizedFormDataValue.status === "Declined") {
             navigate("/doctor-portal/dashboard/DeclinedAppointments");
         }
-    }
-
+    }, [memoizedFormDataValue.status, navigate]);
 
     // function for handling the change of the input fields
     const handleCallbackChangeInput = useCallback(async (e) => {

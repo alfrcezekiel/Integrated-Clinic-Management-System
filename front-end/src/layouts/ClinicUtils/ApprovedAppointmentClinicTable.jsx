@@ -1,4 +1,7 @@
-import { useEffect } from "react"
+import {
+    useEffect,
+    useCallback
+} from "react"
 import {
     useLocation,
     useNavigate
@@ -80,40 +83,41 @@ const ApprovedAppointmentClinicTable = () => {
 
     const navigate = useNavigate();
     const location = useLocation();
-    
+
     const clinicID = user?.sid || localStorage.getItem("sid");
     if (!clinicID) {
         console.error("No clinic ID found in user session or localStorage");
     }
 
     const tokenContext = token || localStorage.getItem("authToken");
-    if(!tokenContext) {
+    if (!tokenContext) {
         console.error("No token found in context or localStorage");
-    } 
+    }
+
+    const retrieveAppoinmentApprovedStatus = useCallback(async () => {
+        try {
+            const response = await CMS.get(`/doctors-dashboard/getPatientApprovedStatus/${clinicID}`, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${tokenContext}`,
+                }
+            });
+
+            if (!response.data) {
+                throw new Error("No retrieved approved status for appointments");
+            }
+
+            if (response.status === 200) {
+                setAppointmentsData(response.data.patientsApprovedStatus);
+            } else {
+                throw new Error(`Failed to retrieve approved status data: ${response.status}`);
+            }
+        } catch (error) {
+            console.error(`Code functionality error for fetching approved status data: ${error}`);
+        }
+    }, [clinicID, tokenContext]);
 
     useEffect(() => {
-        const retrieveAppoinmentApprovedStatus = async () => {
-            try {
-                const response = await CMS.get(`/doctors-dashboard/getPatientApprovedStatus/${clinicID}`, {
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${tokenContext}`,
-                    }
-                });
-    
-                if (!response.data) {
-                    throw new Error("No retrieved approved status for appointments");
-                }
-    
-                if (response.status === 200) {
-                    setAppointmentsData(response.data.patientsApprovedStatus);
-                } else {
-                    throw new Error(`Failed to retrieve approved status data: ${response.status}`);
-                }
-            } catch (error) {
-                console.error(`Code functionality error for fetching approved status data: ${error}`);
-            }
-        }
 
         const titleHeader = () => {
             document.title = "Clinic's Dashboard | Patient's Appointment | CMS"
@@ -121,8 +125,7 @@ const ApprovedAppointmentClinicTable = () => {
         titleHeader();
 
         retrieveAppoinmentApprovedStatus();
-    }, [location.pathname, clinicID, tokenContext]);
-
+    }, [location.pathname, clinicID, tokenContext, retrieveAppoinmentApprovedStatus]);
 
     // function to format to MM/DD/YYYY to display in the table
     const dateFormat = (dateString) => {

@@ -797,7 +797,7 @@ export const patientsBookedAppointments = async (req, res) => {
             });
             logger.log('info', `Appointment confirmation sent for appointment ID ${appointmentRows[0].appointmentID}`);
         } catch (error) {
-            logger.log('error', `Failed to send appointment via sms and email: ${error}`);
+            logger.log('error', `Failed to send appointment via local email: ${error}`);
             // optionally schedule retry by pushing to a queue or DB for later processing
         }
 

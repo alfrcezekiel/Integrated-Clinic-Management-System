@@ -14,6 +14,11 @@ import getNewDatabaseConnection from "../utils/getConnection.js";
 import { parseAppointmentDate } from "../utils/parse_appointment_date.js";
 import { parseAppointmentTime } from "../utils/parse_appointment_time.js";
 import { Resend } from "resend";
+import {
+    executeDbOperationWithRetry,
+    sendEmailWithTimeout
+} from "../utils/lock_wait_timeout.js";
+import conn from "../db/mysql/conn.js";
 dotenv.config();
 
 /**
@@ -75,12 +80,12 @@ export const sendEmailNotification = async (to, subject, html) => {
     try {
         if (process.env.NODE_ENV === "production") {
             try {
-                const emailResponse = await resend.emails.send({
+                const emailResponse = await sendEmailWithTimeout(() => resend.emails.send({
                     from: `Clinic Management System <noreply@resend.dev>`,
                     to: to,
                     subject: subject,
                     html: html,
-                });
+                }), 120000);
 
                 logger.log("info", `Email notification sent to ${to} via resend: ${emailResponse.id}`);
                 return emailResponse;
@@ -96,7 +101,7 @@ export const sendEmailNotification = async (to, subject, html) => {
             html: html
         };
 
-        const info = await transporter.sendMail(mailOptions);
+        const info = await sendEmailWithTimeout(() => transporter.sendMail(mailOptions), 120000);
         logger.log("info", `Email notification sent to ${to} via local SMTP: ${info.messageId}`);
         return info;
 
@@ -279,23 +284,67 @@ export const scheduleAppointmentsReminder = async (appointment, reminderTime = 6
                     logger.log(`info`, `Appointment email reminder sent to ${email}`);
                 }
 
-                const pool_connection = await getNewDatabaseConnection();
+                /**
+                 * execute a function with robust retry and transaction handling
+                 */
                 try {
-                    await pool_connection.beginTransaction();
-                    const query = `UPDATE patientsappointment SET reminder_sent = ? WHERE appointmentID = ?;`;
-                    await pool_connection.query(query, [1, appointmentID]);
-                    await pool_connection.commit();
-                } catch (error) {
-                    const rollbackQuery = await pool_connection.rollback();
-                    if (!rollbackQuery) {
-                        logger.log(`error`, `Failed to rollback transaction to update reminder sent status for appointment: ${error}`)
+                    await executeDbOperationWithRetry(
+                        `Update reminder_sent for appointment ${appointmentID}`,
+                        async (conn) => {
+                            if (typeof conn.query === "function") {
+                                const query = `UPDATE patientsappointment SET reminder_sent = ? WHERE appointmentID = ?;`;
+                                return await conn.query(query, [1, appointmentID]);
+                            } else {
+                                throw new Error(`DB connection doesn't support query()`);
+                            }
+                        },
+                        6,
+                        500
+                    );
+
+                    let updated = false;
+                    if (typeof executeDbOperationWithRetry === "function") {
+                        try {
+                            await executeDbOperationWithRetry(
+                                `Update reminder_sent for appointment ${appointmentID}`,
+                                async (dbConn) => {
+                                    if (dbConn && typeof dbConn.query === "function") {
+                                        const query = `UPDATE patientsappointment SET reminder_sent = ? WHERE appointmentID = ?;`;
+                                        return await dbConn.query(query, [1, appointmentID]);
+                                    }
+                                    throw new Error(`DB connection doesn't support query()`);
+                                },
+                                6,
+                                500
+                            )
+                        } catch (error) {
+                            logger.error(`executeDbOperationWithRetry failed: ${err}. Falling back to direct DB update.`);
+                        }
                     }
 
-                    logger.log(`error`, `Failed to update reminder sent status for appointment: ${error}`)
-                } finally {
-                    if (pool_connection) {
-                        pool_connection.release();
+                    if (!updated) {
+                        const query = `UPDATE patientsappointment SET reminder_sent = ? WHERE appointmentID = ?;`;
+                        // If imported pool supports .query(), use it
+                        if (conn && typeof conn.query === "function") {
+                            await conn.query(query, [1, appointmentID]);
+                        } else {
+                            // Final fallback: obtain a new connection and run the query, then release.
+                            const connection = await getNewDatabaseConnection();
+                            try {
+                                if (connection && typeof connection.query === "function") {
+                                    await connection.query(query, [1, appointmentID]);
+                                } else {
+                                    throw new Error("No usable DB connection available to update reminder_sent");
+                                }
+                            } finally {
+                                if (connection && typeof connection.release === "function") {
+                                    connection.release();
+                                }
+                            }
+                        }
                     }
+                } catch (error) {
+                    logger.log("error", `Failed to update reminder_sent after retries: ${error}`);
                 }
 
                 logger.log(`info`, `Automated appointment reminder sent successfully for appointment: ${firstName} ${lastName} at ${clinicName}`);
@@ -593,27 +642,27 @@ export const sendStatusUpdateReminder = async ({ email, phoneNumber, firstName, 
 
         if (process.env.NODE_ENV === "production") {
             try {
-                const emailResponse = await resend.emails.send({
+                const emailResponse = await sendEmailWithTimeout(() => resend.emails.send({
                     from: `${clinicName} <noreply@resend.dev>`,
                     to: email,
                     subject: emailSubject,
                     html: emailBody,
-                });
+                }), 120000);
 
                 logger.log(`info`, `Successfully sent a status update reminder via email using Resend: ${email}`);
-                
+
                 return emailResponse;
             } catch (error) {
                 logger.log(`error`, `Failed to send status update reminder via Resend: ${error}. Falling back to local SMTP.`);
             }
         }
 
-        const emailInfo = await transporter.sendMail({
+        const emailInfo = await sendEmailWithTimeout(() => transporter.sendMail({
             from: `${clinicName} <${process.env.SMTP_EMAIL_USER}>`,
             to: email,
             subject: emailSubject,
             html: emailBody
-        })
+        }), 120000);
 
         logger.log(`info`, `Successfully sent a status update reminder via local email: ${email}`);
 

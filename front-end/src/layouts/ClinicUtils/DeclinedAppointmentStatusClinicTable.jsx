@@ -1,4 +1,7 @@
-import { useEffect } from "react"
+import {
+    useEffect,
+    useCallback
+} from "react"
 import { useLocation } from "react-router-dom"
 import {
     Card,
@@ -41,34 +44,35 @@ const DeclinedAppointmentStatusClinicTable = () => {
         console.error("No clinic ID found in context or localStorage");
     }
 
+    const retrieveAppoinmentDeclinedStatus = useCallback(async () => {
+        try {
+            const response = await CMS.get(`/doctors-dashboard/getPatientDeclinedStatus/${clinicID}`, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${tokenContext}}`,
+                }
+            });
+
+            if (!response.data) {
+                throw new Error("No retrieved declined status for appointments");
+            }
+
+            if (response.status === 200) {
+                setAppointmentsData(response.data.patientsDeclinedStatus);
+            }
+        } catch (error) {
+            console.error(`Code functionality error for fetching declined status data: ${error}`);
+        }
+    }, [tokenContext, clinicID]);
+
     useEffect(() => {
         const titleHeader = () => {
             document.title = "Clinic's Dashboard | Patient's Appointment | CMS"
         }
         titleHeader();
 
-        const retrieveAppoinmentDeclinedStatus = async () => {
-            try {
-                const response = await CMS.get(`/doctors-dashboard/getPatientDeclinedStatus/${clinicID}`, {
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${tokenContext}}`,
-                    }
-                });
-
-                if (!response.data) {
-                    throw new Error("No retrieved declined status for appointments");
-                }
-
-                if (response.status === 200) {
-                    setAppointmentsData(response.data.patientsDeclinedStatus);
-                }
-            } catch (error) {
-                console.error(`Code functionality error for fetching declined status data: ${error}`);
-            }
-        }
         retrieveAppoinmentDeclinedStatus();
-    }, [location.pathname, clinicID, tokenContext]);
+    }, [location.pathname, clinicID, tokenContext, retrieveAppoinmentDeclinedStatus]);
 
     // function to format to MM/DD/YYYY to display in the table
     const dateFormat = (dateString) => {

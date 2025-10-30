@@ -3407,22 +3407,28 @@ class Clinic {
                     throw new Error(`Failed to automate update the status of patient via email and sms`);
                 }
 
-                /**
-                 * sends reminder to the patient in via email
-                 */
-                await this.sendStatusUpdateReminder({
-                    appointmentID: appointment_id,
-                    email: current_appointment.email,
-                    phoneNumber: current_appointment.phoneNumber,
-                    firstName: current_appointment.firstName,
-                    lastName: current_appointment.lastName,
-                    appointmentDate: `${current_appointment.appointmentDate}`,
-                    preferredTime: `${current_appointment.preferredTime}`,
-                    patientStatus: patient_status,
-                    clinicName: current_appointment.clinic_name,
-                })
-
                 await this.connection.commit();
+
+                await this.connection.release();
+
+                try {
+                    /**
+                     * sends reminder to the patient in via email
+                    */
+                    await this.sendStatusUpdateReminder({
+                        appointmentID: appointment_id,
+                        email: current_appointment.email,
+                        phoneNumber: current_appointment.phoneNumber,
+                        firstName: current_appointment.firstName,
+                        lastName: current_appointment.lastName,
+                        appointmentDate: `${current_appointment.appointmentDate}`,
+                        preferredTime: `${current_appointment.preferredTime}`,
+                        patientStatus: patient_status,
+                        clinicName: current_appointment.clinic_name,
+                    })
+                } catch (error) {
+                    logger.log(`error`, `Failed to send a status update reminder ${process.env.NODE_ENV === "production" ? `via production: ${current_appointment.email}` : `via local email: ${current_appointment.email}`}`);
+                }
 
                 return {
                     success: true,
@@ -3437,10 +3443,6 @@ class Clinic {
 
                 logger.log(`error`, `Failed in handling automated update status via sms and email in method: ${error}`);
                 throw error;
-            } finally {
-                if (this.connection) {
-                    await this.connection.release();
-                }
             }
         },
         "Handle Automated Update Status"
@@ -3538,34 +3540,38 @@ class Clinic {
 
                 await this.connection.commit();
 
-                await this.sendStatusUpdateReminder({
-                    appointmentID: appointment_id,
-                    email: current_appointment.email,
-                    phoneNumber: current_appointment.phoneNumber,
-                    firstName: current_appointment.firstName,
-                    lastName: current_appointment.lastName,
-                    appointmentDate: `${current_appointment.appointmentDate}`,
-                    preferredTime: `${current_appointment.appointmentTime}`,
-                    patientStatus: patient_status,
-                    clinicName: current_appointment.clinic_name,
-                });
+                await this.connection.release();
+                try {
+                    /**
+                     * sends a automated reminder email to the patient email address in clinic side
+                     */
+                    await this.sendStatusUpdateReminder({
+                        appointmentID: appointment_id,
+                        email: current_appointment.email,
+                        phoneNumber: current_appointment.phoneNumber,
+                        firstName: current_appointment.firstName,
+                        lastName: current_appointment.lastName,
+                        appointmentDate: `${current_appointment.appointmentDate}`,
+                        preferredTime: `${current_appointment.appointmentTime}`,
+                        patientStatus: patient_status,
+                        clinicName: current_appointment.clinic_name,
+                    });
+                } catch (error) {
+                    logger.log(`error`, `Failed to send a status update reminder ${process.env.NODE_ENV === "production" ? `via production: ${current_appointment.email}` : `via local email: ${current_appointment.email}`}`);
+                }
 
-                return  {
-                    success:true,
-                    message: "Successfully send a automated update status of clinic appoimtments via email"
+                return {
+                    success: true,
+                    message: "Successfully send a automated update status of clinic appointments via email"
                 }
             } catch (error) {
                 const rollbackQuery = await this.connection.rollback();
                 if (!rollbackQuery) {
                     throw new Error(`Failed to rollback transaction in automating update status in clinic appointment via email`)
                 }
-                
+
                 logger.log(`error`, `Failed in handling automated update status in clinic side appointment in method: ${error}`);
                 throw error;
-            } finally {
-                if (this.connection) {
-                    await this.connection.release();
-                }
             }
         },
         "Handle automated update status in clinic side appointment"
