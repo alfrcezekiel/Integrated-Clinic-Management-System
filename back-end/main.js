@@ -19,7 +19,7 @@ import {
 import parser from "cron-parser"
 import logger from "./config/winston.js";
 import initializeScheduler from "./config/appointment_scheduler.js";
-// import initializeSessionStore from "./db/mysql/session_store.js";
+import sessionStore from "./db/mysql/session_store.js";
 import requestMethod from "./utils/request_method.js";
 dotenv.config();
 
@@ -100,7 +100,7 @@ app.set("trust proxy", 1);
 // session configuration
 app.use(session({
     secret: process.env.SESSION_SECRET,
-    // store: sessionStore,
+    store: sessionStore,
     resave: false,
     saveUninitialized: false,
     rolling: true,

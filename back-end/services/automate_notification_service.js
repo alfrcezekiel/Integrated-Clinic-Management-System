@@ -76,7 +76,7 @@ export const sendEmailNotification = async (to, subject, html) => {
         if (process.env.NODE_ENV === "production") {
             try {
                 const emailResponse = await resend.emails.send({
-                    from: `Clinic Management System <${process.env.SMTP_EMAIL_USER}@resend.dev>`,
+                    from: `Clinic Management System <noreply@resend.dev>`,
                     to: to,
                     subject: subject,
                     html: html,
@@ -594,7 +594,7 @@ export const sendStatusUpdateReminder = async ({ email, phoneNumber, firstName, 
         if (process.env.NODE_ENV === "production") {
             try {
                 const emailResponse = await resend.emails.send({
-                    from: `${clinicName} <${process.env.SMTP_EMAIL_USER}@resend.dev>`,
+                    from: `${clinicName} <noreply@resend.dev>`,
                     to: email,
                     subject: emailSubject,
                     html: emailBody,
