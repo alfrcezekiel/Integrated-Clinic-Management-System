@@ -319,7 +319,7 @@ const PendingAppointmentClinicTable = () => {
     }, [fieldsError])
 
 
-    const status = ["Approved", "Declined", "Pending", "Consulted"];
+    const status = ["Approved", "Declined", "Pending", "Cancelled"];
     const gender = ["Male", "Female"]
 
     // function to open the delete booked appointment dialog

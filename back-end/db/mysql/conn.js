@@ -8,34 +8,31 @@ dotenv.config();
  */
 async function createConnection() {
     try {
+        const baseConfig = {
+            host: process.env.DB_HOST,
+            user: process.env.DB_USER,
+            database: process.env.DATABASE_NAME,
+            password: process.env.DB_PASSWORD,
+            port: process.env.DB_PORT,
+            waitForConnections: true,
+            connectTimeout: 120000, // 120 seconds
+            enableKeepAlive: true,
+            keepAliveInitialDelay: 10000, // 10 seconds
+            queueLimit: 0,
+            connectionLimit: 10
+        }
+
         /**
          * Create a connection pool to the MySQL database
-         * betwwen railway and local development database
+         * between railway and local development database
          */
         const connectionConfig = process.env.NODE_ENV === "production" ? {
-            host: process.env.DB_HOST,
-            user: process.env.DB_USER,
-            database: process.env.DATABASE_NAME,
-            password: process.env.DB_PASSWORD,
-            connectionLimit: 10,
-            port: process.env.DB_PORT,
-            waitForConnections: true,
-            queueLimit: 0,
-            enableKeepAlive: true,
-            keepAliveInitialDelay: 10000, // 10 seconds
-            connectTimeout: 60000, // 60 seconds
+            ...baseConfig,
+            ssl: {
+                rejectUnauthorized: true
+            }
         } : {
-            host: process.env.DB_HOST,
-            user: process.env.DB_USER,
-            port: process.env.DB_PORT,
-            database: process.env.DATABASE_NAME,
-            password: process.env.DB_PASSWORD,
-            connectionLimit: 10,
-            waitForConnections: true,
-            connectTimeout: 60000, // 60 seconds
-            enableKeepAlive: true,
-            keepAliveInitialDelay: 10000, // 10 seconds
-            queueLimit: 0,
+            ...baseConfig
         }
 
         const pool = mysql.createPool(connectionConfig);

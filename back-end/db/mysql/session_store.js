@@ -15,6 +15,8 @@ try {
         password: process.env.DB_PASSWORD,
         database: process.env.DATABASE_NAME,
         clearExpired: true,
+        connectTimeout: 120000, // 120 seconds
+        acqurireTimeout: 120000, // 120 seconds
         checkExpirationInterval: 900000, // 15 minutes
         expiration: 86400000, // 1 day
         createDatabaseTable: true,

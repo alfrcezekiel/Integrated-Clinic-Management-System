@@ -5241,3 +5241,59 @@ export const searchDeclinedBookedAppointments = asyncHandler(
         }
     }
 )
+
+/**
+ * @controller function to retrieve the popular appointment date, appointment time and days being a data analytics
+ * @access {private}
+ * @route /cms.api.com/clinic/analytics/popular_appointments
+ */
+export const getPopularAppointmentsAnalytics = asyncHandler(
+    async (req, res) => {
+        const {
+            clinicID,
+            startDate,
+            endDate
+        } = req.query;
+
+        const clinic_id = parseInt(clinicID);
+
+        if (!clinic_id || isNaN(clinic_id)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Please provide a valid clinic id"
+            })
+        }
+
+        let start_date = startDate ? dayjs(startDate).format("YYYY-MM-DD") : null;
+        let end_date = endDate ? dayjs(endDate).format("YYYY-MM-DD") : null;
+
+        if (start_date === "Invalid Date") start_date = null;
+
+        if (end_date === "Invalid Date") end_date = null;
+
+        const clinic_instance = new Clinic();
+
+        const result = await clinic_instance.getPopularAppointmentAnalytics({
+            clinicID: clinic_id,
+            startDate: start_date,
+            endDate: end_date
+        })
+
+        if (!result) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "No popularity analytics found"
+            })
+        }
+
+        return res.status(StatusCodes.OK).json({
+            success: true,
+            dates: result.dates.labels,
+            datesCounts: result.dates.counts,
+            times: result.times.labels,
+            timesCounts: result.times.counts,
+            days: result.days.labels,
+            daysCounts: result.days.counts,
+            model_message: result.message,
+            controller_message: "Successfully filtered popularity based in appointment dates, appointments times and days"
+        });
+    }
+)

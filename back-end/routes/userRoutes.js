@@ -83,7 +83,8 @@ import {
     searchApprovedBookedAppointments,
     searchDeclinedBookedAppointments,
     scheduleReminderForUpcomingAppointments,
-    getDailyAppointmentCount
+    getDailyAppointmentCount,
+    getPopularAppointmentsAnalytics
 } from "../controllers/cms.js";
 import validateRegister from "../middleware/validation.js";
 import patientsLoginValidation from "../middleware/patientsLoginValidation.js";
@@ -426,6 +427,14 @@ router.get("/cms.api.com/patient/dashboard/testUpcomingAppointment", verifyToken
 
 router.get("/cms.api.com/patient/dashboard/appointments/daily-count", verifyToken, getDailyAppointmentCount);
 
+/**
+ * @exports router to filter popularity appointment dates, appointment times and days choosen by patients
+ */
+router.get("/cms.api.com/clinic/analytics/popular_appointments", verifyToken, getPopularAppointmentsAnalytics);
+
 export default router;
 
+/**
+ * @exports router to handle all other request methods not defined in the routes
+ */
 router.all("*", requestMethod);

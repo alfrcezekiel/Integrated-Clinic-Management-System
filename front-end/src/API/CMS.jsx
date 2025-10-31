@@ -68,6 +68,7 @@ CMS.interceptors.response.use((response) => response,
                     localStorage.setItem("authToken", newAccessToken);
                     originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 
+                    console.log("Access token refreshed successfully.");
                     // Process the queue with the new token
                     processQueue(null, newAccessToken);
 

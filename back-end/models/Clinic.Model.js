@@ -5015,6 +5015,119 @@ class Clinic {
         },
         "Count Daily Appointments in patient side book appointment"
     )
+
+    /**
+     * @method to filter popular appointment date, appointment times and day in specific clinics
+     * @function controller getPopularAppointmentsAnalytics
+     */
+    getPopularAppointmentAnalytics = modelErrorHandling(
+        async ({ clinicID, startDate = null, endDate = null }) => {
+            this.connection = await this.conn.getConnection();
+            try {
+                await this.connection.beginTransaction();
+                const conditions = [
+                    "clinic_id = ?"
+                ]
+
+                const params = [
+                    clinicID
+                ]
+
+                if (startDate) {
+                    conditions.push("appointmentDate >= ?");
+                    params.push(startDate);
+                }
+
+                if (endDate) {
+                    conditions.push("appointmentDate <= ?");
+                    params.push(endDate);
+                }
+
+                /**
+                 * union both tables as derived so popular appointments can filter once
+                 */
+                const baseUnion = `
+                    (
+                        SELECT 
+                            appointmentDate AS appointmentDate,
+                            preferredTime AS time,
+                            clinic_id AS clinic_id
+                        FROM patientsappointment
+                    )
+                        UNION ALL
+                    (
+                        SELECT 
+                            appointmentDate AS appointmentDate,
+                            appointmentTime AS time,
+                            clinic_id AS clinic_id
+                        FROM clinic_appointments
+                    )
+                `;
+
+                const filtered = `
+                    SELECT appointmentDate, time
+                    FROM (${baseUnion}) AS ap
+                    WHERE ${conditions.join(" AND ")}
+                `;
+
+                const dates_sql = `
+                    SELECT
+                        DATE(f.appointmentDate) AS label,
+                        COUNT(*) AS cnt
+                    FROM (${filtered}) AS f
+                    GROUP BY DATE(f.appointmentDate)
+                    ORDER BY DATE(f.appointmentDate) ASC
+                `;
+
+                const times_sql = `
+                    SELECT
+                        DATE_FORMAT(f.time, '%H:%i') AS label,
+                        COUNT(*) AS cnt
+                    FROM (${filtered}) AS f
+                        GROUP BY DATE_FORMAT(f.time, '%H:%i')
+                        ORDER BY label ASC
+                `;
+
+                const days_sql = `
+                    SELECT 
+                        DAYNAME(f.appointmentDate) AS label,
+                        COUNT(*) AS cnt
+                    FROM (${filtered}) AS f
+                    GROUP BY DAYOFWEEK(f.appointmentDate), DAYNAME(f.appointmentDate)
+                    ORDER BY DAYOFWEEK(f.appointmentDate) ASC
+                `;
+
+                const [dates_rows] = await this.connection.query(dates_sql, params);
+                const [times_rows] = await this.connection.query(times_sql, params);
+                const [days_rows] = await this.connection.query(days_sql, params);
+
+                await this.connection.commit();
+
+                return {
+                    dates: {
+                        labels: dates_rows.map((row) => dayjs(row.label).format("YYYY-MM-DD")),
+                        counts: dates_rows.map((row) => row.cnt)
+                    },
+                    times: {
+                        labels: times_rows.map((row) => row.label),
+                        counts: times_rows.map((row) => row.cnt)
+                    },
+                    days: {
+                        labels: days_rows.map((row) => row.label),
+                        counts: days_rows.map((row) => row.cnt)
+                    },
+                    message: "Successfully filtered popularity based in appointment dates, appointments times and days in method model"
+                }
+            } catch (error) {
+                await this.connection.rollback();
+                logger.log(`error`, `Failed to filter the popular appointment dates, appointment times and days analytics: ${error}`);
+                throw error;
+            } finally {
+                this.connection.release();
+            }
+        },
+        "Get Popular Appointment Dates, Appointment Times and Days"
+    )
 }
 
 export default Clinic;

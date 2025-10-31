@@ -20,7 +20,6 @@ import parser from "cron-parser"
 import logger from "./config/winston.js";
 import initializeScheduler from "./config/appointment_scheduler.js";
 import sessionStore from "./db/mysql/session_store.js";
-import requestMethod from "./utils/request_method.js";
 dotenv.config();
 
 const nextRuns = await getNextBackupRun(5);
@@ -209,14 +208,12 @@ app.use("/uploads/medical_reports", express.static(medicalReportPath));
 // route for CMS
 app.use("/", cms);
 
-app.all("/cms.api.com/*", requestMethod);
-
 app.disable("etag");
 
 // error handling for server not found
 app.use((req, res) => {
     return res.status(StatusCodes.NOT_FOUND).json({
-        routeMessage: "Server route not found"
+        routeMessage: `Server route ${req.originalUrl} ${StatusCodes.NOT_FOUND} not found`
     })
 })
 
