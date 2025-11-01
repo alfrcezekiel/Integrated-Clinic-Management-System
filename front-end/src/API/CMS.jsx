@@ -4,7 +4,7 @@ import config from "./config.js"
 /** create an axios instance named CMS */
 const CMS = axios.create({
     baseURL: config.api.baseURL,
-    timeout: 120000, // 120 seconds
+    timeout: 40000, // 40 seconds
     headers: {
         "Content-Type": "application/json",
         "Accept": "application/json",
