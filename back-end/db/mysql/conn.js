@@ -17,19 +17,6 @@ const createConnection = async () => {
             database: process.env.DATABASE_NAME,
         });
 
-        const requiredEnvVars = [
-            "DB_HOST",
-            "DB_PORT",
-            "DB_USER",
-            "DB_PASSWORD",
-            "DATABASE_NAME"
-        ];
-
-        for (const key of requiredEnvVars) {
-            if (!process.env[key]) {
-                throw new Error(`Missing environment variable: ${key}`);
-            }
-        }
         const baseConfig = {
             host: process.env.DB_HOST,
             port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 3306,
@@ -41,17 +28,7 @@ const createConnection = async () => {
             connectTimeout: 30000,
             enableKeepAlive: true,
             connectionLimit: isProd ? 20 : 10,
-            ...(isProd ? {
-                ssl: {
-                    rejectUnauthorized: false
-                }
-            } : {}),
         };
-
-        // Check if any required field is missing
-        if (!baseConfig.host || !baseConfig.user || !baseConfig.database) {
-            throw new Error(`Missing required MySQL config values: ${JSON.stringify(baseConfig)}`);
-        }
 
         pool = mysql.createPool(baseConfig);
         logger.info(`MySQL Server connected successfully! Host: ${baseConfig.host} Database: ${baseConfig.database} Port: ${baseConfig.port} Environment: ${process.env.NODE_ENV}`);
@@ -62,6 +39,6 @@ const createConnection = async () => {
     }
 }
 
-const db = await createConnection();
+const conn = await createConnection();
 
-export default db;
+export default conn;
