@@ -8,6 +8,19 @@ dotenv.config();
  */
 async function createConnection() {
     try {
+        const requiredEnvVars = [
+            'DB_HOST',
+            'DB_USER',
+            'DB_PASSWORD',
+            'DB_PORT',
+            'DATABASE_NAME'
+        ];
+        const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+        if (missingVars.length > 0) {
+            logger.log(`error`, `Missing required environment variables: ${missingVars.join(', ')}`);
+            throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
+        }
+
         const baseConfig = {
             host: process.env.DB_HOST,
             user: process.env.DB_USER,
@@ -15,7 +28,7 @@ async function createConnection() {
             password: process.env.DB_PASSWORD,
             port: process.env.DB_PORT,
             waitForConnections: true,
-            connectTimeout: 120000, // 120 seconds
+            connectTimeout: 60000, // 60 seconds
             enableKeepAlive: true,
             keepAliveInitialDelay: 10000, // 10 seconds
             queueLimit: 0,
