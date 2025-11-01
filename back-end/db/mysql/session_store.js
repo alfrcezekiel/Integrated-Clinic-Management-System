@@ -10,7 +10,7 @@ try {
 
     const sessionConfig = {
         host: process.env.DB_HOST,
-        port: process.env.DB_PORT,
+        port: parseInt(process.env.DB_PORT || 3306, 10),
         user: process.env.DB_USER,
         password: process.env.DB_PASSWORD,
         database: process.env.DATABASE_NAME,
