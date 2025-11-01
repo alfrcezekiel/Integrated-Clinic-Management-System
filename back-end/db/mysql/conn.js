@@ -1,47 +1,43 @@
 import mysql from "mysql2/promise";
 import dotenv from "dotenv";
 import logger from "../../config/winston.js";
+
 dotenv.config();
-/**
- * Function to create a connection pool to the MySQL database for develpoment and production enviroment
- * @returns {Promise} - A promise that resolves to the connection pool
- */
+
 async function createConnection() {
     try {
+        const isProd = process.env.NODE_ENV === "production";
+
         const baseConfig = {
             host: process.env.DB_HOST,
             user: process.env.DB_USER,
-            database: process.env.DATABASE_NAME,
             password: process.env.DB_PASSWORD,
-            port: process.env.DB_PORT,
+            database: process.env.DATABASE_NAME,
+            port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 3306,
             waitForConnections: true,
-            connectTimeout: 30000, // 30 seconds
+            connectTimeout: 30000,
             enableKeepAlive: true,
-            keepAliveInitialDelay: 10000, // 10 seconds
+            keepAliveInitialDelay: 10000,
             queueLimit: 0,
-            connectionLimit: process.env.NODE_ENV === "production" ? 20 : 10
+            connectionLimit: isProd ? 20 : 10,
+            ...(isProd ? {
+                ssl: {
+                    rejectUnauthorized: false
+                }
+            } : {}),
+        };
+
+        // Check if any required field is missing
+        if (!baseConfig.host || !baseConfig.user || !baseConfig.database) {
+            throw new Error(`Missing required MySQL config values: ${JSON.stringify(baseConfig)}`);
         }
 
-        /**
-         * Create a connection pool to the MySQL database
-         * between railway and local development database
-         */
-        const connectionConfig = process.env.NODE_ENV === "production" ? {
-            ...baseConfig,
-            ssl: {
-                rejectUnauthorized: false
-            }
-        } : {
-            ...baseConfig
-        }
-
-        const pool = mysql.createPool(connectionConfig);
-
-        logger.log(`info`, `MySQL Server connected successfully! Host: ${connectionConfig.host} Database: ${connectionConfig.database} Port: ${process.env.DB_PORT} in ${process.env.NODE_ENV} environment.`);
-
+        const pool = mysql.createPool(baseConfig);
+        logger.info(`MySQL Server connected successfully! Host: ${baseConfig.host} Database: ${baseConfig.database} Port: ${baseConfig.port} Environment: ${process.env.NODE_ENV}`);
         return pool;
     } catch (error) {
-        logger.error(`Failed to connect to MySQL server: ${error}`);
+        logger.error(`Failed to connect to MySQL server: ${error.message}`);
+        throw error;
     }
 }
 
