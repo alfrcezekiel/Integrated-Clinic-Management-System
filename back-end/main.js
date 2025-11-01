@@ -252,7 +252,7 @@ app.disable("etag");
 // error handling for server not found
 app.use((req, res) => {
     return res.status(StatusCodes.NOT_FOUND).json({
-        routeMessage: `Server route ${req.originalUrl} ${StatusCodes.NOT_FOUND} not found`
+        routeMessage: `Server route ${req.url} ${StatusCodes.NOT_FOUND} not found`
     })
 })
 

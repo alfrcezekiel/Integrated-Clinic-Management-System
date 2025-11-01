@@ -10,6 +10,13 @@ const createConnection = async () => {
     try {
         const isProd = process.env.NODE_ENV === "production";
 
+        logger.log(`info`, `DB Config in Production:`, {
+            host: process.env.DB_HOST,
+            port: process.env.DB_PORT,
+            user: process.env.DB_USER,
+            database: process.env.DATABASE_NAME,
+        });
+
         const requiredEnvVars = [
             "DB_HOST",
             "DB_PORT",
