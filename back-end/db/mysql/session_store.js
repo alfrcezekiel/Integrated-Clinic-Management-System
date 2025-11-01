@@ -12,6 +12,7 @@ try {
         host: process.env.DB_HOST,
         port: process.env.DB_PORT,
         user: process.env.DB_USER,
+        url:  process.env.DATABASE_URL,
         password: process.env.DB_PASSWORD,
         database: process.env.DATABASE_NAME,
         clearExpired: true,

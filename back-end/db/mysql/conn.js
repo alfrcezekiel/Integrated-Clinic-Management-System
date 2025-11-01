@@ -29,7 +29,7 @@ async function createConnection() {
         const connectionConfig = process.env.NODE_ENV === "production" ? {
             ...baseConfig,
             ssl: {
-                rejectUnauthorized: true
+                rejectUnauthorized: false
             }
         } : {
             ...baseConfig

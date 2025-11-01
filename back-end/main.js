@@ -275,7 +275,7 @@ const startServer = async () => {
 
         if (process.env.NODE_ENV === "production") {
             app.listen(PORT, () => {
-                logger.log(`info`, `Server is running in host 0.0.0.0:${PORT} for ${process.env.NODE_ENV} environment`);
+                logger.log(`info`, `Server is running in ${PORT} for ${process.env.NODE_ENV} environment`);
             })
         } else {
             app.listen(PORT, () => {
