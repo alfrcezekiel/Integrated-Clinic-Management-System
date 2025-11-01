@@ -8,9 +8,12 @@ let sessionStore;
 try {
     const MySQLStore = MySQLStoreFactory(session);
 
+    const storePort = Number(process.env.DB_PORT);
+    const resolveStorePort = isFinite(storePort) && storePort > 0 ? storePort : 3306;
+    
     const sessionConfig = {
         host: process.env.DB_HOST,
-        port: process.env.DB_PORT,
+        port: resolveStorePort,
         user: process.env.DB_USER,
         password: process.env.DB_PASSWORD,
         database: process.env.DATABASE_NAME,

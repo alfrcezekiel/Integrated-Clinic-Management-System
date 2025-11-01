@@ -8,13 +8,16 @@ dotenv.config();
  */
 async function createConnection() {
     try {
+        const DB_PORT = Number(process.env.DB_PORT) || 3306;
+        const resolvedPort = isFinite(DB_PORT) && DB_PORT > 0 ? DB_PORT : 3306;
+
         const requiredEnvVars = [
             'DB_HOST',
             'DB_USER',
             'DB_PASSWORD',
-            'DB_PORT',
             'DATABASE_NAME'
         ];
+
         const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
         if (missingVars.length > 0) {
             logger.log(`error`, `Missing required environment variables: ${missingVars.join(', ')}`);
@@ -26,7 +29,7 @@ async function createConnection() {
             user: process.env.DB_USER,
             database: process.env.DATABASE_NAME,
             password: process.env.DB_PASSWORD,
-            port: process.env.DB_PORT,
+            port: resolvedPort,
             waitForConnections: true,
             connectTimeout: 60000, // 60 seconds
             enableKeepAlive: true,

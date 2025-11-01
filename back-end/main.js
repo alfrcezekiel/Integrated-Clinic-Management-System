@@ -90,9 +90,14 @@ const validateRequireEnvVars = () => {
         throw new Error(`Missing required environment variables: ${missing.join(", ")}`);
     }
 
-    if (process.env.DB_PORT && Number.isNaN(Number(process.env.DB_PORT))) {
+    if (process.env.DB_PORT && isNaN(Number(process.env.DB_PORT))) {
         logger.log(`warn`, `DB_PORT env variable is not numeric: ${process.env.DB_PORT}. Falling back to 3306`);
         process.env.DB_PORT = "3306";
+    }
+
+    if (process.env.SMTP_PORT && isNaN(Number(process.env.SMTP_PORT))) {
+        logger.log(`warn`, `SMTP_PORT env variable is not numeric: ${process.env.SMTP_PORT}. Falling back to 587`);
+        delete process.env.SMTP_PORT;
     }
 }
 
@@ -101,6 +106,14 @@ try {
 } catch (error) {
     logger.log(`error`, `Startup validation env variables failed: ${error}`);
 }
+
+// global safety handlers - log and prevent uncaught rejections from crashing requests
+process.on('unhandledRejection', (reason) => {
+    logger.log('error', `Unhandled Rejection: ${reason}`);
+});
+process.on('uncaughtException', (err) => {
+    logger.log('error', `Uncaught Exception: ${err}`);
+});
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
