@@ -8,28 +8,12 @@ dotenv.config();
  */
 async function createConnection() {
     try {
-        const DB_PORT = Number(process.env.DB_PORT) || 3306;
-        const resolvedPort = isFinite(DB_PORT) && DB_PORT > 0 ? DB_PORT : 3306;
-
-        const requiredEnvVars = [
-            'DB_HOST',
-            'DB_USER',
-            'DB_PASSWORD',
-            'DATABASE_NAME'
-        ];
-
-        const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
-        if (missingVars.length > 0) {
-            logger.log(`error`, `Missing required environment variables: ${missingVars.join(', ')}`);
-            throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
-        }
-
         const baseConfig = {
             host: process.env.DB_HOST,
             user: process.env.DB_USER,
             database: process.env.DATABASE_NAME,
             password: process.env.DB_PASSWORD,
-            port: resolvedPort,
+            port: process.env.DB_PORT,
             waitForConnections: true,
             connectTimeout: 30000, // 30 seconds
             enableKeepAlive: true,
@@ -53,7 +37,7 @@ async function createConnection() {
 
         const pool = mysql.createPool(connectionConfig);
 
-        logger.log(`info`, `MySQL Server connected successfully! Host: ${connectionConfig.host} Database: ${connectionConfig.database} in ${process.env.NODE_ENV} environment.`);
+        logger.log(`info`, `MySQL Server connected successfully! Host: ${connectionConfig.host} Database: ${connectionConfig.database} Port: ${process.env.DB_PORT} in ${process.env.NODE_ENV} environment.`);
 
         return pool;
     } catch (error) {

@@ -8,12 +8,9 @@ let sessionStore;
 try {
     const MySQLStore = MySQLStoreFactory(session);
 
-    const storePort = Number(process.env.DB_PORT);
-    const resolveStorePort = isFinite(storePort) && storePort > 0 ? storePort : 3306;
-    
     const sessionConfig = {
         host: process.env.DB_HOST,
-        port: resolveStorePort,
+        port: process.env.DB_PORT,
         user: process.env.DB_USER,
         password: process.env.DB_PASSWORD,
         database: process.env.DATABASE_NAME,
@@ -35,7 +32,7 @@ try {
 
     sessionStore = new MySQLStore(sessionConfig);
 
-    logger.log(`info`, `Session store initialized successfully in ${process.env.NODE_ENV} environment. Host: ${process.env.DB_HOST} Database: ${process.env.DATABASE_NAME}`);
+    logger.log(`info`, `Session store initialized successfully in ${process.env.NODE_ENV} environment. Host: ${process.env.DB_HOST} Database: ${process.env.DATABASE_NAME} Port: ${process.env.DB_PORT}`);
 } catch (error) {
     logger.log(`error`, `Failed to initialize session store in ${process.env.NODE_ENV} environment: ${error}`);
 }
