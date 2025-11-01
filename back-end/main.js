@@ -197,8 +197,6 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// error handling for server error
-app.options("*", cors(corsOptions));
 
 // set custom headers for static file image for clinic images
 // app.use("/uploads/clinic_images", (req, res, next) => {
@@ -232,6 +230,9 @@ app.use("/uploads/medical_reports", express.static(medicalReportPath));
 
 // route for CMS
 app.use("/", cms);
+
+// error handling for server error
+app.options("*", cors(corsOptions));
 
 app.disable("etag");
 
