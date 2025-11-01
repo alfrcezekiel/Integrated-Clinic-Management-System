@@ -170,6 +170,8 @@ const corsOptions = {
     maxAge: 86400 // Cache preflight for 24 hours
 }
 
+// route for CMS
+app.use("/", cms);
 app.use(cors(corsOptions));
 
 // error handling for server error
@@ -204,9 +206,6 @@ app.use("/uploads/clinic_images", express.static(clinicImagesPath));
 
 const medicalReportPath = path.join(__dirname, "uploads/medical_reports");
 app.use("/uploads/medical_reports", express.static(medicalReportPath));
-
-// route for CMS
-app.use("/", cms);
 
 app.disable("etag");
 

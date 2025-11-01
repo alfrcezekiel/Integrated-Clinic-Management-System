@@ -107,7 +107,7 @@ import validateUploadedFiles from "../middleware/validateUploadedFiles.js";
 import validateAllBookedAppointmentSpecificDetails from "../middleware/ModifyBookedAllBookedAppointmentValidation.js";
 import validateEmailAddressInForgotPassword from "../middleware/validate_email_address_in_forgot_pass.js";
 import validateResetPassword from "../middleware/validate_reset_password.js";
-import requestMethod from "../utils/request_method.js";
+// import requestMethod from "../utils/request_method.js";
 
 const router = express.Router();
 
@@ -437,4 +437,4 @@ export default router;
 /**
  * @exports router to handle all other request methods not defined in the routes
  */
-router.all("*", requestMethod);
+// router.all("*", requestMethod);
