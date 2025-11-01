@@ -15,9 +15,11 @@ const requestLogger = (req, res, next) => {
 
     logger.info(`Request: ${method} ${url} - User-Agent: ${userAgent} - IP: ${ip} - Request Body: ${requestBody}`);
 
+    const startTime = Date.now();
     res.on('finish', () => {
         const statusCode = res.statusCode;
-        logger.info(`Response: ${statusCode} - ${method} ${url}`);
+        const duration = Date.now() - startTime;
+        logger.info(`Response: ${statusCode} - ${method} ${url} - Duration: ${duration}ms`);
     });
 
     next();

@@ -31,11 +31,11 @@ async function createConnection() {
             password: process.env.DB_PASSWORD,
             port: resolvedPort,
             waitForConnections: true,
-            connectTimeout: 60000, // 60 seconds
+            connectTimeout: 30000, // 30 seconds
             enableKeepAlive: true,
             keepAliveInitialDelay: 10000, // 10 seconds
             queueLimit: 0,
-            connectionLimit: 10
+            connectionLimit: process.env.NODE_ENV === "production" ? 20 : 10
         }
 
         /**
