@@ -69,32 +69,44 @@ if (config.enabled) {
     logger.log(`info`, config.log);
 }
 
+/**
+ * @function validateRequireEnvVars - Validates required environment variables
+ */
+const validateRequireEnvVars = () => {
+    const hasDatabaseUrl = !!process.env.DATABASE_URL;
+    const required = [
+        ...(hasDatabaseUrl ? [] : [
+            "DB_HOST",
+            "DB_USER",
+            "DB_PASSWORD",
+            "DATABASE_NAME"
+        ])
+    ]
+
+    const missing = required.filter((k) => !process.env[k]);
+
+    if (missing.length > 0) {
+        logger.log(`error`, `Missing required environment variables: ${missing.join(", ")}`);
+        throw new Error(`Missing required environment variables: ${missing.join(", ")}`);
+    }
+
+    if (process.env.DB_PORT && Number.isNaN(Number(process.env.DB_PORT))) {
+        logger.log(`warn`, `DB_PORT env variable is not numeric: ${process.env.DB_PORT}. Falling back to 3306`);
+        process.env.DB_PORT = "3306";
+    }
+}
+
+try {
+    validateRequireEnvVars()
+} catch (error) {
+    logger.log(`error`, `Startup validation env variables failed: ${error}`);
+}
+
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// app.set("port", process.env.PORT);
-// app.set("host", process.env.SERVER_HOST);
-
 app.set("trust proxy", 1);
-
-// let sessionStore;
-// try {
-//     sessionStore = await initializeSessionStore();
-//     if (sessionStore && typeof sessionStore.sync === "function") {
-//         await sessionStore.sync();
-//         logger.log(`info`, `Session store synced successfully`);
-//     }
-// } catch (error) {
-//     logger.log(`error`, `Failed to initialize or sync session store: ${error}`);
-//     if (process.env.NODE_ENV === "production") {
-//         // fail-fast in production so app doesn't accidentally use MemoryStore
-//         throw error;
-//     } else {
-//         logger.log(`warn`, `Falling back to default in-memory session store for development`);
-//         sessionStore = null;
-//     }
-// }
 
 // session configuration
 app.use(session({
