@@ -20,6 +20,7 @@ import parser from "cron-parser"
 import logger from "./config/winston.js";
 import initializeScheduler from "./config/appointment_scheduler.js";
 import sessionStore from "./db/mysql/session_store.js";
+import requestMethod from "./utils/request_method.js";
 dotenv.config();
 
 const nextRuns = await getNextBackupRun(5);
@@ -216,6 +217,8 @@ app.use((req, res) => {
         routeMessage: `Server route ${req.originalUrl} ${StatusCodes.NOT_FOUND} not found`
     })
 })
+
+app.use(requestMethod);
 
 /**
  * error handler
