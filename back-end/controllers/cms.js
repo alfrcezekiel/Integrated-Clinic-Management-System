@@ -57,6 +57,7 @@ export const CMS = async (req, res) => {
 export const registerPatientAccount = async (req, res) => {
     const connection = await conn.getConnection();
     try {
+        await connection.beginTransaction();
         const {
             firstName,
             lastName,
@@ -87,7 +88,6 @@ export const registerPatientAccount = async (req, res) => {
 
         const formattedDate = new Date(date_of_birth).toISOString().split('T')[0]; // '2003-02-20'
 
-        await connection.beginTransaction();
         // Use formattedDate in your query or insert
 
         // 1st table of patients register account
@@ -108,8 +108,8 @@ export const registerPatientAccount = async (req, res) => {
             phoneNumber,
             password,
             confirmPassword,
-            patientID,
-            status
+            status,
+            patientID
         ) VALUES (?, ?, ?, ?, ?)`;
 
         const [result] = await connection.query(query1, [
@@ -123,16 +123,21 @@ export const registerPatientAccount = async (req, res) => {
             resetToken,
             resetTokenExpiry
         ]);
+
+        logger.log(`info`, `[patientRegisteraccount1] inserted patient id column = ${result.insertId}`);
+
         const patientID = result.insertId;
 
-        await connection.query(query2, [
+        const [second_result] = await connection.query(query2, [
             phoneNumber,
             hashedPassword,
             hashedConfirmPassword,
-            patientID,
-            status
+            status,
+            patientID
         ]);
 
+        logger.log(`info`, `[patientregisteraccount2] registerPatientID column = ${second_result.insertId} mapped patientID foreign key column = ${patientID}`);
+        
         await connection.commit();
         try {
             await sendWelcomeEmail({
@@ -617,6 +622,11 @@ export const getBookedAppointments = async (req, res) => {
             })
         }
 
+        /**
+         * correction for second table patientsregisteraccount2
+         * column before pr2.registerPatientID
+         * will back to the original pr2.registerPatientID column in inner joins when there's a issue
+         */
         const query = `
             SELECT
                 pr1.firstName,
@@ -627,9 +637,11 @@ export const getBookedAppointments = async (req, res) => {
                 FROM patientsregisteraccount1 AS pr1
                 INNER JOIN
                 patientsregisteraccount2 AS pr2
-                ON pr1.patientID = pr2.registerPatientID
+                ON pr1.patientID = pr2.patientID 
             WHERE pr1.patientID = ?;
         `;
+
+        logger.log(`info`, `First table patient id column = ${patientID} is match with second table patient id foreign key column = ${patientID}`);
 
         const [rows] = await conn.query(query, [patientID]);
 
@@ -5283,6 +5295,8 @@ export const getPopularAppointmentsAnalytics = asyncHandler(
                 message: "No popularity analytics found"
             })
         }
+
+        logger.log(`info`, `Successfully filtered popularity based in appointment dates, appointments times and days for clinic ID: ${clinic_id}`);
 
         return res.status(StatusCodes.OK).json({
             success: true,

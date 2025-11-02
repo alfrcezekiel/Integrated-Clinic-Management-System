@@ -34,6 +34,7 @@ const PatientsRegistrationPortal = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [openPatientStatusDialog, setOpenPatientStatusDialog] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
 
     const handleClickShowPassword = () => {
         setShowPassword((show) => !show);
@@ -147,10 +148,23 @@ const PatientsRegistrationPortal = () => {
         try {
             e.preventDefault();
 
+            /**
+             * Prevents multiple submissions while waiting for the previous submission to complete
+             */
+            if (submitting) return;
+            setSubmitting(true);
+            
+            /**
+             * Formats the dateOfBirth to "YYYY-MM-DD" before sending to the backend
+             */
             const payload = {
                 ...formRegistrationPatientsData,
                 dateOfBirth: formRegistrationPatientsData.dateOfBirth ? dayjs(formRegistrationPatientsData.dateOfBirth).format("YYYY-MM-DD") : null,
             }
+
+            /**
+             * sends a POST request to register to the server endpoint with the form data as payload
+             */
             const response = await CMS.post("/registerPatientsAccount", payload, {
                 headers: {
                     "Content-Type": "application/json",
@@ -181,6 +195,8 @@ const PatientsRegistrationPortal = () => {
             } else {
                 console.error(`Failed to register patient account: ${error}`);
             }
+        } finally {
+            setSubmitting(false);
         }
     }
 
@@ -419,10 +435,10 @@ const PatientsRegistrationPortal = () => {
                         <div className="mt-8 flex justify-center items-center gap-6 bg-black p-1 rounded-4xl text-white">
                             <Button
                                 className="md:w-1/2 w-full"
-                                color="white"
                                 type="submit"
+                                disabled={submitting}
                             >
-                                Register
+                                <span className="text-white">{submitting ? "Loading..." : "Create Account"}</span>
                             </Button>
                         </div>
                         <div className="text-center text-blue-gray-500 font-medium mt-3">

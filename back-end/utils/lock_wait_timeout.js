@@ -1,4 +1,5 @@
 import logger from "../config/winston.js";
+import conn from "../db/mysql/conn.js";
 
 /**
  * helper to execute a DB operation with retries on lock-wait timeouts
@@ -7,23 +8,23 @@ export const executeDbOperationWithRetry = async (operationLabel, operationFn, m
     let attempt = 0;
     let lastError = null;
 
-    while (attempt < maxRetries) {
-        let conn;
+    while (attempt <= maxRetries) {
+        let connection;
         try {
-            conn = await conn.getConnection();
+            connection = await conn.getConnection();
 
-            if (typeof conn.beginTransaction === "function") {
-                await conn.beginTransaction();
+            if (typeof connection.beginTransaction === "function") {
+                await connection.beginTransaction();
             }
 
-            const result = await operationFn(conn);
+            const result = await operationFn(connection);
 
-            if (typeof conn.comiit === "function") {
-                await conn.commit();
+            if (typeof connection.commit === "function") {
+                await connection.commit();
             }
 
-            if (conn && typeof conn.release === "function") {
-                conn.release();
+            if (connection && typeof connection.release === "function") {
+                connection.release();
             }
 
             return result;
@@ -34,15 +35,15 @@ export const executeDbOperationWithRetry = async (operationLabel, operationFn, m
              * attempt to rollabck if possible
              */
             try {
-                if (conn && typeof conn.rollback === "function") {
-                    await conn.rollback();
+                if (connection && typeof connection.rollback === "function") {
+                    await connection.rollback();
                 }
             } catch (error) {
                 logger.log(`warn`, `${operationLabel} - rollback failed: ${error}`);
             } finally {
-                if (conn && typeof conn.release === "function") {
+                if (connection && typeof connection.release === "function") {
                     try {
-                        conn.release();
+                        connection.release();
                     } catch (error) {
                         logger.log(`warn`, `${operationLabel} - release connection failed: ${error}`);
                     }

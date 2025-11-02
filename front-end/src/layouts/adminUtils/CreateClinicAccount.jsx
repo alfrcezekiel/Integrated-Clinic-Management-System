@@ -46,7 +46,9 @@ const CreateClinicAccount = () => {
         clinicType: "",
         password: "",
         confirmPassword: ""
-    })
+    });
+    const [submitting, setSubmitting] = useState(false);
+
     const location = useLocation();
     const clinicAccountState = location.state?.clinicAccountState
     const uploadClinicImageRef = useRef(null);
@@ -211,6 +213,10 @@ const CreateClinicAccount = () => {
     const submitCreatedClinicAccount = async (e) => {
         try {
             e.preventDefault();
+
+            if (submitting) return;
+            setSubmitting(true);
+
             if (fieldErrors.clinicImage || fieldErrors.ltoFile) {
                 return;
             }
@@ -259,6 +265,8 @@ const CreateClinicAccount = () => {
                 }))
             }
             console.error("Error creating clinic account in this component:", error);
+        } finally {
+            setSubmitting(false);
         }
     }
 
@@ -684,7 +692,7 @@ const CreateClinicAccount = () => {
                                 type="submit"
                                 className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
                             >
-                                Register Account
+                                <span className="text-white">{submitting ? "Loading..." : "Register Account"}</span>
                             </button>
                         </div>
                     </form>

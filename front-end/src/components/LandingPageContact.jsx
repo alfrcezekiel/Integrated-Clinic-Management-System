@@ -16,6 +16,7 @@ const LandingPageContact = () => {
         contactSubject: "",
         contactMessage: ""
     })
+    const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
         const aos = () => {
@@ -33,6 +34,9 @@ const LandingPageContact = () => {
     const handleContactMessage = async (e) => {
         e.preventDefault();
         try {
+            if (submitting) return;
+            setSubmitting(true);
+
             const response = await CMS.post("/contactUs", contactFormData, {
                 headers: {
                     "Content-Type": "application/json"
@@ -55,6 +59,8 @@ const LandingPageContact = () => {
             } else {
                 console.error(`Error at contacting the admin ${error}`)
             }
+        } finally {
+            setSubmitting(false);
         }
     }
 
@@ -155,7 +161,7 @@ const LandingPageContact = () => {
                                     type="submit"
                                     className="px-8 py-3 bg-black/100 text-white font-bold rounded-4xl cursor-pointer focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 transition-colors duration-200"
                                 >
-                                    Send Message
+                                    {submitting ? "Loading..." : "Send Message"}
                                 </button>
                             </div>
                         </form>

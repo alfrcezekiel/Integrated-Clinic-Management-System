@@ -3409,8 +3409,6 @@ class Clinic {
 
                 await this.connection.commit();
 
-                await this.connection.release();
-
                 try {
                     /**
                      * sends reminder to the patient in via email
@@ -3436,13 +3434,15 @@ class Clinic {
                 }
 
             } catch (error) {
-                const rollbackQuery = this.connection.rollback();
+                const rollbackQuery = await this.connection.rollback();
                 if (!rollbackQuery) {
                     throw new Error(`Failed to rollback the transaction in handling automated update status`);
                 }
 
                 logger.log(`error`, `Failed in handling automated update status via sms and email in method: ${error}`);
                 throw error;
+            } finally {
+                this.connection.release();
             }
         },
         "Handle Automated Update Status"
@@ -3540,7 +3540,6 @@ class Clinic {
 
                 await this.connection.commit();
 
-                await this.connection.release();
                 try {
                     /**
                      * sends a automated reminder email to the patient email address in clinic side
@@ -3572,6 +3571,8 @@ class Clinic {
 
                 logger.log(`error`, `Failed in handling automated update status in clinic side appointment in method: ${error}`);
                 throw error;
+            } finally {
+                this.connection.release();
             }
         },
         "Handle automated update status in clinic side appointment"

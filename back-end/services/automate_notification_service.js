@@ -10,7 +10,6 @@ import { scheduledReminderTemplate } from "./automate_scheduled_reminder_templat
 import { sendWelcomeEmailNotification } from "./welcome_create_account.js";
 import { patientAccountStatusTemplate } from "./patient_account_status_template.js";
 import parseAppointmentDateTime from "../utils/appointmentDateTimeUtil.js";
-import getNewDatabaseConnection from "../utils/getConnection.js";
 import { parseAppointmentDate } from "../utils/parse_appointment_date.js";
 import { parseAppointmentTime } from "../utils/parse_appointment_time.js";
 import { Resend } from "resend";
@@ -289,11 +288,11 @@ export const scheduleAppointmentsReminder = async (appointment, reminderTime = 6
                  */
                 try {
                     await executeDbOperationWithRetry(
-                        `Update reminder_sent for appointment ${appointmentID}`,
+                        `Update reminder_sent for appointment: ${appointmentID}`,
                         async (conn) => {
                             if (typeof conn.query === "function") {
                                 const query = `UPDATE patientsappointment SET reminder_sent = ? WHERE appointmentID = ?;`;
-                                return await conn.query(query, [1, appointmentID]);
+                                return conn.query(query, [1, appointmentID]);
                             } else {
                                 throw new Error(`DB connection doesn't support query()`);
                             }
@@ -301,48 +300,6 @@ export const scheduleAppointmentsReminder = async (appointment, reminderTime = 6
                         6,
                         500
                     );
-
-                    let updated = false;
-                    if (typeof executeDbOperationWithRetry === "function") {
-                        try {
-                            await executeDbOperationWithRetry(
-                                `Update reminder_sent for appointment ${appointmentID}`,
-                                async (dbConn) => {
-                                    if (dbConn && typeof dbConn.query === "function") {
-                                        const query = `UPDATE patientsappointment SET reminder_sent = ? WHERE appointmentID = ?;`;
-                                        return await dbConn.query(query, [1, appointmentID]);
-                                    }
-                                    throw new Error(`DB connection doesn't support query()`);
-                                },
-                                6,
-                                500
-                            )
-                        } catch (error) {
-                            logger.error(`executeDbOperationWithRetry failed: ${err}. Falling back to direct DB update.`);
-                        }
-                    }
-
-                    if (!updated) {
-                        const query = `UPDATE patientsappointment SET reminder_sent = ? WHERE appointmentID = ?;`;
-                        // If imported pool supports .query(), use it
-                        if (conn && typeof conn.query === "function") {
-                            await conn.query(query, [1, appointmentID]);
-                        } else {
-                            // Final fallback: obtain a new connection and run the query, then release.
-                            const connection = await getNewDatabaseConnection();
-                            try {
-                                if (connection && typeof connection.query === "function") {
-                                    await connection.query(query, [1, appointmentID]);
-                                } else {
-                                    throw new Error("No usable DB connection available to update reminder_sent");
-                                }
-                            } finally {
-                                if (connection && typeof connection.release === "function") {
-                                    connection.release();
-                                }
-                            }
-                        }
-                    }
                 } catch (error) {
                     logger.log("error", `Failed to update reminder_sent after retries: ${error}`);
                 }

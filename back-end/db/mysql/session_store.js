@@ -4,6 +4,10 @@ import dotenv from 'dotenv';
 import logger from "../../config/winston.js";
 dotenv.config();
 
+/**
+ * Initialize and export the MySQL session store for express-session. 
+ * Configuration is based on environment variables.
+ */
 let sessionStore;
 try {
     const MySQLStore = MySQLStoreFactory(session);

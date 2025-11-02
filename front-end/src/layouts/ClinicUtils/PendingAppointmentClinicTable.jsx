@@ -82,6 +82,7 @@ const PendingAppointmentClinicTable = () => {
     const [successfullAppointmentModalOpen, setSuccessfullAppointmentModalOpen] = useState(false);
     const [selectedBookedAppointment, setSelectedBookedAppointment] = useState(null);
     const [openDeleteBookedAppointmentDialog, setOpenDeleteBookedAppointmentDialog] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
 
     const { user, token } = useAuthorization();
 
@@ -172,6 +173,9 @@ const PendingAppointmentClinicTable = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            if (submitting) return; // Prevent multiple submissions
+            setSubmitting(true);
+
             const updatedData = {
                 ...memoizedFormDataValue,
                 appointmentDate: memoizedFormDataValue.status === "Approved" ? dayjs(memoizedFormDataValue.appointmentDate) : memoizedFormDataValue.appointmentDate,
@@ -199,6 +203,8 @@ const PendingAppointmentClinicTable = () => {
             } else {
                 console.error(`Code functionality error for updating the appointment: ${error}`);
             }
+        } finally {
+            setSubmitting(false);
         }
     }
     // this function is used to open the modal for updating the appointment details
@@ -622,7 +628,9 @@ const PendingAppointmentClinicTable = () => {
                                 Cancel
                             </Button>
                             <Button type="submit" color="primary" variant="contained">
-                                Update Patient Appointment
+                                <span className="text-white">
+                                    {submitting ? "Loading..." : "Update Patient Appointment"}
+                                </span>
                             </Button>
                         </DialogActions>
                     </form>

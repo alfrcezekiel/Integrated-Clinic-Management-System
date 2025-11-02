@@ -1,4 +1,8 @@
-import { useState, useEffect } from "react";
+import {
+  useState,
+  useEffect,
+  useCallback
+} from "react";
 import { Calendar, dateFnsLocalizer } from "react-big-calendar";
 import { format, parse, startOfWeek, getDay } from "date-fns";
 import "react-big-calendar/lib/css/react-big-calendar.css";
@@ -27,43 +31,43 @@ const AdminViewPatientRegisteredAccountCalendar = () => {
     locales,
   });
 
-  useEffect(() => {
-    const retrievedPatientsRegisteredAccounts = async () => {
-      try {
-        const response = await CMS.get("/admin-dashboard/registeredPatientAccount", {
-          headers: {
-            "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
-            "Content-Type": "application/json"
-          }
-        });
-
-        if (response.status === 200) {
-          const rawData = response.data.registeredPatientsAccount;
-
-          const formattedBirthdays = rawData
-            .filter((item) => item.dateOfBirth)
-            .map((item) => {
-              const dob = new Date(item.dateOfBirth);
-
-              return {
-                title: `🎂 ${item.firstName} ${item.lastName}`,
-                start: dob,
-                end: dob,
-                allDay: true,
-                originalDate: item.dateOfBirth, // Store original date string
-                ...item,
-              };
-            })
-            .filter(Boolean);
-          setEvents(formattedBirthdays);
+  const retrievedPatientsRegisteredAccounts = useCallback(async () => {
+    try {
+      const response = await CMS.get("/admin-dashboard/registeredPatientAccount", {
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
+          "Content-Type": "application/json"
         }
-      } catch (error) {
-        console.error("Failed to load birthdays:", error);
-      }
-    };
+      });
 
-    retrievedPatientsRegisteredAccounts();
+      if (response.status === 200) {
+        const rawData = response.data.registeredPatientsAccount;
+
+        const formattedBirthdays = rawData
+          .filter((item) => item.dateOfBirth)
+          .map((item) => {
+            const dob = new Date(item.dateOfBirth);
+
+            return {
+              title: `🎂 ${item.firstName} ${item.lastName}`,
+              start: dob,
+              end: dob,
+              allDay: true,
+              originalDate: item.dateOfBirth, // Store original date string
+              ...item,
+            };
+          })
+          .filter(Boolean);
+        setEvents(formattedBirthdays);
+      }
+    } catch (error) {
+      console.error("Failed to load birthdays:", error);
+    }
   }, []);
+
+  useEffect(() => {
+    retrievedPatientsRegisteredAccounts();
+  }, [retrievedPatientsRegisteredAccounts]);
 
   const [selectedEvent, setSelectedEvent] = useState(null);
 

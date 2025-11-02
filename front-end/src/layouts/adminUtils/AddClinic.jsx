@@ -17,7 +17,11 @@ import AddIcon from "@mui/icons-material/Add";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import MedicalServicesIcon from "@mui/icons-material/MedicalServices";
 import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
-import { useState, useEffect } from "react";
+import {
+    useState,
+    useEffect,
+    useCallback
+} from "react";
 import ClinicRegistrationModal from "./AddClinicModal";
 import CMS from "../../API/CMS";
 import ClinicCard from "./ClinicCards";
@@ -69,7 +73,7 @@ const AddClinic = () => {
     const dispatch = useDispatch();
 
     // Fetch clinics from API
-    const fetchClinics = async () => {
+    const fetchClinics = useCallback(async () => {
         try {
             setLoading(true);
             setError(null);
@@ -90,12 +94,12 @@ const AddClinic = () => {
             setLoading(false);
             setRefreshing(false);
         }
-    };
+    }, []);
 
     // Load clinics on component mount
     useEffect(() => {
         fetchClinics();
-    }, []);
+    }, [fetchClinics]);
 
     // function to navigate in create clinic account page
     const navigateToCreateClinicAccount = () => {

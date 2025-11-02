@@ -57,6 +57,7 @@ const ClinicCards = () => {
     const [showSuccessConfirmedBookedAppointmentDialogBox, setShowSuccessConfirmedBookedAppointmentDialogBox] = useState(false);
     const [showDailyLimitDialog, setShowDailyLimitDialog] = useState(false);
     const [dailyAppointmentCount, setDailyAppointmentCount] = useState(0);
+    const [submitting, setSubmitting] = useState(false);
     const MAX_DAILY_APPOINTMENTS = 2; // Set 2 your daily limit here
 
     const navigate = useNavigate();
@@ -285,6 +286,7 @@ const ClinicCards = () => {
             preferredTime: null,
             purposeOfAppointment: ""
         }))
+        setSubmitting(false);
     };
 
     const formatDate = (dateString) => {
@@ -328,10 +330,19 @@ const ClinicCards = () => {
     const handleBooking = async (e) => {
         e.preventDefault();
 
+        if (submitting) return;
+        setSubmitting(true);
+
         // Check daily appointment limit first
         const canBook = await checkDailyAppointmentLimit(appointmentData.appointmentDate);
         if (!canBook) {
             setShowDailyLimitDialog(true);
+
+            setSubmitting(false);
+
+            setTimeout(() => {
+                setShowDailyLimitDialog(false);
+            }, 3000);
             return;
         }
 
@@ -388,6 +399,7 @@ const ClinicCards = () => {
             }
         } finally {
             setLoading(false);
+            setSubmitting(false);
         }
     };
 
@@ -567,6 +579,7 @@ const ClinicCards = () => {
                     fieldErrors={fieldErrors}
                     setFieldErrors={setFieldErrors}
                     appointmentID={appointmentID}
+                    submitting={submitting}
                 />
             )}
 

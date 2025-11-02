@@ -3,6 +3,10 @@ import dotenv from "dotenv";
 import logger from "../../config/winston.js";
 dotenv.config();
 
+/**
+ * 
+ * @function established a connection in local development and production enviroment connection
+ */
 const createConnection = async () => {
     let pool;
 
@@ -10,7 +14,7 @@ const createConnection = async () => {
     try {
         const isProd = process.env.NODE_ENV === "production";
 
-        logger.log(`info`, `DB Config in Production:`, {
+        logger.log(`info`, `DB config in ${process.env.NODE_ENV} environment:`, {
             host: process.env.DB_HOST,
             port: process.env.DB_PORT,
             user: process.env.DB_USER,

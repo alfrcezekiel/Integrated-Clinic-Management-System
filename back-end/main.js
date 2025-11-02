@@ -69,66 +69,6 @@ if (config.enabled) {
     logger.log(`info`, config.log);
 }
 
-// /**
-//  * @function validateRequireEnvVars - Validates required environment variables
-//  */
-// const validateRequireEnvVars = () => {
-//     const hasDatabaseUrl = !!process.env.DATABASE_URL;
-//     const required = [
-//         ...(hasDatabaseUrl ? [] : [
-//             "DB_HOST",
-//             "DB_USER",
-//             "DB_PASSWORD",
-//             "DATABASE_NAME"
-//         ])
-//     ]
-
-//     const missing = required.filter((k) => !process.env[k]);
-
-//     if (missing.length > 0) {
-//         logger.log(`error`, `Missing required environment variables: ${missing.join(", ")}`);
-//         throw new Error(`Missing required environment variables: ${missing.join(", ")}`);
-//     }
-
-//     if (process.env.DB_PORT && isNaN(Number(process.env.DB_PORT))) {
-//         logger.log(`warn`, `DB_PORT env variable is not numeric: ${process.env.DB_PORT}. Falling back to 3306`);
-//         process.env.DB_PORT = "3306";
-//     }
-
-//     const smtpKeys = ["SMTP_HOST", "SMTP_EMAIL_USER", "SMTP_EMAIL_PASSWORD"];
-//     const smtpAnyProvided = smtpKeys.some(k => !!process.env[k]);
-
-//     if (smtpAnyProvided) {
-//         const missingSmtp = smtpKeys.filter(k => !process.env[k]);
-//         if (missingSmtp.length > 0) {
-//             logger.log(`error`, `Missing required SMTP environment variables: ${missingSmtp.join(", ")}`);
-//             throw new Error(`Missing required SMTP environment variables: ${missingSmtp.join(", ")}`);
-//         }
-
-//         if (process.env.SMTP_PORT && isNaN(Number(process.env.SMTP_PORT))) {
-//             logger.log(`warn`, `SMTP_PORT env variable is not numeric: ${process.env.SMTP_PORT}. Falling back to 587`);
-//             process.env.SMTP_PORT = "587";
-//         } else if (!process.env.SMTP_PORT) {
-//             // default SMTP port
-//             process.env.SMTP_PORT = "587";
-//         }
-//     }
-// }
-
-// try {
-//     validateRequireEnvVars()
-// } catch (error) {
-//     logger.log(`error`, `Startup validation env variables failed: ${error}`);
-// }
-
-// // global safety handlers - log and prevent uncaught rejections from crashing requests
-// process.on('unhandledRejection', (reason) => {
-//     logger.log('error', `Unhandled Rejection: ${reason}`);
-// });
-// process.on('uncaughtException', (err) => {
-//     logger.log('error', `Uncaught Exception: ${err}`);
-// });
-
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

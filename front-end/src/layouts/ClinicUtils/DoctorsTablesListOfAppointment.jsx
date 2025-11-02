@@ -82,6 +82,7 @@ const DoctorsTablesListOfAppointments = () => {
     const [successfullAppointmentModalOpen, setSuccessfullAppointmentModalOpen] = useState(false);
     const [selectedBookedAppointment, setSelectedBookedAppointment] = useState(null);
     const [openDeleteBookedAppointmentDialog, setOpenDeleteBookedAppointmentDialog] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
 
     const handleClose = () => {
         setFieldsError({})
@@ -98,6 +99,7 @@ const DoctorsTablesListOfAppointments = () => {
             purposeOfAppointment: "",
         })
         setOpen(false);
+        setSubmitting(false);
     }
 
     const { user, token } = useAuthorization();
@@ -248,6 +250,9 @@ const DoctorsTablesListOfAppointments = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            if (submitting) return; // Prevent multiple submissions
+            setSubmitting(true);
+
             const updatedData = {
                 ...memoizedFormDataValue,
                 appointmentDate: memoizedFormDataValue.appointmentDate ? dayjs(memoizedFormDataValue.appointmentDate).format("YYYY-MM-DD") : memoizedFormDataValue.appointmentDate,
@@ -274,6 +279,8 @@ const DoctorsTablesListOfAppointments = () => {
             } else {
                 console.error(`Code functionality error for updating the appointment: ${error}`);
             }
+        } finally {
+            setSubmitting(false);
         }
     }
 
@@ -641,7 +648,9 @@ const DoctorsTablesListOfAppointments = () => {
                                 Cancel
                             </Button>
                             <Button type="submit" color="primary" variant="contained">
-                                Update Patient Appointment
+                                <span className="text-white">
+                                    {submitting ? "Loading..." : "Update Patient Appointment"}
+                                </span>
                             </Button>
                         </DialogActions>
                     </form>

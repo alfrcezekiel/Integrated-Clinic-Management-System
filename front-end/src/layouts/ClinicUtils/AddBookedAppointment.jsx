@@ -1,4 +1,7 @@
-import { useState } from "react";
+import {
+    useState,
+    useCallback
+} from "react";
 import {
     TextField,
     Button,
@@ -24,7 +27,7 @@ const AddBookAppointment = () => {
 
     const clinic_id = user?.sid;
     const clinic_name = user?.scn;
-
+    const [submitting, setSubmitting] = useState(false);
     const tokenContext = token;
 
     if (!tokenContext) {
@@ -57,9 +60,9 @@ const AddBookAppointment = () => {
         gender: "",
         purposeOfAppointment: ""
     });
-    
+
     // function to handle changes in text fields
-    const handleTextFieldChange = async (e) => {
+    const handleTextFieldChange = useCallback(async (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({
             ...prev,
@@ -72,12 +75,16 @@ const AddBookAppointment = () => {
                 [name]: ""
             }));
         }
-    };
+    }, [fieldErrors]);
 
     // function to submit the book appointment of patient
     const submitBookedAppointment = async (e) => {
         try {
             e.preventDefault();
+
+            if (submitting) return;
+            setSubmitting(true);
+
             console.log('Appointment Data:', formData);
             // Add your API call here
 
@@ -112,7 +119,7 @@ const AddBookAppointment = () => {
                 throw new Error(`Failed to book appointment: ${response.statusText}`);
             }
         } catch (error) {
-            if(error.response && error.response.status === 400){
+            if (error.response && error.response.status === 400) {
                 const errors = error.response.data.errors;
                 setFieldErrors((prev) => ({
                     ...prev,
@@ -120,11 +127,13 @@ const AddBookAppointment = () => {
                 }));
             }
             console.error(`Error in submitting booked appointment: ${error}`);
+        } finally {
+            setSubmitting(false);
         }
     };
 
     // function to handle changes in appointment date
-    const appointmentDateChange = async (newValue) => {
+    const appointmentDateChange = useCallback(async (newValue) => {
         if (newValue) {
             const selectedAppointmentDate = dayjs(newValue).format('YYYY-MM-DD');
             setFormData((prev) => ({
@@ -135,7 +144,7 @@ const AddBookAppointment = () => {
             setFormData((prev) => ({
                 ...prev,
                 appointmentDate: null
-            }))
+            }));
         }
 
         if (fieldErrors.appointmentDate) {
@@ -144,10 +153,10 @@ const AddBookAppointment = () => {
                 appointmentDate: ""
             }));
         }
-    }
+    }, [fieldErrors.appointmentDate]);
 
     // function to handle changes in appointment time
-    const appointmentTimeChange = async (newValue) => {
+    const appointmentTimeChange = useCallback(async (newValue) => {
         if (newValue) {
             const selectedAppointmentTime = dayjs(newValue).format("hh:mm A")
             setFormData((prev) => ({
@@ -167,7 +176,7 @@ const AddBookAppointment = () => {
                 appointmentTime: ""
             }));
         }
-    }
+    }, [fieldErrors.appointmentTime]);
 
     return (
         <div className="flex flex-col justify-center items-center w-full min-h-[90dvh]">
@@ -349,8 +358,10 @@ const AddBookAppointment = () => {
                                     color="primary"
                                     type="submit"
                                     className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl"
-                                >
-                                    Book Appointment
+                                >   
+                                    <span className="text-white">
+                                        {submitting ? "Loading..." : "Book Appointment"}
+                                    </span>
                                 </Button>
                             </Box>
                         </div>

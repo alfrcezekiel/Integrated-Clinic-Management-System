@@ -43,6 +43,7 @@ function AdminLoginPage() {
         email: "",
         password: ""
     })
+    const [submitting, setSubmitting] = useState(false);
 
     const location = useLocation();
     const { login, userData } = useAuthorization();
@@ -116,6 +117,8 @@ function AdminLoginPage() {
     const handleLoggedInAdmin = async (e) => {
         try {
             e.preventDefault();
+            if (submitting) return;
+            setSubmitting(true);
 
             removeLocalStorage("authToken");
             removeLocalStorage("userData");
@@ -169,6 +172,8 @@ function AdminLoginPage() {
             } else {
                 console.error(`Error in logging in admin: ${error}`);
             }
+        } finally {
+            setSubmitting(false);
         }
     }
 
@@ -248,8 +253,15 @@ function AdminLoginPage() {
                         }
                     />
                     <div className="mt-6 flex flex-col gap-6 bg-black p-[0.30rem] rounded-[3rem] text-white">
-                        <Button className="mt-9" fullWidth color="white" type="submit">
-                            Login
+                        <Button 
+                            className="mt-9"
+                            fullWidth
+                            color="white"
+                            type="submit"
+                        >
+                            <span className="text-white">
+                                {submitting ? "Loading..." : "Login"}
+                            </span>
                         </Button>
                     </div>
                     <div className="flex items-center justify-between gap-2 mt-6">

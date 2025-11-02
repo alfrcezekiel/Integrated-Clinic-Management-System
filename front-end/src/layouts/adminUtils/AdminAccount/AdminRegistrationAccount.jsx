@@ -32,6 +32,8 @@ const AdminRegisterationAccount = () => {
     })
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+
     const handleClickShowPassword = () => {
         setShowPassword((show) => !show);
     }
@@ -80,6 +82,9 @@ const AdminRegisterationAccount = () => {
         try {
             e.preventDefault();
 
+            if (submitting) return;
+            setSubmitting(true);
+
             const payload = {
                 email: adminRegistrationFormData.email,
                 password: adminRegistrationFormData.password,
@@ -115,8 +120,10 @@ const AdminRegisterationAccount = () => {
                 setFieldErrors(errors);
             }
             console.error(`Error during admin registration: ${error}`);
+        } finally {
+            setSubmitting(false);
         }
-    }, [adminRegistrationFormData, tokenContext, navigate])
+    }, [adminRegistrationFormData, tokenContext, navigate, submitting]);
 
     return (
         <div className="p-6 min-h-[90dvh]">
@@ -214,7 +221,9 @@ const AdminRegisterationAccount = () => {
                                     type="submit"
                                     className="min-w-[15dvw] bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700 transition duration-200"
                                 >
-                                    Register Admin Account
+                                    <span className="text-white">
+                                        {submitting ? "Loading..." : "Create admin account"}
+                                    </span>
                                 </button>
                             </div>
                         </form>

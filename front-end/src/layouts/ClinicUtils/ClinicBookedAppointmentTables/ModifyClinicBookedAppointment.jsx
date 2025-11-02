@@ -14,7 +14,8 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import {
     useState,
-    useEffect
+    useEffect,
+    useCallback
 } from "react";
 import CMS from "../../../API/CMS";
 import { useAuthorization } from "../../../context/auth/useAuthorization";
@@ -27,6 +28,7 @@ const ModifyClinicBookedAppointment = () => {
     const bookedAppointment = location.state?.bookedAppointment;
     const navigate = useNavigate();
     const { token } = useAuthorization();
+    const [submitting, setSubmitting] = useState(false);
     const tokenContext = token;
 
     const selectedGender = [
@@ -124,7 +126,7 @@ const ModifyClinicBookedAppointment = () => {
     /**
      * @function to navigate in the respective appointmetns after modifiying the booked appointment
      */
-    const navigateToRespectiveAppointmentsPage = async () => {
+    const navigateToRespectiveAppointmentsPage = useCallback(async () => {
         if (modifyBookedAppointmentDetails.status === "Pending") {
             navigate("/doctor-portal/dashboard/PendingBookedAppointment")
         } else if (modifyBookedAppointmentDetails.status === "Approved") {
@@ -132,7 +134,7 @@ const ModifyClinicBookedAppointment = () => {
         } else if (modifyBookedAppointmentDetails.status === "Declined") {
             navigate("/doctor-portal/dashboard/DeclinedBookedAppointment")
         }
-    }
+    }, [modifyBookedAppointmentDetails.status, navigate]);
 
     /**
      * this function handles the changes of text fields inputs
@@ -184,6 +186,9 @@ const ModifyClinicBookedAppointment = () => {
         try {
             e.preventDefault();
 
+            if (submitting) return;
+            setSubmitting(true);
+
             if (!tokenContext) {
                 console.error(`Token is not set in context or local storage`)
                 return;
@@ -233,6 +238,8 @@ const ModifyClinicBookedAppointment = () => {
                 }))
             }
             console.error(`Failed to modify booked appointment details: ${error}`)
+        } finally {
+            setSubmitting(false);
         }
     }
 
@@ -429,7 +436,9 @@ const ModifyClinicBookedAppointment = () => {
                             type="submit"
                             className="bg-blue-500 text-white px-4 py-2 rounded cursor-pointer"
                         >
-                            Modify Booked Appointment
+                            <span className="text-white">
+                                {submitting ? "Loading..." : "Modify Booked Appointment"}
+                            </span>
                         </button>
                     </div>
                 </form>

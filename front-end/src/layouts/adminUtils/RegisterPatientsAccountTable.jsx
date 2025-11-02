@@ -66,121 +66,14 @@ const RegisterPatientsAccountTable = () => {
         phoneNumber: "",
         status: ""
     });
-
-    const navigateToPatientsRegisterAccounts =  async () => {
-        retrievedPatientsAccountData()
-        navigate("/admin-dashboard/RegisterPatientsAccount")
-    }
-
-    // function to open the dialog of modify patient registered account
-    const handleOpenModal = (patient) => {
-        setSelectedPatient(patient);
-        setOpenModal(true);
-    }
-
-    // function  to close the dialog of updating patient registered account
-    const handleCloseModal = useCallback(() => {
-        setSelectedPatient(null);
-        setOpenModal(false);
-        setFieldErrors({})
-        retrievedPatientsAccountData();
-    }, [])
-
-    // function to close the dialog box of delete patient registered account
-    const handleDeleteConfirmRegisteredPatientAccount = async () => {
-        setSelectedPatient(null)
-        setOpenDeleteDialog(false);
-        navigateToPatientsRegisterAccounts()
-    }
-
-    // function to open the dialog box of confirmed delete patient registered account
-    const handleDeletePatientAccountDialog = async (patient) => {
-        setSelectedPatient(patient)
-        setOpenDeleteDialog(true);
-    }
-    
-    const handleChange = useCallback((e) => {
-        const { name, value } = e.target;
-        if (e && e.target) {
-            setSelectedPatient((prev) => ({
-                ...prev,
-                [name]: value
-            }));
-        } 
-
-        if(fieldErrors[name]){
-            setFieldErrors((prev) => ({
-                ...prev,
-                [name]: ""
-            }))
-        }
-    }, [fieldErrors])
-
-    // function to handle the change of date of birth
-    const dateOfBirthChange = useCallback((dob) => {
-        const selectedDateOfBirth = dayjs(dob).format("YYYY-MM-DD");
-        if(dob){
-            setSelectedPatient((prev) => ({
-                ...prev,
-                dateOfBirth: dayjs(selectedDateOfBirth)
-            }));
-        } else {
-            setSelectedPatient((prev) => ({
-                ...prev,
-                dateOfBirth: null
-            }));
-        }
-
-        if(fieldErrors.dateOfBirth){
-            setFieldErrors((prev) => ({
-                ...prev,
-                dateOfBirth: ""
-            }))
-        }
-    }, [fieldErrors.dateOfBirth])
-
-    // function to update the patient registered accounts
-    const handleUpdate = useCallback(async (e) => {
-        try {
-            e.preventDefault();
-
-            const response = await CMS.put(`/admin-dashboard/updateRegisteredPatientAccount/${selectedPatient.patientID}`, {
-                ...selectedPatient,
-                dateOfBirth: selectedPatient.dateOfBirth ? dayjs(selectedPatient.dateOfBirth).format("YYYY-MM-DD") : null
-            }, {
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization":`Bearer ${localStorage.getItem("authToken")}`
-                },
-            });
-
-            if (response.status === 200) {
-                setPatientsAccountData(
-                    (prev) => prev.map((patient) => patient.patientID === selectedPatient.patientID ? selectedPatient : patient)
-                );
-                alert("Patient account updated successfully");
-                handleCloseModal();
-            } else {
-                console.error(`Failed to update patient account: ${response.status}`);
-            }
-        } catch (error) {
-            if(error.response && error.response.status === 400){
-                const errors = error.response.data.errors;
-                setFieldErrors((prev) => ({
-                    ...prev,
-                    ...errors
-                }))
-            }
-            console.error("Error updating patient account:", error);
-        }
-    }, [selectedPatient, handleCloseModal]);
+    const [submitting, setSubmitting] = useState(false);
 
     // arrow function to retrieved the registered patients accounts
-    const retrievedPatientsAccountData = async () => {
+    const retrievedPatientsAccountData = useCallback(async () => {
         try {
             const response = await CMS.get("/admin-dashboard/registeredPatientAccount", {
                 headers: {
-                    "Content-Type":"application/json",
+                    "Content-Type": "application/json",
                     "Authorization": `Bearer ${localStorage.getItem("authToken")}`
                 }
             })
@@ -197,32 +90,145 @@ const RegisterPatientsAccountTable = () => {
         } catch (error) {
             console.error("Error retrieving patients account data:", error);
         }
+    }, [])
+
+    const navigateToPatientsRegisterAccounts = useCallback(async () => {
+        retrievedPatientsAccountData()
+        navigate("/admin-dashboard/RegisterPatientsAccount")
+    }, [navigate, retrievedPatientsAccountData]);
+
+    // function to open the dialog of modify patient registered account
+    const handleOpenModal = (patient) => {
+        setSelectedPatient(patient);
+        setOpenModal(true);
     }
+
+    // function  to close the dialog of updating patient registered account
+    const handleCloseModal = useCallback(() => {
+        setSelectedPatient(null);
+        setOpenModal(false);
+        setFieldErrors({})
+        retrievedPatientsAccountData();
+    }, [retrievedPatientsAccountData])
+
+    // function to close the dialog box of delete patient registered account
+    const handleDeleteConfirmRegisteredPatientAccount = useCallback(async () => {
+        setSelectedPatient(null)
+        setOpenDeleteDialog(false);
+        navigateToPatientsRegisterAccounts()
+    }, [navigateToPatientsRegisterAccounts]);
+
+    // function to open the dialog box of confirmed delete patient registered account
+    const handleDeletePatientAccountDialog = async (patient) => {
+        setSelectedPatient(patient)
+        setOpenDeleteDialog(true);
+    }
+
+    const handleChange = useCallback((e) => {
+        const { name, value } = e.target;
+        if (e && e.target) {
+            setSelectedPatient((prev) => ({
+                ...prev,
+                [name]: value
+            }));
+        }
+
+        if (fieldErrors[name]) {
+            setFieldErrors((prev) => ({
+                ...prev,
+                [name]: ""
+            }))
+        }
+    }, [fieldErrors])
+
+    // function to handle the change of date of birth
+    const dateOfBirthChange = useCallback((dob) => {
+        const selectedDateOfBirth = dayjs(dob).format("YYYY-MM-DD");
+        if (dob) {
+            setSelectedPatient((prev) => ({
+                ...prev,
+                dateOfBirth: dayjs(selectedDateOfBirth)
+            }));
+        } else {
+            setSelectedPatient((prev) => ({
+                ...prev,
+                dateOfBirth: null
+            }));
+        }
+
+        if (fieldErrors.dateOfBirth) {
+            setFieldErrors((prev) => ({
+                ...prev,
+                dateOfBirth: ""
+            }))
+        }
+    }, [fieldErrors.dateOfBirth])
+
+    // function to update the patient registered accounts
+    const handleUpdate = useCallback(async (e) => {
+        try {
+            e.preventDefault();
+
+            if (submitting) return;
+            setSubmitting(true);
+
+            const response = await CMS.put(`/admin-dashboard/updateRegisteredPatientAccount/${selectedPatient.patientID}`, {
+                ...selectedPatient,
+                dateOfBirth: selectedPatient.dateOfBirth ? dayjs(selectedPatient.dateOfBirth).format("YYYY-MM-DD") : null
+            }, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("authToken")}`
+                },
+            });
+
+            if (response.status === 200) {
+                setPatientsAccountData(
+                    (prev) => prev.map((patient) => patient.patientID === selectedPatient.patientID ? selectedPatient : patient)
+                );
+                alert("Patient account updated successfully");
+                handleCloseModal();
+            } else {
+                console.error(`Failed to update patient account: ${response.status}`);
+            }
+        } catch (error) {
+            if (error.response && error.response.status === 400) {
+                const errors = error.response.data.errors;
+                setFieldErrors((prev) => ({
+                    ...prev,
+                    ...errors
+                }))
+            }
+            console.error("Error updating patient account:", error);
+        } finally {
+            setSubmitting(false);
+        }
+    }, [selectedPatient, handleCloseModal, submitting]);
 
     useEffect(() => {
         retrievedPatientsAccountData()
-    }, [])
+    }, [retrievedPatientsAccountData]);
 
     // function to handle the deletion of patient registerd account
-    const handleConfirmDeletePatientRegisteredAccount = async () => {
+    const handleConfirmDeletePatientRegisteredAccount = useCallback(async () => {
         try {
             const response = await CMS.delete(`/admin-dashboard/deleteRegisteredPatientAccount/${selectedPatient.patientID}`, {
                 headers: {
-                    "Content-Type":"application/json",
+                    "Content-Type": "application/json",
                     "Authorization": `Bearer ${localStorage.getItem("authToken")}`
                 }
             })
 
-            if(response.status === 200){
+            if (response.status === 200) {
                 setPatientsAccountData((prev) => (
                     prev.filter((patient) => patient.patientID === selectedPatient.patientID)
                 ))
                 handleDeleteConfirmRegisteredPatientAccount()
             }
-        } catch (error){
+        } catch (error) {
             console.error(`Error in deleting the patient register account component: ${error}`)
         }
-    } 
+    }, [selectedPatient, handleDeleteConfirmRegisteredPatientAccount]);
 
     return (
         <div className="mt-12 mb-1 flex justify-center items-center w-full">
@@ -266,7 +272,7 @@ const RegisterPatientsAccountTable = () => {
                     </Table>
                 </CardContent>
             </Card>
-            
+
             {/* Component for updating the patient registered account */}
             <Dialog
                 open={openModal}
@@ -427,14 +433,14 @@ const RegisterPatientsAccountTable = () => {
                             variant="contained"
                             type="submit"
                         >
-                            Modify Patient Account
+                            <span className="text-white">{submitting ? "Loading..." : "Modify Patient Details"}</span>
                         </Button>
                     </DialogActions>
                 </form>
             </Dialog>
-            
+
             {/* Component to open the dialog box of deleting the patient registerd account */}
-            <DeleteConfirmationDialog 
+            <DeleteConfirmationDialog
                 open={openDeleteDialog}
                 onClose={handleDeleteConfirmRegisteredPatientAccount}
                 users={selectedPatient}

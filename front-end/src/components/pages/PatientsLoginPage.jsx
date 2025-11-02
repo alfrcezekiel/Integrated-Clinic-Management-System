@@ -49,6 +49,7 @@ function PatientsLoginPortal() {
     const [rememberMe, setRememberMe] = useState(false);
     const [openModal, setOpenModal] = useState(false);
     const [accountStatus, setAccountStatus] = useState("");
+    const [submitting, setSubmitting] = useState(false);
 
     const handleAccountStatus = useCallback(async (response) => {
         if (response.data.messageStatus === "Account is still pending for wait for the admin approval!") {
@@ -133,6 +134,9 @@ function PatientsLoginPortal() {
         try {
             e.preventDefault();
 
+            if (submitting) return;
+            setSubmitting(true);
+
             removeLocalStorage("authToken");
             removeLocalStorage("userData");
 
@@ -196,6 +200,8 @@ function PatientsLoginPortal() {
                 console.error(`Error in logging in patient: ${error}`);
             }
             console.error("Error in logging in patient:", error);
+        } finally {
+            setSubmitting(false);
         }
     }
 
@@ -276,7 +282,7 @@ function PatientsLoginPortal() {
                         />
                         <div className="mt-6 flex flex-col gap-6 bg-black p-[0.30rem] rounded-[3rem] text-white">
                             <Button className="mt-9" fullWidth color="white" type="submit">
-                                Login
+                                <span className="text-white">{submitting ? "Loading..." : "Login"}</span>
                             </Button>
                         </div>
                         <div className="flex items-center justify-between gap-2 mt-6">
