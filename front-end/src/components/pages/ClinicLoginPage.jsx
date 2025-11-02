@@ -159,6 +159,7 @@ function ClinicLoginPortal() {
             }
 
         } catch (error) {
+            setSubmitting(false);
             /**
              * clear the remember me credentials if the login fails
              */
