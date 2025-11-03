@@ -181,7 +181,7 @@ function AdminLoginPage() {
 
     return (
         <section className="m-3 flex gap-4">
-            <div className="w-full lg:w-3/5 mt-24">
+            <div className="w-full lg:w-3/5 py-65">
                 <Link
                     to="/cms"
                     className="absolute py-6 px-6 top-0 left-0 flex items-center text-gray-600 hover:text-gray-900 transition-colors"
@@ -273,8 +273,8 @@ function AdminLoginPage() {
                     </div>
                 </form>
             </div>
-            <div className="w-2/5 h-screen hidden lg:block">
-                <img src={pattern} className="h-full w-full object-cover rounded-3xl" alt="Pattern" />
+            <div className="w-2/5 hidden lg:block py-10 px-4">
+                <img src={pattern} className="h-[90dvh] w-full object-cover rounded-3xl" alt="Pattern" />
             </div>
         </section>
     );

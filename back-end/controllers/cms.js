@@ -235,8 +235,10 @@ export const loginPatientsAccount = async (req, res) => {
         const [rows] = await conn.query(query, [email]);
 
         if (rows.length === 0) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({
-                emailMessage: "Incorrect Email Address"
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                errors: {
+                    email: "Incorrect email address"
+                }
             });
         }
 
@@ -254,8 +256,10 @@ export const loginPatientsAccount = async (req, res) => {
         const isPasswordValid = await bcrypt.compare(password, patients.password);
 
         if (!isPasswordValid) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({
-                passwordMessage: "Incorrect Password"
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                errors: {
+                    password: "Incorrect password"
+                }
             });
         }
 
@@ -405,8 +409,10 @@ export const loginAdminAccount = async (req, res) => {
         const [rows] = await conn.query(query, [email]);
 
         if (rows.length === 0) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({
-                emailMessage: "Invalid Email"
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                errors: {
+                    email: "Incorrect email address"
+                }
             })
         }
 
@@ -415,8 +421,10 @@ export const loginAdminAccount = async (req, res) => {
         // Compare password using bcrypt
         const isPasswordValid = await bcrypt.compare(password, adminUsers.password);
         if (!isPasswordValid) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({
-                passwordMessage: "Invalid Password"
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                errors: {
+                    password: "Invalid password"
+                }
             })
         }
 
@@ -1674,8 +1682,10 @@ export const loggedInClinicAccount = async (req, res) => {
         const [rows] = await conn.query(query, [email]);
 
         if (rows.length === 0) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({
-                emailMessage: "Incorrect email"
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                errors: {
+                    email: "Incorrect email address"
+                }
             })
         }
 
@@ -1697,8 +1707,10 @@ export const loggedInClinicAccount = async (req, res) => {
 
         const isPasswordValid = await bcrypt.compare(password, clinicUsers.password);
         if (!isPasswordValid) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({
-                passwordMessage: "Incorrect Password"
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                errors: {
+                    password: "Incorrect password"
+                }
             })
         }
 
