@@ -20,7 +20,6 @@ import parser from "cron-parser"
 import logger from "./config/winston.js";
 import initializeScheduler from "./config/appointment_scheduler.js";
 import sessionStore from "./db/mysql/session_store.js";
-import fs from "fs";
 dotenv.config();
 
 const nextRuns = await getNextBackupRun(5);
@@ -183,30 +182,29 @@ const serveStaticOptions = {
             }
         }
     },
-    fallthrough: false
 };
 
 // Custom 404 handler for static files
 const staticFileHandler = (req, res, next) => {
-    const filePath = path.join(__dirname, req.path);
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+        const allowedOrigins = env === "production"
+            ? [process.env.VITE_BASE_CLIENT_URL, process.env.CLIENT_VERCEL_DOMAIN, "https://integrated-clinic-management-system.vercel.app"].filter(Boolean)
+            : ["http://localhost:5173", "http://localhost:3000"];
 
-    // Check if file exists
-    fs.access(filePath, fs.constants.F_OK, (err) => {
-        if (err) {
-            // If file doesn't exist, return a transparent 1x1 pixel PNG
-            const transparentPixel = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', 'base64');
-            res.writeHead(200, {
-                'Content-Type': 'image/png',
-                'Content-Type': 'image/jpeg',
-                'Content-Type': 'image/jpg',
-                'Content-Type': 'image/webp',
-                'Content-Length': transparentPixel.length,
-                'Cache-Control': 'public, max-age=300' // Cache 404s for 5 minutes
-            });
-            return res.end(transparentPixel);
+        const origin = req.headers.origin;
+        if (origin && allowedOrigins.some(allowed =>
+            origin === allowed ||
+            (allowed && origin.endsWith(new URL(allowed).hostname.replace('www.', '')))
+        )) {
+            res.setHeader('Access-Control-Allow-Origin', origin);
+            res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+            res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+            res.setHeader('Access-Control-Allow-Credentials', 'true');
+            return res.status(204).end();
         }
-        next();
-    });
+    }
+    next();
 };
 
 // Serve clinic images
