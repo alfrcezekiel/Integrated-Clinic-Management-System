@@ -154,35 +154,53 @@ app.use(cors(corsOptions));
 // error handling for server error
 app.options("*", cors(corsOptions));
 
-// set custom headers for static file image for clinic images
+// Serve static files with proper CORS and caching headers
+const serveStaticOptions = {
+    setHeaders: (res, path) => {
+        // Cache control for static files (1 day)
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        
+        // Set CORS headers for static files
+        const allowedOrigins = env === "production"
+            ? [process.env.VITE_BASE_CLIENT_URL, process.env.CLIENT_VERCEL_DOMAIN].filter(Boolean)
+            : ["http://localhost:5173", "http://localhost:3000"];
+            
+        const origin = res.req?.headers?.origin;
+        if (origin && allowedOrigins.includes(origin)) {
+            res.setHeader('Access-Control-Allow-Origin', origin);
+            res.setHeader('Access-Control-Allow-Credentials', 'true');
+        }
+        
+        // Security headers
+        res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+        res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+        res.setHeader('X-Content-Type-Options', 'nosniff');
+    }
+};
+
 // app.use("/uploads/clinic_images", (req, res, next) => {
 //     res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
 //     res.setHeader("Cross-Origin-Opener-Policy", "cross-origin");
-//     res.setHeader("Access-Control-Allow-Origin", env === "production" ? process.env.VITE_BASE_CLIENT_URL : "http://localhost:5173");
+
+//     // Allow multiple origins for static files
+//     const allowedOrigins = env === "production"
+//         ? [process.env.VITE_BASE_CLIENT_URL, "https://integrated-clinic-management-system.vercel.app"].filter(Boolean)
+//         : ["http://localhost:5173", "http://localhost:3000"];
+
+//     const origin = req.headers.origin;
+//     if (origin && allowedOrigins.includes(origin)) {
+//         res.setHeader("Access-Control-Allow-Origin", origin);
+//     }
 //     next();
 // })
-app.use("/uploads/clinic_images", (req, res, next) => {
-    res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
-    res.setHeader("Cross-Origin-Opener-Policy", "cross-origin");
 
-    // Allow multiple origins for static files
-    const allowedOrigins = env === "production"
-        ? [process.env.VITE_BASE_CLIENT_URL, "https://integrated-clinic-management-system.vercel.app"].filter(Boolean)
-        : ["http://localhost:5173", "http://localhost:3000"];
-
-    const origin = req.headers.origin;
-    if (origin && allowedOrigins.includes(origin)) {
-        res.setHeader("Access-Control-Allow-Origin", origin);
-    }
-    next();
-})
-
-// Ensure the directory exists before serving it as static content
+// Serve clinic images
 const clinicImagesPath = path.join(__dirname, "uploads/clinic_images");
-app.use("/uploads/clinic_images", express.static(clinicImagesPath));
+app.use("/uploads/clinic_images", express.static(clinicImagesPath, serveStaticOptions));
 
+// Serve medical reports
 const medicalReportPath = path.join(__dirname, "uploads/medical_reports");
-app.use("/uploads/medical_reports", express.static(medicalReportPath));
+app.use("/uploads/medical_reports", express.static(medicalReportPath, serveStaticOptions));
 
 // route for CMS
 app.use("/", cms);
