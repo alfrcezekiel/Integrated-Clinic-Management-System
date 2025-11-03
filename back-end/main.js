@@ -20,6 +20,7 @@ import parser from "cron-parser"
 import logger from "./config/winston.js";
 import initializeScheduler from "./config/appointment_scheduler.js";
 import sessionStore from "./db/mysql/session_store.js";
+import fs from "fs";
 dotenv.config();
 
 const nextRuns = await getNextBackupRun(5);
@@ -181,32 +182,40 @@ const serveStaticOptions = {
                 res.setHeader('X-Content-Type-Options', 'nosniff');
             }
         }
-    }
+    },
+    fallthrough: false
 };
 
-// app.use("/uploads/clinic_images", (req, res, next) => {
-//     res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
-//     res.setHeader("Cross-Origin-Opener-Policy", "cross-origin");
+// Custom 404 handler for static files
+const staticFileHandler = (req, res, next) => {
+    const filePath = path.join(__dirname, req.path);
 
-//     // Allow multiple origins for static files
-//     const allowedOrigins = env === "production"
-//         ? [process.env.VITE_BASE_CLIENT_URL, "https://integrated-clinic-management-system.vercel.app"].filter(Boolean)
-//         : ["http://localhost:5173", "http://localhost:3000"];
-
-//     const origin = req.headers.origin;
-//     if (origin && allowedOrigins.includes(origin)) {
-//         res.setHeader("Access-Control-Allow-Origin", origin);
-//     }
-//     next();
-// })
+    // Check if file exists
+    fs.access(filePath, fs.constants.F_OK, (err) => {
+        if (err) {
+            // If file doesn't exist, return a transparent 1x1 pixel PNG
+            const transparentPixel = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', 'base64');
+            res.writeHead(200, {
+                'Content-Type': 'image/png',
+                'Content-Type': 'image/jpeg',
+                'Content-Type': 'image/jpg',
+                'Content-Type': 'image/webp',
+                'Content-Length': transparentPixel.length,
+                'Cache-Control': 'public, max-age=300' // Cache 404s for 5 minutes
+            });
+            return res.end(transparentPixel);
+        }
+        next();
+    });
+};
 
 // Serve clinic images
 const clinicImagesPath = path.join(__dirname, "uploads/clinic_images");
-app.use("/uploads/clinic_images", express.static(clinicImagesPath, serveStaticOptions));
+app.use("/uploads/clinic_images", staticFileHandler, express.static(clinicImagesPath, serveStaticOptions));
 
 // Serve medical reports
 const medicalReportPath = path.join(__dirname, "uploads/medical_reports");
-app.use("/uploads/medical_reports", express.static(medicalReportPath, serveStaticOptions));
+app.use("/uploads/medical_reports", staticFileHandler, express.static(medicalReportPath, serveStaticOptions));
 
 // route for CMS
 app.use("/", cms);
