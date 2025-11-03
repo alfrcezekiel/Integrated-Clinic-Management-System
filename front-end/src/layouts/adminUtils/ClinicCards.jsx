@@ -76,6 +76,7 @@ const ClinicCard = ({ clinic, onViewDetails, onEditClinic }) => {
                 className="w-full h-full object-cover p-4 rounded-3xl"
                 src={`${config.api.baseURL}/uploads/clinic_images/${clinic.clinic_image}`}
                 alt="Clinic"
+                crossOrigin="anonymous"
             />
 
             <div className="p-6">

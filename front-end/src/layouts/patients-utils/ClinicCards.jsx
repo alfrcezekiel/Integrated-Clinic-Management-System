@@ -500,6 +500,7 @@ const ClinicCards = () => {
                                             src={`${config.api.baseURL}/uploads/clinic_images/${clinic.clinic_image}`}
                                             alt="Clinic Management Image"
                                             className="object-center object-cover rounded-2xl min-h-[25dvh]"
+                                            crossOrigin="anonymous"
                                         />
                                     </div>
                                     <div className="space-y-3 text-black">

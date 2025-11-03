@@ -159,22 +159,28 @@ const serveStaticOptions = {
     setHeaders: (res, path) => {
         // Cache control for static files (1 day)
         res.setHeader('Cache-Control', 'public, max-age=86400');
-        
+
         // Set CORS headers for static files
         const allowedOrigins = env === "production"
             ? [process.env.VITE_BASE_CLIENT_URL, process.env.CLIENT_VERCEL_DOMAIN].filter(Boolean)
             : ["http://localhost:5173", "http://localhost:3000"];
-            
+
         const origin = res.req?.headers?.origin;
-        if (origin && allowedOrigins.includes(origin)) {
-            res.setHeader('Access-Control-Allow-Origin', origin);
-            res.setHeader('Access-Control-Allow-Credentials', 'true');
+        if (origin) {
+            // Check if origin is in allowedOrigins or if it's a subdomain of our main domain
+            const isAllowed = allowedOrigins.some(allowed =>
+                origin === allowed ||
+                (allowed && origin.endsWith(new URL(allowed).hostname.replace('www.', '')))
+            );
+
+            if (isAllowed) {
+                res.setHeader('Access-Control-Allow-Origin', origin);
+                res.setHeader('Access-Control-Allow-Credentials', 'true');
+                res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+                res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+                res.setHeader('X-Content-Type-Options', 'nosniff');
+            }
         }
-        
-        // Security headers
-        res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-        res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
-        res.setHeader('X-Content-Type-Options', 'nosniff');
     }
 };
 
