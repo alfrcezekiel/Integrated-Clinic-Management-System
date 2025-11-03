@@ -156,7 +156,6 @@ function AdminLoginPage() {
             }
 
         } catch (error) {
-            setSubmitting(false);
             /**
              * clear the remember me credentials if the login fails
              */
@@ -174,7 +173,9 @@ function AdminLoginPage() {
                 console.error(`Error in logging in admin: ${error}`);
             }
         } finally {
-            setSubmitting(false);
+            setInterval(() => {
+                setSubmitting(false);
+            }, 1000);
         }
     }
 
@@ -254,7 +255,7 @@ function AdminLoginPage() {
                         }
                     />
                     <div className="mt-6 flex flex-col gap-6 bg-black p-[0.30rem] rounded-[3rem] text-white">
-                        <Button 
+                        <Button
                             className="mt-9"
                             fullWidth
                             color="white"

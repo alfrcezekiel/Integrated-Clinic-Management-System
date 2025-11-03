@@ -159,7 +159,6 @@ function ClinicLoginPortal() {
             }
 
         } catch (error) {
-            setSubmitting(false);
             /**
              * clear the remember me credentials if the login fails
              */
@@ -177,7 +176,9 @@ function ClinicLoginPortal() {
                 console.error(`Error in logging in patient: ${error}`);
             }
         } finally {
-            setSubmitting(false);
+            setInterval(() => {
+                setSubmitting(false);
+            }, 1000);
         }
     }
 

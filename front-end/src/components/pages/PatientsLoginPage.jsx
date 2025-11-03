@@ -179,7 +179,6 @@ function PatientsLoginPortal() {
                 throw new Error(`No response data or no success message: ${response.data}`);
             }
         } catch (error) {
-            setSubmitting(false);
             /**
              * clear the remember me credentials if the login fails
              */
@@ -202,7 +201,9 @@ function PatientsLoginPortal() {
             }
             console.error("Error in logging in patient:", error);
         } finally {
-            setSubmitting(false);
+            setInterval(() => {
+                setSubmitting(false);
+            }, 1000);
         }
     }
 
