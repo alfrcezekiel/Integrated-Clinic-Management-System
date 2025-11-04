@@ -2984,20 +2984,41 @@ export const addBookAppointmentInClinic = async (req, res) => {
             clinicID,
             clinicName
         } = req.body
-        
+
         const first_name = String(firstName);
         const last_name = String(lastName);
         const patient_address = String(address);
         const email_address = String(email);
         const phone_number = String(phoneNumber);
         const appointment_date = new Date(appointmentDate)
-        const appointment_time = new Date(appointmentTime)
+        const appointment_time = String(appointmentTime)
         const sex = String(gender);
         const purpose_of_appointment = String(purposeOfAppointment);
         const clinic_id = parseInt(clinicID, 10);
         const clinic_name = String(clinicName);
         const created_date = dayjs().format("YYYY-MM-DD");
         const status = String("Pending");
+
+        // Convert to 24-hour format before inserting into DB
+        const normalizeTime = (timeStr) => {
+            if (!timeStr || typeof timeStr !== "string") {
+                throw new Error("Invalid time format");
+            }
+
+            const timeParts = timeStr.trim().match(/^(\d{1,2}):(\d{2})\s?(AM|PM)$/i);
+            if (!timeParts) {
+                throw new Error("Invalid time format");
+            }
+
+            let hours = parseInt(timeParts[1], 10);
+            let minutes = parseInt(timeParts[2], 10);
+            const modifier = timeParts[3].toUpperCase();
+
+            if (modifier === "PM" && hours !== 12) hours += 12;
+            if (modifier === "AM" && hours === 12) hours = 0;
+
+            return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:00`;
+        };
 
         if (isNaN(clinic_id)) {
             return res.status(StatusCodes.BAD_REQUEST).json({
@@ -3012,7 +3033,7 @@ export const addBookAppointmentInClinic = async (req, res) => {
             email: email_address,
             phoneNumber: phone_number,
             appointmentDate: appointment_date,
-            appointmentTime: appointment_time,
+            appointmentTime: normalizeTime(appointment_time),
             gender: sex,
             purposeOfAppointment: purpose_of_appointment,
             clinicID: clinic_id,
