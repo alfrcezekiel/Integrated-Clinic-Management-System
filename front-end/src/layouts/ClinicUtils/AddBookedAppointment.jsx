@@ -144,7 +144,7 @@ const AddBookAppointment = () => {
             const selectedAppointmentDate = dayjs(newValue).format('YYYY-MM-DD');
             setFormData((prev) => ({
                 ...prev,
-                appointmentDate: selectedAppointmentDate ? dayjs(selectedAppointmentDate).format('YYYY-MM-DD') : null
+                appointmentDate: dayjs(selectedAppointmentDate)
             }))
         } else {
             setFormData((prev) => ({
