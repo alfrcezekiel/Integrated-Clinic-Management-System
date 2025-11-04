@@ -17,8 +17,14 @@ import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { useAuthorization } from "../../context/auth/useAuthorization";
 import { useNavigate } from "react-router-dom";
 import CMS from "../../API/CMS";
+import utc from "dayjs/plugin/utc"
+import timezone from "dayjs/plugin/timezone"
 
 const AddBookAppointment = () => {
+    dayjs.extend(utc)
+    dayjs.extend(timezone)
+    dayjs.tz.setDefault("Asia/Manila");
+
     const genders = ["Male", "Female"];
     const purposeOfAppointment = ["Regular Checkup", "Consultation", "Follow-up", "Emergency", "Urgent Care", "Other"];
 
@@ -91,7 +97,6 @@ const AddBookAppointment = () => {
             const response = await CMS.post(`/clinicDashboard/addBookedAppointment`, {
                 ...formData,
                 appointmentDate: formData.appointmentDate ? dayjs(formData.appointmentDate).format("YYYY-MM-DD") : null,
-                appointmentTime: formData.appointmentTime ? dayjs(formData.appointmentTime, "HH:mm") : null,
                 clinicID: clinic_id,
                 clinicName: clinic_name
             }, {
@@ -139,7 +144,7 @@ const AddBookAppointment = () => {
             const selectedAppointmentDate = dayjs(newValue).format('YYYY-MM-DD');
             setFormData((prev) => ({
                 ...prev,
-                appointmentDate: selectedAppointmentDate
+                appointmentDate: selectedAppointmentDate ? dayjs(selectedAppointmentDate).format('YYYY-MM-DD') : null
             }))
         } else {
             setFormData((prev) => ({
@@ -159,10 +164,10 @@ const AddBookAppointment = () => {
     // function to handle changes in appointment time
     const appointmentTimeChange = useCallback(async (newValue) => {
         if (newValue) {
-            const selectedAppointmentTime = dayjs(newValue).format("hh:mm A")
+            const selectedAppointmentTime = dayjs(newValue).tz("Asia/Manila").format("hh:mm A")
             setFormData((prev) => ({
                 ...prev,
-                appointmentTime: selectedAppointmentTime
+                appointmentTime: selectedAppointmentTime ? dayjs(selectedAppointmentTime, "hh:mm A") : null
             }))
         } else {
             setFormData((prev) => ({
@@ -359,7 +364,7 @@ const AddBookAppointment = () => {
                                     color="primary"
                                     type="submit"
                                     className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl"
-                                >   
+                                >
                                     <span className="text-white">
                                         {submitting ? "Loading..." : "Book Appointment"}
                                     </span>
