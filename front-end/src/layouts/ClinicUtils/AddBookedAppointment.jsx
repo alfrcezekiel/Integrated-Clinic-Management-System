@@ -107,7 +107,6 @@ const AddBookAppointment = () => {
             const response = await CMS.post(`/clinicDashboard/addBookedAppointment`, {
                 ...formData,
                 appointmentDate: manilaDT.format("YYYY-MM-DD"),
-                appointmentTime: manilaDT.format("HH:mm :ss"),
                 clinicID: clinic_id,
                 clinicName: clinic_name
             }, {
