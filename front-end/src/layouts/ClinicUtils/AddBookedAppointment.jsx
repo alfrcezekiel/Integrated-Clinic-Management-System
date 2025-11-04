@@ -158,10 +158,10 @@ const AddBookAppointment = () => {
     // function to handle changes in appointment time
     const appointmentTimeChange = useCallback(async (newValue) => {
         if (newValue) {
-            const selectedAppointmentTime = dayjs(newValue).format("hh:mm A")
+            const selectedAppointmentTime = dayjs(newValue).format("HH:mm")
             setFormData((prev) => ({
                 ...prev,
-                appointmentTime: selectedAppointmentTime ? dayjs(selectedAppointmentTime, "hh:mm A") : null
+                appointmentTime: selectedAppointmentTime ? dayjs(selectedAppointmentTime, "HH:mm") : null
             }))
         } else {
             setFormData((prev) => ({
@@ -292,7 +292,7 @@ const AddBookAppointment = () => {
                                     label="Select Appointment Time"
                                     className="w-full"
                                     name="appointmentTime"
-                                    value={formData.appointmentTime ? dayjs(formData.appointmentTime, "hh:mm A") : null}
+                                    value={formData.appointmentTime ? dayjs(formData.appointmentTime, "HH:mm") : null}
                                     onChange={appointmentTimeChange}
                                     slotProps={{
                                         textField: {
