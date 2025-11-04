@@ -91,6 +91,7 @@ const AddBookAppointment = () => {
             const response = await CMS.post(`/clinicDashboard/addBookedAppointment`, {
                 ...formData,
                 appointmentDate: formData.appointmentDate ? dayjs(formData.appointmentDate).format("YYYY-MM-DD") : null,
+                appointmentTime: formData.appointmentTime ? dayjs(formData.appointmentTime, "HH:mm") : null,
                 clinicID: clinic_id,
                 clinicName: clinic_name
             }, {
@@ -138,7 +139,7 @@ const AddBookAppointment = () => {
             const selectedAppointmentDate = dayjs(newValue).format('YYYY-MM-DD');
             setFormData((prev) => ({
                 ...prev,
-                appointmentDate: dayjs(selectedAppointmentDate)
+                appointmentDate: selectedAppointmentDate
             }))
         } else {
             setFormData((prev) => ({
@@ -158,10 +159,10 @@ const AddBookAppointment = () => {
     // function to handle changes in appointment time
     const appointmentTimeChange = useCallback(async (newValue) => {
         if (newValue) {
-            const selectedAppointmentTime = dayjs(newValue).format("HH:mm")
+            const selectedAppointmentTime = dayjs(newValue).format("hh:mm A")
             setFormData((prev) => ({
                 ...prev,
-                appointmentTime: selectedAppointmentTime ? dayjs(selectedAppointmentTime, "HH:mm") : null
+                appointmentTime: selectedAppointmentTime
             }))
         } else {
             setFormData((prev) => ({
@@ -292,7 +293,7 @@ const AddBookAppointment = () => {
                                     label="Select Appointment Time"
                                     className="w-full"
                                     name="appointmentTime"
-                                    value={formData.appointmentTime ? dayjs(formData.appointmentTime, "HH:mm") : null}
+                                    value={formData.appointmentTime ? dayjs(formData.appointmentTime, "hh:mm A") : null}
                                     onChange={appointmentTimeChange}
                                     slotProps={{
                                         textField: {
