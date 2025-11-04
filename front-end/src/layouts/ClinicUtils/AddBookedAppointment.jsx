@@ -91,9 +91,6 @@ const AddBookAppointment = () => {
             if (submitting) return;
             setSubmitting(true);
 
-            console.log('Appointment Data:', formData);
-            // Add your API call here
-
             const response = await CMS.post(`/clinicDashboard/addBookedAppointment`, {
                 ...formData,
                 appointmentDate: formData.appointmentDate ? dayjs(formData.appointmentDate).format("YYYY-MM-DD") : null,
@@ -139,7 +136,7 @@ const AddBookAppointment = () => {
     };
 
     // function to handle changes in appointment date
-    const appointmentDateChange = useCallback(async (newValue) => {
+    const appointmentDateChange = async (newValue) => {
         if (newValue) {
             const selectedAppointmentDate = dayjs(newValue).format('YYYY-MM-DD');
             setFormData((prev) => ({
@@ -159,10 +156,10 @@ const AddBookAppointment = () => {
                 appointmentDate: ""
             }));
         }
-    }, [fieldErrors.appointmentDate]);
+    }
 
     // function to handle changes in appointment time
-    const appointmentTimeChange = useCallback(async (newValue) => {
+    const appointmentTimeChange = async (newValue) => {
         if (newValue) {
             const selectedAppointmentTime = dayjs(newValue).tz("Asia/Manila").format("hh:mm A")
             setFormData((prev) => ({
@@ -182,7 +179,7 @@ const AddBookAppointment = () => {
                 appointmentTime: ""
             }));
         }
-    }, [fieldErrors.appointmentTime]);
+    }
 
     return (
         <div className="flex flex-col justify-center items-center w-full min-h-[90dvh]">
