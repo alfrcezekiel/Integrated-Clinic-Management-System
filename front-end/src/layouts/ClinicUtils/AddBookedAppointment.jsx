@@ -23,7 +23,6 @@ import timezone from "dayjs/plugin/timezone"
 const AddBookAppointment = () => {
     dayjs.extend(utc)
     dayjs.extend(timezone)
-    dayjs.tz.setDefault("Asia/Manila");
 
     const genders = ["Male", "Female"];
     const purposeOfAppointment = ["Regular Checkup", "Consultation", "Follow-up", "Emergency", "Urgent Care", "Other"];
@@ -91,9 +90,24 @@ const AddBookAppointment = () => {
             if (submitting) return;
             setSubmitting(true);
 
+            const PH_TZ = "Asia/Manila";
+
+            const selectedDateStr = dayjs(formData.appointmentDate).format("YYYY-MM-DD");
+            const selectedTimeStr = dayjs(formData.appointmentTime).tz("Asia/Manila").format("hh:mm A");
+
+            let manilaDT = dayjs.tz(`${selectedDateStr} ${selectedTimeStr}`, "YYYY-MM-DD hh:mm A", PH_TZ);
+            if (!manilaDT.isValid()) {
+                manilaDT = dayjs.tz(`${selectedDateStr} ${selectedTimeStr}`, "YYYY-MM-DD H:mm", PH_TZ);
+            }
+
+            if (!manilaDT.isValid()) {
+                // fallback: parse date only (midnight)
+                manilaDT = dayjs.tz(selectedDateStr + " 00:00", "YYYY-MM-DD HH:mm", PH_TZ);
+            }
             const response = await CMS.post(`/clinicDashboard/addBookedAppointment`, {
                 ...formData,
-                appointmentDate: formData.appointmentDate ? dayjs(formData.appointmentDate).format("YYYY-MM-DD") : null,
+                appointmentDate: manilaDT.format("YYYY-MM-DD"),
+                appointmentTime: manilaDT.format("HH:mm :ss"),
                 clinicID: clinic_id,
                 clinicName: clinic_name
             }, {
@@ -117,7 +131,7 @@ const AddBookAppointment = () => {
                     purposeOfAppointment: ""
                 })
                 alert("Appointment booked successfully!");
-                navigate("/doctor-portal/dashboard/AddBookAppointment");
+                navigate("/doctor-portal/dashboard/ClinicViewBookedAppointment");
             } else {
                 throw new Error(`Failed to book appointment: ${response.statusText}`);
             }

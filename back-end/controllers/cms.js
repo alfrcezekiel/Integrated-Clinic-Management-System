@@ -13,6 +13,8 @@ import asyncHandler from "../middleware/asyncHandler/asyncHandler.js";
 import sendResetPasswordEmail from '../utils/resetPassword.js';
 import crypto from "crypto";
 import PDFDocument from "pdfkit"
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 import {
     autoGenerateMedicalReportPath,
     saveMedicalReport
@@ -137,7 +139,7 @@ export const registerPatientAccount = async (req, res) => {
         ]);
 
         logger.log(`info`, `[patientregisteraccount2] registerPatientID column = ${second_result.insertId} mapped patientID foreign key column = ${patientID}`);
-        
+
         await connection.commit();
         try {
             await sendWelcomeEmail({
@@ -315,7 +317,7 @@ export const loginPatientsAccount = async (req, res) => {
 
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production" ? true  : false, // Set to true if using HTTPS
+            secure: process.env.NODE_ENV === "production" ? true : false, // Set to true if using HTTPS
             sameSite: "lax",
             domain: "localhost",
             path: "/"
@@ -2969,6 +2971,11 @@ export const deleteBookedAppointment = async (req, res) => {
  */
 export const addBookAppointmentInClinic = async (req, res) => {
     try {
+        dayjs.extend(utc);
+        dayjs.extend(timezone);
+
+        const PH_TZ = "Asia/Manila";
+        
         const {
             firstName,
             lastName,
@@ -2982,14 +2989,49 @@ export const addBookAppointmentInClinic = async (req, res) => {
             clinicID,
             clinicName
         } = req.body
+        
+        const buildManilaDateTime = (dateStr, timeStr) => {
+            if (!dateStr) return null;
+
+            // normalize date portion (accepts 'YYYY-MM-DD' or full ISO)
+            const dateOnly = dayjs(dateStr).format("YYYY-MM-DD");
+
+            if (!timeStr) {
+                // default to start of day if no time provided
+                return dayjs.tz(dateOnly + " 00:00", "YYYY-MM-DD HH:mm", PH_TZ);
+            }
+
+            // try parsing time with AM/PM first, then 24h
+            let dt = dayjs.tz(`${dateOnly} ${timeStr}`, "YYYY-MM-DD hh:mm A", PH_TZ);
+            if (!dt.isValid()) {
+                dt = dayjs.tz(`${dateOnly} ${timeStr}`, "YYYY-MM-DD H:mm", PH_TZ);
+            }
+
+            if (!dt.isValid()) {
+                // last resort: let dayjs parse and then set tz
+                const parsed = dayjs(`${dateOnly} ${timeStr}`);
+                if (parsed.isValid()) {
+                    return parsed.tz ? parsed.tz(PH_TZ) : dayjs.tz(parsed.toISOString(), PH_TZ);
+                }
+                return null;
+            }
+            return dt;
+        }
+        
+        const manilaDateTime = buildManilaDateTime(appointmentDate, appointmentTime);
+        if (!manilaDateTime) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Invalid timezone! Incorrect appointment date/time"
+            })
+        }
 
         const first_name = String(firstName);
         const last_name = String(lastName);
         const patient_address = String(address);
         const email_address = String(email);
         const phone_number = String(phoneNumber);
-        const appointment_date = dayjs(appointmentDate).format("YYYY-MM-DD");
-        const appointment_time = dayjs(appointmentTime).format("hh:mm");
+        const appointment_date = manilaDateTime.format("YYYY-MM-DD");
+        const appointment_time = manilaDateTime.format("hh:mm A");
         const sex = String(gender);
         const purpose_of_appointment = String(purposeOfAppointment);
         const clinic_id = parseInt(clinicID, 10);
