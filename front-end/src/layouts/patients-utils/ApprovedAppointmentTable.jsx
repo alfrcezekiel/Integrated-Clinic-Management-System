@@ -250,7 +250,7 @@ const ApprovedAppointmentsTable = () => {
                                         ))}
                                     </tr>
                                 </thead>
-                                {isSearching || searchLoading ? (
+                                {isSearching || searchLoading || isLoading ? (
                                     <tbody>
                                         <tr>
                                             <td

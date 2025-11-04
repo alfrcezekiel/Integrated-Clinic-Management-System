@@ -251,7 +251,7 @@ const DeclinedAppointmentStatusTable = () => {
                                             ))}
                                         </tr>
                                     </thead>
-                                    {isSearching || searchLoading ? (
+                                    {isSearching || searchLoading || isLoading ? (
                                         <tbody>
                                             <tr>
                                                 <td
