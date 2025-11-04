@@ -134,7 +134,7 @@ const PendingAppointmentTable = () => {
         return () => clearTimeout(timer);
     }, [filteredPendingAppointments, pagination.limit])
 
-    const handleSearchChange = async (e) => {
+    const handleSearchChange = useCallback(async (e) => {
         const { value } = e.target;
         setSearchTerm(value);
 
@@ -150,9 +150,9 @@ const PendingAppointmentTable = () => {
             return;
         }
         await debouncedSearch(value);
-    }
+    }, [debouncedSearch, filteredPendingAppointments, pagination.currentPage, pagination.limit, searchTimeout]);
 
-    const handlePageChange = async (pageNumber) => {
+    const handlePageChange = useCallback(async (pageNumber) => {
         setPagination((prev) => ({
             ...prev,
             currentPage: pageNumber
@@ -163,9 +163,9 @@ const PendingAppointmentTable = () => {
         } else {
             await filteredPendingAppointments("", pageNumber, pagination.limit);
         }
-    };
+    }, [filteredPendingAppointments, pagination.limit, searchTerm]);
 
-    const handleItemsPerPageChange = async (e) => {
+    const handleItemsPerPageChange = useCallback(async (e) => {
         const newLimit = parseInt(e.target.value);
         setPagination((prev) => ({
             ...prev,
@@ -178,35 +178,36 @@ const PendingAppointmentTable = () => {
         } else {
             await filteredPendingAppointments("", 1, newLimit);
         }
-    };
+    }, [filteredPendingAppointments, searchTerm]);
+
+    const retrievePendingStatus = useCallback(async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const response = await CMS.get(`/patients-dashboard/getPatientPendingStatus/${patientEmail}`, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${tokenContext}`,
+                },
+            });
+
+            if (response.status === 200) {
+                setRetrievedAppointmentsData(response.data.patientsPendingStatus);
+            } else {
+                console.error(`Failed to retrieve pending appointment status in server: ${response.status}`);
+            }
+
+        } catch (error) {
+            console.error(`Failed to retrieve pending appointment status: ${error}`);
+            setError(error);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [patientEmail, tokenContext])
 
     useEffect(() => {
-        const retrievePendingStatus = async () => {
-            setIsLoading(true);
-            setError(null);
-            try {
-                const response = await CMS.get(`/patients-dashboard/getPatientPendingStatus/${patientEmail}`, {
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${tokenContext}`,
-                    },
-                });
-
-                if (response.status === 200) {
-                    setRetrievedAppointmentsData(response.data.patientsPendingStatus);
-                } else {
-                    console.error(`Failed to retrieve pending appointment status in server: ${response.status}`);
-                }
-
-            } catch (error) {
-                console.error(`Failed to retrieve pending appointment status: ${error}`);
-                setError(error);
-            } finally {
-                setIsLoading(false);
-            }
-        }
         retrievePendingStatus();
-    }, [patientEmail, tokenContext]);
+    }, [patientEmail, tokenContext, retrievePendingStatus]);
 
 
     return (
@@ -229,7 +230,13 @@ const PendingAppointmentTable = () => {
                                 placeholder="Search patients..."
                                 value={searchTerm}
                                 onChange={handleSearchChange}
+                                disabled={isLoading}
                             />
+                            {searchLoading && (
+                                <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                    <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-black/500"></div>
+                                </div>
+                            )}
                         </div>
                     </div>
                     {error && (
@@ -269,7 +276,7 @@ const PendingAppointmentTable = () => {
                                             <tr>
                                                 <td colSpan={appointmentsTableColumn.length} className="px-6 py-4 text-center">
                                                     <div className="flex justify-center items-center h-32">
-                                                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                                                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-black/500"></div>
                                                     </div>
                                                 </td>
                                             </tr>

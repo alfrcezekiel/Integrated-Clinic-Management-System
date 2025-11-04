@@ -70,35 +70,33 @@ const ApprovedAppointmentsTable = () => {
     const [searchLoading, setSearchLoading] = useState(false);
     const [searchTimeout, setSearchTimeout] = useState(null);
 
-    useEffect(() => {
-        const retrieveApprovedStatus = async () => {
-            if (!tokenContext) return;
+    const retrieveApprovedStatus = useCallback(async () => {
+        if (!tokenContext) return;
 
-            setIsLoading(true);
-            try {
-                const response = await CMS.get(`/patients-dashboard/getPatientApprovedStatus/${patientEmail}`, {
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${tokenContext}`,
-                    },
-                });
+        setIsLoading(true);
+        try {
+            const response = await CMS.get(`/patients-dashboard/getPatientApprovedStatus/${patientEmail}`, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${tokenContext}`,
+                },
+            });
 
-                if (response.status === 200) {
-                    setRetrievedAppointmentsData(response.data.patientsApprovedStatus);
-                } else {
-                    console.error(`Failed to retrieve approved appointment status in server: ${response.status}`);
-                }
-            } catch (error) {
-                console.error(`Failed to retrieve approved appointment status: ${error}`);
-            } finally {
-                setIsLoading(false);
+            if (response.status === 200) {
+                setRetrievedAppointmentsData(response.data.patientsApprovedStatus);
+            } else {
+                console.error(`Failed to retrieve approved appointment status in server: ${response.status}`);
             }
-        }
-
-        if (patientEmail) {
-            retrieveApprovedStatus();
+        } catch (error) {
+            console.error(`Failed to retrieve approved appointment status: ${error}`);
+        } finally {
+            setIsLoading(false);
         }
     }, [patientEmail, tokenContext]);
+
+    useEffect(() => {
+        retrieveApprovedStatus();
+    }, [patientEmail, tokenContext, retrieveApprovedStatus]);
 
     /**
      * @function filter the declined booked appointment details
@@ -139,6 +137,7 @@ const ApprovedAppointmentsTable = () => {
             console.error(`Failed to filter approved booked appointments: ${error}`);
         } finally {
             setIsSearching(false);
+            setIsLoading(false);
         }
     }, [patientEmail, tokenContext])
 
@@ -160,7 +159,7 @@ const ApprovedAppointmentsTable = () => {
         return () => clearTimeout(timer)
     }, [filteredApprovedBookedAppointments, pagination.limit]);
 
-    const handleSearchChange = async (e) => {
+    const handleSearchChange = useCallback(async (e) => {
         const { value } = e.target;
         setSearchTerm(value);
 
@@ -177,7 +176,7 @@ const ApprovedAppointmentsTable = () => {
         }
 
         await debouncedSearch(value);
-    }
+    }, [debouncedSearch, filteredApprovedBookedAppointments, pagination.currentPage, pagination.limit, searchTimeout])
 
     const handlePageChange = async (pageNumber) => {
         setPagination((prev) => ({
@@ -192,7 +191,7 @@ const ApprovedAppointmentsTable = () => {
         }
     };
 
-    const handleItemsPerPageChange = async (e) => {
+    const handleItemsPerPageChange = useCallback(async (e) => {
         const { value } = e.target;
         const newItemPerPage = parseInt(value);
         setPagination((prev) => ({
@@ -206,7 +205,7 @@ const ApprovedAppointmentsTable = () => {
         } else {
             await filteredApprovedBookedAppointments("", 1, newItemPerPage);
         }
-    };
+    }, [filteredApprovedBookedAppointments, searchTerm]);
 
     return (
         <div className="mt-16 mb-8 w-full">
@@ -226,6 +225,11 @@ const ApprovedAppointmentsTable = () => {
                             value={searchTerm}
                             onChange={handleSearchChange}
                         />
+                        {searchLoading && (
+                            <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-black/500"></div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -233,7 +237,7 @@ const ApprovedAppointmentsTable = () => {
                     <div className="inline-block min-w-full align-middle">
                         <div className="overflow-hidden">
                             <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
+                                <thead className="bg-gray-100">
                                     <tr>
                                         {appointmentsTableColumn.map((column) => (
                                             <th
@@ -254,7 +258,7 @@ const ApprovedAppointmentsTable = () => {
                                                 className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center"
                                             >
                                                 <div className="flex justify-center items-center h-32">
-                                                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                                                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-black/500"></div>
                                                 </div>
                                             </td>
                                         </tr>
@@ -267,79 +271,81 @@ const ApprovedAppointmentsTable = () => {
                                 )}
                             </table>
                         </div>
-                        {!isLoading && retrievedAppointmentsData.length === 0 && (
-                            <div className="text-center py-4 text-gray-500">
-                                {searchTerm ? `No searched approved appointments found` : 'No approved appointments available'}
-                            </div>
-                        )}
-                        {/* Pagination */}
-                        {totalItems > 0 && (
-                            <div className="px-6 py-4 flex flex-col sm:flex-row items-center justify-between border-t border-gray-200">
-                                <div className="text-sm text-gray-700 mb-4 sm:mb-0">
-                                    Showing <span className="font-medium">
-                                        {Math.min(pagination.limit, totalItems)}
-                                    </span> to{' '}
-                                    <span className="font-medium">
-                                        {Math.min(pagination.currentPage * pagination.limit, totalItems)}
-                                    </span>{' '}
-                                    of <span className="font-medium">{totalItems}</span> results
-                                </div>
-                                <div className="flex items-center space-x-4">
-                                    <select
-                                        className="px-3 py-1 border rounded text-sm"
-                                        value={pagination.limit}
-                                        onChange={handleItemsPerPageChange}
-                                    >
-                                        <option value={10}>10</option>
-                                        <option value={25}>25</option>
-                                        <option value={50}>50</option>
-                                        <option value={100}>100</option>
-                                        <option value={150}>150</option>
-                                        <option value={200}>200</option>
-                                        <option value={250}>250</option>
-                                        <option value={300}>300</option>
-                                        <option value={350}>350</option>
-                                        <option value={400}>400</option>
-                                        <option value={450}>450</option>
-                                        <option value={500}>500</option>
-                                    </select>
-                                    <div className="flex space-x-1 gap-1">
-                                        <button
-                                            onClick={() => handlePageChange(1)}
-                                            disabled={pagination.currentPage === 1}
-                                            className="px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer bg-black/100 text-white"
-                                        >
-                                            First
-                                        </button>
-                                        <button
-                                            onClick={() => handlePageChange(pagination.currentPage - 1)}
-                                            disabled={pagination.currentPage === 1}
-                                            className="px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer bg-black/100 text-white"
-                                        >
-                                            Previous
-                                        </button>
-                                        <p className="py-1 text-center">
-                                            Page {pagination.currentPage} of {pagination.totalPages}
-                                        </p>
-                                        <button
-                                            onClick={() => handlePageChange(pagination.currentPage + 1)}
-                                            disabled={pagination.currentPage >= pagination.totalPages}
-                                            className="px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer bg-black/100 text-white"
-                                        >
-                                            Next
-                                        </button>
-                                        <button
-                                            onClick={() => handlePageChange(pagination.totalPages)}
-                                            disabled={pagination.currentPage >= pagination.totalPages}
-                                            className="px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer bg-black/100 text-white"
-                                        >
-                                            Last
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
                     </div>
+                    {!isLoading && retrievedAppointmentsData?.length === 0 && (
+                        <div className="text-center py-4 text-gray-500">
+                            <p className="text-gray-500 dark:text-gray-400">
+                                {searchTerm ? `No searched approved appointments found` : 'No approved appointments available'}
+                            </p>
+                        </div>
+                    )}
+                    {/* Pagination */}
+                    {totalItems > 0 && (
+                        <div className="px-6 py-4 flex flex-col sm:flex-row items-center justify-between border-t border-gray-200">
+                            <div className="text-sm text-gray-700 mb-4 sm:mb-0">
+                                Showing <span className="font-medium">
+                                    {Math.min(pagination.limit, totalItems)}
+                                </span> to{' '}
+                                <span className="font-medium">
+                                    {Math.min(pagination.currentPage * pagination.limit, totalItems)}
+                                </span>{' '}
+                                of <span className="font-medium">{totalItems}</span> results
+                            </div>
+                            <div className="flex items-center space-x-4">
+                                <select
+                                    className="px-3 py-1 border rounded text-sm"
+                                    value={pagination.limit}
+                                    onChange={handleItemsPerPageChange}
+                                >
+                                    <option value={10}>10</option>
+                                    <option value={25}>25</option>
+                                    <option value={50}>50</option>
+                                    <option value={100}>100</option>
+                                    <option value={150}>150</option>
+                                    <option value={200}>200</option>
+                                    <option value={250}>250</option>
+                                    <option value={300}>300</option>
+                                    <option value={350}>350</option>
+                                    <option value={400}>400</option>
+                                    <option value={450}>450</option>
+                                    <option value={500}>500</option>
+                                </select>
+                                <div className="flex space-x-1 gap-1">
+                                    <button
+                                        onClick={() => handlePageChange(1)}
+                                        disabled={pagination.currentPage === 1}
+                                        className="px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer bg-black/100 text-white"
+                                    >
+                                        First
+                                    </button>
+                                    <button
+                                        onClick={() => handlePageChange(pagination.currentPage - 1)}
+                                        disabled={pagination.currentPage === 1}
+                                        className="px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer bg-black/100 text-white"
+                                    >
+                                        Previous
+                                    </button>
+                                    <p className="py-1 text-center">
+                                        Page {pagination.currentPage} of {pagination.totalPages}
+                                    </p>
+                                    <button
+                                        onClick={() => handlePageChange(pagination.currentPage + 1)}
+                                        disabled={pagination.currentPage >= pagination.totalPages}
+                                        className="px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer bg-black/100 text-white"
+                                    >
+                                        Next
+                                    </button>
+                                    <button
+                                        onClick={() => handlePageChange(pagination.totalPages)}
+                                        disabled={pagination.currentPage >= pagination.totalPages}
+                                        className="px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer bg-black/100 text-white"
+                                    >
+                                        Last
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

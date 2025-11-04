@@ -254,6 +254,11 @@ function AdminLoginPage() {
                             </>
                         }
                     />
+                    <div className="flex items-center justify-end">
+                        <Typography variant="body2" className="text-black">
+                            <a href="/ForgotPassword" className="text-black">Forgot Password</a>
+                        </Typography>
+                    </div>
                     <div className="mt-6 flex flex-col gap-6 bg-black p-[0.30rem] rounded-[3rem] text-white">
                         <Button
                             className="mt-9"
@@ -265,11 +270,6 @@ function AdminLoginPage() {
                                 {submitting ? "Loading..." : "Login"}
                             </span>
                         </Button>
-                    </div>
-                    <div className="flex items-center justify-between gap-2 mt-6">
-                        <Typography variant="body2" className="text-black">
-                            <a href="/ForgotPassword" className="text-black">Forgot Password</a>
-                        </Typography>
                     </div>
                 </form>
             </div>

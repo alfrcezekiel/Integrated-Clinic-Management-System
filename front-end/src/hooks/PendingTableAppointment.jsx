@@ -53,7 +53,7 @@ const PendingStatusAppointmentTable = ({ retrievedAppointmentsData, appointmentT
             return (
                 <tr>
                     <td
-                        colSpan={appointmentTableColumn?.length || 9}
+                        colSpan={appointmentTableColumn?.length || 8}
                         className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center"
                     >
                         No pending appointments found

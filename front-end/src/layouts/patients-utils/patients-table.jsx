@@ -235,7 +235,7 @@ const PatientsTable = () => {
                         />
                         {searchLoading && (
                             <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-blue-500"></div>
+                                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-black/500"></div>
                             </div>
                         )}
                     </div>
@@ -263,7 +263,7 @@ const PatientsTable = () => {
                                 <tr>
                                     <td colSpan={columns.length} className="px-6 py-4 text-center">
                                         <div className="flex justify-center items-center h-32">
-                                            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                                            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-black/500"></div>
                                         </div>
                                     </td>
                                 </tr>
@@ -277,7 +277,9 @@ const PatientsTable = () => {
                 </div>
                 {!isLoading && retrievedAppointmentsData.length === 0 && (
                     <div className="px-6 py-4 text-center text-gray-500">
-                        {searchTerm ? 'No searched appointments found' : 'No appointments found'}
+                        <p className="text-gray-500 dark:text-gray-400">
+                            {searchTerm ? 'No searched appointments found' : 'No appointments found'}
+                        </p>
                     </div>
                 )}
                 {totalItems > 0 && (

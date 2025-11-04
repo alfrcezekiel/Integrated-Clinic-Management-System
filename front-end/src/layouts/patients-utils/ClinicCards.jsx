@@ -498,7 +498,7 @@ const ClinicCards = () => {
                                     <div className="py-2">
                                         <img
                                             src={`${config.api.baseURL}/uploads/clinic_images/${clinic.clinic_image}`}
-                                            alt="Clinic Management Image"
+                                            alt={clinic.clinic_name}
                                             className="object-center object-cover rounded-2xl min-h-[25dvh]"
                                             crossOrigin="anonymous"
                                         />

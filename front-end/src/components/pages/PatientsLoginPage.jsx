@@ -277,19 +277,19 @@ function PatientsLoginPortal() {
                                 </>
                             }
                         />
+                        <div className="flex items-center justify-end">
+                            <Typography variant="body2" className="text-black">
+                                <a href="/ForgotPassword" className="no-underline text-black">Forgot Password</a>
+                            </Typography>
+                        </div>
                         <div className="mt-6 flex flex-col gap-6 bg-black p-[0.30rem] rounded-[3rem] text-white">
                             <Button className="mt-9" fullWidth color="white" type="submit">
                                 <span className="text-white">{submitting ? "Loading..." : "Login"}</span>
                             </Button>
                         </div>
-                        <div className="flex items-center justify-between gap-2 mt-6">
-                            <Typography variant="body2" className="text-black">
-                                <a href="/ForgotPassword" className="no-underline text-black">Forgot Password</a>
-                            </Typography>
-                        </div>
                         <div className="text-center text-gray-500 font-medium mt-4">
                             Not registered?
-                            <Link to="/patients-portal" className="text-black ml-1">Create account</Link>
+                            <Link to="/PatientRegistration" className="text-black ml-1">Create account</Link>
                         </div>
                     </form>
                 </div>
