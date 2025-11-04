@@ -135,6 +135,7 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
                                     src={`${config.api.baseURL}/uploads/clinic_images/${selectedClinic.clinic_image}`}
                                     alt={selectedClinic.clinic_name}
                                     className="object-cover w-full rounded-lg h-60"
+                                    crossOrigin='anonymous'
                                 />
                             </div>
                             {/* Clinic Details */}

@@ -20,6 +20,7 @@ import parser from "cron-parser"
 import logger from "./config/winston.js";
 import initializeScheduler from "./config/appointment_scheduler.js";
 import sessionStore from "./db/mysql/session_store.js";
+import fs from "fs";
 dotenv.config();
 
 const nextRuns = await getNextBackupRun(5);
@@ -208,11 +209,32 @@ const staticFileHandler = (req, res, next) => {
 };
 
 // Serve clinic images
-const clinicImagesPath = path.join(__dirname, "uploads/clinic_images");
+const clinicImagesPath = path.join(__dirname, "uploads", "clinic_images");
+const altClinicImagesPath = path.join(__dirname, process.cwd(), "uploads", "clinic_images");
+if (fs.existsSync(clinicImagesPath)) {
+    fs.mkdirSync(clinicImagesPath, {
+        recursive: true
+    })
+    logger.log(`info`, `Serving clinic images from: ${clinicImagesPath}`);
+}
+
+if (fs.existsSync(altClinicImagesPath)) {
+    fs.mkdirSync(altClinicImagesPath, {
+        recursive: true
+    })
+    logger.log(`info`, `Serving clinic images from: ${altClinicImagesPath}`);
+}
+
 app.use("/uploads/clinic_images", staticFileHandler, express.static(clinicImagesPath, serveStaticOptions));
+/**
+ * checks condition if alt clinic images path is different from clinic images path register to a fallback path
+ */
+if (altClinicImagesPath !== clinicImagesPath) {
+    app.use("/uploads/clinic_images", staticFileHandler, express.static(altClinicImagesPath, serveStaticOptions));
+}
 
 // Serve medical reports
-const medicalReportPath = path.join(__dirname, "uploads/medical_reports");
+const medicalReportPath = path.join(__dirname, "uploads", "medical_reports");
 app.use("/uploads/medical_reports", staticFileHandler, express.static(medicalReportPath, serveStaticOptions));
 
 // route for CMS
