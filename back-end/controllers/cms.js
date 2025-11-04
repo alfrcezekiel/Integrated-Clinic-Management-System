@@ -315,7 +315,7 @@ export const loginPatientsAccount = async (req, res) => {
 
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
-            secure: false, // Set to true if using HTTPS
+            secure: process.env.NODE_ENV === "production" ? true  : false, // Set to true if using HTTPS
             sameSite: "lax",
             domain: "localhost",
             path: "/"
@@ -470,7 +470,7 @@ export const loginAdminAccount = async (req, res) => {
         res.cookie("refreshToken", refreshToken, {
             path: "/",
             httpOnly: true,
-            secure: false, // Set to true if using HTTPS
+            secure: process.env.NODE_ENV === "production" ? true : false, // Set to true if using HTTPS
             sameSite: "lax",
             domain: "localhost"
         })
@@ -582,12 +582,12 @@ export const logout = (req, res) => {
             sameSite: "lax",
             domain: "localhost",
             path: "/",
-            secure: false,
+            secure: process.env.NODE_ENV === "production" ? true : false,
             httpOnly: true
         })
         res.clearCookie("refreshToken", {
             httpOnly: true,
-            secure: false, // Set to true if using HTTPS
+            secure: process.env.NODE_ENV === "production" ? true : false, // Set to true if using HTTPS
             sameSite: "lax",
             domain: "localhost",
             path: "/"
@@ -1740,7 +1740,7 @@ export const loggedInClinicAccount = async (req, res) => {
 
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
-            secure: false,
+            secure: process.env.NODE_ENV === "production" ? true : false,
             sameSite: "lax",
             domain: "localhost",
             path: "/"
@@ -4257,7 +4257,7 @@ export const logoutRefreshToken = asyncHandler(
     async (req, res) => {
         res.clearCookie("refreshToken", {
             httpOnly: true,
-            secure: false,
+            secure: process.env.NODE_ENV === "production" ? true : false,
             sameSite: "lax",
             domain: "localhost",
             path: "/"
