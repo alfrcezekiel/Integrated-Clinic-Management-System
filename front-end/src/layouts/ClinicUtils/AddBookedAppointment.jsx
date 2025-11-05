@@ -83,6 +83,52 @@ const AddBookAppointment = () => {
         }
     }, [fieldErrors]);
 
+    // function to handle changes in appointment date
+    const appointmentDateChange = useCallback(async (newValue) => {
+        if (newValue) {
+            const selectedAppointmentDate = dayjs(newValue).format('YYYY-MM-DD');
+            setFormData((prev) => ({
+                ...prev,
+                appointmentDate: dayjs(selectedAppointmentDate)
+            }))
+        } else {
+            setFormData((prev) => ({
+                ...prev,
+                appointmentDate: null
+            }));
+        }
+
+        if (fieldErrors.appointmentDate) {
+            setFieldErrors((prev) => ({
+                ...prev,
+                appointmentDate: ""
+            }));
+        }
+    }, [fieldErrors.appointmentDate]);
+
+    // function to handle changes in appointment time
+    const appointmentTimeChange = useCallback(async (newValue) => {
+        if (newValue) {
+            const selectedAppointmentTime = dayjs(newValue).format("hh:mm A")
+            setFormData((prev) => ({
+                ...prev,
+                appointmentTime: selectedAppointmentTime ? dayjs(selectedAppointmentTime, "hh:mm A") : null
+            }))
+        } else {
+            setFormData((prev) => ({
+                ...prev,
+                appointmentTime: null
+            }))
+        }
+
+        if (fieldErrors.appointmentTime) {
+            setFieldErrors((prev) => ({
+                ...prev,
+                appointmentTime: ""
+            }));
+        }
+    }, [fieldErrors.appointmentTime]);
+
     // function to submit the book appointment of patient
     const submitBookedAppointment = async (e) => {
         try {
@@ -91,12 +137,14 @@ const AddBookAppointment = () => {
             if (submitting) return;
             setSubmitting(true);
 
-            const response = await CMS.post(`/clinicDashboard/addBookedAppointment`, {
+            const payload = {
                 ...formData,
                 appointmentDate: formData.appointmentDate ? dayjs(formData.appointmentDate).format("YYYY-MM-DD") : null,
                 clinicID: clinic_id,
                 clinicName: clinic_name
-            }, {
+            }
+
+            const response = await CMS.post(`/clinicDashboard/addBookedAppointment`, payload, {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${tokenContext}`,
@@ -134,52 +182,6 @@ const AddBookAppointment = () => {
             setSubmitting(false);
         }
     };
-
-    // function to handle changes in appointment date
-    const appointmentDateChange = async (newValue) => {
-        if (newValue) {
-            const selectedAppointmentDate = dayjs(newValue).format('YYYY-MM-DD');
-            setFormData((prev) => ({
-                ...prev,
-                appointmentDate: dayjs(selectedAppointmentDate)
-            }))
-        } else {
-            setFormData((prev) => ({
-                ...prev,
-                appointmentDate: null
-            }));
-        }
-
-        if (fieldErrors.appointmentDate) {
-            setFieldErrors((prev) => ({
-                ...prev,
-                appointmentDate: ""
-            }));
-        }
-    }
-
-    // function to handle changes in appointment time
-    const appointmentTimeChange = async (newValue) => {
-        if (newValue) {
-            const selectedAppointmentTime = dayjs(newValue).tz("Asia/Manila").format("hh:mm A")
-            setFormData((prev) => ({
-                ...prev,
-                appointmentTime: selectedAppointmentTime ? dayjs(selectedAppointmentTime, "hh:mm A") : null
-            }))
-        } else {
-            setFormData((prev) => ({
-                ...prev,
-                appointmentTime: null
-            }))
-        }
-
-        if (fieldErrors.appointmentTime) {
-            setFieldErrors((prev) => ({
-                ...prev,
-                appointmentTime: ""
-            }));
-        }
-    }
 
     return (
         <div className="flex flex-col justify-center items-center w-full min-h-[90dvh]">

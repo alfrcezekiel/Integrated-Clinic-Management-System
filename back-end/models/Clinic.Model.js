@@ -806,6 +806,32 @@ class Clinic {
                 status
             } = bookAppointment;
 
+            // Convert to 24-hour format before inserting into DB
+            const normalizeTime = (timeStr) => {
+                if (!timeStr) throw new Error("Invalid time value");
+
+                // Already in 24-hour format
+                if (/^\d{2}:\d{2}(:\d{2})?$/.test(timeStr)) {
+                    return dayjs.tz(timeStr, "HH:mm:ss", "Asia/Manila").format("HH:mm:ss");
+                }
+
+                const formats = ['h:mm A', 'hh:mm A', 'H:mm', 'HH:mm', 'HH:mm:ss', 'h:mm:ss A'];
+                let parsed = null;
+                for (const fmt of formats) {
+                    const p = dayjs.tz(timeStr, fmt, "Asia/Manila");
+                    if (p.isValid()) {
+                        parsed = p;
+                        break;
+                    }
+                }
+
+                if (!parsed || !parsed.isValid()) {
+                    throw new Error(`Invalid time format: ${timeStr}`);
+                }
+
+                return parsed.format("HH:mm:ss");
+            };
+
             const first_name = String(firstName)
             const last_name = String(lastName)
             const patient_address = String(address)
@@ -843,7 +869,7 @@ class Clinic {
                 patient_email,
                 phone_number,
                 appointment_date,
-                appointment_time,
+                normalizeTime(appointment_time),
                 sex,
                 purpose_of_appointment,
                 clinic_id,
