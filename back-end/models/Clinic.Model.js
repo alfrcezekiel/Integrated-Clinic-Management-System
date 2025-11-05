@@ -8,6 +8,8 @@ import {
     scheduleAppointmentsReminder,
     sendStatusUpdateReminder
 } from "../services/automate_notification_service.js";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 
 /**
  * @class Clinic Model
@@ -782,6 +784,9 @@ class Clinic {
 
     // method for adding book appointment in clinic side
     insertBookedAppointment = async (bookAppointment) => {
+        dayjs.extend(utc)
+        dayjs.extend(timezone)
+        
         const connection = await conn.getConnection(); // retrieve the connection from the pool
         try {
             await connection.beginTransaction(); // starts a transaction in inserting booked appointment

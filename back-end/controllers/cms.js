@@ -2985,16 +2985,6 @@ export const addBookAppointmentInClinic = async (req, res) => {
             clinicName
         } = req.body
 
-        if (appointmentTime) {
-            const parsed = dayjs.tz(appointmentTime, 'HH:mm:ss', 'Asia/Manila');
-            if (!parsed.isValid()) {
-                return res.status(StatusCodes.BAD_REQUEST).json({
-                    message: 'Invalid appointmentTime format',
-                });
-            }
-            req.body.appointmentTime = parsed.format('HH:mm:ss');
-        }
-
         const first_name = String(firstName);
         const last_name = String(lastName);
         const patient_address = String(address);
