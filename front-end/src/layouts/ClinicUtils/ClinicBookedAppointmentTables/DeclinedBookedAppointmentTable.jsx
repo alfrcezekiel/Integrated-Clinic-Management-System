@@ -1,7 +1,8 @@
 import {
     useState,
     useEffect,
-    useMemo
+    useMemo,
+    useCallback
 } from "react";
 import { useAuthorization } from "../../../context/auth/useAuthorization";
 import CMS from "../../../API/CMS";
@@ -14,40 +15,41 @@ const DeclinedBookedAppointmentTable = () => {
     const tokenContext = token;
     const memoizedRetrieveDeclinedBookedAppointments = useMemo(() => declinedBookedAppointments, [declinedBookedAppointments]);
 
-    useEffect(() => {
-        /**
-         * function to retrieve the declined booked appointments
-         */
-        const retrieveDeclinedBookedAppointments = async () => {
-            try {
-                if(!clinicID || !tokenContext) {
-                    console.error(`Clinic ID or Token is not set in context or local storage`);
-                    return;
-                }
-
-                const response = await CMS.get("/clinic/dashboard/retrieveDeclinedBookedAppointments", {
-                    params: {
-                        clinicID: clinicID
-                    }
-                }, {
-                    headers: {
-                        "Content-Type" : "application/json",
-                        "Authorization" : `Bearer ${tokenContext}`
-                    }
-                })
-
-                if (response.status === 200) {
-                    const data = response.data.retrievedDeclinedBookedAppointments;
-                    setDeclinedBookedAppoinments(data);
-                } else {
-                    throw new Error(`Failed to retrieve declined booked appointment to render in clinic side table: ${response.statusText}`);
-                }
-            } catch (error){
-                console.error(`Failed to retrieve declined booked appointment to render in clinic side table in catch block: ${error}`)
+    /**
+     * function to retrieve the declined booked appointments
+     */
+    const retrieveDeclinedBookedAppointments = useCallback(async () => {
+        try {
+            if (!clinicID || !tokenContext) {
+                console.error(`Clinic ID or Token is not set in context or local storage`);
+                return;
             }
+
+            const response = await CMS.get("/clinic/dashboard/retrieveDeclinedBookedAppointments", {
+                params: {
+                    clinicID: clinicID
+                }
+            }, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${tokenContext}`
+                }
+            })
+
+            if (response.status === 200) {
+                const data = response.data.retrievedDeclinedBookedAppointments;
+                setDeclinedBookedAppoinments(data);
+            } else {
+                throw new Error(`Failed to retrieve declined booked appointment to render in clinic side table: ${response.statusText}`);
+            }
+        } catch (error) {
+            console.error(`Failed to retrieve declined booked appointment to render in clinic side table in catch block: ${error}`)
         }
-        retrieveDeclinedBookedAppointments();
     }, [clinicID, tokenContext]);
+
+    useEffect(() => {
+        retrieveDeclinedBookedAppointments();
+    }, [clinicID, tokenContext, retrieveDeclinedBookedAppointments]);
 
     const dateFormat = (dateString) => {
         if (!dateString) return "N/A";

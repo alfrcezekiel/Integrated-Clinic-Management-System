@@ -1,6 +1,7 @@
 import {
     useState,
-    useCallback
+    useCallback,
+    useMemo
 } from "react";
 import {
     TextField,
@@ -67,6 +68,8 @@ const AddBookAppointment = () => {
         purposeOfAppointment: ""
     });
 
+    const memoizedFormData = useMemo(() => formData, [formData]);
+    
     // function to handle changes in text fields
     const handleTextFieldChange = useCallback(async (e) => {
         const { name, value } = e.target;
@@ -112,7 +115,7 @@ const AddBookAppointment = () => {
             const selectedAppointmentTime = dayjs(newValue).format("hh:mm A")
             setFormData((prev) => ({
                 ...prev,
-                appointmentTime: selectedAppointmentTime ? dayjs(selectedAppointmentTime, "hh:mm A") : null
+                appointmentTime: selectedAppointmentTime ? selectedAppointmentTime : null
             }))
         } else {
             setFormData((prev) => ({
@@ -139,7 +142,7 @@ const AddBookAppointment = () => {
 
             const payload = {
                 ...formData,
-                appointmentDate: formData.appointmentDate ? dayjs(formData.appointmentDate).format("YYYY-MM-DD") : null,
+                appointmentDate: formData.appointmentDate ? dayjs(memoizedFormData.appointmentDate).format("YYYY-MM-DD") : null,
                 clinicID: clinic_id,
                 clinicName: clinic_name
             }
@@ -196,7 +199,7 @@ const AddBookAppointment = () => {
                             <TextField
                                 label="Enter First Name"
                                 name="firstName"
-                                value={formData.firstName}
+                                value={memoizedFormData.firstName}
                                 onChange={handleTextFieldChange}
                                 fullWidth
                                 className="md:col-span-2"
@@ -211,7 +214,7 @@ const AddBookAppointment = () => {
                             <TextField
                                 label="Enter Last Name"
                                 name="lastName"
-                                value={formData.lastName}
+                                value={memoizedFormData.lastName}
                                 onChange={handleTextFieldChange}
                                 fullWidth
                                 margin="dense"
@@ -226,7 +229,7 @@ const AddBookAppointment = () => {
                             <TextField
                                 label="Enter Address"
                                 name="address"
-                                value={formData.address}
+                                value={memoizedFormData.address}
                                 onChange={handleTextFieldChange}
                                 fullWidth
                                 margin="dense"
@@ -242,7 +245,7 @@ const AddBookAppointment = () => {
                                 label="Enter Email"
                                 type="text"
                                 name="email"
-                                value={formData.email}
+                                value={memoizedFormData.email}
                                 onChange={handleTextFieldChange}
                                 fullWidth
                                 className="md:col-span-2"
@@ -258,7 +261,7 @@ const AddBookAppointment = () => {
                                 label="Phone Number"
                                 name="phoneNumber"
                                 type="text"
-                                value={formData.phoneNumber}
+                                value={memoizedFormData.phoneNumber}
                                 onChange={handleTextFieldChange}
                                 fullWidth
                                 margin="dense"
@@ -275,7 +278,7 @@ const AddBookAppointment = () => {
                                     <DatePicker
                                         label="Appointment Date"
                                         name="appointmentDate"
-                                        value={formData.appointmentDate ? dayjs(formData.appointmentDate) : null}
+                                        value={memoizedFormData.appointmentDate ? dayjs(memoizedFormData.appointmentDate) : null}
                                         onChange={appointmentDateChange}
                                         className="w-full"
                                         slotProps={{
@@ -297,7 +300,7 @@ const AddBookAppointment = () => {
                                     label="Select Appointment Time"
                                     className="w-full"
                                     name="appointmentTime"
-                                    value={formData.appointmentTime ? dayjs(formData.appointmentTime, "hh:mm A") : null}
+                                    value={memoizedFormData.appointmentTime ? dayjs(memoizedFormData.appointmentTime, "hh:mm A") : null}
                                     onChange={appointmentTimeChange}
                                     slotProps={{
                                         textField: {
@@ -316,7 +319,7 @@ const AddBookAppointment = () => {
                             <TextField
                                 label="Gender"
                                 name="gender"
-                                value={formData.gender}
+                                value={memoizedFormData.gender}
                                 onChange={handleTextFieldChange}
                                 select
                                 autoComplete="off"
@@ -341,7 +344,7 @@ const AddBookAppointment = () => {
                                 autoComplete="off"
                                 label="Purpose of Appointment"
                                 name="purposeOfAppointment"
-                                value={formData.purposeOfAppointment}
+                                value={memoizedFormData.purposeOfAppointment}
                                 onChange={handleTextFieldChange}
                                 fullWidth
                                 className="md:col-span-2"

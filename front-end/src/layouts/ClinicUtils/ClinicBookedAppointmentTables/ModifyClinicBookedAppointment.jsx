@@ -159,10 +159,9 @@ const ModifyClinicBookedAppointment = () => {
      */
     const handleCallBackTimePickerChange = async (newValue) => {
         if (newValue) {
-            const selectedAppointmentTime = dayjs(newValue).format('hh:mm A');
             setModifyBookedAppointmentDetails((prev) => ({
                 ...prev,
-                appointmentTime: selectedAppointmentTime ? dayjs(selectedAppointmentTime, "hh:mm A") : null
+                appointmentTime: newValue ? newValue : null
             }))
         } else {
             setModifyBookedAppointmentDetails((prev) => ({
@@ -194,10 +193,28 @@ const ModifyClinicBookedAppointment = () => {
                 return;
             }
 
+            const appointmentDateString = modifyBookedAppointmentDetails.appointmentDate
+                ? dayjs(modifyBookedAppointmentDetails.appointmentDate).format('YYYY-MM-DD')
+                : null;
+
+            let appointmentTimeString = null;
+            const apptTime = modifyBookedAppointmentDetails.appointmentTime;
+
+            if (apptTime) {
+                // if it's a Dayjs object, format directly to 24h "HH:mm"
+                if (typeof apptTime?.format === "function") {
+                    appointmentTimeString = apptTime.format("HH:mm");
+                } else {
+                    // otherwise try parsing common formats (e.g. "05:02 AM", "05:02", "17:02")
+                    const parsed = dayjs(apptTime, ["h:mm A", "hh:mm A", "H:mm", "HH:mm", "HH:mm:ss"], true);
+                    appointmentTimeString = parsed.isValid() ? parsed.format("HH:mm") : dayjs(apptTime).format("HH:mm");
+                }
+            }
+
             const payload = {
                 ...modifyBookedAppointmentDetails,
-                appointmentDate: modifyBookedAppointmentDetails.appointmentDate ? dayjs(modifyBookedAppointmentDetails.appointmentDate).format('YYYY-MM-DD') : null,
-                appointmentTime: modifyBookedAppointmentDetails.appointmentTime ? modifyBookedAppointmentDetails.appointmentTime : null
+                appointmentDate: appointmentDateString,
+                appointmentTime: appointmentTimeString
             }
 
             const response = await CMS.put("/cms.api.com/clinic/dashboard/modifyBookedAppointmentDetails", payload, {

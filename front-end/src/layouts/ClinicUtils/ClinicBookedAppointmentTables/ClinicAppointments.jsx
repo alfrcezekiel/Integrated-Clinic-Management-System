@@ -1,6 +1,7 @@
 import {
     useState,
-    useEffect
+    useEffect,
+    useCallback
 } from "react"
 import CMS from "../../../API/CMS";
 import { useAuthorization } from "../../../context/auth/useAuthorization";
@@ -32,36 +33,36 @@ const ClinicAppointments = () => {
     const [openDeleteBookedAppointmentDialog, setOpenDeleteBookedAppointmentDialog] = useState(false);
     const [selectedBookedAppointment, setSelectedBookedAppointment] = useState(null);
 
-    useEffect(() => {
-        const retrieveClinicBookedAppointments = async () => {
-            try {
-                if (!clinic_id || isNaN(clinic_id)) {
-                    console.warn("Invalid or missing clinic_id", clinic_id);
-                    return;
-                }
-
-                const response = await CMS.get(`/clinicDashboard/clinicBookedAppointments/${clinic_id}`, {
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${tokenContext}`
-                    }
-                })
-
-                if (response.status === 200) {
-                    const data = response.data.bookedAppointments;
-                    setClinicBookedAppointments(data);
-                } else {
-                    throw new Error(`Error retrieving clinic appointments: ${response.statusText}`);
-                }
-            } catch (error) {
-                console.error(`Failed to retrieve clinic appointments: ${error}`);
+    const retrieveClinicBookedAppointments = useCallback(async () => {
+        try {
+            if (!clinic_id || isNaN(clinic_id)) {
+                console.warn("Invalid or missing clinic_id", clinic_id);
+                return;
             }
-        }
 
+            const response = await CMS.get(`/clinicDashboard/clinicBookedAppointments/${clinic_id}`, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${tokenContext}`
+                }
+            })
+
+            if (response.status === 200) {
+                const data = response.data.bookedAppointments;
+                setClinicBookedAppointments(data);
+            } else {
+                throw new Error(`Error retrieving clinic appointments: ${response.statusText}`);
+            }
+        } catch (error) {
+            console.error(`Failed to retrieve clinic appointments: ${error}`);
+        }
+    }, [clinic_id, tokenContext]);
+
+    useEffect(() => {
         if (clinic_id) {
             retrieveClinicBookedAppointments();
         }
-    }, [clinic_id, tokenContext, location.pathname]);
+    }, [clinic_id, tokenContext, location.pathname, retrieveClinicBookedAppointments]);
 
     const clinic_columns = [
         "Full Name",

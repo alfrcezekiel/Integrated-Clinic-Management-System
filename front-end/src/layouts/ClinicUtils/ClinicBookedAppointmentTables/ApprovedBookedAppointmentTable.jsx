@@ -1,7 +1,8 @@
 import {
     useState,
     useEffect,
-    useMemo
+    useMemo,
+    useCallback
 } from "react";
 import CMS from "../../../API/CMS";
 import { useAuthorization } from "../../../context/auth/useAuthorization";
@@ -20,37 +21,38 @@ const ApprovedBookedAppointmentTable = () => {
     const navigate = useNavigate();
     const memoizedRetrieveApprovedBookedAppointments = useMemo(() => approvedBookedAppointments, [approvedBookedAppointments]);
 
-    useEffect(() => {
-        const retrieveApprovedBookedAppointment = async () => {
-            try {
-                if (!clinicID || !tokenContext) {
-                    console.error(`Clinic ID or Token is not set in context or local storage`);
-                    return;
-                }
-
-                const response = await CMS.get("/clinic/dashboard/retrieveApprovedBookedAppointments", {
-                    params: {
-                        clinicID: clinicID
-                    }
-                }, {
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${tokenContext}`
-                    }
-                })
-
-                if (response.status === 200) {
-                    const data = response.data.retrievedApprovedBookedAppointments;
-                    setApprovedBookedAppoinments(data);
-                } else {
-                    throw new Error(`Failed to retrieve approved booked appointment to render in clinic side table: ${response.statusText}`);
-                }
-            } catch (error) {
-                console.error(`Failed to retrieve approved booked appointment to render in clinic side table in catch block: ${error}`)
+    const retrieveApprovedBookedAppointment = useCallback(async () => {
+        try {
+            if (!clinicID || !tokenContext) {
+                console.error(`Clinic ID or Token is not set in context or local storage`);
+                return;
             }
+
+            const response = await CMS.get("/clinic/dashboard/retrieveApprovedBookedAppointments", {
+                params: {
+                    clinicID: clinicID
+                }
+            }, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${tokenContext}`
+                }
+            })
+
+            if (response.status === 200) {
+                const data = response.data.retrievedApprovedBookedAppointments;
+                setApprovedBookedAppoinments(data);
+            } else {
+                throw new Error(`Failed to retrieve approved booked appointment to render in clinic side table: ${response.statusText}`);
+            }
+        } catch (error) {
+            console.error(`Failed to retrieve approved booked appointment to render in clinic side table in catch block: ${error}`)
         }
-        retrieveApprovedBookedAppointment();
     }, [clinicID, tokenContext]);
+
+    useEffect(() => {
+        retrieveApprovedBookedAppointment();
+    }, [clinicID, tokenContext, retrieveApprovedBookedAppointment]);
 
     const dateFormat = (dateString) => {
         if (!dateString) return "N/A";

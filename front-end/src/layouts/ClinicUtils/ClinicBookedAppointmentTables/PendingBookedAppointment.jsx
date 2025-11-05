@@ -29,43 +29,43 @@ const PendingBookedAppointment = () => {
     const [openDeleteBookedAppointmentDialog, setOpenDeleteBookedAppointmentDialog] = useState(false);
     const [selectedBookedAppointment, setSelectedBookedAppointment] = useState(null);
 
-    useEffect(() => {
-        const retrievedClinicPendingBookedAppointments = async () => {
-            try {
-                if (!clinic_id || isNaN(clinic_id)) {
-                    console.warn("Invalid or missing clinic_id", clinic_id);
-                }
-
-                if (!tokenContext) {
-                    console.warn("Token is not available in context state or local storage.");
-                }
-
-                const response = await CMS.get(`/clinicDashboard/clinic/retrievePendingBookedAppointments`, {
-                    params: {
-                        clinicID: clinic_id
-                    }
-                }, {
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${tokenContext}`
-                    }
-                });
-
-                if (response.status === 200) {
-                    const data = response.data.pendingBookedAppointments;
-                    setPendingBookedAppointments(data);
-                } else {
-                    throw new Error(`Error retrieving pending appointments: ${response.statusText}`);
-                }
-            } catch (error) {
-                console.error(`Failed to retrieve pending appointments: ${error}`);
+    const retrievedClinicPendingBookedAppointments = useCallback(async () => {
+        try {
+            if (!clinic_id || isNaN(clinic_id)) {
+                console.warn("Invalid or missing clinic_id", clinic_id);
             }
-        }
 
+            if (!tokenContext) {
+                console.warn("Token is not available in context state or local storage.");
+            }
+
+            const response = await CMS.get(`/clinicDashboard/clinic/retrievePendingBookedAppointments`, {
+                params: {
+                    clinicID: clinic_id
+                }
+            }, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${tokenContext}`
+                }
+            });
+
+            if (response.status === 200) {
+                const data = response.data.pendingBookedAppointments;
+                setPendingBookedAppointments(data);
+            } else {
+                throw new Error(`Error retrieving pending appointments: ${response.statusText}`);
+            }
+        } catch (error) {
+            console.error(`Failed to retrieve pending appointments: ${error}`);
+        }
+    }, [clinic_id, tokenContext]);
+
+    useEffect(() => {
         if (clinic_id && tokenContext) {
             retrievedClinicPendingBookedAppointments();
         }
-    }, [clinic_id, tokenContext]);
+    }, [clinic_id, tokenContext, retrievedClinicPendingBookedAppointments]);
 
     const clinic_columns = [
         "Full Name",

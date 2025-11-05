@@ -786,7 +786,7 @@ class Clinic {
     insertBookedAppointment = async (bookAppointment) => {
         dayjs.extend(utc)
         dayjs.extend(timezone)
-        
+
         const connection = await conn.getConnection(); // retrieve the connection from the pool
         try {
             await connection.beginTransaction(); // starts a transaction in inserting booked appointment
@@ -811,30 +811,28 @@ class Clinic {
                 status
             } = bookAppointment;
 
-            // Convert to 24-hour format before inserting into DB
+            /**
+             * converts the am/pm format time to 24 hour format
+             * before inserting in the database
+             */
             const normalizeTime = (timeStr) => {
-                if (!timeStr) throw new Error("Invalid time value");
-
-                // Already in 24-hour format
-                if (/^\d{2}:\d{2}(:\d{2})?$/.test(timeStr)) {
-                    return dayjs.tz(timeStr, "HH:mm:ss", "Asia/Manila").format("HH:mm:ss");
+                if (!timeStr || typeof timeStr !== "string") {
+                    throw new Error("Invalid time format");
                 }
 
-                const formats = ['h:mm A', 'hh:mm A', 'H:mm', 'HH:mm', 'HH:mm:ss', 'h:mm:ss A'];
-                let parsed = null;
-                for (const fmt of formats) {
-                    const p = dayjs.tz(timeStr, fmt, "Asia/Manila");
-                    if (p.isValid()) {
-                        parsed = p;
-                        break;
-                    }
+                const timeParts = timeStr.trim().match(/^(\d{1,2}):(\d{2})\s?(AM|PM)$/i);
+                if (!timeParts) {
+                    throw new Error("Invalid time format");
                 }
 
-                if (!parsed || !parsed.isValid()) {
-                    throw new Error(`Invalid time format: ${timeStr}`);
-                }
+                let hours = parseInt(timeParts[1], 10);
+                let minutes = parseInt(timeParts[2], 10);
+                const modifier = timeParts[3].toUpperCase();
 
-                return parsed.format("HH:mm:ss");
+                if (modifier === "PM" && hours !== 12) hours += 12;
+                if (modifier === "AM" && hours === 12) hours = 0;
+
+                return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:00`;
             };
 
             const first_name = String(firstName)
@@ -953,7 +951,8 @@ class Clinic {
                 SELECT 
                     ${fields.join(", ")}
                 FROM clinic_appointments
-                WHERE clinic_id = ?;
+                WHERE clinic_id = ?
+                ORDER BY appointmentDate DESC, appointmentTime DESC;
             `
 
             const [rows] = await connection.query(query, value);
@@ -1282,7 +1281,8 @@ class Clinic {
                     ${fields.join(", ")}
                 FROM clinic_appointments
                 WHERE clinic_id = ?
-                AND status = ?;
+                AND status = ?
+                ORDER BY appointmentDate DESC, appointmentTime DESC;
             `
 
             const values = [
@@ -1963,8 +1963,9 @@ class Clinic {
                     FROM clinic_appointments
                     WHERE clinic_id = ? 
                     AND 
-                    status = ?;
-                `
+                    status = ?
+                    ORDER BY appointmentDate DESC, appointmentTime DESC;
+                `;
 
                 const values = [
                     clinicID,
@@ -2052,7 +2053,8 @@ class Clinic {
                     FROM clinic_appointments
                     WHERE clinic_id = ?
                     AND
-                    status = ?;
+                    status = ?
+                    ORDER BY appointmentDate DESC, appointmentTime DESC;
                 `
 
                 const values = [

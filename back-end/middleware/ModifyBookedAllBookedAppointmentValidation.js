@@ -1,6 +1,8 @@
 import dayjs from "dayjs";
 import { check, validationResult } from "express-validator";
 import { StatusCodes } from "http-status-codes";
+import customParseFormat from "dayjs/plugin/customParseFormat.js";
+dayjs.extend(customParseFormat);
 
 /**
  * Validates Booked Appointment Details in All Appointments in clinic side table
@@ -30,7 +32,7 @@ const validateAllBookedAppointmentSpecificDetails = [
         .withMessage("Appointment date is required")
         .custom((value) => {
             const validDate = dayjs(value, ["YYYY-MM-DD", dayjs.ISO_8601], true).isValid();
-            if(!validDate) {
+            if (!validDate) {
                 throw new Error("Invalid appointment date")
             }
             return true;
@@ -38,11 +40,15 @@ const validateAllBookedAppointmentSpecificDetails = [
     check("appointmentTime")
         .notEmpty()
         .withMessage("Appointment time is required")
-        .custom((value) => {
-            const validAppointmentTime = dayjs(value, ["HH:mm"], dayjs.ISO_8601, true).isValid();
-            if(!validAppointmentTime) {
+        .custom((value, { req }) => {
+            const validAppointmentTime = dayjs(value, ["h:mm A", "hh:mm A", "H:mm", "HH:mm", "HH:mm:ss"], true);
+
+            if (!validAppointmentTime.isValid()) {
                 throw new Error("Invalid appointment time")
             }
+
+            req.body.appointmentTime = validAppointmentTime.format("HH:mm");
+
             return true;
         }),
     check("gender")
