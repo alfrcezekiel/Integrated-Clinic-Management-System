@@ -33,7 +33,7 @@ const sendResetPasswordEmail = async (email, name, resetLink) => {
 
         if (process.env.NODE_ENV === "production") {
             try {
-                const info = await sendEmailWithTimeout(resend.emails.send({
+                const info = await sendEmailWithTimeout(() => resend.emails.send({
                     from: `Clinic Management System <noreply@resend.dev>`,
                     to: email,
                     subject: "Reset Password Request",
@@ -55,7 +55,7 @@ const sendResetPasswordEmail = async (email, name, resetLink) => {
                             <p>Best regards,<br>Clinic Management System Team</p>
                         </div>
                     `
-                }), 120000);
+                }), 120000); // 2 minutes timeout
 
                 logger.log(`info`, `Successfully sent reset password link via ${process.env.NODE_ENV} email service: ${email} - ${info}`);
 
@@ -88,10 +88,7 @@ const sendResetPasswordEmail = async (email, name, resetLink) => {
             `
         }
 
-        const info = await sendEmailWithTimeout(
-            transporter.sendMail(mailOptions),
-            120000
-        );
+        const info = await sendEmailWithTimeout(() => transporter.sendMail(mailOptions), 120000); // 2 minutes timeout
 
         logger.info(`Successfully sent reset password link to via local SMTP: ${email}: ${info.response}`);
 

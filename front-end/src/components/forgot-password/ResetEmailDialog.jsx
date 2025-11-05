@@ -33,7 +33,7 @@ const ResetEmailDialog = ({ closeSuccessDialog }) => {
                 </div>
                 <button
                     type="button"
-                    className="w-full px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition duration-200"
+                    className="cursor-pointer w-full px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition duration-200"
                     onClick={closeSuccessDialog}
                 >
                     Got it, thanks

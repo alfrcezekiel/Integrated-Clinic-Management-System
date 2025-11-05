@@ -4241,7 +4241,8 @@ export const resetPassword = asyncHandler(
 
             logger.log("info", `Reset Password: ${resetPasswordResult}`);
             return res.status(StatusCodes.OK).json({
-                message: "Password reset successfully"
+                message: "Password reset successfully",
+                model_message: resetPasswordResult.message
             })
         } catch (error) {
             logger.log("error", `Failed to reset password in controller: ${error}`)
