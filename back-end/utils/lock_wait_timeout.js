@@ -39,13 +39,13 @@ export const executeDbOperationWithRetry = async (operationLabel, operationFn, m
                     await connection.rollback();
                 }
             } catch (error) {
-                logger.log(`warn`, `${operationLabel} - rollback failed: ${error}`);
+                logger.log(`warn`, `[${operationLabel}] - rollback failed: ${error}`);
             } finally {
                 if (connection && typeof connection.release === "function") {
                     try {
                         connection.release();
                     } catch (error) {
-                        logger.log(`warn`, `${operationLabel} - release connection failed: ${error}`);
+                        logger.log(`warn`, `[${operationLabel}] - release connection failed: ${error}`);
                     }
                 }
             }
@@ -56,17 +56,17 @@ export const executeDbOperationWithRetry = async (operationLabel, operationFn, m
                 attempt++;
                 const backoff = baseBackOffMs * Math.pow(2, attempt);
 
-                logger.log(`warn`, `${operationLabel} - Lock wait timeout. Retry ${attempt}/${maxRetries} in ${backoff}ms`);
+                logger.log(`warn`, `[${operationLabel}] - Lock wait timeout. Retry ${attempt}/${maxRetries} in ${backoff}ms`);
                 await new Promise((resolve) => setTimeout(resolve, backoff));
                 continue;
             }
 
-            logger.log(`error`, `${operationLabel} - non-retryable DB error: ${error}`);
+            logger.log(`error`, `[${operationLabel}] - non-retryable DB error: ${error}`);
             throw error;
         }
     }
 
-    logger.log(`error`, `${operationLabel} - exhausted retries: ${lastError}`);
+    logger.log(`error`, `[${operationLabel}] - exhausted retries: ${lastError}`);
 }
 
 /**

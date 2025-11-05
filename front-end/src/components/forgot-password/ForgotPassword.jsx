@@ -24,6 +24,7 @@ const ForgotPassword = () => {
     const [showSuccessResetEmailDialog, setShowSuccessResetEmailDialog] = useState(false);
     const dispatch = useDispatch();
     const selectType = ["Patient", "Clinic", "Admin"];
+    const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
         document.title = "Forgot Password"
@@ -38,6 +39,8 @@ const ForgotPassword = () => {
     const handleNextStep = async (e) => {
         try {
             e.preventDefault();
+            if (submitting) return; // Prevent multiple submissions
+            setSubmitting(true)
 
             setFieldErrors({
                 email: "",
@@ -72,6 +75,10 @@ const ForgotPassword = () => {
             }
         } catch (error) {
             console.error(`Error in handling the next step in forgot password: ${error}`);
+        } finally {
+            setInterval(() => {
+                setSubmitting(false)
+            }, 1000)
         }
     }
 
@@ -165,7 +172,7 @@ const ForgotPassword = () => {
                                         type="submit"
                                         className={`cursor-pointer group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200`}
                                     >
-                                        Send Reset Email
+                                        {submitting ? "Loading..." : "Send Reset Email"}
                                     </button>
                                 </div>
                             </div>
