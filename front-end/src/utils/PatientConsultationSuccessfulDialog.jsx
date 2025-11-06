@@ -20,7 +20,7 @@ const PatientConsultationSuccessfulDialog = ({ open, onClose }) => {
                     </p>
                     <button
                         onClick={onClose}
-                        className="mt-2 px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition-colors duration-200 shadow-md focus:outline-none focus:ring-2 focus:ring-green-400"
+                        className="cursor-pointer mt-2 px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition-colors duration-200 shadow-md focus:outline-none focus:ring-2 focus:ring-green-400"
                     >
                         Okay
                     </button>

@@ -13,6 +13,7 @@ import {
     withTimeout,
     measureExecutionTime
 } from "../utils/timeoutProtection.js"
+import mysqldump from "mysqldump";
 
 /**
  * converts __dirname to ES modules
@@ -189,12 +190,50 @@ export const createBackup = async () => {
     const tempFilePath = path.join(BACKUP_DIR, tempFileName);
     const backupPath = path.join(BACKUP_DIR, backupFileName);
 
+    const isMysqlDumpAvailable = async () => {
+        try {
+            await execPromise("mysqldump --version");
+            return true;
+        } catch (error) {
+            return false;
+        }
+    }
+
+    const escapeSingleQuotes = (str = "") => {
+        return String(str).replace(/'/g, "'\"'\"'");
+    }
+
     try {
-        /**
-         * create mysql dump command
-         */
-        const dumpCommand = `mysqldump -h ${process.env.DB_HOST} -u ${process.env.DB_USER} -p${process.env.DB_PASSWORD} ${process.env.DATABASE_NAME} > ${tempFilePath}`;
-        await execPromise(dumpCommand);
+        const useBinary = await isMysqlDumpAvailable();
+
+        if (useBinary) {
+            const safePassword = escapeSingleQuotes(process.env.DB_PASSWORD || "");
+            /**
+             * create mysql dump command
+             */
+            const dumpCommand = `mysqldump --no-data -h ${process.env.DB_HOST} -u ${process.env.DB_USER} --password='${safePassword}' ${process.env.DATABASE_NAME} > ${tempFilePath}`;
+            await execPromise(dumpCommand);
+        } else {
+            try {
+                mysqldump({
+                    connection: {
+                        host: process.env.DB_HOST,
+                        user: process.env.DB_USER,
+                        password: process.env.DB_PASSWORD,
+                        database: process.env.DATABASE_NAME,
+                    },
+                    dumpToFile: tempFilePath,
+                    dump: {
+                        data: false,
+                    }
+                });
+
+                logger.log(`info`, `Database schema dumped using mysqldump npm package.`);
+            } catch (error) {
+                logger.log(`error`, `mysqldump binary not found. Falling back to mysqldump npm package. (${error})`);
+                throw error;
+            }
+        }
 
         /**
          * reads the sql file

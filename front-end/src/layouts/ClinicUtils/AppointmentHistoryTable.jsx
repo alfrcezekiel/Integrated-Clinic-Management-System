@@ -296,7 +296,7 @@ const AppointmentHistoryTable = () => {
     const autoGenerateMedicalReport = async (patient) => {
         try {
             const tokenContext = token;
-            const response = await CMS.post(`/CMS/cms.api.com/clinic/dashboard/autoGenerateMedicalReport`, { patient: patient }, {
+            const response = await CMS.post(`/cms.api.com/clinic/dashboard/autoGenerateMedicalReport`, { patient: patient }, {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${tokenContext}`

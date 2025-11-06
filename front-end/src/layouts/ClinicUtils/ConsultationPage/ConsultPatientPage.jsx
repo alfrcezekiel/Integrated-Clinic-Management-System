@@ -129,6 +129,7 @@ const ConsultationPatientPage = () => {
     const [clinicalAssessmentFieldNames, setClinicalAssessementFieldNames] = useState([]);
     const [oralHygieneFieldNames, setOralHygieneFieldNames] = useState([]);
     const [openPatientConsultationSuccessfulDialog, setOpenPatientConsultationSuccessfulDialog] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
 
     const { token, user } = useAuthorization();
     const tokenContext = token;
@@ -233,6 +234,9 @@ const ConsultationPatientPage = () => {
                 return;
             }
 
+            if (submitting) return; // Prevent multiple submissions
+            setSubmitting(true);
+
             const endpoint = patientFormData.type === "Patient" ? "/clinic-dashboard/consultPatient" : "/cms.api.com/clinic/dashboard/clinicConsultPatient";
             if (!endpoint) {
                 console.error("Endpoint not found.");
@@ -263,6 +267,8 @@ const ConsultationPatientPage = () => {
                 }));
             }
             console.error("Error in consultation form:", error);
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -277,6 +283,9 @@ const ConsultationPatientPage = () => {
             oralHygieneFieldNames, // dynamically render the fieldnames based on the retrieved oral hygiene questionnaires
             ["consent"]
         ];
+
+        if (submitting) return; // Prevent multiple submissions
+        setSubmitting(true);
 
         const currentFields = stepFields[activeStep];
         const currentData = currentFields.reduce((data, field) => {
@@ -309,6 +318,8 @@ const ConsultationPatientPage = () => {
             } else {
                 console.error("Validation step error in function handle next:", error);
             }
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -429,7 +440,7 @@ const ConsultationPatientPage = () => {
                                     color="primary"
                                     className="text-sm sm:text-base bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
                                 >
-                                    Submit
+                                    {submitting ? "Loading..." : "Submit"}
                                 </button>
                             ) : (
                                 <button
@@ -438,7 +449,7 @@ const ConsultationPatientPage = () => {
                                     color="primary"
                                     className="text-sm sm:text-base bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
                                 >
-                                    Next
+                                    {submitting ? "Loading..." : "Next"}
                                 </button>
                             )}
                         </div>
