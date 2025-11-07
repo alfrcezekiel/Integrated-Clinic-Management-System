@@ -14,6 +14,11 @@ import {
     measureExecutionTime,
     withTimeout
 } from "../utils/timeoutProtection.js"
+import { spawn} from "child_process";
+import { fileURLToPath} from "url";
+import path from "path";
+
+const WORKER_PATH = path.join(path.dirname(fileURLToPath(import.meta.url)), "appointment_worker.js");
 
 const validateCronExpression = (expression, defaultValue) => {
     try {
@@ -48,65 +53,82 @@ const scheduleAppointmentReminders = async () => {
             await measureExecutionTime(
                 async () => {
                     try {
-                        logger.log(`info`, `Running appointment reminders scheduler`)
+                        // logger.log(`info`, `Running appointment reminders scheduler`)
 
-                        const clinic_instance = new Clinic();
-                        const result = await withTimeout(
-                            clinic_instance.scheduleRemindersForUpcomingAppointments({}),
-                            300000, // 5 minutes timeout
-                            "Appointment Reminder Method Query"
-                        );
+                        // const clinic_instance = new Clinic();
+                        // const result = await withTimeout(
+                        //     clinic_instance.scheduleRemindersForUpcomingAppointments({}),
+                        //     300000, // 5 minutes timeout
+                        //     "Appointment Reminder Method Query"
+                        // );
 
-                        if (!result || !result.process_appointments || !Array.isArray(result.process_appointments)) {
-                            logger.log(`warn`, `No upcoming appointments found for reminders`);
-                            return;
+                        // if (!result || !result.process_appointments || !Array.isArray(result.process_appointments)) {
+                        //     logger.log(`warn`, `No upcoming appointments found for reminders`);
+                        //     return;
+                        // }
+
+                        // const appointments = result.process_appointments;
+
+                        // logger.log(`info`, `Found ${appointments.length} upcoming appointments for reminders`);
+                        // let successCount = 0;
+                        // let failedCount = 0;
+
+                        // for (const appointment of appointments) {
+                        //     try {
+                        //         const appointmentTime = parseAppointmentDateTime(appointment.appointmentDate, appointment.preferredTime);
+                        //         const currentTime = new Date();
+                        //         const oneHourFromNow = new Date(currentTime.getTime() + 60 * 60 * 1000);
+                        //         const minuteUntilAppointment = Math.round((appointmentTime - currentTime) / (1000 * 60));
+
+                        //         if (appointmentTime > currentTime && appointmentTime <= oneHourFromNow) {
+                        //             if (minuteUntilAppointment >= 1) {
+                        //                 const result = await withTimeout(
+                        //                     scheduleAppointmentsReminder({
+                        //                         ...appointment,
+                        //                         clinicName: appointment.clinic_name,
+                        //                         reminderTime: minuteUntilAppointment
+                        //                     }),
+                        //                     60000, // 1 minute timeout milliseconds
+                        //                     "Individual Appointment Reminder"
+                        //                 );
+
+                        //                 if (result && result.success !== false) {
+                        //                     successCount++;
+                        //                     logger.log(`info`, `✓ Scheduled ${minuteUntilAppointment} minutes reminder for: ${appointment.firstName} ${appointment.lastName} at ${appointment.clinic_name} - Appointment Date: (${parseAppointmentDate(appointment.appointmentDate)}) Appointment Time: (${parseAppointmentTime(appointment.preferredTime)}) - ${appointment.appointmentID}`);
+                        //                 } else {
+                        //                     failedCount++;
+                        //                     logger.log(`warn`, `Failed to schedule reminder for ${appointment.firstName} ${appointment.lastName} - ${result?.message}`);
+                        //                 }
+                        //             } else {
+                        //                 logger.log(`warn`, `Appointment too close (${minuteUntilAppointment} minutes) for: (${appointment.firstName} ${appointment.lastName})`);
+                        //             }
+                        //         } else {
+                        //             logger.log(`debug`, `Appointment outside 1-hour window for ${appointment.firstName} ${appointment.lastName}`);
+                        //         }
+                        //     } catch (error) {
+                        //         failedCount++;
+                        //         logger.log(`error`, `Failed to schedule appointment reminder for ${appointment.firstName} ${appointment.lastName}: ${error}`);
+                        //     }
+                        // }
+
+                        // logger.log(`info`, `Reminder scheduling complete: ${successCount} successful, ${failedCount} failed`)
+
+                        /**
+                         * offload heavy appointment reminder work to a child process to avoid blocking cron ticks.
+                         */
+                        const child = spawn(process.execPath, [WORKER_PATH], {
+                            env: process.env,
+                            stdio: ["ignore", "pipe", "pipe"]
+                        });
+
+                        child.stdout.on("data", (data) => logger.log(`info`, `Appointment reminder worker: ${data.toString().trim()}`));
+                        child.stderr.on("data", (data) => logger.log(`info`, `Appointment reminder worker: ${data.toString().trim()}`));
+
+                        const code = await new Promise((resolve) => child.on("close", resolve));
+
+                        if (!code !== 0) {
+                            logger.log(`warn`, `Appointment reminder worker exited with code: ${code}`);
                         }
-
-                        const appointments = result.process_appointments;
-
-                        logger.log(`info`, `Found ${appointments.length} upcoming appointments for reminders`);
-                        let successCount = 0;
-                        let failedCount = 0;
-
-                        for (const appointment of appointments) {
-                            try {
-                                const appointmentTime = parseAppointmentDateTime(appointment.appointmentDate, appointment.preferredTime);
-                                const currentTime = new Date();
-                                const oneHourFromNow = new Date(currentTime.getTime() + 60 * 60 * 1000);
-                                const minuteUntilAppointment = Math.round((appointmentTime - currentTime) / (1000 * 60));
-
-                                if (appointmentTime > currentTime && appointmentTime <= oneHourFromNow) {
-                                    if (minuteUntilAppointment >= 1) {
-                                        const result = await withTimeout(
-                                            scheduleAppointmentsReminder({
-                                                ...appointment,
-                                                clinicName: appointment.clinic_name,
-                                                reminderTime: minuteUntilAppointment
-                                            }),
-                                            60000, // 1 minute timeout milliseconds
-                                            "Individual Appointment Reminder"
-                                        );
-
-                                        if (result && result.success !== false) {
-                                            successCount++;
-                                            logger.log(`info`, `✓ Scheduled ${minuteUntilAppointment} minutes reminder for: ${appointment.firstName} ${appointment.lastName} at ${appointment.clinic_name} - Appointment Date: (${parseAppointmentDate(appointment.appointmentDate)}) Appointment Time: (${parseAppointmentTime(appointment.preferredTime)}) - ${appointment.appointmentID}`);
-                                        } else {
-                                            failedCount++;
-                                            logger.log(`warn`, `Failed to schedule reminder for ${appointment.firstName} ${appointment.lastName} - ${result?.message}`);
-                                        }
-                                    } else {
-                                        logger.log(`warn`, `Appointment too close (${minuteUntilAppointment} minutes) for: (${appointment.firstName} ${appointment.lastName})`);
-                                    }
-                                } else {
-                                    logger.log(`debug`, `Appointment outside 1-hour window for ${appointment.firstName} ${appointment.lastName}`);
-                                }
-                            } catch (error) {
-                                failedCount++;
-                                logger.log(`error`, `Failed to schedule appointment reminder for ${appointment.firstName} ${appointment.lastName}: ${error}`);
-                            }
-                        }
-
-                        logger.log(`info`, `Reminder scheduling complete: ${successCount} successful, ${failedCount} failed`)
                     } catch (error) {
                         logger.log(`error`, `Failed to schedule appointment reminders: ${error}`);
                     }

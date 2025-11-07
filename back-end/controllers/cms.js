@@ -4603,12 +4603,20 @@ export const autoGenerateMedicalReport = asyncHandler(
     async (req, res) => {
         try {
             const { patient } = req.body;
-
+            const { appointmentID } = req.query;
+            
             if (!patient) {
                 return res.status(StatusCodes.BAD_REQUEST).json({
                     message: "Patient details are required"
                 })
             }
+
+            if (!appointmentID) {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    message: "Appointment ID is required"
+                })
+            }
+
             const doc = new PDFDocument({ margin: 15 });
 
             const pathInfo = await autoGenerateMedicalReportPath(patient);
@@ -4763,7 +4771,8 @@ export const autoGenerateMedicalReport = asyncHandler(
             res.status(StatusCodes.OK).json({
                 success: true,
                 downloadURL,
-                message: "Medical report generated successfully"
+                message: "Medical report generated successfully",
+                appointmentID: appointmentID
             })
         } catch (error) {
             logger.log("error", `Failed to auto-generate a medical report in controller: ${error}`);

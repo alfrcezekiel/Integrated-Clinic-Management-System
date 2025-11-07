@@ -410,6 +410,9 @@ const ClinicCards = () => {
     const handleCallbackCloseConfirmedBookedAppointmentModal = async (appointmentID) => {
         // setShowConfirmedBookAppointmentModal(false);
         try {
+            if (submitting) return;
+            setSubmitting(true);
+
             const response = await CMS.put(`/patients-dashboard/cancelBookedAppointment/${appointmentID}`, {
                 headers: {
                     "Authorization": `Bearer ${tokenContext}`,
@@ -427,6 +430,8 @@ const ClinicCards = () => {
             if (error.response || error.response?.data?.status === 500) {
                 console.error(`Error in cancelling an booked appointment ${error}`)
             }
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -600,6 +605,7 @@ const ClinicCards = () => {
                     onClose={handleCallbackCloseConfirmedBookedAppointmentModal}
                     onNextStep={proceedToConfirmedBookedAppointmentSuccessDialogBox}
                     patientsData={confirmedAppointmentData}
+                    submitting={submitting}
                 />
             )}
 

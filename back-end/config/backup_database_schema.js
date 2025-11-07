@@ -14,6 +14,7 @@ import {
     measureExecutionTime
 } from "../utils/timeoutProtection.js"
 import mysqldump from "mysqldump";
+import { spawn } from "child_process";
 
 /**
  * converts __dirname to ES modules
@@ -348,12 +349,39 @@ export const scheduleBackup = async (schedule = null) => {
                     logger.log(`info`, `[${new Date().toLocaleString()}] Running schedule database backup`);
 
                     try {
-                        const result = await createBackup();
-                        if (result.success) {
+                        // const result = await createBackup();
+                        // if (result.success) {
+                        //     const deletedCount = await cleanOldBackups();
+                        //     logger.log(`info`, `Backup completed successfully. Cleaned up ${deletedCount} old backups.`);
+                        // } else {
+                        //     logger.log(`error`, `Backup Failed: ${result.message}`);
+                        // }
+
+                        /**
+                         * run the backup in a seperate  node process to avoid blocking the scheduler event loop
+                         */
+                        const child = spawn(process.execPath, [fileURLToPath(import.meta.url)], {
+                            env: process.env,
+                            stdio: ["ignore", "pipe", "pipe"]
+                        })
+
+                        let stdout = "";
+                        let stderr = "";
+
+                        child.stdout.on("data", (data) => stdout += data.toString());
+                        child.stderr.on("data", (data) => stderr += data.toString());
+
+                        const exitCode = await new Promise((resolve) => {
+                            child.on("close", (code) => resolve(code))
+                        });
+
+                        if (exitCode === 0) {
+                            logger.log(`info`, `Backup child process exited successfully.`);
+
                             const deletedCount = await cleanOldBackups();
                             logger.log(`info`, `Backup completed successfully. Cleaned up ${deletedCount} old backups.`);
                         } else {
-                            logger.log(`error`, `Backup Failed: ${result.message}`);
+                            logger.log(`error`, `Backup child process failed with exit code ${exitCode}: stderr=${stderr} stdout=${stdout}`);
                         }
                     } catch (error) {
                         logger.log(`info`, `Failed to run schedule database backup: ${error}`);

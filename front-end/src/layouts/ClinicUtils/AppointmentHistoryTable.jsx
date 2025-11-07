@@ -250,44 +250,44 @@ const AppointmentHistoryTable = () => {
         handleClosePatientsResults();
     }, []);
 
+    const clinicID = user?.sid;
+    const tokenContext = token;
+    if (!tokenContext && !clinicID) {
+        console.error("No token and clinic id found in context or localStorage");
+        setAppointmentHistoryData([]);
+    }
+
+    const retrieveAppointmentHistory = useCallback(async () => {
+        try {
+            const response = await CMS.get(`/clinic-dashboard/getAppointmentHistory/${clinicID}`, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${tokenContext}`,
+                },
+            });
+
+            if (!response.data) {
+                throw new Error("No retrieved appointment history data");
+            }
+
+            if (response.status === 200) {
+                setAppointmentHistoryData(response.data.appointmentHistory);
+            }
+        } catch (error) {
+            console.error(
+                `Code functionality error for fetching approved status data: ${error}`
+            );
+        }
+    }, [clinicID, tokenContext]);
+
     useEffect(() => {
         const titleHeader = () => {
             document.title = "Patient's Appointment History | CMS";
         };
         titleHeader();
 
-        const clinicID = user?.sid;
-        const tokenContext = token;
-        if (!tokenContext && !clinicID) {
-            console.error("No token and clinic id found in context or localStorage");
-            setAppointmentHistoryData([]);
-            return;
-        }
-
-        const retrieveAppointmentHistory = async () => {
-            try {
-                const response = await CMS.get(`/clinic-dashboard/getAppointmentHistory/${clinicID}`, {
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${tokenContext}`,
-                    },
-                });
-
-                if (!response.data) {
-                    throw new Error("No retrieved appointment history data");
-                }
-
-                if (response.status === 200) {
-                    setAppointmentHistoryData(response.data.appointmentHistory);
-                }
-            } catch (error) {
-                console.error(
-                    `Code functionality error for fetching approved status data: ${error}`
-                );
-            }
-        };
         retrieveAppointmentHistory();
-    }, [location.pathname, user?.sid, token]);
+    }, [location.pathname, clinicID, tokenContext,retrieveAppointmentHistory]);
 
     /**
      * @function to auto-generate a medical history using PDF
@@ -300,6 +300,9 @@ const AppointmentHistoryTable = () => {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${tokenContext}`
+                },
+                params: {
+                    appointmentID: patient.appointmentID
                 }
             })
 
@@ -484,7 +487,7 @@ const AppointmentHistoryTable = () => {
                                 variant="contained"
                                 color="error"
                                 startIcon={<PictureAsPdfIcon />}
-                                onClick={() => autoGenerateMedicalReport(selectedPatient) || autoGenerateAndDownloadPDF(selectedPatient) }
+                                onClick={() => autoGenerateMedicalReport(selectedPatient) || autoGenerateAndDownloadPDF(selectedPatient)}
                                 className="mr-2"
                                 size="small"
                             >

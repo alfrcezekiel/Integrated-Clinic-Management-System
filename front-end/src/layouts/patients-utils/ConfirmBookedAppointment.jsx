@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import PropTypes from "prop-types";
 
-const ConfirmAppointmentModal = ({ open, onClose, patientsData, onNextStep }) => {
+const ConfirmAppointmentModal = ({ open, onClose, patientsData, onNextStep, submitting }) => {
     const renderItem = (label, value) => (
         <Grid item xs={12}>
             <div className="flex flex-col text-left">
@@ -78,7 +78,7 @@ const ConfirmAppointmentModal = ({ open, onClose, patientsData, onNextStep }) =>
                     className="cursor-pointer"
                     onClick={() => onClose(patientsData?.appointmentID)}
                 >
-                    Cancel
+                    {submitting ? "Loading..." : "Cancel"}
                 </Button>
                 <Button
                     variant="contained"
@@ -120,6 +120,7 @@ ConfirmAppointmentModal.propTypes = {
         }).isRequired,
     }).isRequired,
     onNextStep: PropTypes.func.isRequired,
+    submitting: PropTypes.bool.isRequired
 }
 
 export default ConfirmAppointmentModal;

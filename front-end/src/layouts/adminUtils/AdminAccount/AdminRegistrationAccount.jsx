@@ -219,7 +219,7 @@ const AdminRegisterationAccount = () => {
                             <div className="items-center justify-center flex">
                                 <button
                                     type="submit"
-                                    className="min-w-[15dvw] bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700 transition duration-200"
+                                    className="cursor-pointer min-w-[15dvw] bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700 transition duration-200"
                                 >
                                     <span className="text-white">
                                         {submitting ? "Loading..." : "Create admin account"}

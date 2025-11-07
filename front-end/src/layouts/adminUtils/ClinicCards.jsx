@@ -90,7 +90,7 @@ const ClinicCard = ({ clinic, onViewDetails, onEditClinic }) => {
                             {firstLetter}
                         </div>
                         <div className="ml-4">
-                            <h2 className="text-2xl font-semibold text-gray-800 mb-1">{clinic.clinic_name}</h2>
+                            <h2 className="text-lg text-wrap xl:text-wrap lg:text-wrap md:text-wrap sm:text-wrap font-semibold text-gray-800 mb-1">{clinic.clinic_name}</h2>
                             <div
                                 className={`inline-flex items-center px-2 py-1 text-xs font-semibold text-white rounded ${getClinicTypeColor(
                                     clinic.clinic_type
@@ -146,7 +146,7 @@ const ClinicCard = ({ clinic, onViewDetails, onEditClinic }) => {
                 <div className="flex justify-between items-center mt-6">
                     <button
                         onClick={handleViewDetails}
-                        className={`px-4 py-2 text-sm font-semibold text-white rounded shadow-md transition-transform transform hover:scale-105 ${getClinicTypeColor(
+                        className={`px-4 py-2 text-sm font-semibold cursor-pointer text-white rounded shadow-md transition-transform transform hover:scale-105 ${getClinicTypeColor(
                             clinic.clinic_type
                         )}`}
                     >
