@@ -1,6 +1,7 @@
 import {
     useState,
-    useEffect
+    useEffect,
+    useCallback
 } from "react";
 import CMS from "../../API/CMS";
 import { useAuthorization } from "../../context/auth/useAuthorization";
@@ -15,41 +16,41 @@ const CalculateDeclinedBookedAppointment = () => {
     const patientEmail = user?.sem;
     const tokenContext = token;
 
-    useEffect(() => {
-        /**
-         * @function logic to calculate the declined booked appointment of specific patient account
-         */
-        const retrieveCalculatedDeclinedBookedAppointment = async () => {
-            try {
-                if(!patientEmail || !tokenContext) {
-                    console.error(`Patient email or token is not set in context or local storage`);
-                    return;
-                }
-
-                const response = await CMS.get(`/patient/dashboard/calculateDeclinedBookedAppointments`, {
-                    params: {
-                        patientEmail: patientEmail
-                    }
-                }, {
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${tokenContext}`
-                    }
-                });
-
-                if(response.status === 200) {
-                    const data = response.data.totalDeclinedBookedAppointmentsOfPatient;
-                    setCalculateDeclinedBookedAppointment(data);
-                } else {
-                    throw new Error("Failed to retrieve calculated declined booked appointment")
-                }
-            } catch (error) {
-                console.error(`Failed to retrieve calculated declined booked appointment: ${error}`)
+    /**
+     * @function logic to calculate the declined booked appointment of specific patient account
+     */
+    const retrieveCalculatedDeclinedBookedAppointment = useCallback(async () => {
+        try {
+            if(!patientEmail || !tokenContext) {
+                console.error(`Patient email or token is not set in context or local storage`);
+                return;
             }
-        }
 
-        retrieveCalculatedDeclinedBookedAppointment();
+            const response = await CMS.get(`/patient/dashboard/calculateDeclinedBookedAppointments`, {
+                params: {
+                    patientEmail: patientEmail
+                }
+            }, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${tokenContext}`
+                }
+            });
+
+            if(response.status === 200) {
+                const data = response.data.totalDeclinedBookedAppointmentsOfPatient;
+                setCalculateDeclinedBookedAppointment(data);
+            } else {
+                throw new Error("Failed to retrieve calculated declined booked appointment")
+            }
+        } catch (error) {
+            console.error(`Failed to retrieve calculated declined booked appointment: ${error}`)
+        }
     }, [patientEmail, tokenContext]);
+
+    useEffect(() => {
+        retrieveCalculatedDeclinedBookedAppointment();
+    }, [retrieveCalculatedDeclinedBookedAppointment]);
 
     return calculateDeclinedBookedAppointment;
 }

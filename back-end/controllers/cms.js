@@ -1364,8 +1364,8 @@ export const createClinic = async (req, res) => {
         const hashedPassword = await bcrypt.hash(clinic_password, saltRound);
         const hashedConfirmPassword = await bcrypt.hash(clinic_confirm_password, saltRound);
 
-        const MAX_CLINIC_IMAGE_SIZE = 1024 * 1024 * 5; // 5MB
-        const MAX_LTO_FILE_SIZE = 1024 * 1024 * 10; // 10MB
+        const MAX_CLINIC_IMAGE_SIZE = 1024 * 1024 * 10; // 10MB
+        const MAX_PRC_LICENSE_PHOTO_SIZE = 1024 * 1024 * 10; // 10MB
 
         if (!req.files || !req.files.clinicImage) {
             return res.status(StatusCodes.BAD_REQUEST).json({
@@ -1375,50 +1375,55 @@ export const createClinic = async (req, res) => {
             });
         }
 
-        if (!req.files || !req.files.ltoFile) {
+        if (!req.files || !req.files.prcLicensePhoto) {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 errors: {
-                    ltoFile: "LTO document is required"
+                    prcLicensePhoto: "PRC license photo is required"
                 }
             });
         }
 
-        const lto_document = req.files.ltoFile[0];
         const clinic_image = req.files.clinicImage[0];
+        const prc_license_photo = req.files.prcLicensePhoto[0];
 
-        // if (req.files?.clinicImage?.[0]?.size > MAX_CLINIC_IMAGE_SIZE) {
-        //     return res.status(StatusCodes.BAD_REQUEST).json({
-        //         errors: {
-        //             clinicImage: "Clinic image size exceeds the limit of 5MB"
-        //         }
-        //     });
-        // }
+        if (req.files?.clinicImage?.[0]?.size > MAX_CLINIC_IMAGE_SIZE) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                errors: {
+                    clinicImage: "Clinic image size exceeds 10MB limit"
+                }
+            });
+        }
 
-        // if (req.files?.ltoFile?.[0]?.size > MAX_LTO_FILE_SIZE) {
-        //     return res.status(StatusCodes.BAD_REQUEST).json({
-        //         errors: {
-        //             ltoFile: "LTO document size exceeds the limit of 10MB"
-        //         }
-        //     });
-        // }
+        if (req.files?.prcLicensePhoto?.[0]?.size > MAX_PRC_LICENSE_PHOTO_SIZE) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                errors: {
+                    prcLicensePhoto: "PRC license photo size exceeds 10MB limit"
+                }
+            });
+        }
 
+        const clinic_columns = [
+            "clinic_name",
+            "clinic_address",
+            "clinic_date_open",
+            "clinic_time",
+            "consultation_fee",
+            "phoneNumber",
+            "email",
+            "password",
+            "confirm_password",
+            "clinic_type",
+            "clinic_image",
+            "prc_license_photo",
+            "clinic_close_date",
+            "clinic_close_time",
+            "created_by"
+        ];
+
+        const clinic_values_placeholders = clinic_columns.map(() => `?`).join(", ");
         const query = `INSERT INTO clinic (
-            clinic_name,
-            clinic_address,
-            clinic_date_open,
-            clinic_time,
-            consultation_fee,
-            phoneNumber,
-            email,
-            password,
-            confirm_password,
-            clinic_type,
-            clinic_image,
-            clinic_close_date,
-            clinic_close_time,
-            created_by,
-            lto_document
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
+            ${clinic_columns.join(", ")}
+        ) VALUES (${clinic_values_placeholders});`;
 
         const [result] = await conn.query(query, [
             clinic_name,
@@ -1432,10 +1437,10 @@ export const createClinic = async (req, res) => {
             hashedConfirmPassword,
             clinic_type,
             clinic_image.filename,
+            prc_license_photo.filename,
             clinic_close_date,
             clinic_close_time,
             admin_id,
-            lto_document.filename
         ]);
 
         if (result.affectedRows === 0) {
@@ -1462,7 +1467,7 @@ export const createClinic = async (req, res) => {
 
         console.error(`Failed to create clinic: ${error}`);
         return res.status(500).json({
-            message: "Internal server error",
+            message: `Failed to create clinic account in admin access: ${error.message}`,
             error: error.message
         });
     } finally {

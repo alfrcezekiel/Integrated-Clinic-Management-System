@@ -11,15 +11,15 @@ const validateCreateClinicDetails = [
         .withMessage("Clinic name is required"),
     body("clinicAddress")
         .notEmpty()
-        .withMessage("Clinic address is required"),
+        .withMessage("Address is required"),
     body("clinicPhoneNumber")
         .notEmpty()
-        .withMessage("Clinic phone number is required")
+        .withMessage("Phone number is required")
         .isLength({ min: 11, max: 11 })
-        .withMessage("Clinic phone number should be 11 digits"),
+        .withMessage("Phone number should be 11 digits"),
     body("clinicEmail")
         .notEmpty()
-        .withMessage("Clinic email is required")
+        .withMessage("Email address is required")
         .isEmail()
         .withMessage("Invalid email address"),
     body("openingDays")

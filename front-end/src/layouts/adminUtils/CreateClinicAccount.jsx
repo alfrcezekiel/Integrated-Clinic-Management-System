@@ -1,5 +1,8 @@
 import TextField from "@mui/material/TextField";
-import { useState, useRef } from "react";
+import {
+    useState,
+    useRef,
+} from "react";
 import { useNavigate } from "react-router-dom";
 import Box from '@mui/material/Box';
 import InputLabel from '@mui/material/InputLabel';
@@ -30,13 +33,13 @@ const CreateClinicAccount = () => {
     const clinicFormData = useSelector((state) => state.createClinicAccount);
     const dispatch = useDispatch();
     const [clinicImage, setClinicImage] = useState(null);
-    const [clinicLtoFile, setClinicLtoFile] = useState(null);
+    const [prcLicensePhoto, setPrcLicensePhoto] = useState(null);
     const [fieldErrors, setFieldErrors] = useState({
         clinicName: "",
         clinicAddress: "",
         clinicEmail: "",
         clinicImage: null,
-        ltoFile: null,
+        prcLicensePhoto: null,
         clinicPhoneNumber: "",
         openingDays: "",
         closingDays: "",
@@ -52,7 +55,7 @@ const CreateClinicAccount = () => {
     const location = useLocation();
     const clinicAccountState = location.state?.clinicAccountState
     const uploadClinicImageRef = useRef(null);
-    const uploadLtoFileRef = useRef(null);
+    const uploadPrcLicensePhotoRef = useRef(null);
     const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -65,9 +68,9 @@ const CreateClinicAccount = () => {
             dispatch(resetForm());
             setFieldErrors({})
             uploadClinicImageRef.current.value = "";
-            uploadLtoFileRef.current.value = "";
-            setClinicImage(null)
-            setClinicLtoFile(null)
+            uploadPrcLicensePhotoRef.current.value = "";
+            setClinicImage(null);
+            setPrcLicensePhoto(null);
         }
     }, [clinicAccountState, dispatch]);
 
@@ -94,32 +97,6 @@ const CreateClinicAccount = () => {
     // function to handle changes in uploading clinic image file
     const handleFileImageChange = async (e) => {
         const file = e.target.files[0];
-        // const MAX_SIZE = 5 * 1024 * 1024; // 5MB
-
-        // const allowedMimeTypes = ["image/jpeg", "image/png", "image/jpg", "image/webp"];
-        // if (!file) {
-        //     setFieldErrors((prev) => ({
-        //         ...prev,
-        //         clinicImage: "Clinic image is required",
-        //     }))
-        //     return;
-        // }
-
-        // if (!allowedMimeTypes.includes(file.type)) {
-        //     setFieldErrors((prev) => ({
-        //         ...prev,
-        //         clinicImage: "Invalid file type. Only JPEG, PNG, JPG, and WEBP are allowed.",
-        //     }))
-        //     return;
-        // }
-
-        // if (file.size > MAX_SIZE) {
-        //     setFieldErrors((prev) => ({
-        //         ...prev,
-        //         clinicImage: "File size exceeds 5MB",
-        //     }))
-        //     return;
-        // }
 
         setClinicImage(file);
         setFieldErrors((prev) => ({
@@ -128,48 +105,18 @@ const CreateClinicAccount = () => {
         }))
     }
 
-    // function to handle changes in uploading LTO document file
-    const handleLTOFileChange = async (e) => {
+    /**
+     * @function handle changes in uploading PRC license photo
+     */
+    const handlePrcLicensePhotoChange = (e) => {
         const file = e.target.files[0];
-        // const MAX_SIZE = 10 * 1024 * 1024; // 10MB
-        // const allowedMimeType = [
-        //     "application/pdf",
-        //     "application/msword",
-        //     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        //     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        //     "application/vnd.ms-excel"
-        // ]
 
-        // if (!file) {
-        //     setFieldErrors((prev) => ({
-        //         ...prev,
-        //         ltoFile: "Please select an LTO document"
-        //     }))
-        //     return;
-        // }
-
-        // if (!allowedMimeType.includes(file.type)) {
-        //     setFieldErrors((prev) => ({
-        //         ...prev,
-        //         ltoFile: "Invalid file type. Only PDF, DOC, DOCX, XLS, and XLSX are allowed."
-        //     }))
-        //     return;
-        // }
-
-        // if (file.size > MAX_SIZE) {
-        //     setFieldErrors((prev) => ({
-        //         ...prev,
-        //         ltoFile: "File size exceeds 10MB"
-        //     }))
-        //     return;
-        // }
-
-        setClinicLtoFile(file);
+        setPrcLicensePhoto(file);
         setFieldErrors((prev) => ({
             ...prev,
-            ltoFile: ""
+            prcLicensePhoto: "",
         }))
-    };
+    }
 
     const handleMouseUpConfirmPassword = (e) => {
         e.preventDefault();
@@ -238,8 +185,8 @@ const CreateClinicAccount = () => {
                 formData.append("clinicImage", clinicImage);
             }
 
-            if (clinicLtoFile) {
-                formData.append("ltoFile", clinicLtoFile);
+            if (prcLicensePhoto) {
+                formData.append("prcLicensePhoto", prcLicensePhoto);
             }
 
             formData.append("adminID", clinic_id)
@@ -255,9 +202,9 @@ const CreateClinicAccount = () => {
                 alert("Clinic account created successfully!");
                 dispatch(resetForm());
                 if (uploadClinicImageRef.current) uploadClinicImageRef.current.value = "";
-                if (uploadLtoFileRef.current) uploadLtoFileRef.current.value = "";
+                if (uploadPrcLicensePhotoRef.current) uploadPrcLicensePhotoRef.current.value = "";
                 setClinicImage(null);
-                setClinicLtoFile(null);
+                setPrcLicensePhoto(null);
                 navigate("/admin-dashboard/AddClinic");
             } else {
                 throw new Error(`Failed to create clinic account: ${response.statusText}`);
@@ -319,10 +266,9 @@ const CreateClinicAccount = () => {
                             <div className="flex-col">
                                 <label className="text-gray-900">Clinic Name</label>
                                 <TextField
-                                    label="Clinic Name"
+                                    label="Enter Clinic Name"
                                     variant="outlined"
                                     fullWidth
-                                    placeholder="Enter Clinic Name"
                                     autoComplete="off"
                                     name="clinicName"
                                     type="text"
@@ -338,11 +284,10 @@ const CreateClinicAccount = () => {
                                     Address
                                 </label>
                                 <TextField
-                                    label="Address"
+                                    label="Enter Address"
                                     margin="dense"
                                     fullWidth
                                     value={clinicFormData.clinicAddress}
-                                    placeholder="Enter Address"
                                     autoComplete="off"
                                     type="text"
                                     onChange={handleTextFieldChange}
@@ -358,13 +303,12 @@ const CreateClinicAccount = () => {
                                 </label>
                                 <TextField
                                     fullWidth
-                                    placeholder="Enter Phone Number"
                                     name="clinicPhoneNumber"
                                     value={clinicFormData.clinicPhoneNumber}
                                     variant="outlined"
                                     onChange={handleTextFieldChange}
                                     margin="dense"
-                                    label="Phone Number"
+                                    label="Enter Phone Number"
                                     type="text"
                                     error={!!fieldErrors.clinicPhoneNumber}
                                     helperText={fieldErrors.clinicPhoneNumber || ""}
@@ -384,8 +328,7 @@ const CreateClinicAccount = () => {
                                     error={!!fieldErrors.clinicEmail}
                                     helperText={fieldErrors.clinicEmail || ""}
                                     type="text"
-                                    label="Email"
-                                    placeholder="Enter Email Address"
+                                    label="Enter Email Address"
                                     name="clinicEmail"
                                     autoComplete="off"
                                 />
@@ -411,22 +354,22 @@ const CreateClinicAccount = () => {
                                 )}
                             </div>
                             <div className="flex-col">
-                                <label htmlFor="ltoFile" className="font-semibold text-gray-700">
-                                    License To Operate (LTO) Document
+                                <label htmlFor="clinicImage" className="font-semibold text-gray-700">
+                                    Upload PRC License Photo
                                 </label>
                                 <input
                                     className="block w-full text-sm text-gray-700 border mt-2 border-gray-300 rounded-lg cursor-pointer focus:outline-none p-4"
                                     type="file"
-                                    accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
-                                    name="ltoFile"
-                                    ref={uploadLtoFileRef}
-                                    onChange={handleLTOFileChange}
+                                    accept="image/jpeg,image/png,image/jpg,image/webp"
+                                    onChange={handlePrcLicensePhotoChange}
+                                    name="prcLicensePhoto"
+                                    ref={uploadPrcLicensePhotoRef}
+                                    placeholder="Upload PRC License Photo"
                                     autoComplete="off"
-                                    placeholder="Upload License To Operate (LTO) Document"
                                 />
-                                {fieldErrors.ltoFile && (
+                                {fieldErrors.prcLicensePhoto && (
                                     <FormHelperText error className="mt-1 text-sm text-red-600">
-                                        {fieldErrors.ltoFile}
+                                        {fieldErrors.prcLicensePhoto}
                                     </FormHelperText>
                                 )}
                             </div>
@@ -623,7 +566,7 @@ const CreateClinicAccount = () => {
                                 <FormControl variant="outlined" className="w-full" sx={{ marginTop: "0.5rem" }}>
                                     <InputLabel htmlFor="create-clinic-account-1">Password</InputLabel>
                                     <OutlinedInput
-                                        placeholder="Enter password"
+                                        label="Password"
                                         id="create-clinic-account"
                                         name="password"
                                         autoComplete="off"
@@ -648,7 +591,6 @@ const CreateClinicAccount = () => {
                                             </InputAdornment>
                                         }
                                         fullWidth
-                                        label="Password"
                                     />
                                     {fieldErrors.password && <FormHelperText error>{fieldErrors.password}</FormHelperText>}
                                 </FormControl>
@@ -660,7 +602,6 @@ const CreateClinicAccount = () => {
                                 <FormControl variant="outlined" className="w-full" sx={{ marginTop: "0.5rem" }}>
                                     <InputLabel htmlFor="clinic-account-2">Confirm Password</InputLabel>
                                     <OutlinedInput
-                                        placeholder="Enter confirm password"
                                         id="clinic-account-2"
                                         name="confirmPassword"
                                         autoComplete="off"

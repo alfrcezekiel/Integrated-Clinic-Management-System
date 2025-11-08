@@ -45,7 +45,7 @@ export const patientAccountStatusTemplate = (patient) => {
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Account Status Update</title>
-            <script src="https://cdn.tailwindcss.com"></script>
+            <script src="./tailwindcss/service_tailwind.js"></script>
         </head>
         <body class="bg-gray-50 p-4">
             <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">

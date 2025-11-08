@@ -1,4 +1,8 @@
-import { useState, useEffect } from "react";
+import {
+  useState,
+  useEffect,
+  useCallback
+} from "react";
 import { Calendar, dateFnsLocalizer } from "react-big-calendar";
 import { format, parse, startOfWeek, getDay } from "date-fns";
 import "react-big-calendar/lib/css/react-big-calendar.css";
@@ -40,46 +44,47 @@ const PatientsViewAppointmentCalendar = () => {
     return format(date, "p");
   };
 
-  useEffect(() => {
-    if(!patient_email || !tokenContext) {
-      console.error("Patient email or token is not available in context state or local storage.");
-    }
+  if (!patient_email || !tokenContext) {
+    console.error("Patient email or token is not available in context state or local storage.");
+  }
 
-    const retrievePatientsAppointments = async () => {
-      try {
-        const response = await CMS.get(`/patientsDashboard/bookedAppointments/${patient_email}`, {
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${tokenContext}`,
-          },
-        });
+  const retrievePatientsAppointments = useCallback(async () => {
+    try {
+      const response = await CMS.get(`/patientsDashboard/bookedAppointments/${patient_email}`, {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${tokenContext}`,
+        },
+      });
 
-        if (response.status === 200) {
-          const formattedAppointments = response.data.patientsAppointments.map(
-            (app) => {
-              const [hour, minute] = app.preferredTime.split(":").map(Number);
-              const appointmentStart = new Date(app.appointmentDate);
-              appointmentStart.setHours(hour, minute, 0, 0);
+      if (response.status === 200) {
+        const formattedAppointments = response.data.patientsAppointments.map(
+          (app) => {
+            const [hour, minute] = app.preferredTime.split(":").map(Number);
+            const appointmentStart = new Date(app.appointmentDate);
+            appointmentStart.setHours(hour, minute, 0, 0);
 
-              const appointmentEnd = new Date(appointmentStart);
-              appointmentEnd.setHours(appointmentEnd.getHours() + 1); // Adjust as needed
+            const appointmentEnd = new Date(appointmentStart);
+            appointmentEnd.setHours(appointmentEnd.getHours() + 1); // Adjust as needed
 
-              return {
-                ...app,
-                start: appointmentStart,
-                end: appointmentEnd,
-              };
-            }
-          );
+            return {
+              ...app,
+              start: appointmentStart,
+              end: appointmentEnd,
+            };
+          }
+        );
 
-          setEvents(formattedAppointments);
-        }
-      } catch (error) {
-        console.error(`Failed to retrieve appointments: ${error}`);
+        setEvents(formattedAppointments);
       }
-    };
-    retrievePatientsAppointments();
+    } catch (error) {
+      console.error(`Failed to retrieve appointments: ${error}`);
+    }
   }, [patient_email, tokenContext]);
+
+  useEffect(() => {
+    retrievePatientsAppointments();
+  }, [retrievePatientsAppointments]);
 
   const handleSelectEvent = (event) => {
     setSelectedEvent(event);

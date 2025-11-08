@@ -12,8 +12,8 @@ const storage = multer.diskStorage({
 
         if (file.fieldname === "clinicImage") {
             uploadPath = path.join("uploads", "clinic_images");
-        } else if (file.fieldname === "ltoFile") {
-            uploadPath = path.join("uploads", "lto_documents");
+        } else if (file.fieldname === "prcLicensePhoto") {
+            uploadPath = path.join("uploads", "prc_license_photos");
         } else {
             return cb(new Error("Invalid field name for file upload"), null);
         }
@@ -40,8 +40,9 @@ const clinicUploadedFiles = (req, res, next) => {
                 "image/jpeg",
                 "image/png",
                 "image/webp",
-                "image/jpg"
+                "image/jpg",
             ];
+
             const documentMimeTypes = [
                 "application/pdf",
                 "application/msword",
@@ -61,14 +62,14 @@ const clinicUploadedFiles = (req, res, next) => {
                 if (file.size > MAX_SIZE) {
                     return cb(new Error(`Clinic image size exceeds 10MB limit`));
                 }
-            } else if (file.fieldname === "ltoFile") {
-                if (!documentMimeTypes.includes(mimeType)) {
-                    return cb(new Error(`Invalid file type. Only PDF, DOC, DOCX, XLS, and XLSX are allowed.`))
+            } else if (file.fieldname === "prcLicensePhoto") {
+                if (!imageMimeTypes.includes(mimeType)) {
+                    return cb(new Error(`Invalid file type. Only JPG, PNG, WEBP, and JPG are allowed.`))
                 }
 
                 const MAX_SIZE = 10 * 1024 * 1024; // 10MB
                 if (file.size > MAX_SIZE) {
-                    return cb(new Error(`LTO document size exceeds 10MB limit`));
+                    return cb(new Error(`PRC license photo size exceeds 10MB limit`))
                 }
             }
 
@@ -82,7 +83,7 @@ const clinicUploadedFiles = (req, res, next) => {
         name: "clinicImage",
         maxCount: 1
     }, {
-        name: "ltoFile",
+        name: "prcLicensePhoto",
         maxCount: 1
     }]);
 
@@ -93,8 +94,8 @@ const clinicUploadedFiles = (req, res, next) => {
 
             if (err instanceof multer.MulterError) {
                 if (err.code === "LIMIT_FILE_SIZE") {
-                    errorMessage = err.message.includes("clinicImage") ? "Clinic image size exceeds 5MB limit" : "LTO document size exceeds 10MB limit";
-                    fields = err.message.includes("clinicImage") ? "clinicImage" : "ltoFile";
+                    errorMessage = err.message.includes("clinicImage") ? "Clinic image size exceeds 10MB limit" : "PRC license photo size exceeds 10MB limit";
+                    fields = err.message.includes("clinicImage") ? "clinicImage" : "prcLicensePhoto";
                 } else if (err.code === "LIMIT_FILE_COUNT") {
                     errorMessage = "Maximum number of files exceeded"
                 }

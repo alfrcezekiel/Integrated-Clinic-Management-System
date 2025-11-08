@@ -1,6 +1,7 @@
 import {
     useEffect,
-    useState
+    useState,
+    useCallback
 } from "react";
 import CMS from "../../API/CMS";
 import { useAuthorization } from "../../context/auth/useAuthorization";
@@ -16,34 +17,34 @@ const CalculateRegisteredClinics = () => {
 
     const tokenContext = token;
 
-    useEffect(() => {
-        const retrieveTotalNumberOfRegisteredClinics = async () => {
-            try {
-                if (!tokenContext) {
-                    console.error("Token is not available in context state or local storage.");
-                    return;
-                }
-
-                const response = await CMS.get(`/adminDashboard/totalNumberOfRegisteredClinics`, {
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${tokenContext}`,
-                    }
-                })
-
-                if (response.status === 200) {
-                    const data = response.data.totalNumberOfRegisteredClinics;
-                    setTotalNumberOfRegisteredClinics(data);
-                } else {
-                    throw new Error(`Failed to retrieve total number of registered clinics: ${response.status}`)
-                }
-            } catch (error) {
-                console.error(`Code functionality error for fetching total number of registered clinics: ${error}`);
+    const retrieveTotalNumberOfRegisteredClinics = useCallback(async () => {
+        try {
+            if (!tokenContext) {
+                console.error("Token is not available in context state or local storage.");
+                return;
             }
-        }
 
-        retrieveTotalNumberOfRegisteredClinics();
+            const response = await CMS.get(`/adminDashboard/totalNumberOfRegisteredClinics`, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${tokenContext}`,
+                }
+            })
+
+            if (response.status === 200) {
+                const data = response.data.totalNumberOfRegisteredClinics;
+                setTotalNumberOfRegisteredClinics(data);
+            } else {
+                throw new Error(`Failed to retrieve total number of registered clinics: ${response.status}`)
+            }
+        } catch (error) {
+            console.error(`Code functionality error for fetching total number of registered clinics: ${error}`);
+        }
     }, [tokenContext])
+
+    useEffect(() => {
+        retrieveTotalNumberOfRegisteredClinics();
+    }, [retrieveTotalNumberOfRegisteredClinics])
 
     return totalNumberOfRegisteredClinics;
 }

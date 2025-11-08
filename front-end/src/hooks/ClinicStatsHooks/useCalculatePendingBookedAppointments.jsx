@@ -1,6 +1,7 @@
 import {
     useEffect,
-    useState
+    useState,
+    useCallback
 } from "react";
 import CMS from "../../API/CMS";
 import { useAuthorization } from "../../context/auth/useAuthorization";
@@ -13,39 +14,39 @@ const CalculatePendingBookedAppointments = () => {
 
     const [totalPendingBookedAppointments, setTotalPendingBookedAppointments] = useState(0);
 
-    useEffect(() => {
-        // function to retrieve the total number of pending booked appointments in a specific clinic
-        const retrieveTotalPendingBookedAppointments = async () => {
-            try {
-                if (!clinic_id || !tokenContext) {
-                    console.error("Clinic ID or token is not available in context state or local storage.");
-                    return;
-                }
-
-                const response = await CMS.get(`/clinicDashboard/calculatePendingBookedAppointments`, {
-                    params: {
-                        clinicID: clinic_id
-                    }
-                }, {
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${tokenContext}`,
-                    }
-                });
-
-                if (response.status === 200) {
-                    const data = response.data.totalPendingBookedAppointments;
-                    setTotalPendingBookedAppointments(data);
-                } else {
-                    throw new Error(`Failed to fetch total pending booked appointments: ${response}`);
-                }
-            } catch (error) {
-                console.error(`Code functionality error for fetching total pending booked appointments: ${error}`);
+    // function to retrieve the total number of pending booked appointments in a specific clinic
+    const retrieveTotalPendingBookedAppointments = useCallback(async () => {
+        try {
+            if (!clinic_id || !tokenContext) {
+                console.error("Clinic ID or token is not available in context state or local storage.");
+                return;
             }
-        };
 
-        retrieveTotalPendingBookedAppointments();
+            const response = await CMS.get(`/clinicDashboard/calculatePendingBookedAppointments`, {
+                params: {
+                    clinicID: clinic_id
+                }
+            }, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${tokenContext}`,
+                }
+            });
+
+            if (response.status === 200) {
+                const data = response.data.totalPendingBookedAppointments;
+                setTotalPendingBookedAppointments(data);
+            } else {
+                throw new Error(`Failed to fetch total pending booked appointments: ${response}`);
+            }
+        } catch (error) {
+            console.error(`Code functionality error for fetching total pending booked appointments: ${error}`);
+        }
     }, [clinic_id, tokenContext]);
+
+    useEffect(() => {
+        retrieveTotalPendingBookedAppointments();
+    }, [retrieveTotalPendingBookedAppointments]);
 
     return totalPendingBookedAppointments;
 };
