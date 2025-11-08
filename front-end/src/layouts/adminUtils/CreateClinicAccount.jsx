@@ -93,33 +93,33 @@ const CreateClinicAccount = () => {
 
     // function to handle changes in uploading clinic image file
     const handleFileImageChange = async (e) => {
-        const file = e.target.files && e.target.files.length > 0 ? e.target.files[0] : null;
-        const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+        const file = e.target.files[0];
+        // const MAX_SIZE = 5 * 1024 * 1024; // 5MB
 
-        const allowedMimeTypes = ["image/jpeg", "image/png", "image/jpg", "image/webp"];
-        if (!file) {
-            setFieldErrors((prev) => ({
-                ...prev,
-                clinicImage: "Clinic image is required",
-            }))
-            return;
-        }
+        // const allowedMimeTypes = ["image/jpeg", "image/png", "image/jpg", "image/webp"];
+        // if (!file) {
+        //     setFieldErrors((prev) => ({
+        //         ...prev,
+        //         clinicImage: "Clinic image is required",
+        //     }))
+        //     return;
+        // }
 
-        if (!allowedMimeTypes.includes(file.type)) {
-            setFieldErrors((prev) => ({
-                ...prev,
-                clinicImage: "Invalid file type. Only JPEG, PNG, JPG, and WEBP are allowed.",
-            }))
-            return;
-        }
+        // if (!allowedMimeTypes.includes(file.type)) {
+        //     setFieldErrors((prev) => ({
+        //         ...prev,
+        //         clinicImage: "Invalid file type. Only JPEG, PNG, JPG, and WEBP are allowed.",
+        //     }))
+        //     return;
+        // }
 
-        if (file.size > MAX_SIZE) {
-            setFieldErrors((prev) => ({
-                ...prev,
-                clinicImage: "File size exceeds 5MB",
-            }))
-            return;
-        }
+        // if (file.size > MAX_SIZE) {
+        //     setFieldErrors((prev) => ({
+        //         ...prev,
+        //         clinicImage: "File size exceeds 5MB",
+        //     }))
+        //     return;
+        // }
 
         setClinicImage(file);
         setFieldErrors((prev) => ({
@@ -130,39 +130,39 @@ const CreateClinicAccount = () => {
 
     // function to handle changes in uploading LTO document file
     const handleLTOFileChange = async (e) => {
-        const file = e.target.files && e.target.files.length > 0 ? e.target.files[0] : null;
-        const MAX_SIZE = 10 * 1024 * 1024; // 10MB
-        const allowedMimeType = [
-            "application/pdf",
-            "application/msword",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            "application/vnd.ms-excel"
-        ]
+        const file = e.target.files[0];
+        // const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+        // const allowedMimeType = [
+        //     "application/pdf",
+        //     "application/msword",
+        //     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        //     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        //     "application/vnd.ms-excel"
+        // ]
 
-        if (!file) {
-            setFieldErrors((prev) => ({
-                ...prev,
-                ltoFile: "Please select an LTO document"
-            }))
-            return;
-        }
+        // if (!file) {
+        //     setFieldErrors((prev) => ({
+        //         ...prev,
+        //         ltoFile: "Please select an LTO document"
+        //     }))
+        //     return;
+        // }
 
-        if (!allowedMimeType.includes(file.type)) {
-            setFieldErrors((prev) => ({
-                ...prev,
-                ltoFile: "Invalid file type. Only PDF, DOC, DOCX, XLS, and XLSX are allowed."
-            }))
-            return;
-        }
+        // if (!allowedMimeType.includes(file.type)) {
+        //     setFieldErrors((prev) => ({
+        //         ...prev,
+        //         ltoFile: "Invalid file type. Only PDF, DOC, DOCX, XLS, and XLSX are allowed."
+        //     }))
+        //     return;
+        // }
 
-        if (file.size > MAX_SIZE) {
-            setFieldErrors((prev) => ({
-                ...prev,
-                ltoFile: "File size exceeds 10MB"
-            }))
-            return;
-        }
+        // if (file.size > MAX_SIZE) {
+        //     setFieldErrors((prev) => ({
+        //         ...prev,
+        //         ltoFile: "File size exceeds 10MB"
+        //     }))
+        //     return;
+        // }
 
         setClinicLtoFile(file);
         setFieldErrors((prev) => ({
@@ -217,16 +217,16 @@ const CreateClinicAccount = () => {
             if (submitting) return;
             setSubmitting(true);
 
-            if (fieldErrors.clinicImage || fieldErrors.ltoFile) {
-                return;
-            }
-
             const formData = new FormData();
 
             const formattedOpeningHours = clinicFormData.openingHours ? dayjs(clinicFormData.openingHours).format("hh:mm A") : "";
             const formattedClosingHours = clinicFormData.closingHours ? dayjs(clinicFormData.closingHours).format("hh:mm A") : "";
 
             for (const key in clinicFormData) {
+                /**
+                 * This loop appends all the fields in the clinicFormData object to the formData object
+                 * except for the openingHours and closingHours fields
+                 */
                 if (Object.prototype.hasOwnProperty.call(clinicFormData, key) && key !== "openingHours" && key !== "closingHours") {
                     formData.append(key, clinicFormData[key]);
                 }
@@ -234,14 +234,20 @@ const CreateClinicAccount = () => {
 
             formData.append("openingHours", formattedOpeningHours);
             formData.append("closingHours", formattedClosingHours);
-            formData.append("clinicImage", clinicImage);
-            formData.append("ltoFile", clinicLtoFile);
+            if (clinicImage) {
+                formData.append("clinicImage", clinicImage);
+            }
+
+            if (clinicLtoFile) {
+                formData.append("ltoFile", clinicLtoFile);
+            }
+
             formData.append("adminID", clinic_id)
 
             const response = await CMS.post("/adminDashboard/createClinicAccount", formData, {
                 headers: {
-                    "Content-Type": "multipart/form-data",
                     "Authorization": `Bearer ${tokenContext}`,
+                    "Content-Type": "multipart/form-data"
                 }
             })
 
@@ -250,8 +256,9 @@ const CreateClinicAccount = () => {
                 dispatch(resetForm());
                 if (uploadClinicImageRef.current) uploadClinicImageRef.current.value = "";
                 if (uploadLtoFileRef.current) uploadLtoFileRef.current.value = "";
-
-                navigate("/admin-dashboard/CreateClinicAccount");
+                setClinicImage(null);
+                setClinicLtoFile(null);
+                navigate("/admin-dashboard/AddClinic");
             } else {
                 throw new Error(`Failed to create clinic account: ${response.statusText}`);
             }
@@ -259,10 +266,7 @@ const CreateClinicAccount = () => {
             if (error.response && error.response.data.errors && error.response.data && error.response.status === 400) {
                 const errors = error.response.data.errors;
 
-                setFieldErrors((prev) => ({
-                    ...prev,
-                    ...errors
-                }))
+                setFieldErrors(errors);
             }
             console.error("Error creating clinic account in this component:", error);
         } finally {

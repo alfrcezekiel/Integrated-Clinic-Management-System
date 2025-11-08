@@ -1363,20 +1363,44 @@ export const createClinic = async (req, res) => {
         const saltRound = 10;
         const hashedPassword = await bcrypt.hash(clinic_password, saltRound);
         const hashedConfirmPassword = await bcrypt.hash(clinic_confirm_password, saltRound);
-        const lto_document = req.files?.ltoFile?.[0]?.filename;
-        const clinic_image = req.files?.clinicImage?.[0]?.filename;
 
-        if (!lto_document) {
+        const MAX_CLINIC_IMAGE_SIZE = 1024 * 1024 * 5; // 5MB
+        const MAX_LTO_FILE_SIZE = 1024 * 1024 * 10; // 10MB
+
+        if (!req.files || !req.files.clinicImage) {
             return res.status(StatusCodes.BAD_REQUEST).json({
-                message: 'Please upload a valid LTO document'
+                errors: {
+                    clinicImage: "Clinic image is required"
+                }
             });
         }
 
-        if (!clinic_image) {
+        if (!req.files || !req.files.ltoFile) {
             return res.status(StatusCodes.BAD_REQUEST).json({
-                message: 'Please upload a valid clinic image'
+                errors: {
+                    ltoFile: "LTO document is required"
+                }
             });
         }
+
+        const lto_document = req.files.ltoFile[0];
+        const clinic_image = req.files.clinicImage[0];
+
+        // if (req.files?.clinicImage?.[0]?.size > MAX_CLINIC_IMAGE_SIZE) {
+        //     return res.status(StatusCodes.BAD_REQUEST).json({
+        //         errors: {
+        //             clinicImage: "Clinic image size exceeds the limit of 5MB"
+        //         }
+        //     });
+        // }
+
+        // if (req.files?.ltoFile?.[0]?.size > MAX_LTO_FILE_SIZE) {
+        //     return res.status(StatusCodes.BAD_REQUEST).json({
+        //         errors: {
+        //             ltoFile: "LTO document size exceeds the limit of 10MB"
+        //         }
+        //     });
+        // }
 
         const query = `INSERT INTO clinic (
             clinic_name,
@@ -1407,11 +1431,11 @@ export const createClinic = async (req, res) => {
             hashedPassword,
             hashedConfirmPassword,
             clinic_type,
-            clinic_image,
+            clinic_image.filename,
             clinic_close_date,
             clinic_close_time,
             admin_id,
-            lto_document
+            lto_document.filename
         ]);
 
         if (result.affectedRows === 0) {
@@ -4604,7 +4628,7 @@ export const autoGenerateMedicalReport = asyncHandler(
         try {
             const { patient } = req.body;
             const { appointmentID } = req.query;
-            
+
             if (!patient) {
                 return res.status(StatusCodes.BAD_REQUEST).json({
                     message: "Patient details are required"

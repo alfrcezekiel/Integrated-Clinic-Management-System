@@ -18,7 +18,7 @@ const ViewClinicDetails = () => {
     const [questionnaire, setQuestionnaire] = useState({});
     const [fieldErrors, setFieldErrors] = useState({});
     const { token, user } = useAuthorization();
-
+    const [submitting, setSubmitting] = useState(false);
     const tokenContext = token;
     const admin_id = user?.sid;
 
@@ -97,7 +97,10 @@ const ViewClinicDetails = () => {
         const questionKeys = []
         try {
             e.preventDefault();
-            if(!admin_id || !tokenContext){
+            if (submitting) return;
+            setSubmitting(true);
+
+            if (!admin_id || !tokenContext) {
                 console.error("Admin ID or token is not available in context or local storage.");
                 return;
             }
@@ -161,6 +164,8 @@ const ViewClinicDetails = () => {
             } else {
                 console.error(`Error in submitting the consultation questionnaires in handleConsultationQuestionnaireSubmit: ${error}`);
             }
+        } finally {
+            setSubmitting(false);
         }
     }
 
@@ -226,7 +231,7 @@ const ViewClinicDetails = () => {
                                 type="submit"
                                 className="bg-blue-600 text-white px-6 py-2 rounded-3xl shadow-md hover:bg-blue-700 transition duration-200 cursor-pointer"
                             >
-                                Submit Questionnaire
+                                {submitting ? "Loading..." : "Submit Questionnaire"}
                             </button>
                         </div>
                     </form>

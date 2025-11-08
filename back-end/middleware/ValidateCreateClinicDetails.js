@@ -22,66 +22,6 @@ const validateCreateClinicDetails = [
         .withMessage("Clinic email is required")
         .isEmail()
         .withMessage("Invalid email address"),
-    body("clinicImage")
-        .custom((_value, { req }) => {
-            if (!req.files || !req.files.clinicImage) {
-                throw new Error("Clinic Image is required");
-            }
-            const clinicImageArray = req.files.clinicImage;
-            if (!Array.isArray(clinicImageArray) || clinicImageArray.length === 0) {
-                throw new Error("Clinic Image is required");
-            }
-
-            const file = clinicImageArray[0];
-            const allowedMimeTypes = ["image/jpeg", "image/png", "image/jpg", "image/webp"];
-            if (!allowedMimeTypes.includes(file.mimetype)) {
-                throw new Error("Invalid file type. Only JPEG, PNG, JPG, and WEBP are allowed.");
-            }
-
-            const maxSize = 5 * 1024 * 1024; // 5MB
-            if (!file || typeof file.size !== 'number') {
-                throw new Error("Invalid file upload");
-            }
-            
-            if (file.size >= maxSize) {
-                throw new Error(`File size exceeds 5MB.`);
-            }
-            return true;
-        }),
-    body("ltoFile")
-        .custom((_value, { req }) => {
-            if (!req.files || !req.files.ltoFile) {
-                throw new Error("LTO Document is required");
-            }
-            const ltoFileArray = req.files.ltoFile;
-            if (!Array.isArray(ltoFileArray) || ltoFileArray.length === 0) {
-                throw new Error("LTO Document is required");
-            }
-
-            const file = ltoFileArray[0];
-
-            const allowedMimeTypes = [
-                "application/pdf",
-                "application/msword",
-                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                "application/vnd.ms-excel"
-            ];
-
-            if (!allowedMimeTypes.includes(file.mimetype)) {
-                throw new Error("Invalid file type. Only PDF, DOC, DOCX, XLS, and XLSX are allowed.");
-            }
-
-            const maxSize = 10 * 1024 * 1024; // 10MB
-            if (!file || typeof file.size !== 'number') {
-                throw new Error("Invalid file upload");
-            }
-
-            if (file.size >= maxSize) {
-                throw new Error(`File size exceeds 10MB.`);
-            }
-            return true;
-        }),
     body("openingDays")
         .notEmpty()
         .withMessage("Opening days are required")

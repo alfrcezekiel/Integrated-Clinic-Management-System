@@ -52,18 +52,31 @@ const clinicUploadedFiles = (req, res, next) => {
 
             const mimeType = file.mimetype.toLowerCase();
 
-            if (file.fieldname === "clinicImage" && !imageMimeTypes.includes(mimeType)) {
-                return cb(new Error(`Invalid file type. Only JPG, PNG, WEBP, and JPG are allowed.`))
-            }
+            if (file.fieldname === "clinicImage") {
+                if (!imageMimeTypes.includes(mimeType)) {
+                    return cb(new Error(`Invalid file type. Only JPG, PNG, WEBP, and JPG are allowed.`))
+                }
 
-            if (file.fieldname === "ltoFile" && !documentMimeTypes.includes(mimeType)) {
-                return cb(new Error(`Invalid file type. Only PDF, DOC, DOCX, XLS, and XLSX are allowed.`))
+                const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+                if (file.size > MAX_SIZE) {
+                    return cb(new Error(`Clinic image size exceeds 10MB limit`));
+                }
+            } else if (file.fieldname === "ltoFile") {
+                if (!documentMimeTypes.includes(mimeType)) {
+                    return cb(new Error(`Invalid file type. Only PDF, DOC, DOCX, XLS, and XLSX are allowed.`))
+                }
+
+                const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+                if (file.size > MAX_SIZE) {
+                    return cb(new Error(`LTO document size exceeds 10MB limit`));
+                }
             }
 
             cb(null, true);
         },
         limits: {
             fileSize: 1024 * 1024 * 10, // 10MB
+            files: 2
         }
     }).fields([{
         name: "clinicImage",
@@ -74,26 +87,22 @@ const clinicUploadedFiles = (req, res, next) => {
     }]);
 
     clinicUpload(req, res, (err) => {
-        if (err instanceof multer.MulterError) {
-            const errorMessage = err.message;
+        if (err) {
+            let errorMessage = err.message;
+            let fields = "file";
 
-            const errorFields = errorMessage.includes(".jpg")
-                || errorMessage.includes(".jpeg")
-                || errorMessage.includes(".png")
-                || errorMessage.includes(".webp")
-                ? "clinicImage"
-                : 
-                errorMessage.includes(".pdf")
-                || errorMessage.includes(".doc")
-                || errorMessage.includes(".docx")
-                || errorMessage.includes(".xls")
-                || errorMessage.includes(".xlsx")
-                ? "ltoFile"
-                : "file";
+            if (err instanceof multer.MulterError) {
+                if (err.code === "LIMIT_FILE_SIZE") {
+                    errorMessage = err.message.includes("clinicImage") ? "Clinic image size exceeds 5MB limit" : "LTO document size exceeds 10MB limit";
+                    fields = err.message.includes("clinicImage") ? "clinicImage" : "ltoFile";
+                } else if (err.code === "LIMIT_FILE_COUNT") {
+                    errorMessage = "Maximum number of files exceeded"
+                }
+            }
 
             return res.status(StatusCodes.BAD_REQUEST).json({
                 errors: {
-                    [errorFields] : errorMessage
+                    [fields]: errorMessage
                 }
             });
         }

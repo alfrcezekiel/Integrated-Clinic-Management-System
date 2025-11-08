@@ -107,6 +107,7 @@ import validateUploadedFiles from "../middleware/validateUploadedFiles.js";
 import validateAllBookedAppointmentSpecificDetails from "../middleware/ModifyBookedAllBookedAppointmentValidation.js";
 import validateEmailAddressInForgotPassword from "../middleware/validate_email_address_in_forgot_pass.js";
 import validateResetPassword from "../middleware/validate_reset_password.js";
+import combineRequestsBodyAndFile from "../middleware/combine_requests_body_and_file.js";
 
 const router = express.Router();
 
@@ -168,7 +169,7 @@ router.put("/admin-dashboard/updateDoctor/:doctorsID", [validateUpdatingDoctor],
 router.delete("/admin-dashboard/deleteDoctor/:doctorsID", deleteDoctorsDetails);
 
 // router for creating a clinic in admin dashboard
-router.post("/adminDashboard/createClinicAccount", clinicUploadedFiles, validateUploadedFiles, [validateCreateClinicDetails], createClinic);
+router.post("/adminDashboard/createClinicAccount", clinicUploadedFiles, validateCreateClinicDetails, createClinic);
 
 // router for getting the clinic details in admin dashboard
 router.get("/admin-dashboard/clinics", verifyToken, getClinics);

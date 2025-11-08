@@ -42,11 +42,6 @@ const ForgotPassword = () => {
             if (submitting) return; // Prevent multiple submissions
             setSubmitting(true)
 
-            setFieldErrors({
-                email: "",
-                userType: ""
-            })
-
             /**
              * handles the submission of reset email if it's exists in the server
              */
