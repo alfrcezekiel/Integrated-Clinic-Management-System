@@ -247,7 +247,9 @@ const CreateClinicAccount = () => {
     const clinicType = [
         "Orthopedic Clinic",
         "Dental Clinic",
-        "Pyschiatry Clinic",
+        "Psychiatry Clinic",
+        "Dermatology Clinic",
+        "Optometry Clinic"
     ]
 
     return (
