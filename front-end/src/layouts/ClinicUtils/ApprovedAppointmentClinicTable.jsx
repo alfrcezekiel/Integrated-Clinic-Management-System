@@ -60,7 +60,8 @@ const ApprovedAppointmentClinicTable = () => {
                     preferredTime: appointment.preferredTime,
                     appointmentID: appointment.appointmentID,
                     clinic_name: appointment.clinic_name,
-                    type: "Patient"
+                    type: "Patient",
+                    clinicType: appointment.clinic_type
                 }
             }
         })
@@ -118,7 +119,6 @@ const ApprovedAppointmentClinicTable = () => {
     }, [clinicID, tokenContext]);
 
     useEffect(() => {
-
         const titleHeader = () => {
             document.title = "Clinic's Dashboard | Patient's Appointment | CMS"
         }

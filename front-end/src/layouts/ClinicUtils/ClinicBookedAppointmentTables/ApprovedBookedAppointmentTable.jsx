@@ -59,6 +59,15 @@ const ApprovedBookedAppointmentTable = () => {
         return dayjs(dateString).format("MMMM D, YYYY");
     };
 
+    // this function is to formate the date to YYYY-MM-DD
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
     // this function is used to format the time to AM/PM
     const formatTimeToAMPM = (time) => {
         if (!time) return "N/A";
@@ -86,11 +95,12 @@ const ApprovedBookedAppointmentTable = () => {
                     lastName: appointment.lastName,
                     email: appointment.email,
                     phoneNumber: appointment.phoneNumber,
-                    appointmentDate: dateFormat(appointment.appointmentDate),
+                    appointmentDate: formatDate(appointment.appointmentDate),
                     preferredTime: appointment.appointmentTime,
                     appointmentID: appointment.id,
                     clinic_name: appointment.clinic_name,
-                    type: "Clinic"
+                    type: "Clinic",
+                    clinicType: appointment.clinic_type
                 }
             }
         })

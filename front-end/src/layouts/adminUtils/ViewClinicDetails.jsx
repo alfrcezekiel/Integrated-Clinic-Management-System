@@ -35,60 +35,228 @@ const ViewClinicDetails = () => {
         setClinic(clinicData);
     }, [clinicData, navigate])
 
-    // a consultation questionnaire for the dental clinic
-    const dentalQuestionnaire = {
-        "Medical History": [
-            "Do you have any allergies (e.g., latex, medications)?",
-            "Are you currently taking any prescription medications?",
-            "Do you have any chronic conditions (e.g., diabetes, heart disease)?",
-            "Have you had any surgeries or hospital stays in the past 5 years?",
-            "Do you have a history of jaw pain or temporomandibular joint (TMJ) disorders?",
-            "Have you ever experienced excessive bleeding after dental procedures?",
-            "Do you have a history of heart problems or heart valve issues?",
-            "Have you ever been advised to take antibiotics before dental procedures?"
-        ],
-        "Lifestyle Information": [
-            "Do you smoke cigarettes, vape, or use tobacco products?",
-            "Do you frequently consume sugary foods or beverages?",
-            "Do you use dental floss regularly?",
-            "Do you consume alcohol regularly?",
-            "Do you participate in contact sports without a mouthguard?",
-            "Do you have a balanced diet rich in fruits and vegetables?",
-            "Do you have a regular exercise routine?",
-            "Do you have a history of eating disorders?",
-        ],
-        "Clinical Assessments": [
-            "Do you experience bleeding when brushing or flossing?",
-            "Have you noticed any tooth sensitivity or pain recently?",
-            "Are you satisfied with your dental appearance?",
-            "Have you noticed any loose teeth or changes in your bite?",
-            "Do you have persistent bad breath or a bad taste in your mouth?",
-            "Have you had any dental X-rays in the past year?",
-            "Do you have any dental restorations (fillings, crowns, etc.)?",
-            "Have you had any orthodontic treatment (braces, aligners)?",
-        ],
-        "Oral Hygiene Habits": [
-            "How often do you brush your teeth each day?",
-            "Do you use mouthwash regularly?",
-            "Do you replace your toothbrush every 3-4 months?",
-            "Do you clean your tongue as part of your oral hygiene routine?",
-            "Do you have a regular dental check-up schedule?",
-            "Do you have any dental anxiety or phobia?",
-            "Do you have a history of dental trauma or injuries?",
-        ]
+    // Questionnaires for different clinic types
+    const clinicQuestionnaires = {
+        "Dental Clinic": {
+            "Medical History": [
+                "Do you have any allergies (e.g., latex, medications)?",
+                "Are you currently taking any prescription medications?",
+                "Do you have any chronic conditions (e.g., diabetes, heart disease)?",
+                "Have you had any surgeries or hospital stays in the past 5 years?",
+                "Do you have a history of jaw pain or temporomandibular joint (TMJ) disorders?",
+                "Have you ever experienced excessive bleeding after dental procedures?",
+                "Do you have a history of heart problems or heart valve issues?",
+                "Have you ever been advised to take antibiotics before dental procedures?"
+            ],
+            "Lifestyle Information": [
+                "Do you smoke cigarettes, vape, or use tobacco products?",
+                "Do you frequently consume sugary foods or beverages?",
+                "Do you use dental floss regularly?",
+                "Do you consume alcohol regularly?",
+                "Do you participate in contact sports without a mouthguard?",
+                "Do you have a balanced diet rich in fruits and vegetables?",
+                "Do you have a regular exercise routine?",
+                "Do you have a history of eating disorders?",
+            ],
+            "Clinical Assessments": [
+                "Do you experience bleeding when brushing or flossing?",
+                "Have you noticed any tooth sensitivity or pain recently?",
+                "Are you satisfied with your dental appearance?",
+                "Have you noticed any loose teeth or changes in your bite?",
+                "Do you have persistent bad breath or a bad taste in your mouth?",
+                "Have you had any dental X-rays in the past year?",
+                "Do you have any dental restorations (fillings, crowns, etc.)?",
+                "Have you had any orthodontic treatment (braces, aligners)?",
+            ],
+            "Oral Hygiene Habits": [
+                "How often do you brush your teeth each day?",
+                "Do you use mouthwash regularly?",
+                "Do you replace your toothbrush every 3-4 months?",
+                "Do you clean your tongue as part of your oral hygiene routine?",
+                "Do you have a regular dental check-up schedule?",
+                "Do you have any dental anxiety or phobia?",
+                "Do you have a history of dental trauma or injuries?",
+            ]
+        },
+        "Psychiatry Clinic": {
+            "Mental Health History": [
+                "Have you ever been diagnosed with a mental health condition?",
+                "Are you currently taking any psychiatric medications?",
+                "Have you ever been hospitalized for mental health reasons?",
+                "Do you have a family history of mental health conditions?",
+                "Have you ever experienced suicidal thoughts or behaviors?",
+                "Have you ever attempted self-harm or suicide?",
+                "Have you ever received counseling or therapy in the past?",
+                "Have you noticed recurring emotional or behavioral patterns since childhood or adolescence?"
+            ],
+            "Current Symptoms": [
+                "How would you describe your current mood (e.g., sad, anxious, irritable, elevated)?",
+                "Do you experience excessive worry or anxiety?",
+                "Have you noticed changes in your sleep patterns?",
+                "Have you experienced changes in your appetite or weight?",
+                "Have you experienced changes in your sleep (difficulty falling asleep, staying asleep, or oversleeping)?",
+                "Do you have frequent thoughts of hopelessness or worthlessness?",
+                "Have you noticed increased agitation, impulsivity, or risky behavior?",
+                "Do you have difficulty concentrating or making decisions?"
+            ],
+            "Lifestyle Factors": [
+                "How would you rate your stress levels?",
+                "Do you have a support system (family/friends)?",
+                "Have you experienced any major life changes recently?",
+                "Do you use any substances (alcohol, drugs)?",
+                "How many hours of sleep do you get on average per night?",
+                "How often do you spend time with friends, family, or social groups?",
+                "How would you describe your current living situation (supportive, stressful, isolated)?",
+                "How do you usually cope with stress (e.g., talking, hobbies, avoidance, substances)?"
+            ],
+            "Treatment History": [
+                "Have you received mental health treatment before?",
+                "What treatments have you found helpful in the past?",
+                "Are you currently in therapy?",
+                "Have you ever had a negative experience with mental health treatment?",
+                "Are you currently under the care of a psychiatrist, psychologist, or therapist?",
+                "Have you ever stopped taking psychiatric medications without consulting your doctor?",
+                "Have you experienced side effects from any psychiatric medications?",
+                "How consist ent have you been with attending therapy or taking medications?"
+            ]
+        },
+        "Dermatology Clinic": {
+            "Skin History": [
+                "Have you ever been diagnosed with any skin conditions (e.g., eczema, psoriasis, acne, rosacea)?",
+                "Have you had any skin cancer screenings?",
+                "Do you have any allergies to skin care products?",
+                "Have you had any previous skin treatments or procedures?",
+                "Have you ever had a skin biopsy or other dermatologic procedures?",
+                "Have you noticed any recurring or seasonal skin problems?",
+                "When did you first notice issues with your skin?",
+                "Do you have sensitive skin or experience irritation easily?"
+            ],
+            "Current Concerns": [
+                "What is your primary skin concern?",
+                "How long have you been experiencing this issue?",
+                "Have you tried any treatments for this condition?",
+                "Does your condition worsen with sun exposure?",
+                "Is the area itchy, painful, scaly, or bleeding?",
+                "Has your condition worsened, improved, or stayed the same recently?",
+                "Are you experiencing hair loss or changes in hair density?",
+                "Have you had any itching or irritation of the scalp?"
+            ],
+            "Skin Care Routine": [
+                "What is your current skin care routine?",
+                "Do you use sunscreen daily?",
+                "What skin care products do you currently use?",
+                "Have you recently changed any skin care products?",
+                "What type of cleanser or soap do you currently use?",
+                "Do you use any moisturizers? If yes, what brand or type?",
+                "Do you remove your makeup before sleeping?",
+                "Do you use any acne, anti-aging, or whitening products?"
+            ],
+            "Medical History": [
+                "Do you have any chronic illnesses (e.g., diabetes, thyroid disorder, liver disease)?",
+                "Are you currently taking any prescription or over-the-counter medications?",
+                "Have you had any recent illnesses?",
+                "Have you experienced recent changes in weight or appetite?",
+                "Do you have a family history of skin cancer?",
+                "Have you been under unusual stress recently?",
+                "Do you have any known allergies (drug, food, environmental)?",
+                "Are you currently pregnant, breastfeeding, or planning pregnancy?"
+            ]
+        },
+        "Optometry Clinic": {
+            "Vision History": [
+                "When was your last eye exam?",
+                "Do you currently wear glasses or contact lenses?",
+                "Do you have a family history of eye diseases?",
+                "Do you have any history of eye conditions like dry eyes, cataracts, glaucoma, or a retinal detachment?",
+                "Have you ever undergone any eye surgeries (e.g., LASIK, cataract removal)?",
+                "Do you experience eye strain when reading or using digital devices?",
+                "Have you noticed any sudden changes in your vision recently?",
+                "Do you have difficulty seeing at night or in low-light conditions?"
+            ],
+            "Current Symptoms": [
+                "Do you experience frequent headaches?",
+                "Do you have difficulty seeing at night?",
+                "Do you experience eye strain or fatigue?",
+                "Do you see floaters or flashes of light?",
+                "Is your vision blurry at a distance, up close, or both?",
+                "Do you experience halos or glare around lights?",
+                "Are your eyes red or irritated frequently?",
+                "Are you sensitive to light (photophobia)?",
+            ],
+            "Lifestyle Factors": [
+                "How many hours per day do you spend on digital devices?",
+                "Do you wear sunglasses outdoors?",
+                "Do you work in an environment that strains your eyes?",
+                "Do you participate in sports or activities that could affect your eyes?",
+                "Do you take regular breaks from screen time?",
+                "Do you wear sunglasses or UV-protective eyewear when outdoors?",
+                "Do you drive frequently, especially at night?",
+                "How many hours of sleep do you get on average each night?"
+            ],
+            "Medical History": [
+                "Do you have diabetes or high blood pressure?",
+                "Are you taking any medications that affect your eyes?",
+                "Have you been diagnosed with any eye conditions?",
+                "Do you have any allergies that affect your eyes?",
+                "Which eye is affected (right, left, or both)?",
+                "Do you have a history of cardiovascular disease?",
+                "Do you have a history of migraines or severe headaches?",
+                "Have you ever been diagnosed with autoimmune diseases (e.g., lupus, rheumatoid arthritis)?"
+            ]
+        },
+        // Default questionnaire for other clinic types
+        "default": {
+            "Medical History": [
+                "Do you have any allergies to medications?",
+                "Are you currently taking any prescription medications?",
+                "Do you have any chronic medical conditions?",
+                "Have you had any recent surgeries or hospitalizations?"
+            ],
+            "Current Symptoms": [
+                "What symptoms are you currently experiencing?",
+                "When did these symptoms first appear?",
+                "Have these symptoms changed over time?",
+                "What makes your symptoms better or worse?"
+            ],
+            "Lifestyle Information": [
+                "Do you smoke or use tobacco products?",
+                "How often do you consume alcohol?",
+                "Do you exercise regularly?",
+                "How would you describe your diet?"
+            ],
+            "Family History": [
+                "Is there a family history of this condition?",
+                "What medical conditions run in your family?",
+                "Are there any hereditary conditions in your family?",
+                "Have any family members had similar symptoms?"
+            ]
+        }
     };
 
-    // function for handling the changes of the questionnaire 
-    const handleQuestionnaireChange = async (key, value) => {
-        setQuestionnaire((prevQuestionnaire) => ({
-            ...prevQuestionnaire,
-            [key]: value,
-        }))
+    // Get the appropriate questionnaire based on clinic type
+    const getQuestionnaire = () => {
+        if (!clinic?.clinic_type) return clinicQuestionnaires["default"];
+        return clinicQuestionnaires[clinic.clinic_type] || clinicQuestionnaires["default"];
+    };
 
-        setFieldErrors((prevErrors) => {
-            const updatedErrors = { ...prevErrors }
-            delete updatedErrors[key]
-            return updatedErrors
+    const currentQuestionnaire = getQuestionnaire();
+
+    // function for handling the changes of the questionnaire 
+    const handleQuestionnaireChange = (section, question, value) => {
+        setQuestionnaire(prev => ({
+            ...prev,
+            [section]: {
+                ...(prev[section] || {}),
+                [question]: value
+            }
+        }));
+
+        // Clear any previous errors for this field
+        const fieldId = `${section}_${question}`.replace(/\s+/g, '_');
+        setFieldErrors(prev => {
+            const newErrors = { ...prev };
+            delete newErrors[fieldId];
+            return newErrors;
         });
     }
 
@@ -104,17 +272,17 @@ const ViewClinicDetails = () => {
                 console.error("Admin ID or token is not available in context or local storage.");
                 return;
             }
-            console.log(`Admin ID: ${admin_id}, Token: ${tokenContext}`);
-            const sectionNames = Object.keys(dentalQuestionnaire);
+
+            const sectionNames = Object.keys(currentQuestionnaire);
 
             const responses = []
 
-            sectionNames.forEach((section, secIndex) => {
-                dentalQuestionnaire[section].forEach((question, qIndex) => {
-                    const key = `question-${secIndex}-${qIndex}`;
-                    const answer = questionnaire[key] ?? "";
+            sectionNames.forEach((section) => {
+                currentQuestionnaire[section].forEach((question) => {
+                    const answer = questionnaire[section]?.[question] || "";
+                    const fieldId = `${section}_${question}`.replace(/\s+/g, '_');
 
-                    questionKeys.push(key);
+                    questionKeys.push(fieldId);
 
                     responses.push({
                         clinic_id: clinic.clinic_id,
@@ -124,8 +292,8 @@ const ViewClinicDetails = () => {
                         question: question,
                         answer: answer,
                         adminID: admin_id
-                    })
-                })
+                    });
+                });
             })
 
             const response = await CMS.post(`/admin-dashboard/submittedConsultationQuestionnaire`, { responses }, {
@@ -171,21 +339,21 @@ const ViewClinicDetails = () => {
 
     return (
         <div className="p-8 rounded-2xl m-4">
-            {clinic && clinic.clinic_type === "Dental Clinic" && (
+            {clinic && clinic.clinic_type && (
                 <div className="max-w-7xl mx-auto p-6 bg-white rounded-4xl shadow-2xl">
                     <h2 className="text-2xl font-bold text-black mb-6 text-center">
-                        Dental Clinic - Patient Consultation Questionnaire
+                        {clinic.clinic_type} - Patient Consultation Questionnaire
                     </h2>
 
                     <form className="space-y-10" id="consultation-questionnaire" onSubmit={handleConsultationQuestionnaireSubmit}>
-                        {Object.entries(dentalQuestionnaire).map(([section, questions], secIndex) => (
+                        {Object.entries(currentQuestionnaire).map(([section, questions], secIndex) => (
                             <div key={secIndex}>
                                 <h3 className="text-xl font-semibold text-gray-800 mb-4 pb-2">
                                     {section}
                                 </h3>
                                 <div className="space-y-6">
                                     {questions.map((question, qIndex) => {
-                                        const key = `question-${secIndex}-${qIndex}`;
+                                        const key = `${section}_${question}`.replace(/\s+/g, '_');
                                         return (
                                             <div key={qIndex} className="pb-4">
                                                 <p className="text-gray-700 font-medium mb-2">
@@ -195,22 +363,22 @@ const ViewClinicDetails = () => {
                                                     <label className="flex items-center space-x-2 cursor-pointer">
                                                         <input
                                                             type="radio"
-                                                            name={`question-${secIndex}-${qIndex}`}
+                                                            name={key}
                                                             value="Yes"
                                                             className="text-blue-600 focus:ring-blue-500 cursor-pointer"
-                                                            checked={questionnaire[`question-${secIndex}-${qIndex}`] === "Yes"}
-                                                            onChange={() => handleQuestionnaireChange(`question-${secIndex}-${qIndex}`, `Yes`)}
+                                                            checked={questionnaire[section]?.[question] === "Yes"}
+                                                            onChange={() => handleQuestionnaireChange(section, question, "Yes")}
                                                         />
                                                         <span className="text-gray-700"> Yes</span>
                                                     </label>
                                                     <label className="flex items-center space-x-2 cursor-pointer">
                                                         <input
                                                             type="radio"
-                                                            name={`question-${secIndex}-${qIndex}`}
+                                                            name={key}
                                                             value="No"
                                                             className="text-red-600 focus:ring-red-500 cursor-pointer"
-                                                            checked={questionnaire[`question-${secIndex}-${qIndex}`] === "No"}
-                                                            onChange={() => handleQuestionnaireChange(`question-${secIndex}-${qIndex}`, `No`)}
+                                                            checked={questionnaire[section]?.[question] === "No"}
+                                                            onChange={() => handleQuestionnaireChange(section, question, "No")}
                                                         />
                                                         <span className="text-gray-700"> No</span>
                                                     </label>

@@ -1943,28 +1943,31 @@ class Clinic {
                 await this.connection.beginTransaction();
 
                 const fields = [
-                    "firstName",
-                    "lastName",
-                    "address",
-                    "id",
-                    "email",
-                    "phoneNumber",
-                    "appointmentDate",
-                    "appointmentTime",
-                    "gender",
-                    "purposeOfAppointment",
-                    "clinic_name",
-                    "status"
+                    "ca.firstName",
+                    "ca.lastName",
+                    "ca.address",
+                    "ca.id",
+                    "ca.email",
+                    "ca.phoneNumber",
+                    "ca.appointmentDate",
+                    "ca.appointmentTime",
+                    "ca.gender",
+                    "ca.purposeOfAppointment",
+                    "ca.clinic_name",
+                    "ca.status",
+                    "c.clinic_type"
                 ]
 
                 const query = `
                     SELECT 
                         ${fields.join(", ")}
-                    FROM clinic_appointments
-                    WHERE clinic_id = ? 
+                    FROM clinic_appointments AS ca
+                    INNER JOIN clinic AS c 
+                    ON ca.clinic_id = c.clinic_id 
+                    WHERE ca.clinic_id = ? 
                     AND 
-                    status = ?
-                    ORDER BY appointmentDate DESC, appointmentTime DESC;
+                    ca.status = ?
+                    ORDER BY ca.appointmentDate DESC, ca.appointmentTime DESC;
                 `;
 
                 const values = [
@@ -5161,6 +5164,130 @@ class Clinic {
             }
         },
         "Get Popular Appointment Dates, Appointment Times and Days"
+    )
+
+    /**
+     * @method retrieve the unqiue columns of consultation questionnaires based on clinic type of accounts
+     * @access {private}
+     * @route /cms.api.com/clinic/consultation_questionnaire_sections
+     */
+    getConsultationSections = modelErrorHandling(
+        async (params) => {
+            this.connection = await this.conn.getConnection();
+            try {
+                await this.connection.beginTransaction();
+
+                const { clinicID } = params;
+
+                const clinic_id = parseInt(clinicID);
+
+                if (isNaN(clinicID)) {
+                    throw new Error(`Invalid clinic ID! Retrieve consultation questionnaire sections should be a number`);
+                }
+
+                const query = `
+                    SELECT DISTINCT section
+                    FROM consultation_questionnaires
+                    WHERE clinic_id = ?
+                    AND answer = ?
+                `;
+
+                const values = [
+                    clinic_id,
+                    "Yes"
+                ];
+
+                const [rows] = await this.connection.query(query, values);
+
+                if (!rows) {
+                    throw new Error(`Failed to retrieve the unqiue columns of consultation questionnaires based on clinic type of accounts`);
+                }
+
+                await this.connection.commit();
+
+                const sections = rows.map(row => row.section);
+
+                return {
+                    sections,
+                    message: `Successfully retrieved the unique section columns of consultation questionnaires for clinic ID: ${clinic_id}`
+                }
+            } catch (error) {
+                const rollbackQuery = await this.connection.rollback();
+                if (!rollbackQuery) {
+                    logger.log(`error`, `Failed to rollback transaction in retrieve the unqiue columns of consultation questionnaires based on clinic type of accounts`);
+                }
+
+                logger.log(`error`, `Failed to retrieve the unqiue columns of consultation questionnaires based on clinic type of accounts: ${error}`);
+                throw error;
+            } finally {
+                this.connection.release();
+            }
+        },
+        "Retrieves Unqiue Column Sections of Consultation Questionnaire"
+    )
+
+    /**
+     * @method retrieve the questions of n questionnaires based on section
+     * @access {private}
+     * @route /cms.api.com/clinic/consultation_questionnaire_questions
+     */
+    getConsultationQuestionsBySection = modelErrorHandling(
+        async (params) => {
+            this.connection = await this.conn.getConnection();
+            try {
+                await this.connection.beginTransaction();
+
+                const { clinicID, section } = params;
+
+                const clinic_id = parseInt(clinicID);
+
+                if (isNaN(clinicID)) {
+                    throw new Error(`Invalid clinic ID! Retrieve consultation questionnaire questions should be a number`);
+                }
+
+                const query = `
+                    SELECT DISTINCT question
+                    FROM consultation_questionnaires
+                    WHERE clinic_id = ?
+                    AND section = ?
+                    AND answer = ?
+                    GROUP BY question
+                    ORDER BY question ASC
+                `
+
+                const values = [
+                    clinic_id,
+                    section,
+                    "Yes"
+                ];
+
+                const [rows] = await this.connection.query(query, values);
+
+                if (!rows) {
+                    throw new Error(`Failed to retrieve the questions of n questionnaires based on section`);
+                }
+
+                await this.connection.commit();
+
+                const questions = rows.map(row => row.question);
+
+                return {
+                    questions,
+                    message: `Successfully retrieved the questions of n questionnaires based on section: ${section}`
+                }
+            } catch (error) {
+                const rollbackQuery = await this.connection.rollback();
+                if (!rollbackQuery) {
+                    logger.log(`error`, `Failed to rollback transaction in retrieve the questions of n questionnaires based on section`);
+                }
+
+                logger.log(`error`, `Failed to retrieve the questions of n questionnaires based on section: ${error}`);
+                throw error;
+            } finally {
+                this.connection.release();
+            }
+        },
+        "Retrieve the questions of number of questionnaires based on section"
     )
 }
 

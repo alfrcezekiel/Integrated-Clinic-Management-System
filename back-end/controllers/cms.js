@@ -13,8 +13,6 @@ import asyncHandler from "../middleware/asyncHandler/asyncHandler.js";
 import sendResetPasswordEmail from '../utils/resetPassword.js';
 import crypto from "crypto";
 import PDFDocument from "pdfkit"
-import utc from "dayjs/plugin/utc";
-import timezone from "dayjs/plugin/timezone";
 import {
     autoGenerateMedicalReportPath,
     saveMedicalReport
@@ -1964,6 +1962,7 @@ export const getApprovedAppointmentStatusInClinic = async (req, res) => {
         // query of two tables clinic and patients appointment
         const query = `SELECT
             c.clinic_name,
+            c.clinic_type,
             p.appointmentID,
             p.firstName,
             p.lastName,
@@ -5362,5 +5361,106 @@ export const getPopularAppointmentsAnalytics = asyncHandler(
             model_message: result.message,
             controller_message: "Successfully filtered popularity based in appointment dates, appointments times and days"
         });
+    }
+)
+
+/**
+ * @function controller retrieve the unqiue columns of consultation questionnaires based on clinic type of accounts
+ * @access {private}
+ * @route /cms.api.com/clinic/consultation_questionnaire_sections
+ */
+export const getConsultationSections = asyncHandler(
+    async (req, res) => {
+        try {
+            const { clinicID } = req.query;
+
+            const clinic_id = parseInt(clinicID);
+
+            if (isNaN(clinicID)) {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    message: "Clinic id must be a number"
+                })
+            }
+
+            const clinic_instance = new Clinic();
+
+            const result = await clinic_instance.getConsultationSections({
+                clinicID: clinic_id
+            })
+
+            if (!result) {
+                return res.status(StatusCodes.NOT_FOUND).json({
+                    message: "No consultation questionnaire sections found"
+                })
+            }
+
+            const defaultSections = [
+                "Patient Information",
+                "Consent and Agreement"
+            ];
+
+            const allSections = [...new Set([...defaultSections, ...result.sections])];
+            logger.log(`info`, `Successfully retrieved the unique section columns of consultation questionnaires for clinic ID: ${clinic_id}`);
+
+            return res.status(StatusCodes.OK).json({
+                success: true,
+                sections: allSections,
+                model_message: result.message,
+                controller_message: "Successfully retrieved the unique section columns of consultation questionnaires"
+            });
+        } catch (error) {
+            logger.log(`error`, `Failed to retrieve the unique section columns of consultation questionnaires: ${error}`);
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "Failed to retrieve the unique section columns of consultation questionnaires"
+            })
+        }
+    }
+)
+
+/**
+ * @function controller retrieve the questions of n questionnaires based on section
+ * @access {private}
+ * @route /cms.api.com/clinic/consultation_questionnaire_questions
+ */
+export const getConsultationQuestionsBySection = asyncHandler(
+    async (req, res) => {
+        try {
+            const { section, clinicID } = req.query;
+
+            const clinic_id = parseInt(clinicID);
+
+            if (isNaN(clinicID)) {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    message: "Clinic id must be a number"
+                })
+            }
+
+            const clinic_instance = new Clinic();
+
+            const result = await clinic_instance.getConsultationQuestionsBySection({
+                section: section,
+                clinicID: clinic_id
+            })
+
+            if (!result) {
+                return res.status(StatusCodes.NOT_FOUND).json({
+                    message: "No consultation questionnaire questions found"
+                })
+            }
+
+            logger.log(`info`, `Successfully retrieved the consultation questions based on section for clinic ID: ${clinic_id}`);
+
+            return res.status(StatusCodes.OK).json({
+                success: true,
+                questions: result.questions,
+                model_message: result.message,
+                controller_message: "Successfully retrieved the consultation questions based on section"
+            });
+        } catch (error) {
+            logger.log(`error`, `Failed to retrieve the consultation questions based on section: ${error}`);
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "Failed to retrieve the consultation questions based on section"
+            })
+        }
     }
 )
