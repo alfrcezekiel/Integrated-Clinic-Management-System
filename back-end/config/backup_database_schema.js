@@ -212,7 +212,7 @@ export const createBackup = async () => {
             /**
              * create mysql dump command
              */
-            const dumpCommand = `mysqldump -h ${process.env.DB_HOST} -u ${process.env.DB_USER} --password='${safePassword}' ${process.env.DATABASE_NAME} > ${tempFilePath}`;
+            const dumpCommand = `mysqldump -h ${process.env.DB_HOST} -u ${process.env.DB_USER} -p${process.env.DB_PORT} -p${safePassword} ${process.env.DATABASE_NAME} > ${tempFilePath}`;
             await execPromise(dumpCommand);
         } else {
             try {
