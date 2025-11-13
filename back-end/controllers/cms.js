@@ -2231,6 +2231,7 @@ export const consultPatientInClinicDashboard = async (req, res) => {
             dentalAnxietyDetails,
             dentalTraumaDetails, // oral hygiene habits req.body
             clinic_name,
+            consent,
             admin_id,
             appointmentID
         } = req.body;
@@ -2288,6 +2289,7 @@ export const consultPatientInClinicDashboard = async (req, res) => {
         const dental_anxiety_details = String(dentalAnxietyDetails);
         const dental_trauma_details = String(dentalTraumaDetails);
 
+        const consent_value = Number(consent);
         const clinic_name_field = String(clinic_name);
 
         // Parse IDs with validation
@@ -2304,8 +2306,6 @@ export const consultPatientInClinicDashboard = async (req, res) => {
                 message: "Invalid appointment_id var format"
             });
         }
-
-        const consent = "Yes";
 
         const values = [
             appointmentID,
@@ -2347,7 +2347,7 @@ export const consultPatientInClinicDashboard = async (req, res) => {
             dental_anxiety_details,
             dental_trauma_details, // oral hygiene habits values
             clinic_name_field,
-            consent,
+            consent_value,
             admin_id_field
         ]
 
@@ -2655,7 +2655,7 @@ export const validateStep = async (req, res, next) => {
     try {
         const { step } = req.params;
 
-        if (isNaN(step) || step < 0 || step > 4) {
+        if (isNaN(step) || step < 0 || step > 5) {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 message: "Please enter a valid step"
             });

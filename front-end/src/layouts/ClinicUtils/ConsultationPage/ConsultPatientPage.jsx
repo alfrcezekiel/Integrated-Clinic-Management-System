@@ -121,7 +121,8 @@ const ConsultationPatientPage = () => {
         appointmentID: "",
         clinic_name: "",
         admin_id: "",
-        type: ""
+        type: "",
+        clinicType: ""
     });
     const [openAppointmentDataNotFoundDialog, setOpenAppointmentDataNotFoundDialog] = useState(false);
     const [medicalHistoryFieldNames, setMedicalHistoryFieldNames] = useState([]);
@@ -166,7 +167,8 @@ const ConsultationPatientPage = () => {
             preferredTime: appointmentData.preferredTime ? dayjs(appointmentData.preferredTime, "HH:mm") : null,
             appointmentID: appointmentData.appointmentID,
             clinic_name: appointmentData.clinic_name,
-            type: appointmentData.type
+            type: appointmentData.type,
+            clinicType: appointmentData.clinicType
         }));
     }, [appointmentData, navigate]);
 
@@ -182,7 +184,7 @@ const ConsultationPatientPage = () => {
         const { name, value, type, checked } = e.target;
         setPatientFormData((prev) => ({
             ...prev,
-            [name]: type === "checkbox" && name === "consent" ? checked ? "Yes" : "No" : value
+            [name]: type === "checkbox" && name === "consent" ? checked ? 1 : 0 : value
         }));
 
         if (fieldErrors[name]) {
@@ -226,7 +228,7 @@ const ConsultationPatientPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            if (patientFormData?.consent !== "Yes") {
+            if (patientFormData?.consent !== 1) {
                 setFieldErrors((prev) => ({
                     ...prev,
                     consent: "Consent is required. You must agree to the terms and privacy policy.."

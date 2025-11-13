@@ -84,7 +84,9 @@ import {
     searchDeclinedBookedAppointments,
     scheduleReminderForUpcomingAppointments,
     getDailyAppointmentCount,
-    getPopularAppointmentsAnalytics
+    getPopularAppointmentsAnalytics,
+    getConsultationSections,
+    getConsultationQuestionsBySection
 } from "../controllers/cms.js";
 import validateRegister from "../middleware/validation.js";
 import patientsLoginValidation from "../middleware/patientsLoginValidation.js";
@@ -431,5 +433,15 @@ router.get("/cms.api.com/patient/dashboard/appointments/daily-count", verifyToke
  * @exports router to filter popularity appointment dates, appointment times and days choosen by patients
  */
 router.get("/cms.api.com/clinic/analytics/popular_appointments", verifyToken, getPopularAppointmentsAnalytics);
+
+/**
+ * @exports router to retrieve the unqiue sections of consultation questionnaires based on clinic type of accounts
+ */
+router.get("/cms.api.com/clinic/consultation_questionnaire_sections", verifyToken, getConsultationSections);
+
+/**
+ * @exports router retrieve consultation questionnaires based on clinic type of accoounts
+ */
+router.get("/cms.api.com/clinic/consultation_questionnaire_questions", verifyToken, getConsultationQuestionsBySection);
 
 export default router;

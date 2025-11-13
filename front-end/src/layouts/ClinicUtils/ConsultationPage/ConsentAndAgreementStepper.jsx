@@ -10,14 +10,14 @@ import {
 import PropTypes from "prop-types";
 
 const ConsentAndAgreementStepper = ({ patientFormData, handleChange, fieldErrors}) => {
-    const consentValue = patientFormData?.consent || "No";
+    const consentValue = patientFormData?.consent
 
     const handleConsentChange = (e) => {
         if (typeof handleChange === "function") {
             handleChange({
                 target: {
                     name: "consent",
-                    value: e.target.checked ? "Yes" : "No"
+                    value: e.target.checked ? 1 : 0
                 }
             });
         }
@@ -47,7 +47,7 @@ const ConsentAndAgreementStepper = ({ patientFormData, handleChange, fieldErrors
                     <FormControlLabel
                         control={
                             <Checkbox
-                                checked={consentValue === "Yes"}
+                                checked={consentValue === 1}
                                 onChange={handleConsentChange}
                                 name="consent"
                                 color="primary"
