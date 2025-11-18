@@ -117,7 +117,7 @@ const ViewClinicDetails = () => {
                 "Are you currently under the care of a psychiatrist, psychologist, or therapist?",
                 "Have you ever stopped taking psychiatric medications without consulting your doctor?",
                 "Have you experienced side effects from any psychiatric medications?",
-                "How consist ent have you been with attending therapy or taking medications?"
+                "How consistent have you been with attending therapy or taking medications?"
             ]
         },
         "Dermatology Clinic": {

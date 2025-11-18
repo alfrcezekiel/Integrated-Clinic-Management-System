@@ -9,15 +9,16 @@ import {
 } from "@mui/material";
 import PropTypes from "prop-types";
 
-const ConsentAndAgreementStepper = ({ patientFormData, handleChange, fieldErrors}) => {
-    const consentValue = patientFormData?.consent
+const ConsentAndAgreementStepper = ({ patientFormData, handleChange, fieldErrors }) => {
+    const consentValue = patientFormData?.consent;
 
     const handleConsentChange = (e) => {
+        const newValue = e.target.checked ? 1 : 0;
         if (typeof handleChange === "function") {
             handleChange({
                 target: {
                     name: "consent",
-                    value: e.target.checked ? 1 : 0
+                    value: newValue
                 }
             });
         }
@@ -43,19 +44,22 @@ const ConsentAndAgreementStepper = ({ patientFormData, handleChange, fieldErrors
                     ))}
                 </div>
 
-                <FormControl component="fieldset" className="w-full mt-6" error={!!fieldErrors?.consent}>
+                <FormControl
+                    component="fieldset"
+                    className="w-full mt-6"
+                    error={!!fieldErrors.consent}>
                     <FormControlLabel
                         control={
                             <Checkbox
-                                checked={consentValue === 1}
+                                checked={consentValue === 1 || consentValue === true || consentValue === "Yes" || consentValue === "yes"}
                                 onChange={handleConsentChange}
                                 name="consent"
                                 color="primary"
                             />
                         }
                         label={
-                            <Typography variant="body2" className="text-gray-800">
-                                I consent to the consultation and agree to the{" "}
+                            <Typography variant="body2" className={fieldErrors?.consent ? `text-red-500` : `text-gray-700`}>
+                                I have read and agree to the {" "}
                                 <Link
                                     href="/terms"
                                     target="_blank"
@@ -78,7 +82,7 @@ const ConsentAndAgreementStepper = ({ patientFormData, handleChange, fieldErrors
                             </Typography>
                         }
                     />
-                    {fieldErrors?.consent && (
+                    {fieldErrors.consent && (
                         <Typography variant="caption" color="error" className="mt-1">
                             {fieldErrors.consent}
                         </Typography>
@@ -95,12 +99,14 @@ const ConsentAndAgreementStepper = ({ patientFormData, handleChange, fieldErrors
 
 ConsentAndAgreementStepper.propTypes = {
     patientFormData: PropTypes.shape({
-        consent: PropTypes.string
+        consent: PropTypes.oneOfType([
+            PropTypes.number,
+            PropTypes.bool,
+            PropTypes.string
+        ])
     }),
-    handleChange: PropTypes.func,
-    fieldErrors: PropTypes.shape({
-        consent: PropTypes.string
-    })
+    handleChange: PropTypes.func.isRequired,
+    fieldErrors: PropTypes.object.isRequired
 };
 
 export default ConsentAndAgreementStepper;

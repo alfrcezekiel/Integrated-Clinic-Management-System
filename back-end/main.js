@@ -21,6 +21,7 @@ import logger from "./config/winston.js";
 import initializeScheduler from "./config/appointment_scheduler.js";
 import sessionStore from "./db/mysql/session_store.js";
 import fs from "fs";
+import requestMethod from "./utils/request_method.js";
 dotenv.config();
 
 const nextRuns = await getNextBackupRun(5);
@@ -152,6 +153,7 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
+
 // error handling for server error
 app.options("*", cors(corsOptions));
 
@@ -228,7 +230,7 @@ if (fs.existsSync(altClinicImagesPath)) {
 app.use("/uploads/clinic_images", staticFileHandler, express.static(clinicImagesPath, serveStaticOptions));
 /**
  * checks condition if alt clinic images path is different from clinic images path register to a fallback path
- */
+*/
 if (altClinicImagesPath !== clinicImagesPath) {
     app.use("/uploads/clinic_images", staticFileHandler, express.static(altClinicImagesPath, serveStaticOptions));
 }
@@ -239,6 +241,9 @@ app.use("/uploads/medical_reports", staticFileHandler, express.static(medicalRep
 
 // route for CMS
 app.use("/", cms);
+
+// Handle unsupported HTTP methods globally
+app.use(requestMethod);
 
 app.disable("etag");
 
@@ -251,7 +256,7 @@ app.use((req, res) => {
 
 /**
  * error handler
- */
+*/
 app.use(errorHandler.internalServerError)
 
 // function for statrting the server

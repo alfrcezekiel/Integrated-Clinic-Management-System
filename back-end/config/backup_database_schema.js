@@ -262,7 +262,7 @@ export const createBackup = async () => {
          */
         await fs.promises.unlink(tempFilePath);
 
-        console.log(`Backup database created and encrypted successfully at ${backupPath}`);
+        logger.log(`info`, `Backup database created and encrypted successfully at ${backupPath}`);
 
         return {
             success: true,
@@ -276,7 +276,7 @@ export const createBackup = async () => {
             await fs.promises.unlink(tempFilePath).catch(console.error)
         }
 
-        console.log(`Error in creating a database backup: ${error}`);
+        logger.log(`error`, `Error in creating a database backup: ${error}`);
 
         return {
             success: false,
@@ -304,15 +304,15 @@ export const cleanOldBackups = async (days = KEEP_DAYS) => {
 
             if (stats.mtimeMs < timeTreshold) {
                 fs.unlinkSync(filePath);
-                console.log(`Latest Deleted Backup: ${file}`)
+                logger.log(`info`, `Latest Deleted Backup: ${file}`);
                 deletedCount++;
             }
         });
 
-        console.log(`Cleanup completed. Deleted ${deletedCount} old backup(s)`);
+        logger.log(`info`, `Cleanup completed. Deleted ${deletedCount} old backup(s)`);
         return deletedCount;
     } catch (error) {
-        console.log(`Error during backup cleanup: ${error}`)
+        logger.log(`error`, `Error during backup cleanup: ${error}`)
         return 0;
     }
 }
@@ -339,7 +339,7 @@ export const scheduleBackup = async (schedule = null) => {
         const it = parser.parse(effectiveSchedule);
         nextRun = it.next().toDate();
     } catch (error) {
-        console.log(`Invalid! cron expression for backup schedule: - (${effectiveSchedule}) - (${error})`);
+        logger.log(`error`, `Invalid! cron expression for backup schedule: - (${effectiveSchedule}) - (${error})`);
     }
 
     cron.schedule(effectiveSchedule, async () => {
@@ -384,7 +384,7 @@ export const scheduleBackup = async (schedule = null) => {
                             logger.log(`error`, `Backup child process failed with exit code ${exitCode}: stderr=${stderr} stdout=${stdout}`);
                         }
                     } catch (error) {
-                        logger.log(`info`, `Failed to run schedule database backup: ${error}`);
+                        logger.log(`error`, `Failed to run schedule database backup: ${error}`);
                     }
                 },
                 "Database Backup Process"
@@ -419,21 +419,21 @@ export const getNextBackupRun = async (count = 5, schedule = null, timezone = "A
             runs.push(it.next().toDate());
         }
     } catch (error) {
-        console.log(`Invalid! cron expression for backup schedule: - (${cronExp}) - (${error})`);
+        logger.log(`error`, `Invalid! cron expression for backup schedule: - (${cronExp}) - (${error})`);
     }
     return runs;
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
     (async () => {
-        console.log(`Creating manual database backup`);
+        logger.log(`info`, `Creating manual database backup`);
         const result = await createBackup();
         if (result.success) {
             const deletedCount = await cleanOldBackups();
 
-            console.log(`Manual backup completed. Cleaned up ${deletedCount} old backups`);
+            logger.log(`info`, `Manual backup completed. Cleaned up ${deletedCount} old backups`);
         } else {
-            console.log(`Manual backup database failed: ${result.message}`);
+            logger.log(`error`, `Manual backup database failed: ${result.message}`);
             process.exit(1);
         }
     })();

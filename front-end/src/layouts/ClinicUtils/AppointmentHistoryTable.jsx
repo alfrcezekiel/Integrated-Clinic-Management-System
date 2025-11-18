@@ -23,6 +23,97 @@ import { useAuthorization } from "../../context/auth/useAuthorization";
 import { jsPDF } from "jspdf";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf"
 
+// Field configurations for different clinic types
+const clinicFieldConfigs = {
+    "Dental Clinic": {
+        patientInfo: {
+            firstName: "patient_first_name",
+            lastName: "patient_last_name",
+            email: "patient_email",
+            phoneNumber: "phone_number"
+        },
+        medicalHistory: [
+            { label: "Documented Allergic Reactions", field: "allergy_details" },
+            { label: "Current Prescription Medications", field: "taking_prescription_medication_details" },
+            { label: "Chronic Health Conditions", field: "chronic_condition_details" },
+            { label: "Temporomandibular Joint (TMJ) or Jaw Pain History", field: "history_of_jaw_pain_details" },
+            { label: "History of Excessive Bleeding", field: "experienced_excessive_bleeding_details" },
+            { label: "Cardiovascular History", field: "past_history_of_cardiovascular_issues" },
+            { label: "Prophylactic Antibiotic Recommendation", field: "advised_taking_antibiotics_details" },
+            { label: "Surgical History", field: "past_surgeries_details" }
+        ],
+        lifestyleAssessment: [
+            { label: "Gingival Bleeding History", field: "experience_bleeding_details" },
+            { label: "Dental Sensitivity Description", field: "tooth_sensitivity_details" },
+            { label: "Concerns Regarding Dental Aesthetics", field: "dental_appearance_details" },
+            { label: "Tooth Mobility Observations", field: "loose_teeth_details" },
+            { label: "Regular Physical Activity", field: "regular_exercise_details" },
+            { label: "Alcohol Consumption Habits", field: "consume_alcohol_details" },
+            { label: "Dental Floss Usage", field: "dental_floss_details" },
+            { label: "Intake of Sugary Foods or Beverages", field: "consume_sugary_foods_or_beverages_details" },
+            { label: "Oral Malodor or Dysgeusia", field: "bad_breath_or_bad_taste_details" },
+            { label: "Recent Dental Radiographs", field: "dental_xrays_details" },
+            { label: "Nutritional Balance and Diet Quality", field: "balanced_diet_details" },
+            { label: "Tobacco Use Frequency", field: "smoke_frequency_details" },
+            { label: "Engagement in Athletic Activities", field: "participate_in_sports_details" },
+            { label: "Previous Dental Restorations", field: "dental_restoration_details" },
+            { label: "History of Orthodontic Interventions", field: "orthodontic_treatment_details" },
+            { label: "Brushing Frequency", field: "brush_frequency_details" },
+            { label: "Mouthwash Usage", field: "use_mouthwash_details" },
+            { label: "Toothbrush Replacement Frequency", field: "replace_toothbrush_details" },
+            { label: "Tongue Cleaning Practices", field: "clean_tongue_details" },
+            { label: "Regular Dental Check-up Attendance", field: "regular_checkup_details" },
+            { label: "Dental Anxiety Level", field: "dental_anxiety_details" },
+            { label: "History of Dental Trauma", field: "dental_trauma_details" },
+            { label: "Eating Disorder History", field: "eating_disorder_details" }
+        ]
+    },
+    "Psychiatry Clinic": {
+        patientInfo: {
+            firstName: "first_name",
+            lastName: "last_name",
+            email: "email",
+            phoneNumber: "phone_number"
+        },
+        medicalHistory: [
+            { label: "Diagnosed Mental Health Conditions", field: "diagnosed_mental_health_condition_details" },
+            { label: "Current Psychiatric Medications", field: "taking_psychiatric_medication_details" },
+            { label: "History of Psychiatric Hospitalization", field: "hospitalized_for_mental_health_reason_details" },
+            { label: "Family History of Mental Health Conditions", field: "family_history_of_mental_health_condition_details" },
+            { label: "Suicidal Thoughts or Behaviors", field: "suicidal_thoughts_or_behavior_details" },
+            { label: "Self-Harm or Suicide Attempts", field: "self_harm_or_suicide_details" },
+            { label: "Counseling or Therapy History", field: "counseling_or_therapy_details" },
+            { label: "Emotional or Behavioral Patterns", field: "emotional_or_behavioral_patterns_details" }
+        ],
+        lifestyleAssessment: [
+            { label: "Mood Patterns", field: "mood_details" },
+            { label: "Excessive Worry or Anxiety", field: "excessive_worry_or_anxiety_details" },
+            { label: "Sleep Patterns", field: "sleep_patterns_details" },
+            { label: "Appetite or Weight Changes", field: "appetite_or_weight_details" },
+            { label: "Sleep Changes", field: "sleep_changes_details" },
+            { label: "Feelings of Hopelessness or Worthlessness", field: "hopelessness_or_worthlessness_details" },
+            { label: "Agitation or Impulsivity", field: "agitation_or_impulsivity_details" },
+            { label: "Difficulty Concentrating", field: "difficulty_concentrating_details" },
+            { label: "Stress Levels", field: "stress_level_details" },
+            { label: "Support System", field: "support_system_details" },
+            { label: "Major Life Changes", field: "major_life_changes_details" },
+            { label: "Substance Use", field: "substances_details" },
+            { label: "Sleep Hours", field: "sleep_hours_details" },
+            { label: "Social Groups", field: "social_group_details" },
+            { label: "Living Situation", field: "living_situation_details" },
+            { label: "Coping with Stress", field: "coping_with_stress_details" },
+            { label: "Mental Health Treatment History", field: "mental_health_treatment_details" },
+            { label: "Previous Treatment History", field: "treatment_history_details" },
+            { label: "Currently in Therapy", field: "currently_in_therapy_details" },
+            { label: "Negative Experience with Mental Health Treatment", field: "negative_experience_with_mental_health_treatment_details" },
+            { label: "Currently Under Care of Psychiatrist", field: "currently_undercare_of_psychiatrist_details" },
+            { label: "Stopped Taking Psychiatric Medications", field: "stopped_taking_psychiatric_medication_details" },
+            { label: "Side Effects from Psychiatric Medications", field: "side_effects_from_psychiatric_medication_details" },
+            { label: "Consistent with Therapy/Medication Attendance", field: "consistent_with_attending_therapy_or_taking_medication_details" }
+        ]
+    }
+};
+
 const AppointmentHistoryTable = () => {
     /**
      * @function to add a section in PDF 
@@ -252,6 +343,8 @@ const AppointmentHistoryTable = () => {
 
     const clinicID = user?.sid;
     const tokenContext = token;
+    const clinicType = user?.stype;
+
     if (!tokenContext && !clinicID) {
         console.error("No token and clinic id found in context or localStorage");
         setAppointmentHistoryData([]);
@@ -259,11 +352,15 @@ const AppointmentHistoryTable = () => {
 
     const retrieveAppointmentHistory = useCallback(async () => {
         try {
-            const response = await CMS.get(`/clinic-dashboard/getAppointmentHistory/${clinicID}`, {
+            const response = await CMS.get(`/clinic-dashboard/getAppointmentHistory`, {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${tokenContext}`,
                 },
+                params: {
+                    clinicID: clinicID,
+                    clinicType: clinicType
+                }
             });
 
             if (!response.data) {
@@ -278,7 +375,7 @@ const AppointmentHistoryTable = () => {
                 `Code functionality error for fetching approved status data: ${error}`
             );
         }
-    }, [clinicID, tokenContext]);
+    }, [clinicID, tokenContext, clinicType]);
 
     useEffect(() => {
         const titleHeader = () => {
@@ -287,7 +384,7 @@ const AppointmentHistoryTable = () => {
         titleHeader();
 
         retrieveAppointmentHistory();
-    }, [location.pathname, clinicID, tokenContext,retrieveAppointmentHistory]);
+    }, [location.pathname, clinicID, tokenContext, retrieveAppointmentHistory]);
 
     /**
      * @function to auto-generate a medical history using PDF
@@ -389,7 +486,7 @@ const AppointmentHistoryTable = () => {
                                                     variant="body2"
                                                     className="text-black"
                                                 >
-                                                    {appointment.patient_first_name} {appointment.patient_last_name}
+                                                    {appointment[clinicFieldConfigs[clinicType]?.patientInfo?.firstName] || appointment.patient_first_name} {appointment[clinicFieldConfigs[clinicType]?.patientInfo?.lastName] || appointment.patient_last_name}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="center">
@@ -397,7 +494,7 @@ const AppointmentHistoryTable = () => {
                                                     variant="body2"
                                                     className="text-black"
                                                 >
-                                                    {appointment.patient_email}
+                                                    {appointment[clinicFieldConfigs[clinicType]?.patientInfo?.email] || "patient_email"}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="center">
@@ -421,7 +518,7 @@ const AppointmentHistoryTable = () => {
                                                     variant="body2"
                                                     className="text-black"
                                                 >
-                                                    {appointment.phoneNumber}
+                                                    {appointment[clinicFieldConfigs[clinicType]?.patientInfo?.phoneNumber] || "phoneNumber"}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="center">
@@ -510,19 +607,19 @@ const AppointmentHistoryTable = () => {
                                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm text-gray-700">
                                             <div className="col-span-2 md:col-span-1 sm:col-span-2">
                                                 <strong className="text-sm/6">First Name: </strong>
-                                                {selectedPatient.patient_first_name}
+                                                {selectedPatient[clinicFieldConfigs[clinicType]?.patientInfo?.firstName] || "patient_first_name"}
                                             </div>
                                             <div className="col-span-2 md:col-span-1 sm:col-span-2">
                                                 <strong className="text-sm/6">Last Name: </strong>
-                                                {selectedPatient.patient_last_name}
+                                                {selectedPatient[clinicFieldConfigs[clinicType]?.patientInfo?.lastName] || "patient_last_name"}
                                             </div>
                                             <div className="col-span-2 md:col-span-1 sm:col-span-2">
                                                 <strong className="text-sm/6">Email: </strong>
-                                                {selectedPatient.patient_email}
+                                                {selectedPatient[clinicFieldConfigs[clinicType]?.patientInfo?.email] || "patient_email"}
                                             </div>
                                             <div className="col-span-2 md:col-span-1 sm:col-span-2">
                                                 <strong className="text-sm/6">Phone Number: </strong>
-                                                {selectedPatient.phoneNumber}
+                                                {selectedPatient[clinicFieldConfigs[clinicType]?.patientInfo?.phoneNumber] || "patient_phone_number"}
                                             </div>
                                             <div className="col-span-2 md:col-span-1 sm:col-span-2">
                                                 <strong className="text-sm/6">Appointment Date: </strong>
@@ -553,7 +650,13 @@ const AppointmentHistoryTable = () => {
                                             Medical History Overview
                                         </h3>
                                         <div className="grid grid-cols-2 gap-4 text-sm text-gray-700">
-                                            <div className="col-span-2 md:col-span-1 sm:col-span-2">
+                                            {clinicFieldConfigs[clinicType]?.medicalHistory?.map((item, index) => (
+                                                <div key={index} className="col-span-2 md:col-span-1 sm:col-span-2">
+                                                    <strong className="text-sm/6">{item.label}: </strong>
+                                                    {selectedPatient[item.field] || "N/A"}
+                                                </div>
+                                            ))}
+                                            {/* <div className="col-span-2 md:col-span-1 sm:col-span-2">
                                                 <strong className="text-sm/6">Documented Allergic Reactions: </strong>
                                                 {selectedPatient.allergy_details || "N/A"}
                                             </div>
@@ -584,7 +687,7 @@ const AppointmentHistoryTable = () => {
                                             <div className="col-span-2 md:col-span-1 sm:col-span-2">
                                                 <strong className="text-sm/6">Surgical History: </strong>
                                                 {selectedPatient.past_surgeries_details || "N/A"}
-                                            </div>
+                                            </div> */}
                                         </div>
                                     </section>
                                     <section className="bg-white p-4 rounded-xl shadow-lg">
@@ -592,7 +695,13 @@ const AppointmentHistoryTable = () => {
                                             Lifestyle and Clinical Assessment Overview
                                         </h3>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-700">
-                                            <div className="col-span-2 md:col-span-1">
+                                            {clinicFieldConfigs[clinicType]?.lifestyleAssessment?.map((item, index) => (
+                                                <div key={index} className="col-span-2 md:col-span-1 sm:col-span-2">
+                                                    <strong className="text-sm/6">{item.label}: </strong>
+                                                    {selectedPatient[item.field] || "N/A"}
+                                                </div>
+                                            ))}
+                                            {/* <div className="col-span-2 md:col-span-1">
                                                 <strong className="text-sm/6">Gingival Bleeding History: </strong>
                                                 {selectedPatient.experience_bleeding_details || "N/A"}
                                             </div>
@@ -683,7 +792,7 @@ const AppointmentHistoryTable = () => {
                                             <div className="col-span-2 md:col-span-1">
                                                 <strong className="text-sm/6">Eating Disorders: </strong>
                                                 {selectedPatient.eating_disorder_details || "N/A"}
-                                            </div>
+                                            </div> */}
                                         </div>
                                     </section>
                                 </div>

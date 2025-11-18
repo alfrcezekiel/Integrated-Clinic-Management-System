@@ -21,80 +21,156 @@ class Clinic {
     }
 
     // method of retrieving all appointment history to render in appointment history in clinic side
-    getAppointmentHistory = async (clinicID) => {
-        const connection = await conn.getConnection();
+    getAppointmentHistory = async (clinicID, clinicType) => {
+        this.connection = await this.conn.getConnection();
         try {
-            await connection.beginTransaction(); // starts a transaction in retrieving all appointment history
-            const status = "Consulted";
+            await this.connection.beginTransaction(); // starts a transaction in retrieving all appointment history
 
-            const query = `SELECT
-                pa.appointmentID,
-                c.clinic_name,
-                cp.patient_first_name,
-                cp.patient_last_name,
-                cp.patient_email,
-                cp.created_by,
-                cp.appointmentID,
-                cp.past_surgeries_details,
-                cp.allergy_details,
-                cp.taking_prescription_medication_details,
-                cp.chronic_condition_details,
-                cp.past_surgeries_details,
-                cp.history_of_jaw_pain_details,
-                cp.experienced_excessive_bleeding_details,
-                cp.past_history_of_cardiovascular_issues,
-                cp.advised_taking_antibiotics_details,
-                cp.smoke_frequency_details,
-                cp.consume_sugary_foods_or_beverages_details,
-                cp.dental_floss_details,
-                cp.consume_alcohol_details,
-                cp.participate_in_sports_details,
-                cp.balanced_diet_details,
-                cp.regular_exercise_details,
-                cp.brush_frequency_details,
-                cp.use_mouthwash_details,
-                cp.replace_toothbrush_details,
-                cp.clean_tongue_details,
-                cp.regular_checkup_details,
-                cp.dental_anxiety_details,
-                cp.dental_trauma_details,
-                cp.eating_disorder_details,
-                cp.appointment_date,
-                cp.appointment_time,
-                pa.phoneNumber,
-                pa.gender,
-                pa.status,
-                pa.purposeOfAppointment,
-                cp.experience_bleeding_details,
-                cp.tooth_sensitivity_details,
-                cp.dental_appearance_details,
-                cp.loose_teeth_details,
-                cp.bad_breath_or_bad_taste_details,
-                cp.dental_xrays_details,
-                cp.dental_restoration_details,
-                cp.orthodontic_treatment_details
-                FROM patientsappointment AS pa
-                INNER JOIN clinic AS c
-                ON pa.clinic_id = c.clinic_id
-                INNER JOIN consultedpatients AS cp
-                ON pa.appointmentID = cp.appointmentID
-                WHERE pa.clinic_id  = ?  AND pa.status = ?
-                ORDER BY pa.appointmentDate DESC, pa.preferredTime DESC;
-            `
+            if (clinicType === "Dental Clinic") {
+                const status = "Consulted";
 
-            const [rows] = await connection.query(query, [
-                clinicID,
-                status
-            ])
+                const query = `SELECT
+                    pa.appointmentID,
+                    c.clinic_name,
+                    cp.patient_first_name,
+                    cp.patient_last_name,
+                    cp.patient_email,
+                    c.clinic_type,
+                    cp.created_by,
+                    cp.appointmentID,
+                    cp.past_surgeries_details,
+                    cp.allergy_details,
+                    cp.taking_prescription_medication_details,
+                    cp.chronic_condition_details,
+                    cp.past_surgeries_details,
+                    cp.history_of_jaw_pain_details,
+                    cp.experienced_excessive_bleeding_details,
+                    cp.past_history_of_cardiovascular_issues,
+                    cp.advised_taking_antibiotics_details,
+                    cp.smoke_frequency_details,
+                    cp.consume_sugary_foods_or_beverages_details,
+                    cp.dental_floss_details,
+                    cp.consume_alcohol_details,
+                    cp.participate_in_sports_details,
+                    cp.balanced_diet_details,
+                    cp.regular_exercise_details,
+                    cp.brush_frequency_details,
+                    cp.use_mouthwash_details,
+                    cp.replace_toothbrush_details,
+                    cp.clean_tongue_details,
+                    cp.regular_checkup_details,
+                    cp.dental_anxiety_details,
+                    cp.dental_trauma_details,
+                    cp.eating_disorder_details,
+                    cp.appointment_date,
+                    cp.appointment_time,
+                    cp.phone_number,
+                    pa.gender,
+                    pa.status,
+                    pa.purposeOfAppointment,
+                    cp.experience_bleeding_details,
+                    cp.tooth_sensitivity_details,
+                    cp.dental_appearance_details,
+                    cp.loose_teeth_details,
+                    cp.bad_breath_or_bad_taste_details,
+                    cp.dental_xrays_details,
+                    cp.dental_restoration_details,
+                    cp.orthodontic_treatment_details
+                    FROM patientsappointment AS pa
+                    INNER JOIN clinic AS c
+                    ON pa.clinic_id = c.clinic_id
+                    INNER JOIN consultedpatients AS cp
+                    ON pa.appointmentID = cp.appointmentID
+                    WHERE pa.clinic_id  = ?  AND pa.status = ?
+                    ORDER BY pa.appointmentDate DESC, pa.preferredTime DESC;
+                `
 
-            const commitQuery = await connection.commit();
-            if (!commitQuery) {
-                throw new Error(`Failed to commit transaction in retrieving all appoinment history`)
+                const [rows] = await this.connection.query(query, [
+                    clinicID,
+                    status
+                ])
+
+                const commitQuery = await this.connection.commit();
+                if (!commitQuery) {
+                    throw new Error(`Failed to commit transaction in retrieving all appoinment history`)
+                }
+
+                return rows;
+            } else if (clinicType === "Psychiatry Clinic") {
+                const status = String("Consulted");
+
+                const query = `
+                    SELECT
+                        pa.appointmentID,
+                        pcp.first_name,
+                        pa.status,
+                        pa.gender,
+                        pa.purposeOfAppointment,
+                        pcp.last_name,
+                        pcp.email,
+                        pcp.phone_number,
+                        pcp.appointment_date,
+                        pcp.appointment_time,
+                        pcp.diagnosed_mental_health_condition_details,
+                        pcp.taking_psychiatric_medication_details,
+                        pcp.hospitalized_for_mental_health_reason_details,
+                        pcp.family_history_of_mental_health_condition_details,
+                        pcp.suicidal_thoughts_or_behavior_details,
+                        pcp.self_harm_or_suicide_details,
+                        pcp.counseling_or_therapy_details,
+                        pcp.emotional_or_behavioral_patterns_details,
+                        pcp.mood_details,
+                        pcp.excessive_worry_or_anxiety_details,
+                        pcp.sleep_patterns_details,
+                        pcp.appetite_or_weight_details,
+                        pcp.sleep_changes_details,
+                        pcp.hopelessness_or_worthlessness_details,
+                        pcp.agitation_or_impulsivity_details,
+                        pcp.difficulty_concentrating_details,
+                        pcp.stress_level_details,
+                        pcp.support_system_details,
+                        pcp.major_life_changes_details,
+                        pcp.substances_details,
+                        pcp.sleep_hours_details,
+                        pcp.social_group_details,
+                        pcp.living_situation_details,
+                        pcp.coping_with_stress_details,
+                        pcp.mental_health_treatment_details,
+                        pcp.treatment_history_details,
+                        pcp.currently_in_therapy_details,
+                        pcp.negative_experience_with_mental_health_treatment_details,
+                        pcp.currently_undercare_of_psychiatrist_details,
+                        pcp.stopped_taking_psychiatric_medication_details,
+                        pcp.side_effects_from_psychiatric_medication_details,
+                        pcp.consistent_with_attending_therapy_or_taking_medication_details,
+                        c.clinic_name,
+                        c.clinic_type
+                    FROM patientsappointment AS pa
+                    INNER JOIN clinic AS c
+                    ON pa.clinic_id = c.clinic_id
+                    INNER JOIN psychiatry_consulted_patients AS pcp
+                    ON pcp.appointmentID = pa.appointmentID
+                    WHERE pa.clinic_id = ? AND pa.status = ?
+                    ORDER BY pcp.appointment_date DESC, pcp.appointment_time DESC;
+                `
+
+                const values = [
+                    clinicID,
+                    status
+                ]
+
+                const [rows] = await this.connection.query(query, values);
+
+                const commitQuery = await this.connection.commit();
+                if (!commitQuery) {
+                    throw new Error(`Failed to commit transaction in retrieving all appointments`)
+                }
+
+                return rows;
             }
 
-            return rows;
         } catch (error) {
-            const rollbackQuery = await connection.rollback();
+            const rollbackQuery = await this.connection.rollback();
             if (!rollbackQuery) {
                 console.error(`Failed to rollback transaction in retrieving all appointments: ${error} `)
             }
@@ -102,7 +178,7 @@ class Clinic {
             console.error(`Error fetching appointment history: ${error}`);
             throw error;
         } finally {
-            connection.release();
+            this.connection.release();
         }
     }
 
@@ -5237,7 +5313,7 @@ class Clinic {
             try {
                 await this.connection.beginTransaction();
 
-                const { clinicID, section } = params;
+                const { clinicID, section, clinicType } = params;
 
                 const clinic_id = parseInt(clinicID);
 
@@ -5251,6 +5327,7 @@ class Clinic {
                     WHERE clinic_id = ?
                     AND section = ?
                     AND answer = ?
+                    AND clinic_type = ?
                     GROUP BY question
                     ORDER BY question ASC
                 `
@@ -5258,7 +5335,8 @@ class Clinic {
                 const values = [
                     clinic_id,
                     section,
-                    "Yes"
+                    "Yes",
+                    clinicType
                 ];
 
                 const [rows] = await this.connection.query(query, values);
@@ -5288,6 +5366,210 @@ class Clinic {
             }
         },
         "Retrieve the questions of number of questionnaires based on section"
+    )
+
+    /**
+     * @method logic to consult a patient in psychiatry clinic type
+     * @access {private}
+     * @route {POST} /clinic-dashboard/consultPatient - patient side
+     */
+    consultingPatientInPsychiatry = modelErrorHandling(
+        async (params) => {
+            this.connection = await this.conn.getConnection();
+            try {
+                await this.connection.beginTransaction();
+
+                if (!params || typeof params !== "object") {
+                    throw new Error(`Invalid parameters! Consulting patient in psychiatric clinic type should be an object`);
+                }
+
+                const {
+                    appointmentID,
+                    first_name,
+                    last_name,
+                    email,
+                    phone_number,
+                    appointment_date,
+                    appointment_time,
+                    diagnosed_mental_health_condition_details,
+                    taking_psychiatric_medication_details,
+                    hospitalized_for_mental_health_reason_details,
+                    family_history_of_mental_health_conditions_details,
+                    suicidal_thoughts_or_behaviors_details,
+                    self_harm_or_suicide_details,
+                    counseling_or_therapy_details,
+                    emotional_or_behavioral_patterns_details,
+                    mood_details,
+                    excessive_worry_or_anxiety_details,
+                    sleep_patterns_details,
+                    appetite_or_weight_details,
+                    sleep_changes_details,
+                    hopelessness_or_worthlessness_details,
+                    agitation_or_impulsivity_details,
+                    difficulty_concentrating_details,
+                    stress_levels_details,
+                    support_system_details,
+                    major_life_changes_details,
+                    substances_details,
+                    sleep_hours_details,
+                    social_groups_details,
+                    living_situation_details,
+                    coping_with_stress_details,
+                    mental_health_treatment_details,
+                    treatment_history_details,
+                    currently_in_therapy_details,
+                    negative_experience_with_mental_health_treatment_details,
+                    currently_under_care_of_psychiatrist_details,
+                    stopped_taking_psychiatric_medications_details,
+                    side_effects_from_psychiatric_medications_details,
+                    consistent_with_attending_therapy_or_taking_medications_details,
+                    consent_value,
+                    clinic_name_field,
+                    admin_id_field
+                } = params;
+
+                const table_name = String("psychiatry_consulted_patients");
+
+                const psychiatry_columns = [
+                    "appointmentID",
+                    "first_name",
+                    "last_name",
+                    "email",
+                    "phone_number",
+                    "appointment_date",
+                    "appointment_time",
+                    "diagnosed_mental_health_condition_details",
+                    "taking_psychiatric_medication_details",
+                    "hospitalized_for_mental_health_reason_details",
+                    "family_history_of_mental_health_condition_details",
+                    "suicidal_thoughts_or_behavior_details",
+                    "self_harm_or_suicide_details",
+                    "counseling_or_therapy_details",
+                    "emotional_or_behavioral_patterns_details",
+                    "mood_details",
+                    "excessive_worry_or_anxiety_details",
+                    "sleep_patterns_details",
+                    "appetite_or_weight_details",
+                    "sleep_changes_details",
+                    "hopelessness_or_worthlessness_details",
+                    "agitation_or_impulsivity_details",
+                    "difficulty_concentrating_details",
+                    "stress_level_details",
+                    "support_system_details",
+                    "major_life_changes_details",
+                    "substances_details",
+                    "sleep_hours_details",
+                    "social_group_details",
+                    "living_situation_details",
+                    "coping_with_stress_details",
+                    "mental_health_treatment_details",
+                    "treatment_history_details",
+                    "currently_in_therapy_details",
+                    "negative_experience_with_mental_health_treatment_details",
+                    "currently_undercare_of_psychiatrist_details",
+                    "stopped_taking_psychiatric_medication_details",
+                    "side_effects_from_psychiatric_medication_details",
+                    "consistent_with_attending_therapy_or_taking_medication_details",
+                    "clinic_name",
+                    "consent",
+                    "created_by"
+                ]
+
+                const psychiatry_col_placeholders = psychiatry_columns.map(() => "?").join(", ");
+
+                const values = [
+                    appointmentID,
+                    first_name,
+                    last_name,
+                    email,
+                    phone_number,
+                    appointment_date,
+                    appointment_time,
+                    diagnosed_mental_health_condition_details,
+                    taking_psychiatric_medication_details,
+                    hospitalized_for_mental_health_reason_details,
+                    family_history_of_mental_health_conditions_details,
+                    suicidal_thoughts_or_behaviors_details,
+                    self_harm_or_suicide_details,
+                    counseling_or_therapy_details,
+                    emotional_or_behavioral_patterns_details,
+                    mood_details,
+                    excessive_worry_or_anxiety_details,
+                    sleep_patterns_details,
+                    appetite_or_weight_details,
+                    sleep_changes_details,
+                    hopelessness_or_worthlessness_details,
+                    agitation_or_impulsivity_details,
+                    difficulty_concentrating_details,
+                    stress_levels_details,
+                    support_system_details,
+                    major_life_changes_details,
+                    substances_details,
+                    sleep_hours_details,
+                    social_groups_details,
+                    living_situation_details,
+                    coping_with_stress_details,
+                    mental_health_treatment_details,
+                    treatment_history_details,
+                    currently_in_therapy_details,
+                    negative_experience_with_mental_health_treatment_details,
+                    currently_under_care_of_psychiatrist_details,
+                    stopped_taking_psychiatric_medications_details,
+                    side_effects_from_psychiatric_medications_details,
+                    consistent_with_attending_therapy_or_taking_medications_details,
+                    clinic_name_field,
+                    consent_value,
+                    admin_id_field
+                ]
+
+                const query = `
+                    INSERT INTO ${table_name}
+                    (${psychiatry_columns.join(", ")})
+                    VALUES (${psychiatry_col_placeholders})
+                `;
+
+                const [result] = await this.connection.query(query, values);
+
+                if (result.affectedRows === 0) {
+                    throw new Error(`Failed to consult a patient in psychiatric clinic type`);
+                }
+
+                const update_query = `
+                    UPDATE patientsappointment
+                    SET status = ?
+                    WHERE appointmentID = ?;
+                `;
+
+                const status = String("Consulted");
+
+                const update_values = [
+                    status,
+                    appointmentID
+                ]
+
+                const [update_result] = await this.connection.query(update_query, update_values);
+
+                if (update_result.affectedRows === 0) {
+                    throw new Error(`Failed to update appointment status`);
+                }
+
+                await this.connection.commit();
+
+                return {
+                    model_message: "Successfully consulted a patient in psychiatry clinic"
+                }
+            } catch (error) {
+                const rollbackQuery = await this.connection.rollback();
+                if (!rollbackQuery) {
+                    logger.log(`error`, `Failed to rollback transaction in consulting patient in psychiatric clinic type method`);
+                }
+
+                logger.log(`error`, `Failed to consult a patient in psychiatric clinic type method: ${error}`);
+            } finally {
+                this.connection.release();
+            }
+        },
+        "Consulting Patient in Psychiatry Clinic Type"
     )
 }
 

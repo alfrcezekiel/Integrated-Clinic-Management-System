@@ -16,13 +16,25 @@ if (!fs.existsSync(BASE_UPLOAD_DIR)) {
  */
 export const autoGenerateMedicalReportPath = async (patient) => {
     const timestamp = Date.now();
-    const sanitizeFirstName = (patient.patient_first_name || "patient").replace(/[^a-zA-Z0-9]/g, "_");
-    const santizeLastName = (patient.patient_last_name || " ").replace(/[^a-zA-Z0-9]/g, "_");
+    
+    // Handle different clinic types for patient name fields
+    let firstName, lastName;
+    
+    if (patient.clinic_type === "Psychiatry Clinic") {
+        firstName = patient.first_name || "patient";
+        lastName = patient.last_name || " ";
+    } else {
+        // Default to Dental Clinic field names
+        firstName = patient.patient_first_name || "patient";
+        lastName = patient.patient_last_name || " ";
+    }
+    
+    const sanitizeFirstName = firstName.replace(/[^a-zA-Z0-9]/g, "_");
+    const sanitizeLastName = lastName.replace(/[^a-zA-Z0-9]/g, "_");
 
-    const fileName = `Medical_Report_${sanitizeFirstName}_${santizeLastName}_${timestamp}.pdf`
+    const fileName = `Medical_Report_${sanitizeFirstName}_${sanitizeLastName}_${timestamp}.pdf`
     const relativePath = path.join("uploads", "medical_reports", fileName)
     const fullPath = path.join(BASE_UPLOAD_DIR, fileName);
-
 
     return {
         fileName,

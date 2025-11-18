@@ -147,7 +147,8 @@ function ClinicLoginPortal() {
                     userData({
                         sid: response.data.sid.id,
                         scn: response.data.sid.scn,
-                        sem: response.data.sid.sem
+                        sem: response.data.sid.sem,
+                        stype: response.data.sid.stype
                     })
                     navigate("/doctor-portal/dashboard/home");
                 } else {

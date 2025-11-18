@@ -212,8 +212,7 @@ router.put("/admin-dashboard/updateRegisteredPatientAccount/:patientID", [valida
 router.post("/clinic-dashboard/consultPatient", consultPatientInClinicDashboard);
 
 // router for getting the appointment history of the patients in clinic dashboard
-router.get("/clinic-dashboard/getAppointmentHistory/:clinicID", verifyToken, getAppointmentHistoryInClinic);
-
+router.get("/clinic-dashboard/getAppointmentHistory", verifyToken, getAppointmentHistoryInClinic);
 
 // router for session verification
 router.get("/retrieveSession", requireLogin, getLoggedInUser);
@@ -231,7 +230,7 @@ router.get("/patients-dashboard/retrievedConfirmedPaymentDetails/:patientID", re
 router.put("/patients-dashboard/cancelPaymentDetails/:paymentID", cancelledPaymentDetails);
 
 // router for validating the steps in clinic side
-router.post("/clinic-dashboard/validatePatientConsultation/:step", validateStep);
+router.post("/clinic-dashboard/validatePatientConsultation", validateStep);
 
 // router for deleting the patient register account in admin side
 router.delete("/admin-dashboard/deleteRegisteredPatientAccount/:patientID", deleteRegisteredPatientAccount);

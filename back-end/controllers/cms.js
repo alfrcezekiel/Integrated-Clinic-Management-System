@@ -1703,6 +1703,7 @@ export const loggedInClinicAccount = async (req, res) => {
             clinic_id,
             clinic_name,
             email,
+            clinic_type,
             password
             FROM
             clinic
@@ -1746,7 +1747,8 @@ export const loggedInClinicAccount = async (req, res) => {
         const payload = {
             id: clinicUsers.clinic_id,
             email: clinicUsers.email,
-            clinic_name: clinicUsers.clinic_name
+            clinic_name: clinicUsers.clinic_name,
+            clinic_type: clinicUsers.clinic_type
         }
 
         /**
@@ -1764,7 +1766,8 @@ export const loggedInClinicAccount = async (req, res) => {
         const sid = req.session.user = {
             id: clinicUsers.clinic_id,
             scn: clinicUsers.clinic_name,
-            sem: clinicUsers.email
+            sem: clinicUsers.email,
+            stype: clinicUsers.clinic_type
         }
 
         res.cookie("refreshToken", refreshToken, {
@@ -2184,8 +2187,11 @@ export const updateRegisteredPatientsAccountInAdmin = async (req, res) => {
         connection.release();
     }
 }
-
-// controller logic for inserting a consult patient data
+/**
+ * @function controller logic consulting a patient based on clinic questionnaires and clncic types
+ * @access {private}
+ * @route {POST} /clinic-dashboard/consultPatient - patient side
+ */
 export const consultPatientInClinicDashboard = async (req, res) => {
     const connection = await conn.getConnection();
 
@@ -2236,6 +2242,59 @@ export const consultPatientInClinicDashboard = async (req, res) => {
             appointmentID
         } = req.body;
 
+        /**
+         * Pschiatry request body 
+         */
+        const {
+            /**
+             * mental health history req.body
+             */
+            diagnosedMentalHealthConditionDetails,
+            takingPsychiatricMedicationDetails,
+            hospitalizedForMentalHealthReasonDetails,
+            familyHistoryOfMentalHealthConditionsDetails,
+            suicidalThoughtsOrBehaviorsDetails,
+            selfHarmOrSuicideDetails,
+            counselingOrTherapyDetails,
+            emotionalOrBehavioralPatternsDetails,
+            /**
+             * current symtoms req.body
+             */
+            moodDetails,
+            excessiveWorryOrAnxietyDetails,
+            sleepPatternsDetails,
+            appetiteOrWeightDetails,
+            sleepChangesDetails,
+            hopelessnessOrWorthlessnessDetails,
+            agitationOrImpulsivityDetails,
+            difficultyConcentratingDetails,
+            /**
+             * lifestyle factors req.body
+             */
+            stressLevelsDetails,
+            supportSystemDetails,
+            majorLifeChangesDetails,
+            substancesDetails,
+            sleepHoursDetails,
+            socialGroupsDetails,
+            livingSituationDetails,
+            copingWithStressDetails,
+            /**
+             * treatment history req.body
+             */
+            mentalHealthTreatmentDetails,
+            treatmentHistoryDetails,
+            currentlyInTherapyDetails,
+            negativeExperienceWithMentalHealthTreatmentDetails,
+            currentlyUnderCareOfPsychiatristDetails,
+            stoppedTakingPsychiatricMedicationsDetails,
+            sideEffectsFromPsychiatricMedicationsDetails,
+            consistentWithAttendingTherapyOrTakingMedicationsDetails
+        } = req.body
+
+        const { clinicType } = req.query;
+
+        const clinic_type = decodeURIComponent(String(clinicType))
 
         // Format and validate fields
         const first_name = String(firstName)
@@ -2289,6 +2348,57 @@ export const consultPatientInClinicDashboard = async (req, res) => {
         const dental_anxiety_details = String(dentalAnxietyDetails);
         const dental_trauma_details = String(dentalTraumaDetails);
 
+        /**
+         * Psychiatry Clinic variables
+         */
+        /**
+         * mental health history variables
+         */
+        const diagnosed_mental_health_condition_details = String(diagnosedMentalHealthConditionDetails);
+        const taking_psychiatric_medication_details = String(takingPsychiatricMedicationDetails);
+        const hospitalized_for_mental_health_reason_details = String(hospitalizedForMentalHealthReasonDetails);
+        const family_history_of_mental_health_conditions_details = String(familyHistoryOfMentalHealthConditionsDetails);
+        const suicidal_thoughts_or_behaviors_details = String(suicidalThoughtsOrBehaviorsDetails);
+        const self_harm_or_suicide_details = String(selfHarmOrSuicideDetails);
+        const counseling_or_therapy_details = String(counselingOrTherapyDetails);
+        const emotional_or_behavioral_patterns_details = String(emotionalOrBehavioralPatternsDetails);
+
+        /**
+         * current symptoms variables
+         */
+        const mood_details = String(moodDetails);
+        const excessive_worry_or_anxiety_details = String(excessiveWorryOrAnxietyDetails);
+        const sleep_patterns_details = String(sleepPatternsDetails);
+        const appetite_or_weight_details = String(appetiteOrWeightDetails);
+        const sleep_changes_details = String(sleepChangesDetails);
+        const hopelessness_or_worthlessness_details = String(hopelessnessOrWorthlessnessDetails);
+        const agitation_or_impulsivity_details = String(agitationOrImpulsivityDetails);
+        const difficulty_concentrating_details = String(difficultyConcentratingDetails);
+
+        /**
+         * Lifestyle factors variables
+         */
+        const stress_levels_details = String(stressLevelsDetails);
+        const support_system_details = String(supportSystemDetails);
+        const major_life_changes_details = String(majorLifeChangesDetails);
+        const substances_details = String(substancesDetails);
+        const sleep_hours_details = String(sleepHoursDetails);
+        const social_groups_details = String(socialGroupsDetails);
+        const living_situation_details = String(livingSituationDetails);
+        const coping_with_stress_details = String(copingWithStressDetails);
+
+        /**
+         * Treatment history variables
+         */
+        const mental_health_treatment_details = String(mentalHealthTreatmentDetails);
+        const treatment_history_details = String(treatmentHistoryDetails);
+        const currently_in_therapy_details = String(currentlyInTherapyDetails);
+        const negative_experience_with_mental_health_treatment_details = String(negativeExperienceWithMentalHealthTreatmentDetails);
+        const currently_under_care_of_psychiatrist_details = String(currentlyUnderCareOfPsychiatristDetails);
+        const stopped_taking_psychiatric_medications_details = String(stoppedTakingPsychiatricMedicationsDetails);
+        const side_effects_from_psychiatric_medications_details = String(sideEffectsFromPsychiatricMedicationsDetails);
+        const consistent_with_attending_therapy_or_taking_medications_details = String(consistentWithAttendingTherapyOrTakingMedicationsDetails);
+
         const consent_value = Number(consent);
         const clinic_name_field = String(clinic_name);
 
@@ -2301,130 +2411,186 @@ export const consultPatientInClinicDashboard = async (req, res) => {
         }
 
         const appointment_id = parseInt(appointmentID, 10);
-        if (isNaN(appointmentID)) {
+        if (isNaN(appointment_id)) {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 message: "Invalid appointment_id var format"
             });
         }
 
-        const values = [
-            appointmentID,
-            first_name,
-            last_name,
-            email_address,
-            phone_number,
-            appointment_date,
-            appointment_time, // patient information values
-            allergies_details,
-            taking_prescription_medication_details,
-            chronic_condition_details,
-            surgeries_details,
-            jaw_pain_details,
-            experienced_excessive_bleeding_details,
-            heart_problems_details,
-            advised_taking_antibiotics_details, // medical history values
-            smoking_frequency_details,
-            sugary_foods_or_drinks_details,
-            dental_floss_details,
-            consume_alcohol_details,
-            sports_participation_details,
-            balanced_diet_details,
-            regular_exercise_details,
-            eating_disorders_details, // lifestyle information values
-            experience_bleeding_details,
-            tooth_sensitivity_details,
-            dental_appearance_details,
-            loose_teeth_details,
-            bad_breath_or_bad_taste_details,
-            dental_xrays_details,
-            dental_restoration_details,
-            orthodontic_treatment_details, // clinical assessment values
-            brush_frequency_details,
-            use_mouthwash_details,
-            replace_toothbrush_details,
-            clean_tongue_details,
-            regular_checkup_details,
-            dental_anxiety_details,
-            dental_trauma_details, // oral hygiene habits values
-            clinic_name_field,
-            consent_value,
-            admin_id_field
-        ]
+        if (clinic_type === "Dental Clinic") {
+            const values = [
+                appointment_id,
+                first_name,
+                last_name,
+                email_address,
+                phone_number,
+                appointment_date,
+                appointment_time, // patient information values
+                allergies_details,
+                taking_prescription_medication_details,
+                chronic_condition_details,
+                surgeries_details,
+                jaw_pain_details,
+                experienced_excessive_bleeding_details,
+                heart_problems_details,
+                advised_taking_antibiotics_details, // medical history values
+                smoking_frequency_details,
+                sugary_foods_or_drinks_details,
+                dental_floss_details,
+                consume_alcohol_details,
+                sports_participation_details,
+                balanced_diet_details,
+                regular_exercise_details,
+                eating_disorders_details, // lifestyle information values
+                experience_bleeding_details,
+                tooth_sensitivity_details,
+                dental_appearance_details,
+                loose_teeth_details,
+                bad_breath_or_bad_taste_details,
+                dental_xrays_details,
+                dental_restoration_details,
+                orthodontic_treatment_details, // clinical assessment values
+                brush_frequency_details,
+                use_mouthwash_details,
+                replace_toothbrush_details,
+                clean_tongue_details,
+                regular_checkup_details,
+                dental_anxiety_details,
+                dental_trauma_details, // oral hygiene habits values
+                clinic_name_field,
+                consent_value,
+                admin_id_field
+            ]
 
-        const query = `INSERT INTO consultedpatients (
-            appointmentID,
-            patient_first_name,
-            patient_last_name,
-            patient_email,
-            phone_number,
-            appointment_date,
-            appointment_time,
-            allergy_details,
-            taking_prescription_medication_details,
-            chronic_condition_details,
-            past_surgeries_details,
-            history_of_jaw_pain_details,
-            experienced_excessive_bleeding_details,
-            past_history_of_cardiovascular_issues,
-            advised_taking_antibiotics_details,
-            smoke_frequency_details,
-            consume_sugary_foods_or_beverages_details,
-            dental_floss_details,
-            consume_alcohol_details,
-            participate_in_sports_details,
-            balanced_diet_details,
-            regular_exercise_details,
-            eating_disorder_details,
-            experience_bleeding_details,
-            tooth_sensitivity_details,
-            dental_appearance_details,
-            loose_teeth_details,
-            bad_breath_or_bad_taste_details,
-            dental_xrays_details,
-            dental_restoration_details,
-            orthodontic_treatment_details,
-            brush_frequency_details,
-            use_mouthwash_details,
-            replace_toothbrush_details,
-            clean_tongue_details,
-            regular_checkup_details,
-            dental_anxiety_details,
-            dental_trauma_details,
-            clinic_name,
-            consent,
-            created_by
-            ) VALUES (
-                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-            );
-        `
+            const query = `INSERT INTO consultedpatients (
+                appointmentID,
+                patient_first_name,
+                patient_last_name,
+                patient_email,
+                phone_number,
+                appointment_date,
+                appointment_time,
+                allergy_details,
+                taking_prescription_medication_details,
+                chronic_condition_details,
+                past_surgeries_details,
+                history_of_jaw_pain_details,
+                experienced_excessive_bleeding_details,
+                past_history_of_cardiovascular_issues,
+                advised_taking_antibiotics_details,
+                smoke_frequency_details,
+                consume_sugary_foods_or_beverages_details,
+                dental_floss_details,
+                consume_alcohol_details,
+                participate_in_sports_details,
+                balanced_diet_details,
+                regular_exercise_details,
+                eating_disorder_details,
+                experience_bleeding_details,
+                tooth_sensitivity_details,
+                dental_appearance_details,
+                loose_teeth_details,
+                bad_breath_or_bad_taste_details,
+                dental_xrays_details,
+                dental_restoration_details,
+                orthodontic_treatment_details,
+                brush_frequency_details,
+                use_mouthwash_details,
+                replace_toothbrush_details,
+                clean_tongue_details,
+                regular_checkup_details,
+                dental_anxiety_details,
+                dental_trauma_details,
+                clinic_name,
+                consent,
+                created_by
+                ) VALUES (
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                );
+            `
 
-        const [result1] = await connection.query(query, values);
+            const [result1] = await connection.query(query, values);
 
-        if (result1.affectedRows === 0) {
-            return res.status(StatusCodes.BAD_REQUEST).json({
-                message: "Failed to insert consult patient data"
-            })
-        }
+            if (result1.affectedRows === 0) {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    message: "Failed to insert consult patient data"
+                })
+            }
 
-        const updateQuery = `UPDATE patientsappointment SET status = ? WHERE appointmentID = ?;`;
-        const status = "Consulted";
+            const updateQuery = `UPDATE patientsappointment SET status = ? WHERE appointmentID = ?;`;
+            const status = "Consulted";
 
-        const [result2] = await connection.query(updateQuery, [
-            status,
-            appointment_id
-        ]);
+            const [result2] = await connection.query(updateQuery, [
+                status,
+                appointment_id
+            ]);
 
-        if (result2.affectedRows === 0) {
-            return res.status(StatusCodes.BAD_REQUEST).json({
-                message: "Failed to update appointment status"
-            })
-        }
+            if (result2.affectedRows === 0) {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    message: "Failed to update appointment status"
+                })
+            }
 
-        const commitQuery = await connection.commit();
-        if (!commitQuery) {
-            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-                message: "Failed to commit transaction in consult patient data"
-            })
+            const commitQuery = await connection.commit();
+            if (!commitQuery) {
+                return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                    message: "Failed to commit transaction in consult patient data"
+                })
+            }
+        } else if (clinic_type === "Psychiatry Clinic") {
+            const psychiatry_consultation_values = {
+                appointmentID: appointment_id,
+                first_name: first_name,
+                last_name: last_name,
+                email: email_address,
+                phone_number: phone_number,
+                appointment_date: appointment_date,
+                appointment_time: appointment_time,
+                diagnosed_mental_health_condition_details: diagnosed_mental_health_condition_details,
+                taking_psychiatric_medication_details: taking_psychiatric_medication_details,
+                hospitalized_for_mental_health_reason_details: hospitalized_for_mental_health_reason_details,
+                family_history_of_mental_health_conditions_details: family_history_of_mental_health_conditions_details,
+                suicidal_thoughts_or_behaviors_details: suicidal_thoughts_or_behaviors_details,
+                self_harm_or_suicide_details: self_harm_or_suicide_details,
+                counseling_or_therapy_details: counseling_or_therapy_details,
+                emotional_or_behavioral_patterns_details: emotional_or_behavioral_patterns_details,
+                mood_details: mood_details,
+                excessive_worry_or_anxiety_details: excessive_worry_or_anxiety_details,
+                sleep_patterns_details: sleep_patterns_details,
+                appetite_or_weight_details: appetite_or_weight_details,
+                sleep_changes_details: sleep_changes_details,
+                hopelessness_or_worthlessness_details: hopelessness_or_worthlessness_details,
+                agitation_or_impulsivity_details: agitation_or_impulsivity_details,
+                difficulty_concentrating_details: difficulty_concentrating_details,
+                stress_levels_details: stress_levels_details,
+                support_system_details: support_system_details,
+                major_life_changes_details: major_life_changes_details,
+                substances_details: substances_details,
+                sleep_hours_details: sleep_hours_details,
+                social_groups_details: social_groups_details,
+                living_situation_details: living_situation_details,
+                coping_with_stress_details: coping_with_stress_details,
+                mental_health_treatment_details: mental_health_treatment_details,
+                treatment_history_details: treatment_history_details,
+                currently_in_therapy_details: currently_in_therapy_details,
+                negative_experience_with_mental_health_treatment_details: negative_experience_with_mental_health_treatment_details,
+                currently_under_care_of_psychiatrist_details: currently_under_care_of_psychiatrist_details,
+                stopped_taking_psychiatric_medications_details: stopped_taking_psychiatric_medications_details,
+                side_effects_from_psychiatric_medications_details: side_effects_from_psychiatric_medications_details,
+                consistent_with_attending_therapy_or_taking_medications_details: consistent_with_attending_therapy_or_taking_medications_details,
+                consent_value: consent_value,
+                clinic_name_field: clinic_name_field,
+                admin_id_field: admin_id_field
+            }
+
+            const clinicInstance = new Clinic();
+            const result = await clinicInstance.consultingPatientInPsychiatry(psychiatry_consultation_values);
+
+            if (!result || result.affectedRows === 0) {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    message: "Failed to insert consult patient data"
+                })
+            }
         }
 
         return res.status(StatusCodes.OK).json({
@@ -2439,7 +2605,7 @@ export const consultPatientInClinicDashboard = async (req, res) => {
             })
         }
 
-        console.error(`Failed to insert consult patient data: ${error}`);
+        logger.log(`error`, `Failed to insert consult patient data controller: ${error}`);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             message: "Failed to insert consult patient data"
         })
@@ -2451,7 +2617,7 @@ export const consultPatientInClinicDashboard = async (req, res) => {
 // controller logic for getting the appointment history in clinic dashboard
 export const getAppointmentHistoryInClinic = async (req, res) => {
     try {
-        const { clinicID } = req.params;
+        const { clinicID, clinicType } = req.query;
 
         if (!clinicID) {
             return res.status(StatusCodes.BAD_REQUEST).json({
@@ -2459,12 +2625,19 @@ export const getAppointmentHistoryInClinic = async (req, res) => {
             })
         }
 
+        if (!clinicType) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Please enter a valid clinic type"
+            })
+        }
+
         const clinic_id = parseInt(clinicID, 10);
+        const clinic_type = String(clinicType);
 
         // instance of clinic model with a method to retrieved all appointment history
-        const consulted_patient = await new Clinic().getAppointmentHistory(clinic_id);
+        const consulted_patient = await new Clinic().getAppointmentHistory(clinic_id, clinic_type);
 
-        if (!consulted_patient.length) {
+        if (consulted_patient.length === 0) {
             return res.status(StatusCodes.NOT_FOUND).json({
                 message: "No appointment history found"
             })
@@ -2653,15 +2826,17 @@ export const cancelledPaymentDetails = async (req, res) => {
 // controller logic for validating the stepper component in clinic side
 export const validateStep = async (req, res, next) => {
     try {
-        const { step } = req.params;
+        const { step, clinicType } = req.query;
 
-        if (isNaN(step) || step < 0 || step > 5) {
+        if (isNaN(step) || step < 0 || step > 4) {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 message: "Please enter a valid step"
             });
         }
 
-        const validationMiddleWare = validatePatientConsultation(step);
+        const clinic_type = decodeURIComponent(String(clinicType));
+
+        const validationMiddleWare = validatePatientConsultation(step, clinic_type);
 
         // Execute each middleware sequentially
         for (const middleware of validationMiddleWare) {
@@ -4592,10 +4767,11 @@ const addKeyValue = (doc, key, value, yPos, margin, maxWidth, isSubItem = false)
         yPos = 20;
     }
 
-    const startX = isSubItem ? margin + 45 : margin + 25;
-    const keyWidth = isSubItem ? 130 : 150;
-    const valueWidth = maxWidth - keyWidth - 25;
-    const valueStart = startX + keyWidth + 200
+    const startX = isSubItem ? margin + 45 : margin + 5;
+    const keyWidth = isSubItem ? 130 : 250;
+    const spacing = 80; // Consistent spacing between key and value
+    const valueStart = startX + keyWidth + spacing;
+    const valueWidth = maxWidth - (valueStart - margin); // Calculate remaining width for value
 
     /**
      * set the font of key
@@ -4624,6 +4800,97 @@ const addKeyValue = (doc, key, value, yPos, margin, maxWidth, isSubItem = false)
     return yPos + Math.max(14, valueHeight + 6);
 }
 
+// Field configurations for different clinic types
+const clinicFieldConfigs = {
+    "Dental Clinic": {
+        patientInfo: {
+            firstName: "patient_first_name",
+            lastName: "patient_last_name",
+            email: "patient_email",
+            phoneNumber: "phone_number"
+        },
+        medicalHistory: [
+            { label: "Documented Allergic Reactions", field: "allergy_details" },
+            { label: "Current Prescription Medications", field: "taking_prescription_medication_details" },
+            { label: "Chronic Health Conditions", field: "chronic_condition_details" },
+            { label: "Temporomandibular Joint (TMJ) or Jaw Pain History", field: "history_of_jaw_pain_details" },
+            { label: "History of Excessive Bleeding", field: "experienced_excessive_bleeding_details" },
+            { label: "Cardiovascular History", field: "past_history_of_cardiovascular_issues" },
+            { label: "Prophylactic Antibiotic Recommendation", field: "advised_taking_antibiotics_details" },
+            { label: "Surgical History", field: "past_surgeries_details" }
+        ],
+        lifestyleAssessment: [
+            { label: "Gingival Bleeding History", field: "experience_bleeding_details" },
+            { label: "Dental Sensitivity Description", field: "tooth_sensitivity_details" },
+            { label: "Concerns Regarding Dental Aesthetics", field: "dental_appearance_details" },
+            { label: "Tooth Mobility Observations", field: "loose_teeth_details" },
+            { label: "Regular Physical Activity", field: "regular_exercise_details" },
+            { label: "Alcohol Consumption Habits", field: "consume_alcohol_details" },
+            { label: "Dental Floss Usage", field: "dental_floss_details" },
+            { label: "Intake of Sugary Foods or Beverages", field: "consume_sugary_foods_or_beverages_details" },
+            { label: "Oral Malodor or Dysgeusia", field: "bad_breath_or_bad_taste_details" },
+            { label: "Recent Dental Radiographs", field: "dental_xrays_details" },
+            { label: "Nutritional Balance and Diet Quality", field: "balanced_diet_details" },
+            { label: "Tobacco Use Frequency", field: "smoke_frequency_details" },
+            { label: "Engagement in Athletic Activities", field: "participate_in_sports_details" },
+            { label: "Previous Dental Restorations", field: "dental_restoration_details" },
+            { label: "History of Orthodontic Interventions", field: "orthodontic_treatment_details" },
+            { label: "Brushing Frequency", field: "brush_frequency_details" },
+            { label: "Mouthwash Usage", field: "use_mouthwash_details" },
+            { label: "Toothbrush Replacement Frequency", field: "replace_toothbrush_details" },
+            { label: "Tongue Cleaning Practices", field: "clean_tongue_details" },
+            { label: "Regular Dental Check-up Attendance", field: "regular_checkup_details" },
+            { label: "Dental Anxiety Level", field: "dental_anxiety_details" },
+            { label: "History of Dental Trauma", field: "dental_trauma_details" },
+            { label: "Eating Disorder History", field: "eating_disorder_details" }
+        ]
+    },
+    "Psychiatry Clinic": {
+        patientInfo: {
+            firstName: "first_name",
+            lastName: "last_name",
+            email: "email",
+            phoneNumber: "phone_number"
+        },
+        medicalHistory: [
+            { label: "Diagnosed Mental Health Conditions", field: "diagnosed_mental_health_condition_details" },
+            { label: "Current Psychiatric Medications", field: "taking_psychiatric_medication_details" },
+            { label: "History of Psychiatric Hospitalization", field: "hospitalized_for_mental_health_reason_details" },
+            { label: "Family History of Mental Health Conditions", field: "family_history_of_mental_health_condition_details" },
+            { label: "Suicidal Thoughts or Behaviors", field: "suicidal_thoughts_or_behavior_details" },
+            { label: "Self-Harm or Suicide Attempts", field: "self_harm_or_suicide_details" },
+            { label: "Counseling or Therapy History", field: "counseling_or_therapy_details" },
+            { label: "Emotional or Behavioral Patterns", field: "emotional_or_behavioral_patterns_details" }
+        ],
+        lifestyleAssessment: [
+            { label: "Mood Patterns", field: "mood_details" },
+            { label: "Excessive Worry or Anxiety", field: "excessive_worry_or_anxiety_details" },
+            { label: "Sleep Patterns", field: "sleep_patterns_details" },
+            { label: "Appetite or Weight Changes", field: "appetite_or_weight_details" },
+            { label: "Sleep Changes", field: "sleep_changes_details" },
+            { label: "Feelings of Hopelessness or Worthlessness", field: "hopelessness_or_worthlessness_details" },
+            { label: "Agitation or Impulsivity", field: "agitation_or_impulsivity_details" },
+            { label: "Difficulty Concentrating", field: "difficulty_concentrating_details" },
+            { label: "Stress Levels", field: "stress_level_details" },
+            { label: "Support System", field: "support_system_details" },
+            { label: "Major Life Changes", field: "major_life_changes_details" },
+            { label: "Substance Use", field: "substances_details" },
+            { label: "Sleep Hours", field: "sleep_hours_details" },
+            { label: "Social Groups", field: "social_group_details" },
+            { label: "Living Situation", field: "living_situation_details" },
+            { label: "Coping with Stress", field: "coping_with_stress_details" },
+            { label: "Mental Health Treatment History", field: "mental_health_treatment_details" },
+            { label: "Previous Treatment History", field: "treatment_history_details" },
+            { label: "Currently in Therapy", field: "currently_in_therapy_details" },
+            { label: "Negative Experience with Mental Health Treatment", field: "negative_experience_with_mental_health_treatment_details" },
+            { label: "Currently Under Care of Psychiatrist", field: "currently_undercare_of_psychiatrist_details" },
+            { label: "Stopped Taking Psychiatric Medications", field: "stopped_taking_psychiatric_medication_details" },
+            { label: "Side Effects from Psychiatric Medications", field: "side_effects_from_psychiatric_medication_details" },
+            { label: "Consistent with Therapy/Medication Attendance", field: "consistent_with_attending_therapy_or_taking_medication_details" }
+        ]
+    }
+};
+
 /**
  * @function controller logic to auto-generate a medical history and appointment details and download PDF
  */
@@ -4642,6 +4909,16 @@ export const autoGenerateMedicalReport = asyncHandler(
             if (!appointmentID) {
                 return res.status(StatusCodes.BAD_REQUEST).json({
                     message: "Appointment ID is required"
+                })
+            }
+
+            // Get clinic type from patient data
+            const clinicType = patient.clinic_type || "Dental Clinic";
+            const fieldConfig = clinicFieldConfigs[clinicType];
+
+            if (!fieldConfig) {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    message: `Unsupported clinic type: ${clinicType}`
                 })
             }
 
@@ -4688,9 +4965,9 @@ export const autoGenerateMedicalReport = asyncHandler(
              * Patient Information Details
              */
             yPos = addSection(doc, "Patient Information", yPos, margin, pageWidth);
-            yPos = addKeyValue(doc, "Name", `${patient.patient_first_name} ${patient.patient_last_name}`, yPos, margin, maxWidth);
-            yPos = addKeyValue(doc, "Email", `${patient.patient_email}`, yPos, margin, maxWidth);
-            yPos = addKeyValue(doc, "Phone Number", `${patient.phoneNumber}`, yPos, margin, maxWidth);
+            yPos = addKeyValue(doc, "Name", `${patient[fieldConfig.patientInfo.firstName]} ${patient[fieldConfig.patientInfo.lastName]}`, yPos, margin, maxWidth);
+            yPos = addKeyValue(doc, "Email", `${patient[fieldConfig.patientInfo.email]}`, yPos, margin, maxWidth);
+            yPos = addKeyValue(doc, "Phone Number", `${patient[fieldConfig.patientInfo.phoneNumber]}`, yPos, margin, maxWidth);
             yPos = addKeyValue(doc, "Appointment Date", `${appointmentDate}`, yPos, margin, maxWidth);
             yPos = addKeyValue(doc, "Appointment Time", `${formattedTime}`, yPos, margin, maxWidth);
             yPos = addKeyValue(doc, "Gender", `${patient.gender}`, yPos, margin, maxWidth);
@@ -4703,45 +4980,17 @@ export const autoGenerateMedicalReport = asyncHandler(
              * Medical History Details
              */
             yPos = addSection(doc, "Medical History", yPos, margin, pageWidth);
-            yPos = addKeyValue(doc, "Allergies", `${patient.allergy_details}`, yPos, margin, maxWidth);
-            yPos = addKeyValue(doc, "Current Medications", `${patient.taking_prescription_medication_details}`, yPos, margin, maxWidth);
-            yPos = addKeyValue(doc, "Chronic Condition", `${patient.chronic_condition_details}`, yPos, margin, maxWidth);
-            yPos = addKeyValue(doc, "Surgical History", `${patient.past_surgeries_details}`, yPos, margin, maxWidth);
-            yPos = addKeyValue(doc, "Cardiovascular History", `${patient.past_history_of_cardiovascular_issues}`, yPos, margin, maxWidth);
-            yPos = addKeyValue(doc, "Dental History", `${patient.dental_restoration_details}`, yPos, margin, maxWidth);
-            yPos = addKeyValue(doc, "Orthodontic History", `${patient.orthodontic_treatment_details}`, yPos, margin, maxWidth);
-            yPos = addKeyValue(doc, "Dental Trauma", `${patient.dental_trauma_details}`, yPos, margin, maxWidth);
-            yPos = addKeyValue(doc, "Tooth Sensitivity", `${patient.tooth_sensitivity_details}`, yPos, margin, maxWidth);
-            yPos = addKeyValue(doc, "Dental Xray", `${patient.dental_xrays_details}`, yPos, margin, maxWidth);
-            yPos = addKeyValue(doc, "Experienced Bleeding", `${patient.experience_bleeding_details}`, yPos, margin, maxWidth);
-            yPos = addKeyValue(doc, "Jaw Pain", `${patient.history_of_jaw_pain_details}`, yPos, margin, maxWidth);
-            yPos = addKeyValue(doc, "Loose Teeth", `${patient.loose_teeth_details}`, yPos, margin, maxWidth);
-            yPos = addKeyValue(doc, "Bad Breath or Bad Taste", `${patient.bad_breath_or_bad_taste_details}`, yPos, margin, maxWidth);
-            yPos = addKeyValue(doc, "Dental Appearance", `${patient.dental_appearance_details}`, yPos, margin, maxWidth);
-            yPos = addKeyValue(doc, "Experienced Excessive Bleeding", `${patient.experienced_excessive_bleeding_details}`, yPos, margin, maxWidth);
-
+            fieldConfig.medicalHistory.forEach((field, index) => {
+                yPos = addKeyValue(doc, field.label, `${patient[field.field]}`, yPos, margin, maxWidth);
+            })
             /**
              * Lifestyle Assessment
              */
             yPos += 15;
             yPos = addSection(doc, "Lifestyle Assessment", yPos, margin, pageWidth);
-            yPos = addKeyValue(doc, "Oral Hygiene", " ", yPos, margin, maxWidth);
-            yPos = addKeyValue(doc, "• Brushing: ", patient.brush_frequency_details, yPos, margin, maxWidth, true);
-            yPos = addKeyValue(doc, "• Flossing: ", patient.dental_floss_details, yPos, margin, maxWidth, true);
-            yPos = addKeyValue(doc, "• Mouthwash: ", patient.use_mouthwash_details, yPos, margin, maxWidth, true);
-            yPos = addKeyValue(doc, "• Toothbrush Replacement", `${patient.replace_toothbrush_details}`, yPos, margin, maxWidth, true)
-            yPos = addKeyValue(doc, "• Tongue Cleaning", `${patient.clean_tongue_details}`, yPos, margin, maxWidth, true)
-
-            yPos = addKeyValue(doc, "Habits", " ", yPos, margin, maxWidth);
-            yPos = addKeyValue(doc, "• Tobacco Use: ", patient.smoke_frequency_details, yPos, margin, maxWidth, true);
-            yPos = addKeyValue(doc, "• Alcohol Use: ", patient.consume_alcohol_details, yPos, margin, maxWidth, true);
-
-            yPos = addKeyValue(doc, "Diet & Exercises", " ", yPos, margin, maxWidth);
-            yPos = addKeyValue(doc, "• Diet: ", patient.balanced_diet_details, yPos, margin, maxWidth, true);
-            yPos = addKeyValue(doc, "• Exercises: ", patient.regular_exercise_details, yPos, margin, maxWidth, true);
-            yPos = addKeyValue(doc, "• Dental Anxiety: ", patient.dental_anxiety_details, yPos, margin, maxWidth, true);
-            yPos = addKeyValue(doc, "• Participating in Sports: ", `${patient.participate_in_sports_details}`, yPos, margin, maxWidth, true)
-            yPos = addKeyValue(doc, "• Consumed Sugary Foods or Beverage: ", `${patient.consume_sugary_foods_or_beverages_details}`, yPos, margin, maxWidth, true);
+            fieldConfig.lifestyleAssessment.forEach((field, index) => {
+                yPos = addKeyValue(doc, field.label, `${patient[field.field]}`, yPos, margin, maxWidth);
+            })
 
             const remainingSpace = doc.page.height - 50;
 
@@ -5399,7 +5648,16 @@ export const getConsultationSections = asyncHandler(
                 "Consent and Agreement"
             ];
 
-            const allSections = [...new Set([...defaultSections, ...result.sections])];
+            const dynamicSections = result.sections.filter(
+                (section) => !defaultSections.includes(section)
+            );
+
+            const allSections = [
+                "Patient Information",
+                ...dynamicSections,
+                "Consent and Agreement"
+            ];
+
             logger.log(`info`, `Successfully retrieved the unique section columns of consultation questionnaires for clinic ID: ${clinic_id}`);
 
             return res.status(StatusCodes.OK).json({
@@ -5425,9 +5683,10 @@ export const getConsultationSections = asyncHandler(
 export const getConsultationQuestionsBySection = asyncHandler(
     async (req, res) => {
         try {
-            const { section, clinicID } = req.query;
+            const { section, clinicID, clinicType } = req.query;
 
             const clinic_id = parseInt(clinicID);
+            const clinic_type = String(clinicType);
 
             if (isNaN(clinicID)) {
                 return res.status(StatusCodes.BAD_REQUEST).json({
@@ -5439,7 +5698,8 @@ export const getConsultationQuestionsBySection = asyncHandler(
 
             const result = await clinic_instance.getConsultationQuestionsBySection({
                 section: section,
-                clinicID: clinic_id
+                clinicID: clinic_id,
+                clinicType: clinic_type
             })
 
             if (!result) {

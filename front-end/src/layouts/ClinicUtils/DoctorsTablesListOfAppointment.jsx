@@ -335,7 +335,7 @@ const DoctorsTablesListOfAppointments = () => {
     }
 
     const gender = ["Male", "Female"]
-    const status = ["Approved", "Declined", "Pending", "Cancelled"];
+    const status = ["Approved", "Declined", "Pending", "Cancelled", "Consulted"];
 
     // function to open the dialog to delete booked appointment
     const deleteBookedAppointmentDialog = async (bookedAppointment) => {

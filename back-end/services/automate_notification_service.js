@@ -604,7 +604,7 @@ export const sendStatusUpdateReminder = async ({ email, phoneNumber, firstName, 
                     to: email,
                     subject: emailSubject,
                     html: emailBody,
-                }), 120000);
+                }), 120000); // 2 minutes timeout
 
                 logger.log(`info`, `Successfully sent a status update reminder via email using Resend: ${email}`);
 
@@ -619,7 +619,7 @@ export const sendStatusUpdateReminder = async ({ email, phoneNumber, firstName, 
             to: email,
             subject: emailSubject,
             html: emailBody
-        }), 120000);
+        }), 120000); // 2 minutes timeout
 
         logger.log(`info`, `Successfully sent a status update reminder via local email: ${email}`);
 

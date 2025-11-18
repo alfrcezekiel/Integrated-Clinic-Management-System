@@ -27,149 +27,125 @@ const step1Validation = [
         .withMessage("Appointment time is required"),
 ];
 
-// Step 2: Medical History
-const step2Validation = [
-    body("allergiesDetails")
-        .notEmpty()
-        .withMessage("Allergy details is required"),
-    body("takingPrescriptionMedicationDetails")
-        .notEmpty()
-        .withMessage("Prescription medication details is required"),
-    body("chronicConditionDetails")
-        .notEmpty()
-        .withMessage("Medical condition details are required"),
-    body("surgeriesDetails")
-        .notEmpty()
-        .withMessage("Surgeries details is required"),
-    body("jawPainDetails")
-        .notEmpty()
-        .withMessage("Jaw pain details are required"),
-    body("experiencedExcessiveBleedingDetails")
-        .notEmpty()
-        .withMessage("Experience excessive bleeding details is required"),
-    body("heartProblemsDetails")
-        .notEmpty()
-        .withMessage("Cardiovascular issues details is required"),
-    body("advisedTakingAntibioticsDetails")
-        .notEmpty()
-        .withMessage("Advised taking antibiotics details is required")
-];
-
-// Step 3: Lifestyle Information
-const step3Validation = [
-    body("smokeDetails")
-        .notEmpty()
-        .withMessage("Smoking details required"),
-    body("consumeSugaryFoodsOrDrinksDetails")
-        .notEmpty()
-        .withMessage("Sugary foods or drinks details is required"),
-    body("dentalFlossDetails")
-        .notEmpty()
-        .withMessage("Dental floss details is required"),
-    body("consumeAlcoholDetails")
-        .notEmpty()
-        .withMessage("Alcohol consumption details is required"),
-    body("participateInSportsDetails")
-        .notEmpty()
-        .withMessage("Sports participation details is required"),
-    body("balancedDietDetails")
-        .notEmpty()
-        .withMessage("Balanced diet details is required"),
-    body("regularExerciseDetails")
-        .notEmpty()
-        .withMessage("Regular exercise details is required"),
-    body("eatingDisordersDetails")
-        .notEmpty()
-        .withMessage("Eating disorders details is required"),
-];
-
-// Step 4: Clinic Assessments
-const step4Validation = [
-    body("diagnosis")
-        .notEmpty()
-        .withMessage("Diagnosis Details is required"),
-    body("symptoms")
-        .notEmpty()
-        .withMessage("Symptoms Details is required"),
-    body("prescription")
-        .notEmpty()
-        .withMessage("Prescription Details is required"),
-    body("treatmentPlan")
-        .notEmpty()
-        .withMessage("Treatment Plan Details is required"),
-    body("bloodPressure")
-        .notEmpty()
-        .withMessage("Blood pressure details is required"),
-    body("heartRate")
-        .notEmpty()
-        .withMessage("Heart rate is required")
-];
-
-// Step 5: Consent and Agreement
-const step5Validation = [
-    body("consent")
-        .notEmpty()
-        .withMessage("Consent is required. You must agree to the terms and privacy policy.")
-        .isIn(["Yes", "No"])
-        .withMessage("Consent must be Yes or No")
-];
-
-// dynamic medical history question based on the retrieved consultation questionnaire in the server
-const step2DynamicMedicalHistoryValidation = async () => {
-    const possibleFields = {
-        allergiesDetails: "Allergy details is required",
-        takingPrescriptionMedicationDetails: "Prescription medication details is required",
-        chronicConditionDetails: "Medical condition details are required",
-        surgeriesDetails: "Surgeries details is required",
-        jawPainDetails: "Jaw pain details are required",
-        experiencedExcessiveBleedingDetails: "Experience excessive bleeding details is required",
-        heartProblemsDetails: "Cardiovascular issues details is required",
-        advisedTakingAntibioticsDetails: "Advised taking antibiotics details is required"
+// Step 6: Consent and Agreement
+const step6DynamicValidationClinicTypesFieldNames = async (clinicType) => {
+    let possibleFields = {};
+    
+    if (clinicType === "Dental Clinic") {
+        possibleFields = {
+            consent: "Consent is required. You must agree to the terms and privacy policy."
+        };
+    } else if (clinicType === "Psychiatry Clinic") {
+        possibleFields = {
+            consent: "Consent is required. You must agree to the terms and privacy policy."
+        };
     }
 
     return Object.entries(possibleFields).map(([field, message]) => {
         return body(field)
-            .if(body(field).exists())
             .notEmpty()
             .withMessage(message)
     })
 }
 
-const step3DynamicLifestyleInformationValidation = async () => {
-    const possibleLifestyleInformationFields = {
-        smokeDetails: "Smoking details required",
-        consumeSugaryFoodsOrDrinksDetails: "Sugary foods or drinks details is required",
-        dentalFlossDetails: "Dental floss details is required",
-        consumeAlcoholDetails: "Alcohol consumption details is required",
-        participateInSportsDetails: "Sports participation details is required",
-        balancedDietDetails: "Balanced diet details is required",
-        regularExerciseDetails: "Regular exercise details is required",
-        eatingDisordersDetails: "Eating disorders details is required"
+// dynamic medical history question based on the retrieved consultation questionnaire in the server
+const step2DynamicValidationClinicTypesFieldNames = async (clinicType) => {
+    let possibleFields = {};
+    
+    if (clinicType === "Dental Clinic") {
+        possibleFields = {
+            allergiesDetails: "Allergy details is required",
+            takingPrescriptionMedicationDetails: "Prescription medication details is required",
+            chronicConditionDetails: "Medical condition details are required",
+            surgeriesDetails: "Surgeries details is required",
+            jawPainDetails: "Jaw pain details are required",
+            experiencedExcessiveBleedingDetails: "Experience excessive bleeding details are required",
+            heartProblemsDetails: "Cardiovascular issues details are required",
+            advisedTakingAntibioticsDetails: "Advised taking antibiotics details is required"
+        };
+    } else if (clinicType === "Psychiatry Clinic") {
+        possibleFields = {
+            diagnosedMentalHealthConditionDetails: "Mental health condition details are required",
+            takingPsychiatricMedicationDetails: "Psychiatric medication details are required",
+            hospitalizedForMentalHealthReasonDetails: "Hospitalization details are required",
+            familyHistoryOfMentalHealthConditionsDetails: "Family mental health history details are required",
+            suicidalThoughtsOrBehaviorsDetails: "Suicidal thoughts or behaviors details are required",
+            selfHarmOrSuicideDetails: "Self-harm or suicide details are required",
+            counselingOrTherapyDetails: "Counseling or therapy details are required",
+            emotionalOrBehavioralPatternsDetails: "Emotional or behavioral patterns details are required"
+        };
     }
 
-    return Object.entries(possibleLifestyleInformationFields).map(([field, message]) => {
+    return Object.entries(possibleFields).map(([field, message]) => {
         return body(field)
-            .if(body(field).exists())
             .notEmpty()
             .withMessage(message)
     })
 }
 
-const step4DynamicClinicalAssessmentValidation = async () => {
-    const possibleClinicalAssessmentFields = {
-        experienceBleedingDetails: "Experience bleeding details is required",
-        toothSensitivityDetails: "Tooth sensitivity details is required",
-        dentalAppearanceDetails: "Dental appearance details is required",
-        looseTeethDetails: "Loose teeth details is required",
-        badBreathOrBadTasteDetails: "Bad breath or bad taste details is required",
-        dentalXraysDetails: "Dental X-rays details is required",
-        dentalRestorationDetails: "Dental restoration details is required",
-        orthodonticTreatmentDetails: "Orthodontic treatment details is required"
+const step3DynamicValidationClinicTypesFieldNames = async (clinicType) => {
+    let possibleFields = {};
+    
+    if (clinicType === "Dental Clinic") {
+        possibleFields = {
+            smokeDetails: "Smoking details required",
+            consumeSugaryFoodsOrDrinksDetails: "Sugary foods or drinks details is required",
+            dentalFlossDetails: "Dental floss details is required",
+            consumeAlcoholDetails: "Alcohol consumption details is required",
+            participateInSportsDetails: "Sports participation details is required",
+            balancedDietDetails: "Balanced diet details is required",
+            regularExerciseDetails: "Regular exercise details is required",
+            eatingDisordersDetails: "Eating disorders details is required"
+        };
+    } else if (clinicType === "Psychiatry Clinic") {
+        possibleFields = {
+            moodDetails: "Mood details are required",
+            excessiveWorryOrAnxietyDetails: "Excessive worry or anxiety details are required",
+            sleepPatternsDetails: "Sleep patterns details are required",
+            appetiteOrWeightDetails: "Appetite or weight details are required",
+            sleepChangesDetails: "Sleep changes details are required",
+            hopelessnessOrWorthlessnessDetails: "Hopelessness or worthlessness details are required",
+            agitationOrImpulsivityDetails: "Agitation or impulsivity details are required",
+            difficultyConcentratingDetails: "Difficulty concentrating details are required"
+        };
     }
 
-    const fields = Object.entries(possibleClinicalAssessmentFields).map(([field, message]) => {
+    return Object.entries(possibleFields).map(([field, message]) => {
         return body(field)
-            .if(body(field).exists())
+            .notEmpty()
+            .withMessage(message)
+    })
+}
+
+const step4DynamicValidationClinicTypesFieldNames = async (clinicType) => {
+    let possibleFields = {};
+    
+    if (clinicType === "Dental Clinic") {
+        possibleFields = {
+            experienceBleedingDetails: "Experience bleeding details is required",
+            toothSensitivityDetails: "Tooth sensitivity details is required",
+            dentalAppearanceDetails: "Dental appearance details is required",
+            looseTeethDetails: "Loose teeth details is required",
+            badBreathOrBadTasteDetails: "Bad breath or bad taste details is required",
+            dentalXraysDetails: "Dental X-rays details is required",
+            dentalRestorationDetails: "Dental restoration details is required",
+            orthodonticTreatmentDetails: "Orthodontic treatment details is required"
+        };
+    } else if (clinicType === "Psychiatry Clinic") {
+        possibleFields = {
+            stressLevelsDetails: "Stress levels details are required",
+            supportSystemDetails: "Support system details are required",
+            majorLifeChangesDetails: "Major life changes details are required",
+            substancesDetails: "Substances details are required",
+            sleepHoursDetails: "Sleep hours details are required",
+            socialGroupsDetails: "Social groups details are required",
+            livingSituationDetails: "Living situation details are required",
+            copingWithStressDetails: "Coping with stress details are required"
+        };
+    }
+
+    const fields = Object.entries(possibleFields).map(([field, message]) => {
+        return body(field)
             .notEmpty()
             .withMessage(message)
     })
@@ -177,30 +153,44 @@ const step4DynamicClinicalAssessmentValidation = async () => {
     return fields;
 }
 
-const step5DynamicOralHygieneValidation = async () => {
-    const possibleOralHygieneFields = {
-        brushFrequencyDetails: "Brushing frequency is required",
-        useMouthWashDetails: "Mouthwash usage details is required",
-        replaceToothbrushDetails: "Toothbrush replacement details is required",
-        cleanTongueDetails: "Tongue cleaning details is required",
-        regularCheckupDetails: "Regular dental checkup details is required",
-        dentalAnxietyDetails: "Dental anxiety details is required",
-        dentalTraumaDetails: "Dental trauma details is required"
-    };
+const step5DynamicValidationClinicTypesFieldNames = async (clinicType) => {
+    let possibleFields = {};
+    
+    if (clinicType === "Dental Clinic") {
+        possibleFields = {
+            brushFrequencyDetails: "Brushing frequency is required",
+            useMouthWashDetails: "Mouthwash usage details is required",
+            replaceToothbrushDetails: "Toothbrush replacement details is required",
+            cleanTongueDetails: "Tongue cleaning details is required",
+            regularCheckupDetails: "Regular dental checkup details is required",
+            dentalAnxietyDetails: "Dental anxiety details is required",
+            dentalTraumaDetails: "Dental trauma details is required"
+        };
+    } else if (clinicType === "Psychiatry Clinic") {
+        possibleFields = {
+            mentalHealthTreatmentDetails: "Mental health treatment details are required",
+            treatmentHistoryDetails: "Treatment history details are required",
+            currentlyInTherapyDetails: "Currently in therapy details are required",
+            negativeExperienceWithMentalHealthTreatmentDetails: "Negative experience with mental health treatment details are required",
+            currentlyUnderCareOfPsychiatristDetails: "Currently under care of psychiatrist details are required",
+            stoppedTakingPsychiatricMedicationsDetails: "Stopped taking psychiatric medications details are required",
+            sideEffectsFromPsychiatricMedicationsDetails: "Side effects from psychiatric medications details are required",
+            consistentWithAttendingTherapyOrTakingMedicationsDetails: "Consistency with therapy or medications details are required"
+        };
+    }
 
-    const oralHygieneFields = Object.entries(possibleOralHygieneFields)
+    const fields = Object.entries(possibleFields)
         .map(([field, message]) => {
             return body(field)
-                .if(body(field).exists())
                 .notEmpty()
                 .withMessage(message)
         });
 
-    return oralHygieneFields;
+    return fields;
 }
 
 // Combine validations dynamically
-const validatePatientConsultation = (step) => {
+const validatePatientConsultation = (step, clinicType) => {
     return [
         async (req, res, next) => {
             let validations = [];
@@ -210,19 +200,19 @@ const validatePatientConsultation = (step) => {
                     validations = step1Validation;
                     break;
                 case 1:
-                    validations = await step2DynamicMedicalHistoryValidation(req);
+                    validations = await step2DynamicValidationClinicTypesFieldNames(clinicType);
                     break;
                 case 2:
-                    validations = await step3DynamicLifestyleInformationValidation(req);
+                    validations = await step3DynamicValidationClinicTypesFieldNames(clinicType);
                     break;
                 case 3:
-                    validations = await step4DynamicClinicalAssessmentValidation(req);
+                    validations = await step4DynamicValidationClinicTypesFieldNames(clinicType);
                     break;
                 case 4:
-                    validations = await step5DynamicOralHygieneValidation(req);
+                    validations = await step5DynamicValidationClinicTypesFieldNames(clinicType);
                     break;
                 case 5:
-                    validations = step5Validation;
+                    validations = await step6DynamicValidationClinicTypesFieldNames(clinicType);
                     break;
                 default:
                     return [
