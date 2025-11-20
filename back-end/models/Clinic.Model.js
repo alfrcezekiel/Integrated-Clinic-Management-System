@@ -2173,7 +2173,7 @@ class Clinic {
         async (params) => {
             this.connection = await this.conn.getConnection();
             try {
-                let { clinic_modify_booked_appointment_details } = params;
+                let { clinic_modify_booked_appointment_details, type } = params;
 
                 if (params && typeof params === "object" && !Array.isArray(params)) {
                     /**
@@ -2181,10 +2181,7 @@ class Clinic {
                      */
                     clinic_modify_booked_appointment_details = params.clinic_modify_booked_appointment_details;
                 } else {
-                    /**
-                     * if the passed argument is array or passed as direct values 
-                     */
-                    clinic_modify_booked_appointment_details = params;
+                    throw new Error(`Invalid! Clinic Modify Booked Appointment Details must be an object`)
                 }
 
                 if (!clinic_modify_booked_appointment_details || typeof clinic_modify_booked_appointment_details !== "object" || Array.isArray(clinic_modify_booked_appointment_details)) {
@@ -2210,45 +2207,90 @@ class Clinic {
                 const formattedAppointmentDate = dayjs(appointmentDate).format("YYYY-MM-DD");
                 const formattedAppointmentTime = appointmentTime ? appointmentTime.slice(0, 5) : null;
 
-                const table_name = String("clinic_appointments");
-                const update_fields = [
-                    "firstName = ?",
-                    "lastName = ?",
-                    "address = ?",
-                    "email = ?",
-                    "phoneNumber = ?",
-                    "appointmentDate = ?",
-                    "appointmentTime = ?",
-                    "gender = ?",
-                    "status = ?",
-                    "purposeOfAppointment = ?"
-                ]
+                let result;
+                if (type === "Clinic") {
+                    const table_name = String("clinic_appointments");
+                    const update_fields = [
+                        "firstName = ?",
+                        "lastName = ?",
+                        "address = ?",
+                        "email = ?",
+                        "phoneNumber = ?",
+                        "appointmentDate = ?",
+                        "appointmentTime = ?",
+                        "gender = ?",
+                        "status = ?",
+                        "purposeOfAppointment = ?"
+                    ]
 
-                const query = `
-                    UPDATE ${table_name}
-                    SET ${update_fields.join(", ")}
-                    WHERE id = ?;
-                `
+                    const query = `
+                        UPDATE ${table_name}
+                        SET ${update_fields.join(", ")}
+                        WHERE id = ?;
+                    `
 
-                const values = [
-                    firstName,
-                    lastName,
-                    address,
-                    email,
-                    phoneNumber,
-                    formattedAppointmentDate,
-                    formattedAppointmentTime,
-                    gender,
-                    status,
-                    purposeOfAppointment,
-                    bookedAppointmentID
-                ]
+                    const values = [
+                        firstName,
+                        lastName,
+                        address,
+                        email,
+                        phoneNumber,
+                        formattedAppointmentDate,
+                        formattedAppointmentTime,
+                        gender,
+                        status,
+                        purposeOfAppointment,
+                        bookedAppointmentID
+                    ]
 
-                const [result] = await this.connection.query(query, values);
+                    result = await this.connection.query(query, values);
 
-                const commitQuery = await this.connection.commit();
-                if (!commitQuery) {
-                    throw new Error("Failed to commit transaction in modifying the clinic booked appointment details in all appointments clinic side table")
+                    const commitQuery = await this.connection.commit();
+                    if (!commitQuery) {
+                        throw new Error("Failed to commit transaction in modifying the clinic booked appointment details in all appointments clinic side table")
+                    }
+                } else if (type === "Patient") {
+                    const table_name = String("patientsappointment");
+
+                    const update_fields = [
+                        "firstName = ?",
+                        "lastName = ?",
+                        "address = ?",
+                        "email = ?",
+                        "phoneNumber = ?",
+                        "appointmentDate = ?",
+                        "preferredTime = ?",
+                        "gender = ?",
+                        "status = ?",
+                        "purposeOfAppointment = ?"
+                    ]
+
+                    const query = `
+                        UPDATE ${table_name}
+                        SET ${update_fields.join(", ")}
+                        WHERE appointmentID = ?;
+                    `
+
+                    const values = [
+                        firstName,
+                        lastName,
+                        address,
+                        email,
+                        phoneNumber,
+                        formattedAppointmentDate,
+                        formattedAppointmentTime,
+                        gender,
+                        status,
+                        purposeOfAppointment,
+                        bookedAppointmentID
+                    ]
+
+                    result = await this.connection.query(query, values);
+
+                    const commitQuery = await this.connection.commit();
+                    if (!commitQuery) {
+                        throw new Error("Failed to commit transaction in modifying the clinic booked appointment details in all appointments clinic side table")
+                    }
                 }
 
                 return result;
@@ -2265,7 +2307,7 @@ class Clinic {
                     /**
                      * release the connection back to the pool connection
                      */
-                    await this.connection.release();
+                    this.connection.release();
                 }
             }
         },
@@ -3440,12 +3482,13 @@ class Clinic {
                     throw new Error(`Invalid! Handle automated update status should be an object`);
                 }
 
-                const { appointmentID, status } = params;
+                const { appointmentID, status, type } = params;
 
                 await this.connection.beginTransaction();
 
                 const appointment_id = parseInt(appointmentID);
                 const patient_status = String(status);
+                const patient_type = String(type);
 
                 if (!appointment_id) {
                     throw new Error(`Invalid! Appointment ID should be a number`);
@@ -3455,89 +3498,91 @@ class Clinic {
                     throw new Error(`Invalid! Patient status should be a string`);
                 }
 
-                /**
-                 * @description columns of patients appointments and clinics
-                 */
-                const patients_appointments_and_clinics_columns = [
-                    "pa.appointmentID",
-                    "pa.firstName",
-                    "pa.lastName",
-                    "pa.email",
-                    "pa.appointmentDate",
-                    "pa.preferredTime",
-                    "pa.phoneNumber",
-                    "pa.status",
-                    "pa.purposeOfAppointment",
-                    "c.clinic_name",
-                    "c.clinic_address"
-                ]
-
-                /**
-                 * @description query to retrieve the appointment and clinic
-                 */
-                const retrieveAppointmentAndClinicQuery = `
-                    SELECT
-                    ${patients_appointments_and_clinics_columns.join(",")}
-                    FROM patientsappointment AS pa
-                    INNER JOIN clinic AS c
-                    ON pa.clinic_id = c.clinic_id
-                    WHERE pa.appointmentID = ?;
-                `
-
-                /**
-                 * @description values of appointment ID
-                 */
-                const retrieveAppointmentAndClinicQueryValues = [
-                    appointment_id
-                ]
-
-                const [rows] = await this.connection.query(
-                    retrieveAppointmentAndClinicQuery,
-                    retrieveAppointmentAndClinicQueryValues
-                );
-
-                if (!rows.length) {
-                    throw new Error(`Failed to retrieve the appointment and clinic`);
-                }
-
-                const current_appointment = rows[0];
-
-                const updateQuery = `
-                    UPDATE patientsappointment
-                    SET status = ?
-                    WHERE appointmentID = ?;
-                `
-
-                const updateQueryValues = [
-                    patient_status,
-                    appointment_id
-                ]
-
-                const [updateRows] = await this.connection.query(updateQuery, updateQueryValues);
-
-                if (!updateRows) {
-                    throw new Error(`Failed to automate update the status of patient via email and sms`);
-                }
-
-                await this.connection.commit();
-
-                try {
+                if (patient_type === "Patient") {
                     /**
-                     * sends reminder to the patient in via email
+                     * @description columns of patients appointments and clinics
                     */
-                    await this.sendStatusUpdateReminder({
-                        appointmentID: appointment_id,
-                        email: current_appointment.email,
-                        phoneNumber: current_appointment.phoneNumber,
-                        firstName: current_appointment.firstName,
-                        lastName: current_appointment.lastName,
-                        appointmentDate: `${current_appointment.appointmentDate}`,
-                        preferredTime: `${current_appointment.preferredTime}`,
-                        patientStatus: patient_status,
-                        clinicName: current_appointment.clinic_name,
-                    })
-                } catch (error) {
-                    logger.log(`error`, `Failed to send a status update reminder ${process.env.NODE_ENV === "production" ? `via production: ${current_appointment.email}` : `via local email: ${current_appointment.email}`}`);
+                    const patients_appointments_and_clinics_columns = [
+                        "pa.appointmentID",
+                        "pa.firstName",
+                        "pa.lastName",
+                        "pa.email",
+                        "pa.appointmentDate",
+                        "pa.preferredTime",
+                        "pa.phoneNumber",
+                        "pa.status",
+                        "pa.purposeOfAppointment",
+                        "c.clinic_name",
+                        "c.clinic_address"
+                    ]
+
+                    /**
+                     * @description query to retrieve the appointment and clinic
+                     */
+                    const retrieveAppointmentAndClinicQuery = `
+                        SELECT
+                        ${patients_appointments_and_clinics_columns.join(",")}
+                        FROM patientsappointment AS pa
+                        INNER JOIN clinic AS c
+                        ON pa.clinic_id = c.clinic_id
+                        WHERE pa.appointmentID = ?;
+                    `
+
+                    /**
+                     * @description values of appointment ID
+                     */
+                    const retrieveAppointmentAndClinicQueryValues = [
+                        appointment_id
+                    ]
+
+                    const [rows] = await this.connection.query(
+                        retrieveAppointmentAndClinicQuery,
+                        retrieveAppointmentAndClinicQueryValues
+                    );
+
+                    if (!rows.length) {
+                        throw new Error(`Failed to retrieve the appointment and clinic`);
+                    }
+
+                    const current_appointment = rows[0];
+
+                    const updateQuery = `
+                        UPDATE patientsappointment
+                        SET status = ?
+                        WHERE appointmentID = ?;
+                    `
+
+                    const updateQueryValues = [
+                        patient_status,
+                        appointment_id
+                    ]
+
+                    const [updateRows] = await this.connection.query(updateQuery, updateQueryValues);
+
+                    if (!updateRows) {
+                        throw new Error(`Failed to automate update the status of patient via email and sms`);
+                    }
+
+                    await this.connection.commit();
+
+                    try {
+                        /**
+                         * sends reminder to the patient in via email
+                        */
+                        await this.sendStatusUpdateReminder({
+                            appointmentID: appointment_id,
+                            email: current_appointment.email,
+                            phoneNumber: current_appointment.phoneNumber,
+                            firstName: current_appointment.firstName,
+                            lastName: current_appointment.lastName,
+                            appointmentDate: `${current_appointment.appointmentDate}`,
+                            preferredTime: `${current_appointment.preferredTime}`,
+                            patientStatus: patient_status,
+                            clinicName: current_appointment.clinic_name,
+                        })
+                    } catch (error) {
+                        logger.log(`error`, `Failed to send a status update reminder ${process.env.NODE_ENV === "production" ? `via production: ${current_appointment.email}` : `via local email: ${current_appointment.email}`}`);
+                    }
                 }
 
                 return {
@@ -3574,10 +3619,11 @@ class Clinic {
                     throw new Error(`Invalid! Handle automated update status in clinic side appointment should be an object`);
                 }
 
-                const { appointmentID, status } = params;
+                const { appointmentID, status, type } = params;
 
                 const appointment_id = parseInt(appointmentID);
                 const patient_status = String(status);
+                const patient_type = String(type);
 
                 if (isNaN(appointment_id)) {
                     throw new Error(`Invalid! Appointment id should be a number`);
@@ -3587,88 +3633,96 @@ class Clinic {
                     throw new Error(`Invalid! Patient status should be a string`);
                 }
 
-                /**
-                 * define the columns of clinic appointments table in database of clinicmanagement
-                 */
-                const clinic_appointments_columns = [
-                    "ca.id",
-                    "ca.firstName",
-                    "ca.lastName",
-                    "ca.email",
-                    "ca.phoneNumber",
-                    "ca.appointmentDate",
-                    "ca.appointmentTime",
-                    "ca.purposeOfAppointment",
-                    "ca.status",
-                    "c.clinic_name",
-                    "c.clinic_address"
-                ]
-
-                /**
-                 * @description query to retrieve the clinic appointment and clinic details
-                 */
-                const retrieve_clinic_appointments_and_clinic_query = `
-                    SELECT ${clinic_appointments_columns.join(",")}
-                    FROM clinic_appointments AS ca
-                    INNER JOIN clinic AS c
-                    ON ca.clinic_id = c.clinic_id
-                    WHERE ca.id = ?;
-                `
-
-                const retrieve_clinic_appointments_and_clinic_query_values = [
-                    appointment_id
-                ];
-
-                const [rows] = await this.connection.query(
-                    retrieve_clinic_appointments_and_clinic_query,
-                    retrieve_clinic_appointments_and_clinic_query_values,
-                );
-
-                if (!rows) {
-                    throw new Error(`Failed to retrieve infomration of clinic appointments and clinic`);
-                }
-
-                const current_appointment = rows[0];
-
-                const update_query = `
-                    UPDATE clinic_appointments
-                    SET status = ?
-                    WHERE id = ?;
-                `
-
-                const update_query_values = [
-                    patient_status,
-                    appointment_id
-                ];
-
-                const [update_rows] = await this.connection.query(
-                    update_query,
-                    update_query_values
-                );
-
-                if (!update_rows) {
-                    throw new Error(`Failed to automate update status of clinic appointments via email.`);
-                }
-
-                await this.connection.commit();
-
-                try {
+                if (patient_type === "Clinic") {
                     /**
-                     * sends a automated reminder email to the patient email address in clinic side
+                     * define the columns of clinic appointments table in database of clinicmanagement
+                    */
+                    const clinic_appointments_columns = [
+                        "ca.id",
+                        "ca.firstName",
+                        "ca.lastName",
+                        "ca.email",
+                        "ca.phoneNumber",
+                        "ca.appointmentDate",
+                        "ca.appointmentTime",
+                        "ca.purposeOfAppointment",
+                        "ca.status",
+                        "c.clinic_name",
+                        "c.clinic_address"
+                    ]
+
+                    /**
+                     * @description query to retrieve the clinic appointment and clinic details
                      */
-                    await this.sendStatusUpdateReminder({
+                    const retrieve_clinic_appointments_and_clinic_query = `
+                        SELECT ${clinic_appointments_columns.join(",")}
+                        FROM clinic_appointments AS ca
+                        INNER JOIN clinic AS c
+                        ON ca.clinic_id = c.clinic_id
+                        WHERE ca.id = ?;
+                    `
+
+                    const retrieve_clinic_appointments_and_clinic_query_values = [
+                        appointment_id
+                    ];
+
+                    const [rows] = await this.connection.query(
+                        retrieve_clinic_appointments_and_clinic_query,
+                        retrieve_clinic_appointments_and_clinic_query_values,
+                    );
+
+                    if (!rows) {
+                        throw new Error(`Failed to retrieve infomration of clinic appointments and clinic`);
+                    }
+
+                    const current_appointment = rows[0];
+
+                    const update_query = `
+                        UPDATE clinic_appointments
+                        SET status = ?
+                        WHERE id = ?;
+                    `
+
+                    const update_query_values = [
+                        patient_status,
+                        appointment_id
+                    ];
+
+                    const [update_rows] = await this.connection.query(
+                        update_query,
+                        update_query_values
+                    );
+
+                    if (!update_rows) {
+                        throw new Error(`Failed to automate update status of clinic appointments via email.`);
+                    }
+
+                    await this.connection.commit();
+
+                    try {
+                        /**
+                         * sends a automated reminder email to the patient email address in clinic side
+                        */
+                        await this.sendStatusUpdateReminder({
+                            appointmentID: appointment_id,
+                            email: current_appointment.email,
+                            phoneNumber: current_appointment.phoneNumber,
+                            firstName: current_appointment.firstName,
+                            lastName: current_appointment.lastName,
+                            appointmentDate: `${current_appointment.appointmentDate}`,
+                            preferredTime: `${current_appointment.appointmentTime}`,
+                            patientStatus: patient_status,
+                            clinicName: current_appointment.clinic_name,
+                        });
+                    } catch (error) {
+                        logger.log(`error`, `Failed to send a status update reminder ${process.env.NODE_ENV === "production" ? `via production: ${current_appointment.email}` : `via local email: ${current_appointment.email}`}`);
+                    }
+                } else if (patient_type === "Patient") {
+                    return await this.handleAutomatedUpdateStatus({
                         appointmentID: appointment_id,
-                        email: current_appointment.email,
-                        phoneNumber: current_appointment.phoneNumber,
-                        firstName: current_appointment.firstName,
-                        lastName: current_appointment.lastName,
-                        appointmentDate: `${current_appointment.appointmentDate}`,
-                        preferredTime: `${current_appointment.appointmentTime}`,
-                        patientStatus: patient_status,
-                        clinicName: current_appointment.clinic_name,
+                        status: patient_status,
+                        type: patient_type
                     });
-                } catch (error) {
-                    logger.log(`error`, `Failed to send a status update reminder ${process.env.NODE_ENV === "production" ? `via production: ${current_appointment.email}` : `via local email: ${current_appointment.email}`}`);
                 }
 
                 return {

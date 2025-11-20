@@ -38,6 +38,7 @@ const ClinicCards = () => {
         email: "",
         phoneNumber: "",
         gender: "",
+        address: "",
         appointmentDate: null,
         preferredTime: null,
         purposeOfAppointment: ""
@@ -48,6 +49,7 @@ const ClinicCards = () => {
         lastName: "",
         email: "",
         phoneNumber: "",
+        address: "",
         gender: "",
         appointmentDate: null,
         preferredTime: null,
@@ -218,7 +220,8 @@ const ClinicCards = () => {
                     lastName: response.data.lastName,
                     email: response.data.email,
                     phoneNumber: response.data.phoneNumber,
-                    gender: response.data.gender
+                    gender: response.data.gender,
+                    address: response.data.address
                 }));
             } else {
                 throw new Error(`Failed to automate the input fields`);
@@ -308,6 +311,7 @@ const ClinicCards = () => {
                 lastName: appointmentData.lastName,
                 email: appointmentData.email,
                 phoneNumber: appointmentData.phoneNumber,
+                address: appointmentData.address,
                 appointmentDate: appointmentData.appointmentDate ? formatDate(appointmentData.appointmentDate) : null,
                 preferredTime: appointmentData.preferredTime ? formatTimeToAMPM(appointmentData.preferredTime) : null,
             },
@@ -371,6 +375,7 @@ const ClinicCards = () => {
                     lastName: "",
                     email: "",
                     phoneNumber: "",
+                    address: "",
                     gender: "",
                     appointmentDate: null,
                     preferredTime: null,

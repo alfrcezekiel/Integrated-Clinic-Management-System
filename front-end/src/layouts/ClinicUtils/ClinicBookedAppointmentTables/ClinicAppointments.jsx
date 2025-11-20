@@ -167,7 +167,20 @@ const ClinicAppointments = () => {
         console.log(`Edit appointment of ID: ${appointment.id}`)
         navigate("/doctor-portal/dashboard/ModifyBookedAppointment", {
             state: {
-                bookedAppointment: appointment
+                bookedAppointment: {
+                    bookedAppointmentID: appointment.id,
+                    firstName: appointment.firstName,
+                    lastName: appointment.lastName,
+                    address: appointment.address,
+                    email: appointment.email,
+                    phoneNumber: appointment.phoneNumber,
+                    appointmentDate: appointment.appointmentDate,
+                    appointmentTime: appointment.appointmentTime,
+                    gender: appointment.gender,
+                    status: appointment.status,
+                    purposeOfAppointment: appointment.purposeOfAppointment,
+                    type: "Clinic"
+                }
             }
         })
     }

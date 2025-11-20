@@ -5,13 +5,13 @@ import PopularAppointmentCard from "../../../layouts/ClinicUtils/popularity_appo
 const DoctorsDashboardHome = () => {
     return (
         <div className="mt-4">
-            <div className="mb-12 grid gap-y-10 gap-x-6 md:grid-cols-2 xl:grid-cols-4">
+            <div className="mb-8">
                 <ClinicStatsCards />
             </div>
             <div className="mb-8"> 
                 <PopularAppointmentCard />
             </div>
-            <div className="bg-white p-4 rounded-lg shadow-md overflow-auto">
+            <div className="bg-white p-4 rounded-lg shadow-md">
                 <ClinicViewAppointmentCalendar />
             </div>
         </div>

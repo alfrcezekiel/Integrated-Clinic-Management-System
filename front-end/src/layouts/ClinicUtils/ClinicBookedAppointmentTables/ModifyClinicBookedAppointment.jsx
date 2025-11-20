@@ -52,6 +52,7 @@ const ModifyClinicBookedAppointment = () => {
     ]
 
     const [modifyBookedAppointmentDetails, setModifyBookedAppointmentDetails] = useState({
+        bookedAppointmentID: "",
         firstName: "",
         lastName: "",
         address: "",
@@ -61,7 +62,8 @@ const ModifyClinicBookedAppointment = () => {
         appointmentTime: null,
         gender: "",
         purposeOfAppointment: "",
-        status: ""
+        status: "",
+        type: ""
     })
     const [fieldErrors, setFieldErrors] = useState({
         firstName: "",
@@ -77,7 +79,7 @@ const ModifyClinicBookedAppointment = () => {
     })
 
     useEffect(() => {
-        if (!bookedAppointment || !bookedAppointment.id) {
+        if (!bookedAppointment) {
             alert("Booked Appointment Details Not Found!")
             navigate("/doctor-portal/dashboard/ClinicViewBookedAppointment")
             return;
@@ -85,16 +87,18 @@ const ModifyClinicBookedAppointment = () => {
 
         setModifyBookedAppointmentDetails((prev) => ({
             ...prev,
+            bookedAppointmentID: bookedAppointment.bookedAppointmentID,
             firstName: bookedAppointment.firstName,
             lastName: bookedAppointment.lastName,
             address: bookedAppointment.address,
             email: bookedAppointment.email,
             phoneNumber: bookedAppointment.phoneNumber,
             appointmentDate: bookedAppointment.appointmentDate,
-            appointmentTime: bookedAppointment.appointmentTime ? dayjs(bookedAppointment.appointmentTime, "HH:mm") : null,
+            appointmentTime: bookedAppointment.appointmentTime ? dayjs(bookedAppointment.appointmentTime, "HH:mm") : dayjs(bookedAppointment.appointmentTime),
             gender: bookedAppointment.gender,
             purposeOfAppointment: bookedAppointment.purposeOfAppointment,
-            status: bookedAppointment.status
+            status: bookedAppointment.status,
+            type: bookedAppointment.type
         }))
     }, [bookedAppointment, location.pathname, navigate]);
 
@@ -127,14 +131,20 @@ const ModifyClinicBookedAppointment = () => {
      * @function to navigate in the respective appointmetns after modifiying the booked appointment
      */
     const navigateToRespectiveAppointmentsPage = useCallback(async () => {
-        if (modifyBookedAppointmentDetails.status === "Pending") {
+        if (modifyBookedAppointmentDetails.status === "Pending" && modifyBookedAppointmentDetails.type === "Clinic") {
             navigate("/doctor-portal/dashboard/PendingBookedAppointment")
-        } else if (modifyBookedAppointmentDetails.status === "Approved") {
+        } else if (modifyBookedAppointmentDetails.status === "Approved" && modifyBookedAppointmentDetails.type === "Clinic") {
             navigate("/doctor-portal/dashboard/ApprovedBookedAppointment")
-        } else if (modifyBookedAppointmentDetails.status === "Declined") {
+        } else if (modifyBookedAppointmentDetails.status === "Declined" && modifyBookedAppointmentDetails.type === "Clinic") {
             navigate("/doctor-portal/dashboard/DeclinedBookedAppointment")
+        } else if (modifyBookedAppointmentDetails.status === "Pending" && modifyBookedAppointmentDetails.type === "Patient") {
+            navigate("/doctor-portal/dashboard/Appointments")
+        } else if (modifyBookedAppointmentDetails.status === "Approved" && modifyBookedAppointmentDetails.type === "Patient") {
+            navigate("/doctor-portal/dashboard/ApprovedAppointments")
+        } else if (modifyBookedAppointmentDetails.status === "Declined" && modifyBookedAppointmentDetails.type === "Patient") {
+            navigate("/doctor-portal/dashboard/DeclinedAppointments")
         }
-    }, [modifyBookedAppointmentDetails.status, navigate]);
+    }, [modifyBookedAppointmentDetails.status, modifyBookedAppointmentDetails.type, navigate]);
 
     /**
      * this function handles the changes of text fields inputs
@@ -219,7 +229,8 @@ const ModifyClinicBookedAppointment = () => {
 
             const response = await CMS.put("/cms.api.com/clinic/dashboard/modifyBookedAppointmentDetails", payload, {
                 params: {
-                    bookedAppointmentID: bookedAppointment.id
+                    bookedAppointmentID: modifyBookedAppointmentDetails.bookedAppointmentID,
+                    type: modifyBookedAppointmentDetails.type
                 }
             }, {
                 headers: {

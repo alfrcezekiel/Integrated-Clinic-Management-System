@@ -64,6 +64,9 @@ const validatePatientBookAppointment = [
 
             return true;
         }),
+    body("address")
+        .notEmpty()
+        .withMessage("Address is required"),
     body("phoneNumber")
         .notEmpty()
         .withMessage("Phone number is required")

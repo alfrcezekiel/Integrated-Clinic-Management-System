@@ -3,7 +3,7 @@ export const setOpenSideNav = (dispatch, value) => {
         if (typeof value === "function") {
             dispatch((state) => ({type: "OPEN_SIDENAV", value: value(state)}));
         } else {
-            dispatch({type: "OPEN_SIDENAV", payload: value});    
+            dispatch({type: "OPEN_SIDENAV", value: value});    
         }
     } else {
         console.error("Dispatch is not a function");

@@ -6,11 +6,11 @@ const AppointmentDataNotFoundDialog = ({ isOpen, onClose }) => {
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 bg-opacity-50"
             onClick={onClose}
         >
             <div
-                className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4 relative"
+                className="bg-white rounded-4xl p-6 w-full max-w-md mx-4 xl:translate-x-50 md:translate-x-30 relative transition-all"
                 onClick={(e) => e.stopPropagation()} // Prevent closing on inside click
             >
                 <div className="flex justify-center">
@@ -24,12 +24,12 @@ const AppointmentDataNotFoundDialog = ({ isOpen, onClose }) => {
                         We couldn&apos;t locate any appointment data for your request.
                     </p>
                 </div>
-                <div className="flex items-center justify-center px-4 py-2">
+                <div className="flex items-center justify-center px-4">
                     <button
-                        className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition duration-200 cursor-pointer"
+                        className="px-4 py-2 bg-blue-600 text-white rounded-3xl hover:bg-blue-700 transition duration-200 cursor-pointer"
                         onClick={onClose}
                     >
-                        Close
+                        Okay
                     </button>
                 </div>
             </div>

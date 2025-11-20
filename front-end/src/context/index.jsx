@@ -5,17 +5,17 @@ import { MaterialUIContext } from "./useController";
 const reducer = (state, action) => {
     switch (action.type) {
         case "OPEN_SIDENAV":
-            return { ...state, openSideNav: action.value };
+            return { ...state, openSideNav: action.payload };
         case "SIDENAV_TYPE":
-            return { ...state, sideNavType: action.value };
+            return { ...state, sideNavType: action.payload };
         case "SIDENAV_COLOR":
-            return { ...state, sideNavColor: action.value };
+            return { ...state, sideNavColor: action.payload };
         case "TRANSPARENT_NAVBAR":
-            return { ...state, transparentNavbar: action.value };
+            return { ...state, transparentNavbar: action.payload };
         case "FIXED_NAVBAR":
-            return { ...state, fixedNavbar: action.value };
+            return { ...state, fixedNavbar: action.payload };
         case "OPEN_CONFIGURATOR":
-            return { ...state, openConfigurator: action.value };
+            return { ...state, openConfigurator: action.payload };
         default:
             throw new Error(`Unhandled action type: ${action.type}`);
     }

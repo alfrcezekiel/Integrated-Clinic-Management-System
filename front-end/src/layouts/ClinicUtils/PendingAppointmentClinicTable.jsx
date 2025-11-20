@@ -207,22 +207,47 @@ const PendingAppointmentClinicTable = () => {
             setSubmitting(false);
         }
     }
-    // this function is used to open the modal for updating the appointment details
-    const handleClickOpen = (appointment) => {
-        setFormData({
-            appointmentID: appointment.appointmentID,
-            firstName: appointment.firstName,
-            lastName: appointment.lastName,
-            email: appointment.email,
-            appointmentDate: dayjs(appointment.appointmentDate),
-            preferredTime: appointment.preferredTime ? appointment.preferredTime : null, // store as string
-            phoneNumber: appointment.phoneNumber,
-            gender: appointment.gender,
-            status: appointment.status,
-            purposeOfAppointment: appointment.purposeOfAppointment,
-        });
-        setOpen(true);
-    }
+
+    // // this function is used to open the modal for updating the appointment details
+    // const handleClickOpen = (appointment) => {
+    //     setFormData({
+    //         appointmentID: appointment.appointmentID,
+    //         firstName: appointment.firstName,
+    //         lastName: appointment.lastName,
+    //         email: appointment.email,
+    //         appointmentDate: dayjs(appointment.appointmentDate),
+    //         preferredTime: appointment.preferredTime ? appointment.preferredTime : null, // store as string
+    //         phoneNumber: appointment.phoneNumber,
+    //         gender: appointment.gender,
+    //         status: appointment.status,
+    //         purposeOfAppointment: appointment.purposeOfAppointment,
+    //     });
+    //     setOpen(true);
+    // }
+
+    /**
+    * @function callback to navigate in modify booked appointment details
+    */
+    const navigateToModifyBookedAppointment = useCallback(appointment => {
+        navigate("/doctor-portal/dashboard/ModifyBookedAppointment", {
+            state: {
+                bookedAppointment: {
+                    bookedAppointmentID: appointment.appointmentID,
+                    firstName: appointment.firstName,
+                    lastName: appointment.lastName,
+                    address: appointment.address,
+                    email: appointment.email,
+                    phoneNumber: appointment.phoneNumber,
+                    appointmentDate: appointment.appointmentDate,
+                    appointmentTime: appointment.appointmentTime,
+                    gender: appointment.gender,
+                    status: appointment.status,
+                    purposeOfAppointment: appointment.purposeOfAppointment,
+                    type: "Patient"
+                }
+            }
+        })
+    }, [navigate]);
 
     const handleCloseSuccessfullAppointmentModal = useCallback(() => {
         setFieldsError({});
@@ -448,7 +473,7 @@ const PendingAppointmentClinicTable = () => {
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="center" className="border-b border-blue-gray-50 text-center" sx={{ display: "flex" }}>
-                                                <IconButton aria-label="edit" onClick={() => handleClickOpen(appointment)}>
+                                                <IconButton aria-label="edit" onClick={() => navigateToModifyBookedAppointment(appointment)}>
                                                     <EditIcon color="primary" />
                                                 </IconButton>
                                                 <IconButton aria-label="delete" onClick={() => deleteBookedAppointmentDialog(appointment)}>

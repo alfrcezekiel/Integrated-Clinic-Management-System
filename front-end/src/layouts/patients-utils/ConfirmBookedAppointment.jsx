@@ -45,6 +45,7 @@ const ConfirmAppointmentModal = ({ open, onClose, patientsData, onNextStep, subm
                                 {renderItem("First Name", patientsData?.patient?.firstName)}
                                 {renderItem("Last Name", patientsData?.patient?.lastName)}
                                 {renderItem("Email", patientsData?.patient?.email)}
+                                {renderItem("Address", patientsData?.patient?.address)}
                                 {renderItem("Phone Number", patientsData?.patient?.phoneNumber)}
                                 {renderItem("Appointment Date", patientsData?.patient?.appointmentDate)}
                                 {renderItem("Appointment Time", patientsData?.patient?.preferredTime)}
@@ -105,6 +106,7 @@ ConfirmAppointmentModal.propTypes = {
             phoneNumber: PropTypes.string,
             appointmentDate: PropTypes.string,
             preferredTime: PropTypes.string,
+            address: PropTypes.string,
         }).isRequired,
         clinic: PropTypes.shape({
             clinic_name: PropTypes.string,

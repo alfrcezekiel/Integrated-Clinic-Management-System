@@ -25,6 +25,7 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
     const memoizedAppointmentDateValue = useMemo(() => appointmentData.appointmentDate, [appointmentData.appointmentDate]);
     const memoizedPreferredTimeValue = useMemo(() => appointmentData.preferredTime, [appointmentData.preferredTime]);
     const memoizedPurposeOfAppointmentValue = useMemo(() => appointmentData.purposeOfAppointment, [appointmentData.purposeOfAppointment]);
+    const memoizedAddressValue = useMemo(() => appointmentData.address, [appointmentData.address]);
 
     // function to handle text field input changes
     const handleInputChange = useCallback(async (e) => {
@@ -332,7 +333,25 @@ const BookingAppointmentModal = ({ selectedClinic, handleCloseModal, handleBooki
                             </div>
 
                             {/* Third Row */}
-                            <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2">
+                            <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-3">
+                                <div>
+                                    <label htmlFor="address" className="block text-sm font-medium text-gray-700">
+                                        Address <span className="text-red-500">*</span>
+                                    </label>
+                                    <TextField
+                                        fullWidth
+                                        margin="dense"
+                                        label="Enter Address"
+                                        name="address"
+                                        autoComplete="off"
+                                        type="text"
+                                        variant="outlined"
+                                        value={memoizedAddressValue}
+                                        onChange={handleInputChange}
+                                        error={!!fieldErrors.address}
+                                        helperText={fieldErrors.address || ""}
+                                    />
+                                </div>
                                 {/* Preferred Time */}
                                 <div>
                                     <label htmlFor="preferredTime" className="block text-sm font-medium text-gray-700">

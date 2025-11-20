@@ -639,6 +639,7 @@ export const getBookedAppointments = async (req, res) => {
             SELECT
                 pr1.firstName,
                 pr1.lastName,
+                pr1.address,
                 pr1.email,
                 pr1.gender,
                 pr2.phoneNumber
@@ -680,6 +681,7 @@ export const patientsBookedAppointments = async (req, res) => {
             lastName,
             email,
             appointmentDate,
+            address,
             phoneNumber,
             gender,
             preferredTime,
@@ -694,6 +696,7 @@ export const patientsBookedAppointments = async (req, res) => {
         const appointment_time = String(preferredTime)
         const followUpSent = parseInt(0);
         const reminder_sent = parseInt(0);
+        const address_field = String(address);
 
         // Convert to 24-hour format before inserting into DB
         const normalizeTime = (timeStr) => {
@@ -722,6 +725,7 @@ export const patientsBookedAppointments = async (req, res) => {
             lastName,
             email,
             appointmentDate,
+            address,
             phoneNumber,
             gender,
             status,
@@ -731,7 +735,7 @@ export const patientsBookedAppointments = async (req, res) => {
             createdAt,
             reminder_sent,
             followUpSent
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
 
         const [result] = await connection.query(query, [
             patientID,
@@ -739,6 +743,7 @@ export const patientsBookedAppointments = async (req, res) => {
             lastName,
             email,
             appointmentDateFormat,
+            address_field,
             phoneNumber,
             gender,
             status,
@@ -763,6 +768,7 @@ export const patientsBookedAppointments = async (req, res) => {
                 firstName,
                 lastName,
                 email,
+                address,
                 appointmentDate,
                 phoneNumber,
                 status,
@@ -971,6 +977,7 @@ export const getBookedAppointmentsToDisplayInDoctorsDashboard = async (req, res)
             p.appointmentDate,
             p.gender,
             p.preferredTime,
+            p.address,
             p.phoneNumber,
             p.status,
             p.purposeOfAppointment
@@ -1023,6 +1030,7 @@ export const updatePatientsAppointments = async (req, res) => {
             lastName,
             appointmentDate,
             email,
+            address,
             phoneNumber,
             gender,
             status,
@@ -1055,6 +1063,7 @@ export const updatePatientsAppointments = async (req, res) => {
                 firstName = ?,
                 lastName = ?,
                 email = ?,
+                address = ?,
                 appointmentDate = ?,
                 preferredTime = ?,
                 phoneNumber = ?,
@@ -1069,6 +1078,7 @@ export const updatePatientsAppointments = async (req, res) => {
             firstName,
             lastName,
             email,
+            address,
             formattedAppointmentDate,
             formattedPreferredTime,
             phoneNumber,
@@ -1698,6 +1708,7 @@ export const getPatientPendingStatus = async (req, res) => {
 export const loggedInClinicAccount = async (req, res) => {
     const { email, password } = req.body;
     try {
+        const emailAddress = String(email).toLowerCase();
         const query = `
             SELECT 
             clinic_id,
@@ -1709,7 +1720,7 @@ export const loggedInClinicAccount = async (req, res) => {
             clinic
             WHERE email = ?;`;
 
-        const [rows] = await conn.query(query, [email]);
+        const [rows] = await conn.query(query, [emailAddress]);
 
         if (rows.length === 0) {
             return res.status(StatusCodes.BAD_REQUEST).json({
@@ -1918,6 +1929,7 @@ export const getPendingAppointmentStatus = async (req, res) => {
             p.lastName,
             p.email,
             p.appointmentDate,
+            p.address,
             p.preferredTime,
             p.gender,
             p.phoneNumber,
@@ -2828,7 +2840,7 @@ export const validateStep = async (req, res, next) => {
     try {
         const { step, clinicType } = req.query;
 
-        if (isNaN(step) || step < 0 || step > 4) {
+        if (isNaN(step) || step < 0 || step > 5) {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 message: "Please enter a valid step"
             });
@@ -4117,7 +4129,7 @@ export const retrieveClinicByIdDeclinedBookedAppointments = asyncHandler(
  */
 export const findBookedAppointmentByIdToModifyBookedAppointmentDetails = asyncHandler(
     async (req, res) => {
-        const { bookedAppointmentID } = req.query;
+        const { bookedAppointmentID, type } = req.query;
 
         if (!bookedAppointmentID || typeof bookedAppointmentID !== "string") {
             return res.status(StatusCodes.BAD_REQUEST).json({
@@ -4185,7 +4197,8 @@ export const findBookedAppointmentByIdToModifyBookedAppointmentDetails = asyncHa
          */
         const clinic_instance = new Clinic();
         const all_appointments_modify_booked_appointments_result = await clinic_instance.findBookedAppointmentByIdToModifyBookedAppointmentsInAllAppointments({
-            clinic_modify_booked_appointment_details: clinic_modify_booked_appointment_details
+            clinic_modify_booked_appointment_details: clinic_modify_booked_appointment_details,
+            type: type
         });
 
         if (!all_appointments_modify_booked_appointments_result || all_appointments_modify_booked_appointments_result.length === 0) {
@@ -4199,7 +4212,8 @@ export const findBookedAppointmentByIdToModifyBookedAppointmentDetails = asyncHa
             const clinic_instance = new Clinic();
             await clinic_instance.handleAutomatedUpdateStatusInClinicSideAppointments({
                 appointmentID: clinic_booked_appointment_id,
-                status: selected_status
+                status: selected_status,
+                type: type
             });
         } catch (error) {
             logger.log(`error`, `Failed to update the patient book appointment in table of clinic appointmetns: ${error}`);

@@ -215,7 +215,7 @@ const PopularAppointmentAnalytics = () => {
     };
 
     return (
-        <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+        <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200 max-sm:w-[86dvw] max:mr-40">
             <div className="flex items-start justify-between gap-4">
                 <div>
                     <h3 className="text-lg font-semibold text-gray-800 mb-1">Popular Appointment Analytics</h3>
