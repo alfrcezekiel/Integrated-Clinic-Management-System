@@ -2886,6 +2886,7 @@ class Clinic {
 
     /**
      * @method logic to consult a patient in clinic side appointment with consultation questionnaires
+     * Adding a consulting patient in dental clinic consultation
      */
     consultPatientInClinicSideAppointment = modelErrorHandling(
         async (params) => {
@@ -5623,7 +5624,232 @@ class Clinic {
                 this.connection.release();
             }
         },
-        "Consulting Patient in Psychiatry Clinic Type"
+        "Consulting Patient in Psychiatry Clinic Type in Patient side table"
+    )
+    /**
+     * @method logic to consult a patient in psychiatry clinic type
+     * @access {private}
+     * @route {POST} /cms.api.com/clinic/dashboard/clinicConsultPatient - clinic side
+     * adding a pyschiatry consultation patient in psychiatry clinic side table
+     */
+    consultingPatientInPsychiatryClinicSideTable = modelErrorHandling(
+        async (params) => {
+            this.connection = await this.conn.getConnection();
+            try {
+                await this.connection.beginTransaction();
+
+                if (!params || typeof params !== "object") {
+                    throw new Error(`Invalid parameters! Consulting patient in psychiatric clinic type should be an object`);
+                }
+
+                const {
+                    patient_type,
+                    clinic_appointment_id_field,
+                    appointmentID,
+                    first_name,
+                    last_name,
+                    email,
+                    phone_number,
+                    appointment_date,
+                    appointment_time,
+                    diagnosed_mental_health_condition_details,
+                    taking_psychiatric_medication_details,
+                    hospitalized_for_mental_health_reason_details,
+                    family_history_of_mental_health_conditions_details,
+                    suicidal_thoughts_or_behaviors_details,
+                    self_harm_or_suicide_details,
+                    counseling_or_therapy_details,
+                    emotional_or_behavioral_patterns_details,
+                    mood_details,
+                    excessive_worry_or_anxiety_details,
+                    sleep_patterns_details,
+                    appetite_or_weight_details,
+                    sleep_changes_details,
+                    hopelessness_or_worthlessness_details,
+                    agitation_or_impulsivity_details,
+                    difficulty_concentrating_details,
+                    stress_levels_details,
+                    support_system_details,
+                    major_life_changes_details,
+                    substances_details,
+                    sleep_hours_details,
+                    social_groups_details,
+                    living_situation_details,
+                    coping_with_stress_details,
+                    mental_health_treatment_details,
+                    treatment_history_details,
+                    currently_in_therapy_details,
+                    negative_experience_with_mental_health_treatment_details,
+                    currently_under_care_of_psychiatrist_details,
+                    stopped_taking_psychiatric_medications_details,
+                    side_effects_from_psychiatric_medications_details,
+                    consistent_with_attending_therapy_or_taking_medications_details,
+                    consent_value,
+                    clinic_name_field,
+                    admin_id_field
+                } = params;
+
+                const table_name = String("psychiatry_consulted_patients");
+
+                const psychiatry_columns = [
+                    "clinic_appointment_id",
+                    "appointmentID",
+                    "first_name",
+                    "last_name",
+                    "email",
+                    "phone_number",
+                    "appointment_date",
+                    "appointment_time",
+                    "diagnosed_mental_health_condition_details",
+                    "taking_psychiatric_medication_details",
+                    "hospitalized_for_mental_health_reason_details",
+                    "family_history_of_mental_health_condition_details",
+                    "suicidal_thoughts_or_behavior_details",
+                    "self_harm_or_suicide_details",
+                    "counseling_or_therapy_details",
+                    "emotional_or_behavioral_patterns_details",
+                    "mood_details",
+                    "excessive_worry_or_anxiety_details",
+                    "sleep_patterns_details",
+                    "appetite_or_weight_details",
+                    "sleep_changes_details",
+                    "hopelessness_or_worthlessness_details",
+                    "agitation_or_impulsivity_details",
+                    "difficulty_concentrating_details",
+                    "stress_level_details",
+                    "support_system_details",
+                    "major_life_changes_details",
+                    "substances_details",
+                    "sleep_hours_details",
+                    "social_group_details",
+                    "living_situation_details",
+                    "coping_with_stress_details",
+                    "mental_health_treatment_details",
+                    "treatment_history_details",
+                    "currently_in_therapy_details",
+                    "negative_experience_with_mental_health_treatment_details",
+                    "currently_undercare_of_psychiatrist_details",
+                    "stopped_taking_psychiatric_medication_details",
+                    "side_effects_from_psychiatric_medication_details",
+                    "consistent_with_attending_therapy_or_taking_medication_details",
+                    "clinic_name",
+                    "consent",
+                    "created_by"
+                ]
+
+                const psychiatry_col_placeholders = psychiatry_columns.map(() => "?").join(", ");
+
+                const values = [
+                    patient_type === "Clinic" ? clinic_appointment_id_field : null,
+                    patient_type === "Patient" ? appointmentID : null,
+                    first_name,
+                    last_name,
+                    email,
+                    phone_number,
+                    appointment_date,
+                    appointment_time,
+                    diagnosed_mental_health_condition_details,
+                    taking_psychiatric_medication_details,
+                    hospitalized_for_mental_health_reason_details,
+                    family_history_of_mental_health_conditions_details,
+                    suicidal_thoughts_or_behaviors_details,
+                    self_harm_or_suicide_details,
+                    counseling_or_therapy_details,
+                    emotional_or_behavioral_patterns_details,
+                    mood_details,
+                    excessive_worry_or_anxiety_details,
+                    sleep_patterns_details,
+                    appetite_or_weight_details,
+                    sleep_changes_details,
+                    hopelessness_or_worthlessness_details,
+                    agitation_or_impulsivity_details,
+                    difficulty_concentrating_details,
+                    stress_levels_details,
+                    support_system_details,
+                    major_life_changes_details,
+                    substances_details,
+                    sleep_hours_details,
+                    social_groups_details,
+                    living_situation_details,
+                    coping_with_stress_details,
+                    mental_health_treatment_details,
+                    treatment_history_details,
+                    currently_in_therapy_details,
+                    negative_experience_with_mental_health_treatment_details,
+                    currently_under_care_of_psychiatrist_details,
+                    stopped_taking_psychiatric_medications_details,
+                    side_effects_from_psychiatric_medications_details,
+                    consistent_with_attending_therapy_or_taking_medications_details,
+                    clinic_name_field,
+                    consent_value,
+                    admin_id_field
+                ]
+
+                const query = `
+                    INSERT INTO ${table_name}
+                    (${psychiatry_columns.join(", ")})
+                    VALUES (${psychiatry_col_placeholders})
+                `;
+
+                const [result] = await this.connection.query(query, values);
+
+                if (result.affectedRows === 0) {
+                    throw new Error(`Failed to consult a patient in psychiatric clinic type`);
+                }
+
+                let update_query, update_values;
+
+                if (patient_type === "Clinic") {
+                    update_query = `
+                        UPDATE clinic_appointments
+                        SET status = ?
+                        WHERE id = ?;
+                    `;
+
+                    const status = String("Consulted");
+
+                    update_values = [
+                        status,
+                        clinic_appointment_id_field
+                    ]
+                } else {
+                    update_query = `
+                        UPDATE patientsappointment
+                        SET status = ?
+                        WHERE appointmentID = ?;
+                    `
+
+                    const status = String("Consulted");
+
+                    update_values = [
+                        status,
+                        appointmentID
+                    ]
+                }
+
+                const [update_result] = await this.connection.query(update_query, update_values);
+
+                if (update_result.affectedRows === 0) {
+                    throw new Error(`Failed to update appointment status`);
+                }
+
+                await this.connection.commit();
+
+                return {
+                    model_message: "Successfully consulted a patient in psychiatry clinic"
+                }
+            } catch (error) {
+                const rollbackQuery = await this.connection.rollback();
+                if (!rollbackQuery) {
+                    logger.log(`error`, `Failed to rollback transaction in consulting patient in psychiatric clinic type method`);
+                }
+
+                logger.log(`error`, `Failed to consult a patient in psychiatric clinic type method: ${error}`);
+            } finally {
+                this.connection.release();
+            }
+        },
+        "Consulting Patient in Psychiatry Clinic Type in Clinic side table"
     )
 }
 

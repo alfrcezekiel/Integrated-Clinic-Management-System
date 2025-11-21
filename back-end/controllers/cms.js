@@ -4559,9 +4559,14 @@ export const deletePendingBookedAppointmentDetailsByFindingId = asyncHandler(
 /**
  * @function controller logic to consult a patient using questionnaires provided in clinic side table and questionnaires
  * @inserting a patient information in clinic side table
+ * @access {Private}
+ * @route /cms.api.com/clinic/dashboard/clinicConsultPatient" {POST}
  */
 export const consultPatientInClinicSideAppointment = asyncHandler(
     async (req, res) => {
+        /**
+         * Dental Clinic Request Body
+         */
         const {
             firstName,
             lastName,
@@ -4605,6 +4610,112 @@ export const consultPatientInClinicSideAppointment = asyncHandler(
             clinic_name,
             appointmentID
         } = req.body
+
+        /**
+         * Psychiatry Clinic Requests Body
+         */
+        const {
+            /**
+             * Mental Health History
+             */
+            counselingOrTherapyDetails,
+            diagnosedMentalHealthConditionDetails,
+            emotionalOrBehavioralPatternsDetails,
+            familyHistoryOfMentalHealthConditionsDetails,
+            hospitalizedForMentalHealthReasonDetails,
+            selfHarmOrSuicideDetails,
+            suicidalThoughtsOrBehaviorsDetails,
+            takingPsychiatricMedicationDetails,
+            /**
+             * current symptoms
+             */
+            agitationOrImpulsivityDetails,
+            appetiteOrWeightDetails,
+            difficultyConcentratingDetails,
+            excessiveWorryOrAnxietyDetails,
+            hopelessnessOrWorthlessnessDetails,
+            moodDetails,
+            sleepChangesDetails,
+            sleepPatternsDetails,
+            /**
+             * lifestyle factors
+             */
+            stressLevelsDetails,
+            supportSystemDetails,
+            majorLifeChangesDetails,
+            substancesDetails,
+            sleepHoursDetails,
+            socialGroupsDetails,
+            livingSituationDetails,
+            copingWithStressDetails,
+            /**
+             * treatment history
+             */
+            mentalHealthTreatmentDetails,
+            treatmentHistoryDetails,
+            currentlyInTherapyDetails,
+            negativeExperienceWithMentalHealthTreatmentDetails,
+            currentlyUnderCareOfPsychiatristDetails,
+            stoppedTakingPsychiatricMedicationsDetails,
+            sideEffectsFromPsychiatricMedicationsDetails,
+            consistentWithAttendingTherapyOrTakingMedicationsDetails,
+            type,
+            clinic_appointment_id
+        } = req.body;
+
+        /**
+         * mental health history variables
+         */
+        const counseling_or_therapy_details = String(counselingOrTherapyDetails);
+        const diagnosed_mental_health_condition_details = String(diagnosedMentalHealthConditionDetails);
+        const emotional_or_behavioral_patterns_details = String(emotionalOrBehavioralPatternsDetails);
+        const family_history_of_mental_health_condition_details = String(familyHistoryOfMentalHealthConditionsDetails);
+        const hospitalized_for_mental_health_reason_details = String(hospitalizedForMentalHealthReasonDetails);
+        const self_harm_or_suicide_details = String(selfHarmOrSuicideDetails);
+        const suicidal_thoughts_or_behaviors_details = String(suicidalThoughtsOrBehaviorsDetails);
+        const taking_psychiatric_medication_details = String(takingPsychiatricMedicationDetails);
+
+        /**
+         * current symptoms variables
+         */
+        const agitation_or_impulsivity_details = String(agitationOrImpulsivityDetails);
+        const appetite_or_weight_details = String(appetiteOrWeightDetails);
+        const difficulty_concentrating_details = String(difficultyConcentratingDetails);
+        const excessive_worry_or_anxiety_details = String(excessiveWorryOrAnxietyDetails);
+        const hopelessness_or_worthlessness_details = String(hopelessnessOrWorthlessnessDetails);
+        const mood_details = String(moodDetails);
+        const sleep_changes_details = String(sleepChangesDetails);
+        const sleep_patterns_details = String(sleepPatternsDetails);
+
+        /**
+         * lifestyle factors variables
+         */
+        const stress_levels_details = String(stressLevelsDetails);
+        const support_system_details = String(supportSystemDetails);
+        const major_life_changes_details = String(majorLifeChangesDetails);
+        const substances_details = String(substancesDetails);
+        const sleep_hours_details = String(sleepHoursDetails);
+        const social_groups_details = String(socialGroupsDetails);
+        const living_situation_details = String(livingSituationDetails);
+        const coping_with_stress_details = String(copingWithStressDetails);
+
+        /**
+         * treatment history variables
+         */
+        const mental_health_treatment_details = String(mentalHealthTreatmentDetails);
+        const treatment_history_details = String(treatmentHistoryDetails);
+        const currently_in_therapy_details = String(currentlyInTherapyDetails);
+        const negative_experience_with_mental_health_treatment_details = String(negativeExperienceWithMentalHealthTreatmentDetails);
+        const currently_under_care_of_psychiatrist_details = String(currentlyUnderCareOfPsychiatristDetails);
+        const stopped_taking_psychiatric_medications_details = String(stoppedTakingPsychiatricMedicationsDetails);
+        const side_effects_from_psychiatric_medications_details = String(sideEffectsFromPsychiatricMedicationsDetails);
+        const consistent_with_attending_therapy_or_taking_medications_details = String(consistentWithAttendingTherapyOrTakingMedicationsDetails);
+
+        const { clinicType } = req.query;
+
+        const clinic_type = decodeURIComponent(String(clinicType))
+
+        const patient_type = String(type);
 
         const first_name = String(firstName);
         const last_name = String(lastName);
@@ -4652,6 +4763,7 @@ export const consultPatientInClinicSideAppointment = asyncHandler(
         const admin_id_field = parseInt(admin_id);
         const clinic_name_field = String(clinic_name);
         const appointment_id_field = parseInt(appointmentID);
+        const clinic_appointment_id_field = parseInt(clinic_appointment_id);
 
         if (!first_name && !last_name && !email_address && !phone_number && !appointment_date && !appointment_time && !allergies_details && !taking_prescription_medication_details && !chronic_condition_details && !surgeries_details && !jaw_pain_details && !experienced_excessive_bleeding_details && !heart_problems_details && !advised_taking_antibiotics_details && !smoke_details && !consume_sugary_foods_or_drinks_details && !dental_floss_details && !consume_alcohol_details && !participate_in_sports_details && !balanced_diet_details && !regular_exercise_details && !eating_disorder_details && !experience_bleeding_details && !tooth_sensitivity_details && !dental_appearance_details && !loose_teeth_details && !bad_breath_or_bad_taste_details && !dental_xrays_details && !dental_restoration_details && !orthodontic_treatment_details && !brush_frequency_details && !use_mouth_wash_details && !replace_toothbrush_details && !clean_tongue_details && !regular_checkup_details && !dental_anxiety_details && !dental_trauma_details && !consent_field && !admin_id_field && !clinic_name_field && !appointment_id_field) {
             return res.status(StatusCodes.BAD_REQUEST).json({
@@ -4664,65 +4776,122 @@ export const consultPatientInClinicSideAppointment = asyncHandler(
                 message: "Invalid! Admin ID and appointment ID must be a number"
             })
         }
+        const clinic_instance = new Clinic();
+
+        if (!(clinic_instance instanceof Clinic)) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "Failed to instantiate clinic instance model"
+            })
+        }
 
         try {
-            const clinic_instance = new Clinic();
-            if (!(clinic_instance instanceof Clinic)) {
-                return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-                    message: "Failed to instantiate clinic instance model"
-                })
-            }
+            if (clinic_type === "Dental Clinic") {
+                const consult_patient_values = {
+                    firstName: first_name,
+                    lastName: last_name,
+                    emailAddress: email_address,
+                    phoneNumber: phone_number,
+                    appointmentDate: appointment_date,
+                    appointmentTime: appointment_time,
+                    allergiesDetails: allergies_details,
+                    takingPrescriptionMedicationDetails: taking_prescription_medication_details,
+                    chronicConditionDetails: chronic_condition_details,
+                    surgeriesDetails: surgeries_details,
+                    jawPainDetails: jaw_pain_details,
+                    experiencedExcessiveBleedingDetails: experienced_excessive_bleeding_details,
+                    heartProblemsDetails: heart_problems_details,
+                    advisedTakingAntibioticsDetails: advised_taking_antibiotics_details,
+                    smokeDetails: smoke_details,
+                    consumeSugaryFoodOrDrinksDetails: consume_sugary_foods_or_drinks_details,
+                    dentalFlossDetails: dental_floss_details,
+                    consumeAlcoholDetails: consume_alcohol_details,
+                    participateInSportsDetails: participate_in_sports_details,
+                    balancedDietDetails: balanced_diet_details,
+                    regularExerciseDetails: regular_exercise_details,
+                    eatingDisorderDetails: eating_disorder_details,
+                    experienceBleedingDetails: experience_bleeding_details,
+                    toothSensitivityDetails: tooth_sensitivity_details,
+                    dentalAppearanceDetails: dental_appearance_details,
+                    looseTeethDetails: loose_teeth_details,
+                    badBreathOrBadTasteDetails: bad_breath_or_bad_taste_details,
+                    dentalXraysDetails: dental_xrays_details,
+                    dentalRestorationDetails: dental_restoration_details,
+                    orthodonticTreatmentDetails: orthodontic_treatment_details,
+                    brushFrequencyDetails: brush_frequency_details,
+                    useMouthWashDetails: use_mouth_wash_details,
+                    replaceToothbrushDetails: replace_toothbrush_details,
+                    cleanTongueDetails: clean_tongue_details,
+                    regularCheckupDetails: regular_checkup_details,
+                    dentalAnxietyDetails: dental_anxiety_details,
+                    dentalTraumaDetails: dental_trauma_details,
+                    consent: consent_field,
+                    adminId: admin_id_field,
+                    clinicName: clinic_name_field,
+                    appointmentId: appointment_id_field
+                }
 
-            const consult_patient_value = {
-                firstName: first_name,
-                lastName: last_name,
-                emailAddress: email_address,
-                phoneNumber: phone_number,
-                appointmentDate: appointment_date,
-                appointmentTime: appointment_time,
-                allergiesDetails: allergies_details,
-                takingPrescriptionMedicationDetails: taking_prescription_medication_details,
-                chronicConditionDetails: chronic_condition_details,
-                surgeriesDetails: surgeries_details,
-                jawPainDetails: jaw_pain_details,
-                experiencedExcessiveBleedingDetails: experienced_excessive_bleeding_details,
-                heartProblemsDetails: heart_problems_details,
-                advisedTakingAntibioticsDetails: advised_taking_antibiotics_details,
-                smokeDetails: smoke_details,
-                consumeSugaryFoodOrDrinksDetails: consume_sugary_foods_or_drinks_details,
-                dentalFlossDetails: dental_floss_details,
-                consumeAlcoholDetails: consume_alcohol_details,
-                participateInSportsDetails: participate_in_sports_details,
-                balancedDietDetails: balanced_diet_details,
-                regularExerciseDetails: regular_exercise_details,
-                eatingDisorderDetails: eating_disorder_details,
-                experienceBleedingDetails: experience_bleeding_details,
-                toothSensitivityDetails: tooth_sensitivity_details,
-                dentalAppearanceDetails: dental_appearance_details,
-                looseTeethDetails: loose_teeth_details,
-                badBreathOrBadTasteDetails: bad_breath_or_bad_taste_details,
-                dentalXraysDetails: dental_xrays_details,
-                dentalRestorationDetails: dental_restoration_details,
-                orthodonticTreatmentDetails: orthodontic_treatment_details,
-                brushFrequencyDetails: brush_frequency_details,
-                useMouthWashDetails: use_mouth_wash_details,
-                replaceToothbrushDetails: replace_toothbrush_details,
-                cleanTongueDetails: clean_tongue_details,
-                regularCheckupDetails: regular_checkup_details,
-                dentalAnxietyDetails: dental_anxiety_details,
-                dentalTraumaDetails: dental_trauma_details,
-                consent: consent_field,
-                adminId: admin_id_field,
-                clinicName: clinic_name_field,
-                appointmentId: appointment_id_field
-            }
+                const consulted_patient_result = await clinic_instance.consultPatientInClinicSideAppointment(consult_patient_values);
 
-            const consulted_patient_result = await clinic_instance.consultPatientInClinicSideAppointment(consult_patient_value);
+                if (!consulted_patient_result || consulted_patient_result.length === 0) {
+                    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                        message: "Failed to consult patient in clinic side appointment"
+                    })
+                }
+            } else if (clinic_type === "Psychiatry Clinic") {
+                const psychiatry_consultation_values = {
+                    clinic_appointment_id_field: clinic_appointment_id_field,
+                    appointmentID: appointment_id_field,
+                    first_name: first_name,
+                    last_name: last_name,
+                    email: email_address,
+                    phone_number: phone_number,
+                    appointment_date: appointment_date,
+                    appointment_time: appointment_time,
+                    diagnosed_mental_health_condition_details: diagnosed_mental_health_condition_details,
+                    taking_psychiatric_medication_details: taking_psychiatric_medication_details,
+                    hospitalized_for_mental_health_reason_details: hospitalized_for_mental_health_reason_details,
+                    family_history_of_mental_health_conditions_details: family_history_of_mental_health_condition_details,
+                    suicidal_thoughts_or_behaviors_details: suicidal_thoughts_or_behaviors_details,
+                    self_harm_or_suicide_details: self_harm_or_suicide_details,
+                    counseling_or_therapy_details: counseling_or_therapy_details,
+                    emotional_or_behavioral_patterns_details: emotional_or_behavioral_patterns_details,
+                    mood_details: mood_details,
+                    excessive_worry_or_anxiety_details: excessive_worry_or_anxiety_details,
+                    sleep_patterns_details: sleep_patterns_details,
+                    appetite_or_weight_details: appetite_or_weight_details,
+                    sleep_changes_details: sleep_changes_details,
+                    hopelessness_or_worthlessness_details: hopelessness_or_worthlessness_details,
+                    agitation_or_impulsivity_details: agitation_or_impulsivity_details,
+                    difficulty_concentrating_details: difficulty_concentrating_details,
+                    stress_levels_details: stress_levels_details,
+                    support_system_details: support_system_details,
+                    major_life_changes_details: major_life_changes_details,
+                    substances_details: substances_details,
+                    sleep_hours_details: sleep_hours_details,
+                    social_groups_details: social_groups_details,
+                    living_situation_details: living_situation_details,
+                    coping_with_stress_details: coping_with_stress_details,
+                    mental_health_treatment_details: mental_health_treatment_details,
+                    treatment_history_details: treatment_history_details,
+                    currently_in_therapy_details: currently_in_therapy_details,
+                    negative_experience_with_mental_health_treatment_details: negative_experience_with_mental_health_treatment_details,
+                    currently_under_care_of_psychiatrist_details: currently_under_care_of_psychiatrist_details,
+                    stopped_taking_psychiatric_medications_details: stopped_taking_psychiatric_medications_details,
+                    side_effects_from_psychiatric_medications_details: side_effects_from_psychiatric_medications_details,
+                    consistent_with_attending_therapy_or_taking_medications_details: consistent_with_attending_therapy_or_taking_medications_details,
+                    consent_value: consent_field,
+                    clinic_name_field: clinic_name_field,
+                    admin_id_field: admin_id_field,
+                    patient_type: patient_type
+                }
 
-            if (!consulted_patient_result || consulted_patient_result.length === 0) {
-                return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-                    message: "Failed to consult patient in clinic side appointment"
-                })
+                const psychiatry_consulted_result = await clinic_instance.consultingPatientInPsychiatryClinicSideTable(psychiatry_consultation_values);
+
+                if (!psychiatry_consulted_result || psychiatry_consulted_result.length === 0) {
+                    return res.status(StatusCodes.NOT_FOUND).json({
+                        message: "No psychiatry patients found to be consulted in clinic side tables"
+                    })
+                }
             }
 
             return res.status(StatusCodes.OK).json({

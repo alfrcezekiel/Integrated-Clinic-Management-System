@@ -169,6 +169,9 @@ const ConsultationPatientPage = () => {
             if (submitting) return; // Prevent multiple submissions
             setSubmitting(true);
 
+            /**
+             * checks a patient type condition either in clinic or patient side tables 
+             */
             const endpoint = formState.type === "Patient" ? "/clinic-dashboard/consultPatient" : "/cms.api.com/clinic/dashboard/clinicConsultPatient";
             if (!endpoint) {
                 console.error("Endpoint not found.");
@@ -177,9 +180,11 @@ const ConsultationPatientPage = () => {
 
             const payload = {
                 ...formState,
+                type: formState.type,
                 admin_id: user?.sid,
                 clinic_name: formState.clinic_name,
                 appointmentID: formState.appointmentID,
+                clinic_appointment_id: formState.appointmentID
             }
 
             const clinic_type = encodeURIComponent(formState.clinicType);

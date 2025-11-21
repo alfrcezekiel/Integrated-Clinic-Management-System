@@ -239,7 +239,7 @@ const PendingAppointmentClinicTable = () => {
                     email: appointment.email,
                     phoneNumber: appointment.phoneNumber,
                     appointmentDate: appointment.appointmentDate,
-                    appointmentTime: appointment.appointmentTime,
+                    appointmentTime: appointment.preferredTime,
                     gender: appointment.gender,
                     status: appointment.status,
                     purposeOfAppointment: appointment.purposeOfAppointment,

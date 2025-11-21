@@ -48,7 +48,8 @@ const ModifyClinicBookedAppointment = () => {
         "Pending",
         "Approved",
         "Declined",
-        "Cancelled"
+        "Cancelled",
+        "Consulted"
     ]
 
     const [modifyBookedAppointmentDetails, setModifyBookedAppointmentDetails] = useState({
@@ -94,7 +95,7 @@ const ModifyClinicBookedAppointment = () => {
             email: bookedAppointment.email,
             phoneNumber: bookedAppointment.phoneNumber,
             appointmentDate: bookedAppointment.appointmentDate,
-            appointmentTime: bookedAppointment.appointmentTime ? dayjs(bookedAppointment.appointmentTime, "HH:mm") : dayjs(bookedAppointment.appointmentTime),
+            appointmentTime: bookedAppointment.appointmentTime ? dayjs(bookedAppointment.appointmentTime, ["h:mm A", "HH:mm", "HH:mm:ss"], true) : null,
             gender: bookedAppointment.gender,
             purposeOfAppointment: bookedAppointment.purposeOfAppointment,
             status: bookedAppointment.status,
