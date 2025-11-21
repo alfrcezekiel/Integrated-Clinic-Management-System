@@ -2,6 +2,7 @@ import dayjs from "dayjs";
 import { check, validationResult } from "express-validator";
 import { StatusCodes } from "http-status-codes";
 import customParseFormat from "dayjs/plugin/customParseFormat.js";
+import Clinic from "../models/Clinic.Model.js";
 dayjs.extend(customParseFormat);
 
 /**
@@ -30,11 +31,27 @@ const validateAllBookedAppointmentSpecificDetails = [
     check("appointmentDate")
         .notEmpty()
         .withMessage("Appointment date is required")
-        .custom((value) => {
-            const validDate = dayjs(value, ["YYYY-MM-DD", dayjs.ISO_8601], true).isValid();
+        .custom(async (value, { req }) => {
+            const validDate = dayjs(value).format("YYYY-MM-DD");
             if (!validDate) {
                 throw new Error("Invalid appointment date")
             }
+
+            const appointmentID = req.body.bookedAppointmentID;
+
+            if (appointmentID) {
+                const clinic_instance = new Clinic();
+
+                const { isValid, message } = await clinic_instance.validatePreviousAppointmentDate({
+                    appointmentID: appointmentID,
+                    appointmentDate: validDate
+                })
+
+                if (!isValid) {
+                    throw new Error(message)
+                }
+            }
+
             return true;
         }),
     check("appointmentTime")
