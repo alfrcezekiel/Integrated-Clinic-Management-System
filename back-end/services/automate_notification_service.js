@@ -80,13 +80,13 @@ export const sendEmailNotification = async (to, subject, html) => {
         if (process.env.NODE_ENV === "production") {
             try {
                 const emailResponse = await sendEmailWithTimeout(() => resend.emails.send({
-                    from: `Clinic Management System <noreply@resend.dev>`,
+                    from: `Clinic Management System <onboarding@resend.dev>`,
                     to: to,
                     subject: subject,
                     html: html,
                 }), 120000);
 
-                logger.log("info", `Email notification sent to ${to} via resend: ${emailResponse.id}`);
+                logger.log("info", `Email notification sent to ${to} via resend: ${emailResponse.messageId}`);
                 return emailResponse;
             } catch (error) {
                 logger.log("error", `Failed to send email notification via resend: ${error}. Falling back to local SMTP.`);
@@ -600,7 +600,7 @@ export const sendStatusUpdateReminder = async ({ email, phoneNumber, firstName, 
         if (process.env.NODE_ENV === "production") {
             try {
                 const emailResponse = await sendEmailWithTimeout(() => resend.emails.send({
-                    from: `${clinicName} <noreply@resend.dev>`,
+                    from: `${clinicName} <onboarding@resend.dev>`,
                     to: email,
                     subject: emailSubject,
                     html: emailBody,

@@ -92,7 +92,7 @@ const DoctorsDashboardNavbar = () => {
         <>
             <nav className="fixed top-0 left-0 right-0 z-50 bg-white shadow-lg border-b border-gray-200">
                 <div className="max-w-full px-2 sm:px-4 lg:px-6 xl:px-8">
-                    <div className="flex justify-between items-center h-14 sm:h-16">
+                    <div className="flex justify-between items-center h-16 sm:h-16">
                         {/* Left side - Menu and breadcrumbs */}
                         <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
                             <button
@@ -133,7 +133,7 @@ const DoctorsDashboardNavbar = () => {
                             
                             {/* Mobile breadcrumb - simplified */}
                             <div className="sm:hidden flex items-center text-xs text-gray-600 min-w-0">
-                                <span className="truncate max-w-[120px] font-medium">{page || name}</span>
+                                <span className="max-sm:hidden truncate max-w-[120px] font-medium">{page || name}</span>
                             </div>
                         </div>
 

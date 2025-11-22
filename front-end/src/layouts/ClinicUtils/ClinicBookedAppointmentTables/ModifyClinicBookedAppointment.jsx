@@ -72,8 +72,8 @@ const ModifyClinicBookedAppointment = () => {
         address: "",
         email: "",
         phoneNumber: "",
-        appointmentDate: "",
-        appointmentTime: "",
+        appointmentDate: null,
+        appointmentTime: null,
         gender: "",
         purposeOfAppointment: "",
         status: ""
@@ -95,7 +95,7 @@ const ModifyClinicBookedAppointment = () => {
             email: bookedAppointment.email,
             phoneNumber: bookedAppointment.phoneNumber,
             appointmentDate: bookedAppointment.appointmentDate,
-            appointmentTime: bookedAppointment.appointmentTime ? dayjs(bookedAppointment.appointmentTime, ["h:mm A", "HH:mm", "HH:mm:ss"], true) : null,
+            appointmentTime: bookedAppointment.appointmentTime ? dayjs(bookedAppointment.appointmentTime, ["h:mm A", "HH:mm", "HH:mm:ss", "hhh:mm A"], true) : null,
             gender: bookedAppointment.gender,
             purposeOfAppointment: bookedAppointment.purposeOfAppointment,
             status: bookedAppointment.status,
@@ -108,7 +108,7 @@ const ModifyClinicBookedAppointment = () => {
      */
     const handleAppointmentDateChange = async (newValue) => {
         if (newValue) {
-            const selectedAppointmentDate = dayjs(newValue).format('YYYY-MM-DD');
+            const selectedAppointmentDate = dayjs(newValue).format("YYYY-MM-DD");
             setModifyBookedAppointmentDetails((prev) => ({
                 ...prev,
                 appointmentDate: dayjs(selectedAppointmentDate)

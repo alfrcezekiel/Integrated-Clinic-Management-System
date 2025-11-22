@@ -279,6 +279,7 @@ const AppointmentHistoryTable = () => {
         "Clinic Name",
         "Full Name",
         "Email",
+        "Address",
         "Appointment Date",
         "Appointment Time",
         "Phone Number",
@@ -491,6 +492,14 @@ const AppointmentHistoryTable = () => {
                                                     className="text-black"
                                                 >
                                                     {appointment[clinicFieldConfigs[clinicType]?.patientInfo?.email] || "patient_email"}
+                                                </Typography>
+                                            </TableCell>
+                                            <TableCell align="center">
+                                                <Typography
+                                                    variant="body2"
+                                                    className="text-black"
+                                                >
+                                                    {appointment.address}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="center">

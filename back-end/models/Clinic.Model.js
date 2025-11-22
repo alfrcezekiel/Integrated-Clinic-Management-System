@@ -38,6 +38,7 @@ class Clinic {
                     c.clinic_type,
                     cp.created_by,
                     cp.appointmentID,
+                    pa.address,
                     cp.past_surgeries_details,
                     cp.allergy_details,
                     cp.taking_prescription_medication_details,
@@ -109,6 +110,7 @@ class Clinic {
                         pcp.last_name,
                         pcp.email,
                         pcp.phone_number,
+                        pa.address,
                         pcp.appointment_date,
                         pcp.appointment_time,
                         pcp.diagnosed_mental_health_condition_details,
@@ -3200,6 +3202,7 @@ class Clinic {
                         pa.lastName,
                         pa.email,
                         pa.appointmentDate,
+                        pa.address,
                         pa.preferredTime,
                         pa.status,
                         pa.purposeOfAppointment,
@@ -3217,6 +3220,7 @@ class Clinic {
                             pa.firstName LIKE ? OR
                             pa.lastName LIKE ? OR
                             pa.email LIKE ? OR
+                            pa.address LIKE ? OR
                             pa.phoneNumber LIKE ? OR
                             pa.purposeOfAppointment LIKE ? OR
                             pa.status LIKE ? OR
@@ -3226,6 +3230,7 @@ class Clinic {
                     `
                     const searchTerm = `%${params.search}%`;
                     queryParams.push(
+                        searchTerm,
                         searchTerm,
                         searchTerm,
                         searchTerm,
@@ -3258,6 +3263,7 @@ class Clinic {
                             pa.firstName LIKE ? OR
                             pa.lastName LIKE ? OR
                             pa.email LIKE ? OR
+                            pa.address LIKE ? OR
                             pa.phoneNumber LIKE ? OR
                             pa.purposeOfAppointment LIKE ? OR
                             pa.status LIKE ? OR
@@ -3267,6 +3273,7 @@ class Clinic {
                     `
                     const searchTerm = `%${params.search}%`;
                     countParams.push(
+                        searchTerm,
                         searchTerm,
                         searchTerm,
                         searchTerm,
@@ -3309,7 +3316,7 @@ class Clinic {
                 throw error;
             } finally {
                 if (connection) {
-                    await connection.release();
+                    connection.release();
                 }
             }
         },
@@ -3364,6 +3371,7 @@ class Clinic {
                         pa.firstName LIKE ? OR
                         pa.lastName LIKE ? OR
                         pa.email LIKE ? OR
+                        pa.address LIKE ? OR
                         pa.phoneNumber LIKE ? OR
                         pa.preferredTime LIKE ? OR
                         pa.status LIKE ? OR
@@ -3386,6 +3394,7 @@ class Clinic {
                     searchPattern,
                     searchPattern,
                     searchPattern,
+                    searchPattern,
                     searchPattern
                 ]
 
@@ -3399,6 +3408,7 @@ class Clinic {
                         pa.firstName,
                         pa.lastName,
                         pa.email,
+                        pa.address,
                         pa.appointmentDate,
                         pa.preferredTime,
                         pa.status,
@@ -3412,6 +3422,7 @@ class Clinic {
                         pa.firstName LIKE ? OR
                         pa.lastName LIKE ? OR
                         pa.email LIKE ? OR 
+                        pa.address LIKE ? OR
                         pa.appointmentDate LIKE ? OR
                         pa.preferredTime LIKE ? OR
                         pa.status LIKE ? OR
@@ -3426,6 +3437,7 @@ class Clinic {
                 const searchQueryValues = [
                     email_address,
                     patient_status,
+                    searchPattern,
                     searchPattern,
                     searchPattern,
                     searchPattern,
@@ -4105,6 +4117,7 @@ class Clinic {
                         pa.firstName LIKE ? OR
                         pa.lastName LIKE ? OR
                         pa.email LIKE ? OR
+                        pa.address LIKE ? OR
                         pa.phoneNumber LIKE ? OR
                         pa.appointmentDate LIKE ? OR
                         pa.preferredTime LIKE ? OR
@@ -4119,6 +4132,7 @@ class Clinic {
                 const count_query_values = [
                     email_address,
                     patient_status,
+                    search_pattern,
                     search_pattern,
                     search_pattern,
                     search_pattern,
@@ -4147,6 +4161,7 @@ class Clinic {
                         pa.firstName,
                         pa.lastName,
                         pa.email,
+                        pa.address,
                         pa.appointmentDate,
                         pa.preferredTime,
                         pa.status,
@@ -4162,6 +4177,7 @@ class Clinic {
                         pa.lastName LIKE ? OR
                         pa.email LIKE ? OR
                         pa.phoneNumber LIKE ? OR
+                        pa.address LIKE ? OR
                         pa.appointmentDate LIKE ? OR
                         pa.preferredTime LIKE ? OR
                         pa.status LIKE ? OR
@@ -4174,6 +4190,7 @@ class Clinic {
                 const search_query_values = [
                     email_address,
                     patient_status,
+                    search_pattern,
                     search_pattern,
                     search_pattern,
                     search_pattern,
@@ -4280,6 +4297,7 @@ class Clinic {
                     "pa.firstName",
                     "pa.lastName",
                     "pa.email",
+                    "pa.address",
                     "pa.appointmentDate",
                     "pa.preferredTime",
                     "pa.status",
@@ -4413,6 +4431,7 @@ class Clinic {
                     "pa.firstName",
                     "pa.lastName",
                     "pa.email",
+                    "pa.address",
                     "pa.appointmentDate",
                     "pa.preferredTime",
                     "pa.status",
@@ -4538,6 +4557,7 @@ class Clinic {
                     "pa.firstName",
                     "pa.lastName",
                     "pa.email",
+                    "pa.address",
                     "pa.appointmentDate",
                     "pa.phoneNumber",
                     "pa.preferredTime",
@@ -4674,6 +4694,7 @@ class Clinic {
                     "pa.firstName",
                     "pa.lastName",
                     "pa.email",
+                    "pa.address",
                     "pa.appointmentDate",
                     "pa.phoneNumber",
                     "pa.preferredTime",
@@ -4811,6 +4832,7 @@ class Clinic {
                         pa.lastName LIKE ? OR
                         pa.appointmentDate LIKE ? OR
                         pa.email LIKE ? OR
+                        pa.address LIKE ? OR
                         pa.preferredTime LIKE ? OR
                         pa.phoneNumber LIKE ? OR
                         pa.status LIKE ? OR
@@ -4822,6 +4844,7 @@ class Clinic {
                 const count_query_values = [
                     email_address,
                     patient_status,
+                    search_pattern,
                     search_pattern,
                     search_pattern,
                     search_pattern,
@@ -4850,6 +4873,7 @@ class Clinic {
                     "pa.firstName",
                     "pa.lastName",
                     "pa.email",
+                    "pa.address",
                     "pa.appointmentDate",
                     "pa.phoneNumber",
                     "pa.preferredTime",
@@ -4871,6 +4895,7 @@ class Clinic {
                         pa.firstName LIKE ? OR
                         pa.lastName LIKE ? OR
                         pa.email LIKE ? OR
+                        pa.address LIKE ? OR
                         pa.appointmentDate LIKE ? OR
                         pa.phoneNumber LIKE ? OR
                         pa.preferredTime LIKE ? OR
@@ -4884,6 +4909,7 @@ class Clinic {
                 const search_query_values = [
                     email_address,
                     patient_status,
+                    search_pattern,
                     search_pattern,
                     search_pattern,
                     search_pattern,
@@ -4962,13 +4988,14 @@ class Clinic {
                 }
 
                 const {
-                    appointmentID,
-                    appointmentDate
+                    bookedAppointmentID,
+                    appointmentDate,
+                    type
                 } = params;
 
                 const appointmentDateValue = dayjs(appointmentDate).format("YYYY-MM-DD");
-                const currentDate = dayjs().format("YYYY-MM-DD");
-                const appointment_id = parseInt(appointmentID);
+                const patient_type = String(type);
+                const appointment_id = parseInt(bookedAppointmentID);
 
                 if (isNaN(appointment_id)) {
                     throw new Error(`Invalid appointment ID! Validate previous appointment date should be a number`);
@@ -4978,56 +5005,106 @@ class Clinic {
                     throw new Error(`Invalid appointment date! Validate previous appointment date should be a string`);
                 }
 
-                const patient_appointment_cols = [
-                    "pa.appointmentDate",
-                    "pa.status"
-                ]
+                if (patient_type === "Patient") {
+                    const patient_appointment_cols = [
+                        "pa.appointmentDate",
+                        "pa.status"
+                    ]
 
-                const patient_status = [
-                    "Approved",
-                    "Cancelled",
-                    "Declined"
-                ];
+                    const patient_status = [
+                        "Approved",
+                        "Cancelled",
+                        "Declined"
+                    ];
+                    const placeholders_status = patient_status.map(() => "?").join(", ");
 
-                const placeholders_status = patient_status.map(() => "?").join(", ");
+                    const query = `
+                        SELECT 
+                            ${patient_appointment_cols.join(", ")}
+                        FROM patientsappointment AS pa
+                        WHERE pa.appointmentID = ?
+                        AND pa.status IN (${placeholders_status})
+                        ORDER BY pa.appointmentDate DESC
+                        LIMIT 1;
+                    `;
 
-                const query = `
-                    SELECT 
-                        ${patient_appointment_cols.join(", ")}
-                    FROM patientsappointment AS pa
-                    WHERE pa.appointmentID = ?
-                    AND pa.status IN (${placeholders_status})
-                    ORDER BY pa.appointmentDate DESC
-                    LIMIT 1;
-                `;
+                    const query_values = [
+                        appointment_id,
+                        ...patient_status
+                    ];
 
-                const query_values = [
-                    appointment_id,
-                    ...patient_status
-                ];
+                    const [result] = await this.connection.query(query, query_values);
 
-                const [result] = await this.connection.query(query, query_values);
-
-                if (!result || result.length === 0) {
-                    return {
-                        message: "No previous appointment found",
-                        isValid: true,
+                    if (!result || result.length === 0) {
+                        return {
+                            message: "No previous appointment found",
+                            isValid: true,
+                        }
                     }
-                }
 
-                const lastAppointment = result[0];
-                const newDate = dayjs(appointmentDateValue);
-                const lastAppointmentDate = dayjs(lastAppointment.appointmentDate);
+                    const lastAppointment = result[0];
+                    const newDate = dayjs(appointmentDateValue);
+                    const lastAppointmentDate = dayjs(lastAppointment.appointmentDate);
 
-                if (newDate.isBefore(lastAppointmentDate)) {
-                    return {
-                        message: "Appointment date should not be earlier than the last appointment date",
-                        isValid: false,
+                    if (newDate.isBefore(lastAppointmentDate)) {
+                        return {
+                            message: "Appointment date should not be earlier than the last appointment date",
+                            isValid: false,
+                        }
+                    } else if (newDate.isAfter(lastAppointmentDate.add(1, "month"), "day")) {
+                        return {
+                            message: "Appointment date should not be later than one month from the last appointment date",
+                            isValid: false,
+                        }
                     }
-                } else if (newDate.isAfter(lastAppointmentDate.add(1, "month"), "day")) {
-                    return {
-                        message: "Appointment date should not be later than one month from the last appointment date",
-                        isValid: false,
+                } else if (patient_type === "Clinic") {
+                    const clinic_appointment_cols = [
+                        "ca.appointmentDate",
+                        "ca.status"
+                    ]
+
+                    const clinic_status = ["Approved", "Cancelled", "Declined"];
+
+                    const placeholders_status = clinic_status.map(() => "?").join(", ");
+
+                    const query = `
+                        SELECT
+                            ${clinic_appointment_cols.join(", ")}
+                        FROM clinic_appointments AS ca
+                        WHERE ca.id = ?
+                        AND ca.status IN (${placeholders_status})
+                        ORDER BY ca.appointmentDate DESC
+                        LIMIT 1;
+                    `
+
+                    const query_values = [
+                        appointment_id,
+                        ...clinic_status
+                    ]
+
+                    const [result] = await this.connection.query(query, query_values);
+
+                    if (!result || result.length === 0) {
+                        return {
+                            message: "No previous appointment found in clinic side table",
+                            isValid: true
+                        }
+                    }
+
+                    const lastAppointment = result[0];
+                    const newDate = dayjs(appointmentDateValue);
+                    const lastAppointmentDate = dayjs(lastAppointment.appointmentDate);
+
+                    if (newDate.isBefore(lastAppointmentDate)) {
+                        return {
+                            message: "Appointment date should not be earlier than the last appointment date",
+                            isValid: false,
+                        }
+                    } else if (newDate.isAfter(lastAppointmentDate.add(1, "month"), "day")) {
+                        return {
+                            message: "Appointment date should not be later than one month from the last appointment date",
+                            isValid: false,
+                        }
                     }
                 }
 
@@ -5042,7 +5119,7 @@ class Clinic {
                 throw error;
             } finally {
                 if (this.connection) {
-                    await this.connection.release();
+                    this.connection.release();
                 }
             }
         },

@@ -197,7 +197,7 @@ const PendingBookedAppointment = () => {
                     <span className="text-2xl font-bold text-center p-4">Pending Booked Appointments</span>
                 </div>
                 <div className="overflow-x-auto">
-                    <table className="max-w-full text-sm text-center text-gray-700">
+                    <table className="min-w-full text-sm text-center text-gray-700">
                         <thead className="bg-blue-100 text-black uppercase text-xs sticky top-0 z-10">
                             <tr>
                                 {clinic_columns.map((column, i) => (
@@ -288,7 +288,7 @@ const PendingBookedAppointment = () => {
                                 ))
                             ) : (
                                 <tr className="hover:bg-blue-50 transition-colors duration-200">
-                                    <td colSpan={clinic_columns.length} className="px-6 py-4 text-center text-gray-500">
+                                    <td colSpan={clinic_columns.length} className="py-4 text-center text-gray-500">
                                         No pending appointments found.
                                     </td>
                                 </tr>

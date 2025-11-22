@@ -77,6 +77,9 @@ const AppointmentsTable = ({ retrievedAppointmentsData }) => {
                     {appointment.email}
                 </td>
                 <td className="px-4 py-3 text-sm text-black whitespace-nowrap text-center">
+                    {appointment.address}
+                </td>
+                <td className="px-4 py-3 text-sm text-black whitespace-nowrap text-center">
                     {formatDate(appointment.appointmentDate)}
                 </td>
                 <td className="px-4 py-3 text-sm text-black whitespace-nowrap text-center">

@@ -24,6 +24,7 @@ const DeclinedAppointmentStatusClinicTable = () => {
         "Clinic Name",
         'Full Name',
         "Email",
+        "Address",
         'Appointment Date',
         "Appointment Time",
         "Phone Number",
@@ -166,6 +167,11 @@ const DeclinedAppointmentStatusClinicTable = () => {
                                             <TableCell align="center">
                                                 <Typography variant="body2" className="text-blue-gray-900">
                                                     {appointment.email}
+                                                </Typography>
+                                            </TableCell>
+                                            <TableCell align="center">
+                                                <Typography variant="body2" className="text-blue-gray-900">
+                                                    {appointment.address}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="center">

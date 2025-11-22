@@ -9,7 +9,7 @@ import {
     Link,
     NavLink,
 } from "react-router-dom";
-import { ChevronDown, ChevronRight, Menu } from 'lucide-react'
+import { ChevronDown, ChevronRight } from 'lucide-react'
 
 // this is the sidenav component for the dashboard
 const DoctorsSideNav = ({ brandName, routes }) => {
@@ -101,12 +101,6 @@ const DoctorsSideNav = ({ brandName, routes }) => {
         setClinicBookAppointmentDropDownOpen((prev) => !prev);
     }, [])
 
-    const toggleSidebar = () => {
-        if (width > 768 && width < 1280) {
-            setIsCollapsed(!isCollapsed);
-        }
-    };
-
     const fieldNamesLinks = [
         "Appointments",
         "Pending Appointments",
@@ -146,24 +140,16 @@ const DoctorsSideNav = ({ brandName, routes }) => {
                 className={`overflow-y-auto fixed top-0 left-0 h-screen bg-white border-r border-gray-200 shadow-xl z-50 transition-all duration-300 ease-in-out cursor-pointer ${isMobile ? (isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full') : (isCollapsed ? '-translate-x-full' : 'translate-x-0')} ${!isMobile && !isCollapsed ? 'w-76' : ''} md:fixed`}
             >
                 {/* Sidebar Header */}
-                <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                <div className="flex items-center justify-between p-4 border-b border-gray-200 pt-20">
                     <Link to={"/doctor-portal/dashboard/home"} className="flex-1">
                         <h1 className={`
                             font-bold text-gray-900 transition-all duration-300
-                            ${isCollapsed ? 'text-lg text-center' : 'text-xl text-left'}
+                            ${isCollapsed ? 'text-lg text-center' : 'text-xl text-center'}
                         `}>
                             {!isCollapsed && brandName}
                             {isCollapsed && brandName.charAt(0)}
                         </h1>
                     </Link>
-                    {!isMobile && (
-                        <button
-                            onClick={toggleSidebar}
-                            className="p-1 rounded hover:bg-gray-100 transition-colors cursor-pointer"
-                        >
-                            <Menu className="w-5 h-5 text-gray-600" />
-                        </button>
-                    )}
                 </div>
                 <nav className={`overflow-y-auto flex-1 ${isCollapsed ? 'px-2' : 'px-4'} ${isMobile ? 'py-4' : 'py-6'}`}>
                     {/* Main Routes */}

@@ -181,7 +181,7 @@ const DeclinedBookedAppointmentTable = () => {
                                 ))
                             ) : (
                                 <tr className="hover:bg-blue-50 transition-colors duration-200">
-                                    <td colSpan={clinic_columns.length} className="px-6 py-6 text-center text-gray-500">
+                                    <td colSpan={clinic_columns.length} className="py-4 text-center text-gray-500">
                                         No declined appointments found.
                                     </td>
                                 </tr>

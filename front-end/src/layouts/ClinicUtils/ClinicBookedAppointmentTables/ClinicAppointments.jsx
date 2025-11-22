@@ -301,7 +301,7 @@ const ClinicAppointments = () => {
                                 ))
                             ) : (
                                 <tr className="hover:bg-blue-50 transition-colors duration-200">
-                                    <td colSpan={clinic_columns.length} className="text-center py-4">
+                                    <td colSpan={clinic_columns.length} className="text-center py-4 text-gray-500">
                                         No appointments found.
                                     </td>
                                 </tr>

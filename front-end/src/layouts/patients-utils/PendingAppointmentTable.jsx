@@ -25,6 +25,11 @@ const PendingAppointmentTable = () => {
             className: "text-center"
         },
         {
+            key: "address",
+            label: "Address",
+            className: "text-center"
+        },
+        {
             key: "appointmentDate",
             label: "Appointment Date",
             className: "text-center"

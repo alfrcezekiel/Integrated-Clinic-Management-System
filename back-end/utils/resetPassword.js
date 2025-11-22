@@ -34,7 +34,7 @@ const sendResetPasswordEmail = async (email, name, resetLink) => {
         if (process.env.NODE_ENV === "production") {
             try {
                 const info = await sendEmailWithTimeout(() => resend.emails.send({
-                    from: `Clinic Management System <noreply@resend.dev>`,
+                    from: `Clinic Management System <onboarding@resend.dev>`,
                     to: email,
                     subject: "Reset Password Request",
                     html: `

@@ -32,19 +32,23 @@ const validateAllBookedAppointmentSpecificDetails = [
         .notEmpty()
         .withMessage("Appointment date is required")
         .custom(async (value, { req }) => {
-            const validDate = dayjs(value).format("YYYY-MM-DD");
-            if (!validDate) {
+            const validDate = dayjs(value, ["YYYY-MM-DD", dayjs.ISO_8601], true);
+            if (!validDate.isValid()) {
                 throw new Error("Invalid appointment date")
             }
 
-            const appointmentID = req.body.bookedAppointmentID;
+            const {
+                bookedAppointmentID,
+                type
+            } = req.query;
 
-            if (appointmentID) {
+            if (bookedAppointmentID) {
                 const clinic_instance = new Clinic();
 
                 const { isValid, message } = await clinic_instance.validatePreviousAppointmentDate({
-                    appointmentID: appointmentID,
-                    appointmentDate: validDate
+                    bookedAppointmentID: bookedAppointmentID,
+                    appointmentDate: validDate,
+                    type: type
                 })
 
                 if (!isValid) {

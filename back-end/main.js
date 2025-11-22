@@ -161,7 +161,7 @@ app.options("*", cors(corsOptions));
 const serveStaticOptions = {
     setHeaders: (res, path) => {
         // Cache control for static files (1 day)
-        res.setHeader('Cache-Control', 'public, max-age=86400');
+        // res.setHeader('Cache-Control', 'public, max-age=86400');
 
         // Set CORS headers for static files
         const allowedOrigins = env === "production"

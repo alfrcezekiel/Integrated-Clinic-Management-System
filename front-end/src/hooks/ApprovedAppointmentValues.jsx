@@ -80,6 +80,9 @@ const ApprovedAppointmentsTableValue = ({ retrievedAppointmentsData, appointment
                     {appointment.email}
                 </td>
                 <td className="px-6 py-3 whitespace-nowrap text-sm text-black dark:text-black">
+                    {appointment.address}
+                </td>
+                <td className="px-6 py-3 whitespace-nowrap text-sm text-black dark:text-black">
                     {formatDate(appointment.appointmentDate)}
                 </td>
                 <td className="px-6 py-3 whitespace-nowrap text-sm text-black dark:text-black">
