@@ -5913,3 +5913,26 @@ export const getConsultationQuestionsBySection = asyncHandler(
         }
     }
 )
+
+/**
+ * @function controller healthcheck path in every endpoint
+ * @access {public}
+ * @route /cms.api.com/healthcheck
+ */
+export const healthCheck = asyncHandler(
+    async (req, res) => {
+        try {
+            logger.log(`info`, `Health check successful`);
+            return res.status(StatusCodes.OK).json({
+                success: true,
+                message: "Health check successful",
+                date: new Date().toISOString(),
+            });
+        } catch (error) {
+            logger.log(`error`, `Failed to perform health check: ${error}`);
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "Failed to perform health check"
+            })
+        }
+    }
+)
