@@ -210,7 +210,7 @@ const staticFileHandler = (req, res, next) => {
     next();
 };
 
-const upload_base = process.env.NODE_ENV === "production" ? "/mnt/volume/uploads" : "/uploads";
+const upload_base = "/uploads";
 // Serve clinic images
 const clinicImagesPath = path.join(__dirname, upload_base, "clinic_images");
 
