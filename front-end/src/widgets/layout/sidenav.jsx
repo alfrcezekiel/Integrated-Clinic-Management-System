@@ -48,7 +48,7 @@ const SideNav = ({ brandName, routes }) => {
             {/* Mobile menu button - shown on lg screens and below */}
             <button
                 onClick={toggleMobileMenu}
-                className="fixed top-4 left-4 z-50 p-2 rounded-lg bg-white shadow-md lg:block xl:hidden"
+                className="fixed top-4 left-4 z-50 p-2 rounded-lg bg-white shadow-md lg:block xl:hidden cursor-pointer"
                 aria-label="Toggle menu"
             >
                 <div className="w-6 flex flex-col space-y-1.5">

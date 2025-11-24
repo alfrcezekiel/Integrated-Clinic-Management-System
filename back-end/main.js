@@ -161,7 +161,7 @@ app.options("*", cors(corsOptions));
 const serveStaticOptions = {
     setHeaders: (res, path) => {
         // Cache control for static files (1 day)
-        // res.setHeader('Cache-Control', 'public, max-age=86400');
+        res.setHeader('Cache-Control', 'public, max-age=86400');
 
         // Set CORS headers for static files
         const allowedOrigins = env === "production"
@@ -210,33 +210,20 @@ const staticFileHandler = (req, res, next) => {
     next();
 };
 
+const upload_base = process.env.NODE_ENV === "production" ? "/mnt/volume/uploads" : "/uploads";
 // Serve clinic images
-const clinicImagesPath = path.join(__dirname, "uploads", "clinic_images");
-const altClinicImagesPath = path.join(__dirname, process.cwd(), "uploads", "clinic_images");
-if (fs.existsSync(clinicImagesPath)) {
-    fs.mkdirSync(clinicImagesPath, {
-        recursive: true
-    })
-    logger.log(`info`, `Serving clinic images from: ${clinicImagesPath}`);
-}
+const clinicImagesPath = path.join(__dirname, upload_base, "clinic_images");
 
-if (fs.existsSync(altClinicImagesPath)) {
-    fs.mkdirSync(altClinicImagesPath, {
-        recursive: true
-    })
-    logger.log(`info`, `Serving clinic images from: ${altClinicImagesPath}`);
-}
+fs.mkdirSync(clinicImagesPath, {
+    recursive: true
+})
+
+logger.log(`info`, `Serving clinic images from primary: ${clinicImagesPath}`);
 
 app.use("/uploads/clinic_images", staticFileHandler, express.static(clinicImagesPath, serveStaticOptions));
-/**
- * checks condition if alt clinic images path is different from clinic images path register to a fallback path
-*/
-if (altClinicImagesPath !== clinicImagesPath) {
-    app.use("/uploads/clinic_images", staticFileHandler, express.static(altClinicImagesPath, serveStaticOptions));
-}
 
 // Serve medical reports
-const medicalReportPath = path.join(__dirname, "uploads", "medical_reports");
+const medicalReportPath = path.join(__dirname, upload_base, "medical_reports");
 app.use("/uploads/medical_reports", staticFileHandler, express.static(medicalReportPath, serveStaticOptions));
 
 // route for CMS

@@ -49,7 +49,7 @@ const DeclinedAppointmentStatusTable = () => {
         {
             key: "purpose",
             label: "Purpose of Appointment",
-            className: "lg:table-cell"
+            className: "text-center"
         }
     ]
     const { user, token } = useAuthorization();

@@ -276,6 +276,7 @@ const PatientsTable = () => {
                         ) : (
                             <AppointmentsTable
                                 retrievedAppointmentsData={retrievedAppointmentsData}
+                                appointmentsTableColumn={columns}
                             />
                         )}
                     </table>

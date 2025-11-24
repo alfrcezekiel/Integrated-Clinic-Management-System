@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import PropTypes from "prop-types";
 
 // This component is used to render the table rows for the appointments table
-const AppointmentsTable = ({ retrievedAppointmentsData }) => {
+const AppointmentsTable = ({ retrievedAppointmentsData, appointmentsTableColumn }) => {
     // This function is used to format the date string to a more readable format
     const formatDate = (dateString) => {
         if (!dateString) return "N/A";
@@ -53,8 +53,8 @@ const AppointmentsTable = ({ retrievedAppointmentsData }) => {
         if (!retrievedAppointmentsData || retrievedAppointmentsData.length === 0) {
             return (
                 <tr>
-                    <td colSpan={8} className="py-3 px-5 text-center">
-                        {retrievedAppointmentsData ? "No appointments found" : "Please input credentials to view appointments"}
+                    <td colSpan={appointmentsTableColumn?.length} className="py-3 px-4 text-center text-sm text-gray-500 whitespace-nowrap">
+                        No appointments found
                     </td>
                 </tr>
             );
@@ -98,7 +98,7 @@ const AppointmentsTable = ({ retrievedAppointmentsData }) => {
                 </td>
             </tr >
         ));
-    }, [retrievedAppointmentsData]);
+    }, [retrievedAppointmentsData, appointmentsTableColumn?.length]);
 
     return (
         <tbody>
@@ -109,6 +109,7 @@ const AppointmentsTable = ({ retrievedAppointmentsData }) => {
 
 AppointmentsTable.propTypes = {
     retrievedAppointmentsData: PropTypes.array,
+    appointmentsTableColumn: PropTypes.array,
 };
 
 export default AppointmentsTable;

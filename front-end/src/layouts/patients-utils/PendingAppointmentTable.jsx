@@ -8,53 +8,53 @@ import CMS from "../../API/CMS";
 import { useAuthorization } from "../../context/auth/useAuthorization";
 
 const PendingAppointmentTable = () => {
-    const appointmentsTableColumn = [
+    const columns = [
         {
-            key: "clinicName",
-            label: "Clinic Name",
-            className: "text-center"
+            key: 'clinic_name',
+            label: 'Clinic Name',
+            className: 'text-center'
         },
         {
-            key: "name",
-            label: "Name",
-            className: "text-center"
+            key: 'name',
+            label: 'Name',
+            className: 'text-center'
         },
         {
-            key: "email",
-            label: "Email",
-            className: "text-center"
+            key: 'email',
+            label: 'Email',
+            className: 'text-center'
         },
         {
-            key: "address",
-            label: "Address",
-            className: "text-center"
+            key: 'address',
+            label: 'Address',
+            className: 'text-center'
         },
         {
-            key: "appointmentDate",
-            label: "Appointment Date",
-            className: "text-center"
+            key: 'appointmentDate',
+            label: 'Appointment Date',
+            className: 'text-center'
         },
         {
-            key: "phoneNumber",
-            label: "Phone Number",
-            className: "text-center"
+            key: 'phoneNumber',
+            label: 'Phone Number',
+            className: 'text-center'
         },
         {
-            key: "appointmentTime",
-            label: "Appointment Time",
-            className: "text-center"
+            key: 'appointmentTime',
+            label: 'Appointment Time',
+            className: 'text-center'
         },
         {
-            key: "status",
-            label: "Status",
-            className: "text-center"
+            key: 'status',
+            label: 'Status',
+            className: 'text-center'
         },
         {
-            key: "purpose",
-            label: "Purpose of Appointment",
-            className: "lg:table-cell"
-        }
-    ]
+            key: 'purpose',
+            label: 'Purpose of Appointment',
+            className: 'text-center'
+        },
+    ];
     const { user, token } = useAuthorization();
 
     const patientEmail = user?.sem;
@@ -263,7 +263,7 @@ const PendingAppointmentTable = () => {
                                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-200">
                                     <thead className="bg-gray-100">
                                         <tr>
-                                            {appointmentsTableColumn.map((header) => (
+                                            {columns.map((header) => (
                                                 <th
                                                     key={header.key}
                                                     scope="col"
@@ -279,7 +279,7 @@ const PendingAppointmentTable = () => {
                                     {isSearching || searchLoading ? (
                                         <tbody>
                                             <tr>
-                                                <td colSpan={appointmentsTableColumn.length} className="px-6 py-4 text-center">
+                                                <td colSpan={columns.length} className="px-6 py-4 text-center">
                                                     <div className="flex justify-center items-center h-32">
                                                         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-black/500"></div>
                                                     </div>
@@ -289,7 +289,7 @@ const PendingAppointmentTable = () => {
                                     ) : (
                                         <PendingStatusAppointmentTable
                                             retrievedAppointmentsData={retrievedAppointmentsData}
-                                            appointmentsTableColumn={appointmentsTableColumn}
+                                            appointmentsTableColumn={columns}
                                         />
                                     )}
                                 </table>

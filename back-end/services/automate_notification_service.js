@@ -86,7 +86,7 @@ export const sendEmailNotification = async (to, subject, html) => {
                     html: html,
                 }), 120000);
 
-                logger.log("info", `Email notification sent to ${to} via resend: ${emailResponse.messageId}`);
+                logger.log("info", `Email notification sent to ${to} via resend: ${emailResponse.id}`);
                 return emailResponse;
             } catch (error) {
                 logger.log("error", `Failed to send email notification via resend: ${error}. Falling back to local SMTP.`);

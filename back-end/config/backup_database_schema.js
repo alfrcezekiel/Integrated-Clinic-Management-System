@@ -15,6 +15,7 @@ import {
 } from "../utils/timeoutProtection.js"
 import mysqldump from "mysqldump";
 import { spawn } from "child_process";
+import os from "os";
 
 /**
  * converts __dirname to ES modules
@@ -52,7 +53,7 @@ const isLikelyWSL = () => {
     if (process.env.WSL_DISTRO_NAME) return true;
 
     try {
-        return fs.existsSync("/proc/version") && /microsoft/i.test(fs.readFileSync("/proc/version", "utf-8"))
+        return os.release().toLowerCase().includes("microsoft");
     } catch (error) {
         return false;
     }
@@ -76,14 +77,14 @@ const resolveBackupDir = () => {
         return "/var/backups/mysql";
     }
 
-    if (isWindows && !isLikelyWSL()) {
+    if (isLikelyWSL) {
         const distro = getDefaultDistro();
         const user = getCurrentUser();
         return `\\\\wsl$\\${distro}\\home\\${user}\\database_backups\\mysql`;
+    } else if (isWindows) {
+        const user = getCurrentUser();
+        return `/home/${user}/database_backups/mysql`;
     }
-
-    const user = getCurrentUser();
-    return `/home/${user}/database_backups/mysql`;
 }
 
 const BACKUP_DIR = resolveBackupDir();
@@ -146,7 +147,7 @@ export const encryptData = async (data, key) => {
  */
 export const decryptData = async (encrpytedData, key) => {
     /**
-     * extract iv 
+     * extract iv from the encrypted data
      */
     const iv = encrpytedData.subarray(0, IV_LENGTH);
     /**

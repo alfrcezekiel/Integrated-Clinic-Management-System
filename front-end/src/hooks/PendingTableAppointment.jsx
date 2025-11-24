@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import PropTypes from "prop-types";
 
 // This component is used to render the table rows for the appointments table
-const PendingStatusAppointmentTable = ({ retrievedAppointmentsData, appointmentTableColumn }) => {
+const PendingStatusAppointmentTable = ({ retrievedAppointmentsData, appointmentsTableColumn }) => {
 
     // This function is used to format the date string to a more readable format
     const formatDate = (dateString) => {
@@ -53,7 +53,7 @@ const PendingStatusAppointmentTable = ({ retrievedAppointmentsData, appointmentT
             return (
                 <tr>
                     <td
-                        colSpan={appointmentTableColumn?.length || 8}
+                        colSpan={appointmentsTableColumn.length}
                         className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center"
                     >
                         No pending appointments found
@@ -100,7 +100,7 @@ const PendingStatusAppointmentTable = ({ retrievedAppointmentsData, appointmentT
                 </td>
             </tr>
         ));
-    }, [retrievedAppointmentsData, appointmentTableColumn]);
+    }, [retrievedAppointmentsData, appointmentsTableColumn]);
 
     return (
         <tbody>
@@ -111,6 +111,6 @@ const PendingStatusAppointmentTable = ({ retrievedAppointmentsData, appointmentT
 
 PendingStatusAppointmentTable.propTypes = {
     retrievedAppointmentsData: PropTypes.array,
-    appointmentTableColumn: PropTypes.array,
+    appointmentsTableColumn: PropTypes.array,
 };
 export default PendingStatusAppointmentTable;
