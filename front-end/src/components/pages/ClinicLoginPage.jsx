@@ -180,7 +180,7 @@ function ClinicLoginPortal() {
 
     return (
         <section className="m-3 flex gap-4">
-            <div className="w-full lg:w-3/5 py-65">
+            <div className="w-full lg:w-3/5 py-56 xl:py-65 sm:py-56">
                 <Link
                     to="/cms"
                     className="absolute py-6 px-6 top-0 left-0 flex items-center text-gray-600 hover:text-gray-900 transition-colors"

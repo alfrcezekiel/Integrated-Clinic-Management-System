@@ -28,7 +28,7 @@ const LandingPageHeroSection = () => {
     }, []);
 
     return (
-        <section className="relative overflow-hidden bg-white py-60 xl:py-60 lg:py-70 md:py-70 sm:py-40">
+        <section className="relative bg-white py-60 xl:py-60 lg:py-70 md:py-70 sm:py-40">
             {/* Content */}
             <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">

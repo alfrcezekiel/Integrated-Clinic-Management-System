@@ -38,7 +38,7 @@ const MainContent = () => {
     return (
         <> 
             <LandingPageHeader />
-            <main>
+            <main className="w-full overflow-x-hidden">
                 <LandingPageHeroSection />
                 <LandingPageAboutSection />
                 <LandingPageServices />

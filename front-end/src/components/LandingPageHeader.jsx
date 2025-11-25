@@ -65,12 +65,35 @@ const LandingPageHeader = () => {
     }, []);
 
     const navLinks = [
-        { name: "Home", href: "#home", isScroll: false },
-        { name: "About", href: "#about", isScroll: true },
-        { name: "Services", href: "#services", isScroll: true },
-        { name: whatWeServeTitle, type: "dropdown" },
-        { name: "Contact", href: "#contact", isScroll: true },
-        { name: "Patient Registration Portal", href: "/PatientRegistration", isScroll: false },
+        {
+            name: "Home",
+            href: "#home",
+            isScroll: false
+        },
+        {
+            name: "About",
+            href: "#about",
+            isScroll: true
+        },
+        {
+            name: "Services",
+            href: "#services",
+            isScroll: true
+        },
+        {
+            name: whatWeServeTitle,
+            type: "dropdown"
+        },
+        {
+            name: "Contact",
+            href: "#contact",
+            isScroll: true
+        },
+        {
+            name: "Patient Registration Portal",
+            href: "/PatientRegistration",
+            isScroll: false
+        },
     ];
 
     const servicesDropdown = [
@@ -90,11 +113,11 @@ const LandingPageHeader = () => {
 
     return (
         <header className="fixed w-full bg-gradient-to-b from-black to-black/100 shadow-lg z-50">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                 <div className="flex justify-between items-center h-16">
                     {/* Logo */}
                     <ScrollLink to="/cms" targetId="home" className="flex-shrink-0 flex items-center">
-                        <img 
+                        <img
                             src={ClinicLogo}
                             alt="Clinic Logo"
                             className="object-center w-32 h-26"
@@ -102,7 +125,7 @@ const LandingPageHeader = () => {
                     </ScrollLink>
 
                     {/* Desktop Navigation */}
-                    <nav className="hidden md:flex items-center space-x-1">
+                    <nav className="hidden md:flex items-center space-x-1 flex-wrap">
                         {navLinks.map((item, index) => (
                             <div key={index} className="relative group" ref={item.type === "dropdown" ? dropdownRef : null}>
                                 {item.href ? (
