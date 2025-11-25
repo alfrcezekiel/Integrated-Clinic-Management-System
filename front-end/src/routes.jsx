@@ -28,6 +28,7 @@ import PendingBookedAppointment from "./layouts/ClinicUtils/ClinicBookedAppointm
 import ApprovedBookedAppointment from "./layouts/ClinicUtils/ClinicBookedAppointmentTables/ApprovedBookedAppointmentTable";
 import DeclinedBookedAppointmentTable from "./layouts/ClinicUtils/ClinicBookedAppointmentTables/DeclinedBookedAppointmentTable";
 import ModifyClinicBookedAppointment from "./layouts/ClinicUtils/ClinicBookedAppointmentTables/ModifyClinicBookedAppointment";
+import ClinicAppointmentHistory from "./layouts/ClinicUtils/ClinicAppointmentHistory";
 
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import RegisterPatientsAccountTable from "./layouts/adminUtils/RegisterPatientsAccountTable";
@@ -194,6 +195,13 @@ export const doctorRoutes = [
                 name: "Modify Booked Appointment",
                 path: "/ModifyBookedAppointment",
                 element: <ModifyClinicBookedAppointment />
+            },
+            {
+                id: 14,
+                icon: <HistoryIcon style={iconStyle} />,
+                name: "Clinic Side History",
+                path: "/ClinicAppointmentHistory",
+                element: <ClinicAppointmentHistory />
             }
         ]
     }

@@ -87,7 +87,8 @@ import {
     getPopularAppointmentsAnalytics,
     getConsultationSections,
     getConsultationQuestionsBySection,
-    healthCheck
+    healthCheck,
+    getAppointmentHistoryOfClinicSideTable
 } from "../controllers/cms.js";
 import validateRegister from "../middleware/validation.js";
 import patientsLoginValidation from "../middleware/patientsLoginValidation.js";
@@ -448,5 +449,10 @@ router.get("/cms.api.com/clinic/consultation_questionnaire_questions", verifyTok
  * @exports router to check healthcheck every route is working
  */
 router.get("/cms.api.com/healthcheck", healthCheck);
+
+/**
+ * @exports router to retrieve the consulted patients in clinic side table appointment history
+ */
+router.get(`/cms.api.com/clinic/clinic-table-appointment-history`, verifyToken, getAppointmentHistoryOfClinicSideTable);
 
 export default router;

@@ -2673,6 +2673,59 @@ export const getAppointmentHistoryInClinic = async (req, res) => {
     }
 }
 
+/**
+ * @function contoller retrieve the consulted patients in clinic appointment table history in clinic dashboard
+ * @access {private}
+ * @route /cms.api.com/clinic/clinic-table-appointment-histoconsultingPatientInPsychiatryClinicSideTablery
+ * @query params {clinicID}
+ * @query params {clinicType}
+ */
+export const getAppointmentHistoryOfClinicSideTable = asyncHandler(
+    async (req, res) => {
+        try {
+            const { clinicID, clinicType } = req.query;
+
+            if (!clinicID) {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    message: "Please enter a valid clinic ID"
+                })
+            }
+
+            if (!clinicType) {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    message: "Please enter a valid clinic type"
+                })
+            }
+
+            const clinic_id = parseInt(clinicID, 10);
+            const clinic_type = String(clinicType);
+
+            const clinic_appointment_history_values = {
+                clinic_id: clinic_id,
+                clinic_type: clinic_type
+            }
+
+            // instance of clinic model with a method to retrieved all appointment history
+            const consulted_patient = await new Clinic().getAppointmentHistoryOfClinicSideTable(clinic_appointment_history_values);
+
+            if (consulted_patient.length === 0) {
+                return res.status(StatusCodes.NOT_FOUND).json({
+                    message: "No clinic appointment history found"
+                })
+            }
+
+            return res.status(StatusCodes.OK).json({
+                appointmentHistory: consulted_patient
+            })
+
+        } catch (error) {
+            console.error(`Failed to get appointment history: ${error}`);
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "Failed to retrieve appointment history"
+            })
+        }
+    }
+)
 // controller logic for inserting a payment information in patient side
 export const addPatientPaymentInformation = async (req, res) => {
     try {

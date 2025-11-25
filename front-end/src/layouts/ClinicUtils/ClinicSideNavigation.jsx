@@ -113,12 +113,12 @@ const DoctorsSideNav = ({ brandName, routes }) => {
         "Clinic Pending Booked Appointment",
         "Clinic Approved Booked Appointment",
         "Clinic Declined Booked Appointment",
-        "Modify Booked Appointment"
+        "Modify Booked Appointment",
+        "Clinic Side History"
     ]
 
     return (
         <>
-
             {/* Mobile Overlay */}
             {isMobile && isMobileMenuOpen && (
                 <div
@@ -694,6 +694,47 @@ const DoctorsSideNav = ({ brandName, routes }) => {
                                 {routes.map(({ layout, pages }, index) => (
                                     pages
                                         .filter((page) => page.name === "Patient Side History")
+                                        .map(({ icon, name, path }) => (
+                                            <NavLink
+                                                key={index}
+                                                to={`${layout}${path}`}
+                                                onClick={() => {
+                                                    if (isMobile) {
+                                                        setIsMobileMenuOpen(false);
+                                                    } else {
+                                                        if (width > 768 && width < 1280) {
+                                                            setIsCollapsed(true);
+                                                        }
+                                                    }
+                                                }}
+                                                className={({ isActive }) => `
+                                                    flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-200
+                                                    ${isActive
+                                                        ? 'bg-gray-900 text-white'
+                                                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                                                    }
+                                                    ${isCollapsed ? 'justify-center' : 'justify-start'}
+                                                `}
+                                                title={isCollapsed ? name : ''}
+                                            >
+                                                <span className={`
+                                                    flex-shrink-0
+                                                    ${isCollapsed ? '' : 'mr-2'}
+                                                `}>
+                                                    {icon}
+                                                </span>
+                                                {!isCollapsed && (
+                                                    <span className="text-xs">{name}</span>
+                                                )}
+                                            </NavLink>
+                                        ))
+                                ))}
+                            </div>
+                            {/* Clinic Appointment History Dropdown */}
+                            <div className="p-2 mr-1 ml-1 mt-1 mb-1 space-y-1">
+                                {routes.map(({ layout, pages }, index) => (
+                                    pages
+                                        .filter((page) => page.name === "Clinic Side History")
                                         .map(({ icon, name, path }) => (
                                             <NavLink
                                                 key={index}

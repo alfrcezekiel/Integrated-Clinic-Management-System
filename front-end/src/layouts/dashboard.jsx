@@ -6,7 +6,7 @@ import { Routes, Route } from "react-router-dom";
 
 const Dashboard = () => {
     return (
-        <div className="max-h-screen bg-white flex flex-col">
+        <div className="min-h-screen bg-white flex flex-col">
             <div className="flex flex-1">
                 {/* this top component is for side nav */}
                 <SideNav routes={routes} brandName="Patient Dashboard" />
@@ -28,7 +28,7 @@ const Dashboard = () => {
                         <div className="text-center">
                             <Footer
                                 brandName="Clinic Management System"
-                                brandLink="https://clinicanagementsystem.com"
+                                brandLink={`${import.meta.env.VITE_ENV === "production" ? `https://integrated-clinic-management-system.vercel.app/patients-dashboard/Home` : `http://localhost:5173/patients-dashboard/Home`}`}
                             />
                         </div>
                     </div>

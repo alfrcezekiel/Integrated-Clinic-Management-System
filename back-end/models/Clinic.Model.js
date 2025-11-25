@@ -184,6 +184,192 @@ class Clinic {
         }
     }
 
+    /**
+     * @method retrieve the consulted patients appointment history table to render in table of clinic table appointment history
+     * @controller getAppointmentHistoryOfClinicSideTable
+     * @access {private}
+     * @route /cms.api.com/clinic/clinic-table-appointment-history
+     */
+    getAppointmentHistoryOfClinicSideTable = modelErrorHandling(
+        async (params) => {
+            this.connection = await this.conn.getConnection();
+            try {
+                if (!params || typeof params !== "object") {
+                    throw new Error(`Invalid paramerters! Clinic appointment history should be an object!`);
+                }
+
+                await this.connection.beginTransaction();
+
+                const { clinic_id, clinic_type } = params;
+
+                if (clinic_type === "Dental Clinic") {
+                    const status = String("Consulted");
+
+                    const cols = [
+                        "ccp.clinic_appointment_id",
+                        "ccp.first_name",
+                        "ccp.last_name",
+                        "ccp.email",
+                        "ccp.phone_number",
+                        "ccp.appointment_date",
+                        "ccp.appointment_time",
+                        "ccp.allergy_details",
+                        "ccp.taking_prescription_medication_details",
+                        "ccp.chronic_condition_details",
+                        "ccp.past_surgeries_details",
+                        "ccp.history_of_jaw_pain_details",
+                        "ccp.experienced_excessive_bleeding_details",
+                        "ccp.past_history_of_cardiovascular_issues_details",
+                        "ccp.advised_taking_antibiotics_details",
+                        "ccp.smoke_frequency_details",
+                        "ccp.consume_sugary_foods_or_beverage_details",
+                        "ccp.dental_floss_details",
+                        "ccp.consume_alcohol_details",
+                        "ccp.participate_in_sports_details",
+                        "ccp.balanced_diet_details",
+                        "ccp.regular_exercise_details",
+                        "ccp.eating_disorder_details",
+                        "ccp.experienced_bleeding_details",
+                        "ccp.tooth_sensitivity_details",
+                        "ccp.dental_appearance_details",
+                        "ccp.loose_teeth_details",
+                        "ccp.bad_breath_or_bad_taste_details",
+                        "ccp.dental_xrays_details",
+                        "ccp.dental_restoration_details",
+                        "ccp.orthodontic_treatment_details",
+                        "ccp.brush_frequency_details",
+                        "ccp.use_mouthwash_details",
+                        "ccp.replace_toothbrush_details",
+                        "ccp.clean_tongue_details",
+                        "ccp.regular_checkup_details",
+                        "ccp.dental_anxiety_details",
+                        "ccp.dental_trauma_details",
+                        "c.clinic_name",
+                        "c.clinic_type",
+                        "ca.gender",
+                        "ca.status",
+                        "ca.address",
+                        "ca.purposeOfAppointment"
+                    ]
+
+                    const query = `
+                        SELECT
+                            ${cols.join(", ")}
+                        FROM clinic_appointments AS ca
+                        INNER JOIN clinic AS c
+                        ON ca.clinic_id = c.clinic_id
+                        INNER JOIN clinic_consulted_patients AS ccp
+                        ON ca.id = ccp.clinic_appointment_id
+                        WHERE ca.clinic_id = ? AND ca.status = ?
+                        ORDER BY ca.appointmentDate DESC, ca.appointmentTime DESC;
+                    `
+
+                    const values = [
+                        clinic_id,
+                        status
+                    ]
+
+                    const [rows] = await this.connection.query(query, values);
+
+                    if (!rows || rows.length === 0) {
+                        throw new Error(`No appointment history found for clinic ID: ${clinic_id}`);
+                    }
+
+                    await this.connection.commit();
+                    return rows;
+                } else if (clinic_type == "Psychiatry Clinic") {
+                    const status = String("Consulted")
+
+                    const cols = [
+                        "pcp.clinic_appointment_id",
+                        "pcp.first_name",
+                        "pcp.last_name",
+                        "pcp.email",
+                        "pcp.phone_number",
+                        "pcp.appointment_date",
+                        "pcp.appointment_time",
+                        "pcp.diagnosed_mental_health_condition_details",
+                        "pcp.taking_psychiatric_medication_details",
+                        "pcp.hospitalized_for_mental_health_reason_details",
+                        "pcp.family_history_of_mental_health_condition_details",
+                        "pcp.suicidal_thoughts_or_behavior_details",
+                        "pcp.self_harm_or_suicide_details",
+                        "pcp.counseling_or_therapy_details",
+                        "pcp.emotional_or_behavioral_patterns_details",
+                        "pcp.mood_details",
+                        "pcp.excessive_worry_or_anxiety_details",
+                        "pcp.sleep_patterns_details",
+                        "pcp.appetite_or_weight_details",
+                        "pcp.sleep_changes_details",
+                        "pcp.hopelessness_or_worthlessness_details",
+                        "pcp.agitation_or_impulsivity_details",
+                        "pcp.difficulty_concentrating_details",
+                        "pcp.stress_level_details",
+                        "pcp.support_system_details",
+                        "pcp.major_life_changes_details",
+                        "pcp.substances_details",
+                        "pcp.sleep_hours_details",
+                        "pcp.social_group_details",
+                        "pcp.living_situation_details",
+                        "pcp.coping_with_stress_details",
+                        "pcp.mental_health_treatment_details",
+                        "pcp.treatment_history_details",
+                        "pcp.currently_in_therapy_details",
+                        "pcp.negative_experience_with_mental_health_treatment_details",
+                        "pcp.currently_undercare_of_psychiatrist_details",
+                        "pcp.stopped_taking_psychiatric_medication_details",
+                        "pcp.side_effects_from_psychiatric_medication_details",
+                        "pcp.consistent_with_attending_therapy_or_taking_medication_details",
+                        "ca.address",
+                        "ca.gender",
+                        "ca.status",
+                        "ca.purposeOfAppointment",
+                        "c.clinic_name",
+                        "c.clinic_type"
+                    ]
+
+                    const query = `
+                        SELECT
+                            ${cols.join(", ")}
+                        FROM clinic_appointments AS ca
+                        INNER JOIN clinic AS c
+                        ON ca.clinic_id = c.clinic_id
+                        INNER JOIN psychiatry_consulted_patients AS pcp
+                        ON ca.id = pcp.clinic_appointment_id
+                        WHERE ca.clinic_id = ? AND ca.status = ?
+                        ORDER BY ca.appointmentDate DESC, ca.appointmentTime DESC;
+                    `
+
+                    const values = [
+                        clinic_id,
+                        status
+                    ]
+
+                    const [rows] = await this.connection.query(query, values);
+
+                    if (!rows || rows.length === 0) {
+                        throw new Error(`No consulted patients found in the psychiatry table: ${clinic_id}`)
+                    }
+
+                    await this.connection.commit();
+
+                    return rows;
+                }
+            } catch (error) {
+                const rollbackQuery = await this.connection.rollback();
+                if (!rollbackQuery) {
+                    logger.log(`error`, `Failed to rollback transaction in retrieving the clinic table appointment history`)
+                }
+
+                logger.log(`error`, `Failed to retrieve the clinic table appointment history in method: ${error}`);
+                throw error;
+            } finally {
+                this.connection.release();
+            } 
+        },
+        "Retrieve Clinic Table Appointment History"
+    )
+
     isEmailTaken = async (email) => {
         try {
             const query = `SELECT

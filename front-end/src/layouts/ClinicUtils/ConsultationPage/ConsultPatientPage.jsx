@@ -383,7 +383,7 @@ const ConsultationPatientPage = () => {
             navigate("/doctor-portal/dashboard/AppointmentHistory");
         } else if (formState.type === "Clinic") {
             setOpenPatientConsultationSuccessfulDialog(false);
-            navigate("/doctor-portal/dashboard/home");
+            navigate("/doctor-portal/dashboard/ClinicAppointmentHistory");
         }
     }
 

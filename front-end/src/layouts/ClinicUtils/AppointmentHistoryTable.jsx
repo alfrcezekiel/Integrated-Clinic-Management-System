@@ -429,7 +429,7 @@ const AppointmentHistoryTable = () => {
 
     return (
         <>
-            <div className="mt-12 mb-1 flex justify-center items-center w-full">
+            <div className="mt-4 mb-1 flex justify-center items-center w-full">
                 <Card className="shadow-lg rounded-2xl w-full">
                     <CardHeader
                         title="Consulted Patients"
