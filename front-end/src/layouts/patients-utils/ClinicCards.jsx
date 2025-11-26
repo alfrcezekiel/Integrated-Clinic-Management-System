@@ -616,7 +616,7 @@ const ClinicCards = () => {
 
             {showSuccessConfirmedBookedAppointmentDialogBox && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 transition-opacity duration-300">
-                    <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 relative transform transition-all duration-300 scale-100 opacity-100 animate-fadeInScale">
+                    <div className="bg-white rounded-2xl shadow-xl max-w-md ml-10 mr-10 w-full p-6 relative transform transition-all duration-300 scale-100 opacity-100 animate-fadeInScale">
                         <div className="flex flex-col items-center text-center">
                             <svg
                                 className="w-12 h-12 text-green-500 mb-4"
