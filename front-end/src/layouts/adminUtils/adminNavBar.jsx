@@ -12,6 +12,7 @@ import CMS from "../../API/CMS";
 import LogoutDialog from "../../components/loguoutConfirmation";
 import "../../assets/css/main.css";
 import { useAuthorization } from "../../context/auth/useAuthorization";
+import { removeLocalStorage } from "../../utils/storage/localStorage";
 
 // this is the navbar component for the dashboard
 const AdminDashboardNavbar = () => {
@@ -22,7 +23,7 @@ const AdminDashboardNavbar = () => {
     const [layout = "Home", page = "", path = "Home", name = "Admin Dashboard"] = pathParts;
     const [anchorEl, setAnchorEl] = useState(null);
     const [settingsAnchorEl, setSettingsAnchorEl] = useState(null);
-    const { token, logout } = useAuthorization();
+    const { token, } = useAuthorization();
     const handleMenuOpen = (e) => {
         setAnchorEl(e.currentTarget);
     }
@@ -45,13 +46,14 @@ const AdminDashboardNavbar = () => {
 
             if (!response.data || !response.data.message) {
                 throw new Error("No response data or no success message");
-            } 
+            }
 
-            if(response.status === 200) {
-                logout();
+            if (response.status === 200) {
+                removeLocalStorage("authToken");
+                removeLocalStorage("userData");
                 navigate("/cms");
             }
-            
+
         } catch (error) {
             console.error(`Code functionality error for logging out in admin: ${error}`);
         } finally {

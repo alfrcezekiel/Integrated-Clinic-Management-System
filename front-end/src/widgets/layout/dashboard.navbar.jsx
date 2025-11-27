@@ -6,6 +6,7 @@ import CMS from "../../API/CMS";
 import LogoutDialog from "../../components/loguoutConfirmation";
 import { useAuthorization } from "../../context/auth/useAuthorization";
 import { FiMenu, FiBell, FiSettings, FiCreditCard, FiLogOut, FiChevronRight } from "react-icons/fi";
+import { removeLocalStorage } from "../../utils/storage/localStorage";
 
 const DashboardNavbar = () => {
     const [controller, dispatch] = useMaterialUIController();
@@ -17,7 +18,7 @@ const DashboardNavbar = () => {
     const [logoutDialog, setLogoutDialog] = useState(false);
     const navigate = useNavigate();
     const [patientNameWithPrefix, setPatientNameWithPrefix] = useState("");
-    const { logout, user, token } = useAuthorization();
+    const { user, token } = useAuthorization();
 
     useEffect(() => {
         const handleClickOutside = e => {
@@ -60,13 +61,15 @@ const DashboardNavbar = () => {
 
             if (!response.data || !response.data.message) {
                 throw new Error("No response data or no success message");
-            } else {
-                logout();
+            }
+
+            if (response.status === 200) {
+                removeLocalStorage("authToken");
+                removeLocalStorage("userData");
                 navigate("/cms");
             }
         } catch (error) {
             console.error(`Code functionality error for logging out: ${error}`);
-            logout();
             navigate("/cms");
         } finally {
             setLogoutDialog(false);

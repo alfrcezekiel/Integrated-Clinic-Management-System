@@ -256,9 +256,9 @@ export const loginPatientsAccount = async (req, res) => {
         const isPasswordValid = await bcrypt.compare(password, patients.password);
 
         if (!isPasswordValid) {
-            return res.status(StatusCodes.BAD_REQUEST).json({
+            return res.status(StatusCodes.UNAUTHORIZED).json({
                 errors: {
-                    password: "Incorrect password"
+                    password: "Invalid password"
                 }
             });
         }
@@ -268,8 +268,8 @@ export const loginPatientsAccount = async (req, res) => {
                 messageStatus: "Account is still pending for wait for the admin approval!"
             })
         } else if (patients.status === "Declined") {
-            return res.status(StatusCodes.NOT_FOUND).json({
-                messageStatus: "Your account has been declined"
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                accountStatus: "Your account has been declined"
             })
         }
 
@@ -421,7 +421,7 @@ export const loginAdminAccount = async (req, res) => {
         // Compare password using bcrypt
         const isPasswordValid = await bcrypt.compare(password, adminUsers.password);
         if (!isPasswordValid) {
-            return res.status(StatusCodes.BAD_REQUEST).json({
+            return res.status(StatusCodes.UNAUTHORIZED).json({
                 errors: {
                     password: "Invalid password"
                 }
@@ -585,13 +585,13 @@ export const logout = (req, res) => {
             secure: process.env.NODE_ENV === "production" ? true : false,
             httpOnly: true
         })
-        res.clearCookie("refreshToken", {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production" ? true : false, // Set to true if using HTTPS
-            sameSite: "lax",
-            domain: "localhost",
-            path: "/"
-        }); // remove session details
+        // res.clearCookie("refreshToken", {
+        //     httpOnly: true,
+        //     secure: process.env.NODE_ENV === "production" ? true : false, // Set to true if using HTTPS
+        //     sameSite: "lax",
+        //     domain: "localhost",
+        //     path: "/"
+        // }); // remove session details
 
         return res.status(StatusCodes.OK).json({
             message: "Logged out successfully"
@@ -1504,9 +1504,14 @@ export const getClinics = async (req, res) => {
             clinic_close_date,
             clinic_close_time
             FROM clinic
+            WHERE is_active = ?;
         `;
 
-        const [rows] = await conn.query(query);
+        const value = [
+            1
+        ]
+
+        const [rows] = await conn.query(query, value);
 
         if (rows.length === 0) {
             return res.status(StatusCodes.NOT_FOUND).json({
@@ -1717,12 +1722,18 @@ export const loggedInClinicAccount = async (req, res) => {
             clinic_name,
             email,
             clinic_type,
-            password
+            password,
+            is_active
             FROM
             clinic
-            WHERE email = ?;`;
+            WHERE email = ?;
+        `;
 
-        const [rows] = await conn.query(query, [emailAddress]);
+        const values = [
+            emailAddress
+        ]
+
+        const [rows] = await conn.query(query, values);
 
         if (rows.length === 0) {
             return res.status(StatusCodes.BAD_REQUEST).json({
@@ -1750,11 +1761,20 @@ export const loggedInClinicAccount = async (req, res) => {
 
         const isPasswordValid = await bcrypt.compare(password, clinicUsers.password);
         if (!isPasswordValid) {
-            return res.status(StatusCodes.BAD_REQUEST).json({
+            return res.status(StatusCodes.UNAUTHORIZED).json({
                 errors: {
-                    password: "Incorrect password"
+                    password: "Invalid  password"
                 }
             })
+        }
+
+        if (clinicUsers.is_active === 0) {
+            logger.log(`error`, `Your clinic account has been deactivated`);
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                errors: {
+                    message: "Your clinic account has been deactivated"
+                }
+            });
         }
 
         const payload = {
@@ -3622,7 +3642,7 @@ export const refreshAccessToken = async (req, res) => {
         /**
          * @param {string} refreshToken - The refresh token from the cookies
          */
-        const refreshToken = req.cookies?.refreshToken;
+        const refreshToken = req.cookies.refreshToken;
         logger.info(`Received refresh token: ${refreshToken}`);
 
         if (!refreshToken) {

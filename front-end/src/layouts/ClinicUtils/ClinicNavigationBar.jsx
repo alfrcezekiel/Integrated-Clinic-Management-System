@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import {
     Menu as MenuIcon,
     Notifications,
@@ -14,6 +14,7 @@ import {
 import CMS from "../../API/CMS";
 import LogoutDialog from "../../components/loguoutConfirmation";
 import { useAuthorization } from "../../context/auth/useAuthorization";
+import { removeLocalStorage } from "../../utils/storage/localStorage";
 
 // this is the navbar component for the dashboard
 const DoctorsDashboardNavbar = () => {
@@ -27,7 +28,7 @@ const DoctorsDashboardNavbar = () => {
         setAnchorEl(anchorEl ? null : e.currentTarget);
     }
     const [logoutDialog, setLogoutDialog] = useState(false);
-    const { token, logout } = useAuthorization();
+    const { token } = useAuthorization();
     const navigate = useNavigate();
 
     const tokenContext = token;
@@ -43,15 +44,19 @@ const DoctorsDashboardNavbar = () => {
                     "Authorization": `Bearer ${tokenContext}`
                 }
             });
+
             if (!response.data || !response.data.message) {
                 throw new Error("No response for logging out the doctors details");
-            } else {
-                logout();
+            } 
+
+            if (response.status === 200) {
+                removeLocalStorage("authToken");
+                removeLocalStorage("userData");
                 navigate("/cms");
             }
+            
         } catch (error) {
             console.error(`Code functionality error for logging out: ${error}`);
-            logout();
             navigate("/cms");
         } finally {
             setLogoutDialog(false);
@@ -108,7 +113,7 @@ const DoctorsDashboardNavbar = () => {
                             >
                                 <MenuIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700" />
                             </button>
-                            
+
                             {/* Breadcrumbs - Responsive */}
                             <div className="hidden sm:flex items-center text-xs sm:text-sm text-gray-600 min-w-0">
                                 <Link
@@ -130,7 +135,7 @@ const DoctorsDashboardNavbar = () => {
                                     </>
                                 )}
                             </div>
-                            
+
                             {/* Mobile breadcrumb - simplified */}
                             <div className="sm:hidden flex items-center text-xs text-gray-600 min-w-0">
                                 <span className="max-sm:hidden truncate max-w-[120px] font-medium">{page || name}</span>
@@ -150,7 +155,7 @@ const DoctorsDashboardNavbar = () => {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                 </svg>
                             </div>
-                            
+
                             {/* Mobile search button */}
                             <button className="sm:hidden p-1.5 rounded-lg hover:bg-gray-100 transition-colors duration-200">
                                 <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

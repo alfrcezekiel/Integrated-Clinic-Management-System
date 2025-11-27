@@ -60,7 +60,7 @@ CMS.interceptors.response.use((response) => response,
 
             try {
                 const refreshTokenResponse = await CMS.get(`/refreshAccessToken`, {
-                    withCredentials: true,
+                    withCredentials: true
                 });
 
                 if (response.status === 401 && refreshTokenResponse.status === 200) {

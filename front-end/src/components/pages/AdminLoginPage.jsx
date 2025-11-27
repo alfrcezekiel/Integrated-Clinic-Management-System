@@ -165,10 +165,7 @@ function AdminLoginPage() {
             if (error.response && error.response.status === 400) {
                 setFieldErrors(error.response.data.errors);
             } else if (error.response && error.response.status === 401) {
-                setFieldErrors({
-                    email: error.response.data.emailMessage,
-                    password: error.response.data.passwordMessage
-                })
+                setFieldErrors(error.response.data.errors);
             } else {
                 console.error(`Error in logging in admin: ${error}`);
             }
