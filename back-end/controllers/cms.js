@@ -317,7 +317,7 @@ export const loginPatientsAccount = async (req, res) => {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production" ? true : false, // Set to true if using HTTPS
             sameSite: "lax",
-            domain: "localhost",
+            domain: process.env.NODE_ENV === "production" ? process.env.VITE_BASE_CLIENT_URL : "localhost",
             path: "/"
         })
 
@@ -472,7 +472,7 @@ export const loginAdminAccount = async (req, res) => {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production" ? true : false, // Set to true if using HTTPS
             sameSite: "lax",
-            domain: "localhost"
+            domain: process.env.NODE_ENV === "production" ? process.env.VITE_BASE_CLIENT_URL : "localhost"
         })
 
         return res.status(StatusCodes.OK).json({
@@ -580,7 +580,7 @@ export const logout = (req, res) => {
 
         res.clearCookie("connect.sid", {
             sameSite: "lax",
-            domain: "localhost",
+            domain: process.env.NODE_ENV === "production" ? process.env.VITE_BASE_CLIENT_URL : "localhost",
             path: "/",
             secure: process.env.NODE_ENV === "production" ? true : false,
             httpOnly: true
@@ -1807,7 +1807,7 @@ export const loggedInClinicAccount = async (req, res) => {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production" ? true : false,
             sameSite: "lax",
-            domain: "localhost",
+            domain: process.env.NODE_ENV === "production" ? process.env.VITE_BASE_CLIENT_URL : "localhost",
             path: "/"
         })
 
@@ -4558,7 +4558,7 @@ export const logoutRefreshToken = asyncHandler(
             httpOnly: true,
             secure: process.env.NODE_ENV === "production" ? true : false,
             sameSite: "lax",
-            domain: "localhost",
+            domain: process.env.NODE_ENV === "production" ? process.env.VITE_BASE_CLIENT_URL : "localhost",
             path: "/"
         })
 
