@@ -313,14 +313,10 @@ export const loginPatientsAccount = async (req, res) => {
             sprefix: prefix
         }
 
-        const domain = process.env.NODE_ENV === "production" ? new URL(process.env.VITE_BASE_CLIENT_URL).hostname :
-            "localhost";
-
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production" ? true : false, // Set to true if using HTTPS
-            sameSite: "lax",
-            domain: domain,
+            sameSite: "none",
             path: "/"
         })
 
@@ -470,15 +466,11 @@ export const loginAdminAccount = async (req, res) => {
             email: adminUsers.email
         }
 
-        const domain = process.env.NODE_ENV === "production" ? new URL(process.env.VITE_BASE_CLIENT_URL).hostname :
-            "localhost";
-
         res.cookie("refreshToken", refreshToken, {
             path: "/",
             httpOnly: true,
             secure: process.env.NODE_ENV === "production" ? true : false, // Set to true if using HTTPS
-            sameSite: "lax",
-            domain: domain
+            sameSite: "none"
         })
 
         return res.status(StatusCodes.OK).json({
@@ -584,12 +576,8 @@ export const logout = (req, res) => {
             });
         }
 
-        const domain = process.env.NODE_ENV === "production" ? new URL(process.env.VITE_BASE_CLIENT_URL).hostname :
-            "localhost";
-
         res.clearCookie("connect.sid", {
-            sameSite: "lax",
-            domain: domain,
+            sameSite: "none",
             path: "/",
             secure: process.env.NODE_ENV === "production" ? true : false,
             httpOnly: true
@@ -1812,14 +1800,10 @@ export const loggedInClinicAccount = async (req, res) => {
             stype: clinicUsers.clinic_type
         }
 
-        const domain = process.env.NODE_ENV === "production" ? new URL(process.env.VITE_BASE_CLIENT_URL).hostname :
-            "localhost";
-
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production" ? true : false,
-            sameSite: "lax",
-            domain: domain,
+            sameSite: "none",
             path: "/"
         })
 
@@ -4569,8 +4553,7 @@ export const logoutRefreshToken = asyncHandler(
         res.clearCookie("refreshToken", {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production" ? true : false,
-            sameSite: "lax",
-            domain: process.env.NODE_ENV === "production" ? process.env.VITE_BASE_CLIENT_URL : "localhost",
+            sameSite: "none",
             path: "/"
         })
 

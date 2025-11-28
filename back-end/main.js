@@ -134,7 +134,7 @@ const corsOptions = {
             : ["http://localhost:5173", "http://localhost:3000"];
 
         const normalizedOrigin = origin.replace(/\/$/, "");
-        const isAllowed = allowedOrigins.some(allowed => allowed.replace(/\/$/, "") === normalizedOrigin);
+        const isAllowed = allowedOrigins.includes(normalizedOrigin) || /vercel\.app$/.test(normalizedOrigin) || allowedOrigins.some(allowed => allowed.replace(/\/$/, "") === normalizedOrigin);
 
         if (isAllowed) {
             callback(null, true);
