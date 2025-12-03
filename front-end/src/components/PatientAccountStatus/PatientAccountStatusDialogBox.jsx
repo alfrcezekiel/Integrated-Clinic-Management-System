@@ -8,21 +8,21 @@ import {
 } from '@mui/material';
 import HourglassBottomIcon from '@mui/icons-material/HourglassBottom';
 
-const PatientAccountStatusDialogBox = ({open, onClose, onConfirm}) => {
+const PatientAccountStatusDialogBox = ({ open, onClose, onConfirm }) => {
     return (
         <Dialog open={open} onClose={onClose}>
             <div className="p-4 w-full max-w-md">
                 <DialogTitle>
-                    <h3 className="text-xl font-semibold text-center text-yellow-600">Account Pending Approval</h3>
+                    <h3 className="text-xl font-semibold text-center text-yellow-600">Account Pending</h3>
                 </DialogTitle>
                 <DialogContent>
                     <div className="flex flex-col items-center text-center">
                         <HourglassBottomIcon className="text-yellow-500" style={{ fontSize: "3rem" }} />
-                        <p className="mt-4 text-base text-gray-800">
-                            Your account has been registered successfully.
+                        <p className="mt-2 text-base text-gray-800">
+                            Your account has been created successfully.
                         </p>
                         <p className="mt-2 text-sm text-gray-500">
-                            Please wait for the admin to approve your account before accessing the system.
+                            Please verify your email to continue. After verification, the admin will review and approve your account.
                         </p>
                     </div>
                 </DialogContent>
@@ -36,7 +36,7 @@ const PatientAccountStatusDialogBox = ({open, onClose, onConfirm}) => {
                             Okay
                         </Button>
                     </div>
-            </DialogActions>
+                </DialogActions>
             </div>
         </Dialog>
     );

@@ -64,7 +64,7 @@ CMS.interceptors.response.use((response) => response,
                 });
 
                 if (response.status === 401 && refreshTokenResponse.status === 200) {
-                    const newAccessToken = refreshTokenResponse.data.token;
+                    const newAccessToken = refreshTokenResponse.data.accessToken;
                     localStorage.setItem("authToken", newAccessToken);
                     originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 
@@ -82,7 +82,6 @@ CMS.interceptors.response.use((response) => response,
                 isRefreshing = false;
                 processQueue(refreshTokenError, null);
                 localStorage.removeItem("authToken");
-                window.location.href = "/cms"
                 return Promise.reject(refreshTokenError);
             } finally {
                 isRefreshing = false;

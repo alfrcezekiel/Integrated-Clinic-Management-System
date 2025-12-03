@@ -126,96 +126,99 @@ const LandingPageHeader = () => {
 
                     {/* Desktop Navigation */}
                     <nav className="hidden md:flex items-center space-x-1 flex-wrap">
-                        {navLinks.map((item, index) => (
-                            <div key={index} className="relative group" ref={item.type === "dropdown" ? dropdownRef : null}>
-                                {item.href ? (
-                                    item.isScroll ? (
-                                        <ScrollLink
-                                            to="/cms"
-                                            targetId={item.href.split('#')[1]}
-                                            className={`px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-white hover:text-black transition-colors duration-200 ${item.className || ''}`}
-                                        >
-                                            {item.name}
-                                        </ScrollLink>
+                        {/* Going to the small devices navigation sizes */}
+                        <div className="flex items-center max-lg:hidden space-x-1">
+                            {navLinks.map((item, index) => (
+                                <div key={index} className="relative group" ref={item.type === "dropdown" ? dropdownRef : null}>
+                                    {item.href ? (
+                                        item.isScroll ? (
+                                            <ScrollLink
+                                                to="/cms"
+                                                targetId={item.href.split('#')[1]}
+                                                className={`px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-white hover:text-black transition-colors duration-200 ${item.className || ''}`}
+                                            >
+                                                {item.name}
+                                            </ScrollLink>
+                                        ) : (
+                                            <Link
+                                                to={item.href}
+                                                className={`px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-white hover:text-black transition-colors duration-200 ${item.className || ''}`}
+                                            >
+                                                {item.name}
+                                            </Link>
+                                        )
                                     ) : (
-                                        <Link
-                                            to={item.href}
-                                            className={`px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-white hover:text-black transition-colors duration-200 ${item.className || ''}`}
+                                        <button
+                                            onClick={() => toggleDropdown('services')}
+                                            className="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-white hover:text-black transition-colors duration-200 flex items-center cursor-pointer"
                                         >
                                             {item.name}
-                                        </Link>
-                                    )
-                                ) : (
-                                    <button
-                                        onClick={() => toggleDropdown('services')}
-                                        className="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-white hover:text-black transition-colors duration-200 flex items-center cursor-pointer"
+                                            <svg
+                                                className={`ml-1 h-4 w-4 transform transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                            >
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </button>
+                                    )}
+                                    {item.type === "dropdown" && isDropdownOpen && (
+                                        <div className="absolute left-0 mt-1 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                                            <div className="py-1">
+                                                {servicesDropdown.map((service, i) => (
+                                                    <a
+                                                        key={i}
+                                                        href="#"
+                                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                        onClick={() => setIsDropdownOpen(false)}
+                                                    >
+                                                        {service}
+                                                    </a>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                            {/* Login Dropdown */}
+                            <div className="relative group ml-2" ref={dropdownRef}>
+                                <button
+                                    onClick={() => toggleDropdown('login')}
+                                    className="px-4 py-2 rounded-md text-sm font-medium text-white hover:bg-white hover:text-black cursor-pointer transition-colors duration-200 flex items-center"
+                                >
+                                    Login
+                                    <svg
+                                        className={`ml-1 h-4 w-4 transform transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
                                     >
-                                        {item.name}
-                                        <svg
-                                            className={`ml-1 h-4 w-4 transform transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            stroke="currentColor"
-                                        >
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                        </svg>
-                                    </button>
-                                )}
-                                {item.type === "dropdown" && isDropdownOpen && (
-                                    <div className="absolute left-0 mt-1 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                                {isOpen && (
+                                    <div className="absolute right-0 mt-1 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
                                         <div className="py-1">
-                                            {servicesDropdown.map((service, i) => (
-                                                <a
+                                            {loginDropdown.map((item, i) => (
+                                                <Link
                                                     key={i}
-                                                    href="#"
+                                                    to={item.to}
                                                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                                    onClick={() => setIsDropdownOpen(false)}
+                                                    onClick={() => setIsOpen(false)}
                                                 >
-                                                    {service}
-                                                </a>
+                                                    {item.name}
+                                                </Link>
                                             ))}
                                         </div>
                                     </div>
                                 )}
                             </div>
-                        ))}
-                        {/* Login Dropdown */}
-                        <div className="relative group ml-2" ref={dropdownRef}>
-                            <button
-                                onClick={() => toggleDropdown('login')}
-                                className="px-4 py-2 rounded-md text-sm font-medium text-white hover:bg-white hover:text-black cursor-pointer transition-colors duration-200 flex items-center"
-                            >
-                                Login
-                                <svg
-                                    className={`ml-1 h-4 w-4 transform transition-transform ${isOpen ? 'rotate-180' : ''}`}
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
-                            {isOpen && (
-                                <div className="absolute right-0 mt-1 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
-                                    <div className="py-1">
-                                        {loginDropdown.map((item, i) => (
-                                            <Link
-                                                key={i}
-                                                to={item.to}
-                                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                                onClick={() => setIsOpen(false)}
-                                            >
-                                                {item.name}
-                                            </Link>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
                         </div>
                     </nav>
 
                     {/* Mobile menu button */}
-                    <div className="md:hidden flex items-center">
+                    <div className="lg:hidden flex items-center">
                         <button
                             onClick={toggleMobileMenu}
                             className="mobile-menu-button inline-flex items-center justify-center p-2 rounded-md text-indigo-200 hover:text-black hover:bg-white focus:outline-none transition duration-150 ease-in-out cursor-pointer"
@@ -245,7 +248,7 @@ const LandingPageHeader = () => {
             {/* Mobile menu */}
             <div
                 ref={mobileMenuRef}
-                className={`${isMobileMenuOpen ? 'block' : 'hidden'} md:hidden bg-black`}
+                className={`${isMobileMenuOpen ? 'block' : 'hidden'} lg:hidden bg-black`}
             >
                 <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
                     {navLinks.map((item, index) => (

@@ -88,7 +88,7 @@ app.use(session({
         secure: process.env.NODE_ENV === "production",
         httpOnly: true,
         maxAge: 1000 * 60 * 60 * 24,
-        sameSite: "lax"
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
     },
 }))
 
@@ -146,8 +146,7 @@ const corsOptions = {
     },
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
-    exposedHeaders: ["Content-Range", "X-Content-Range"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     maxAge: 86400 // Cache preflight for 24 hours
 }
 

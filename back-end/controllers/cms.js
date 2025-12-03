@@ -25,6 +25,7 @@ import {
     sendPatientAccountStatusNotification
 } from '../services/automate_notification_service.js';
 import { cancelAllRemindersForAppointment } from "../services/automate_notification_service.js";
+import { getClientInfo } from "../utils/get_client_info.js";
 
 // controller logic for a global route
 export const CMS = async (req, res) => {
@@ -243,6 +244,7 @@ export const loginPatientsAccount = async (req, res) => {
         }
 
         const patients = rows[0];
+        const { userAgent, ipAddress } = getClientInfo(req);
 
         const SECRET_KEY = process.env.JWT_SECRET;
         const REFRESH_KEY_SECRET = process.env.REFRESH_KEY_SECRET;
@@ -304,6 +306,23 @@ export const loginPatientsAccount = async (req, res) => {
             expiresIn: "7d"
         })
 
+        const clinicInstance = new Clinic();
+
+        const create_refresh_token_values = {
+            account_type: "patient",
+            account_id: patients.patientID,
+            refreshToken: refreshToken,
+            userAgent: userAgent,
+            ipAddress: ipAddress
+        }
+        const result = await clinicInstance.createRefreshToken(create_refresh_token_values);
+
+        if (!result) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "Failed to create refresh token in patient"
+            })
+        }
+
         // session token
         const sid = req.session.user = {
             patientID: patients.patientID,
@@ -316,14 +335,15 @@ export const loginPatientsAccount = async (req, res) => {
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production" ? true : false, // Set to true if using HTTPS
-            sameSite: "none",
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
             path: "/"
         })
 
         return res.status(StatusCodes.OK).json({
             message: "Login successful",
             token: accessToken,
-            sid: sid
+            sid: sid,
+            model_message: result.model_message
         })
     } catch (error) {
         console.error(`Failed to login patient account: ${error}`);
@@ -416,6 +436,8 @@ export const loginAdminAccount = async (req, res) => {
         }
 
         const adminUsers = rows[0];
+        const { ipAddress, userAgent } = getClientInfo(req);
+        const clinicInstance = new Clinic();
 
         // Compare password using bcrypt
         const isPasswordValid = await bcrypt.compare(password, adminUsers.password);
@@ -458,6 +480,21 @@ export const loginAdminAccount = async (req, res) => {
             expiresIn: "7d"
         })
 
+        const create_refresh_token_values = {
+            account_type: "admin",
+            account_id: adminUsers.adminID,
+            refreshToken: refreshToken,
+            userAgent: userAgent,
+            ipAddress: ipAddress
+        }
+
+        const result = await clinicInstance.createRefreshToken(create_refresh_token_values);
+        if (!result) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "Failed to create a refresh token in admin"
+            })
+        }
+
         /**
          * session details
          */
@@ -470,7 +507,7 @@ export const loginAdminAccount = async (req, res) => {
             path: "/",
             httpOnly: true,
             secure: process.env.NODE_ENV === "production" ? true : false, // Set to true if using HTTPS
-            sameSite: "none"
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
         })
 
         return res.status(StatusCodes.OK).json({
@@ -1741,6 +1778,8 @@ export const loggedInClinicAccount = async (req, res) => {
         }
 
         const clinicUsers = rows[0];
+        const { userAgent, ipAddress } = getClientInfo(req);
+        const clinicInstance = new Clinic();
 
         const SECRET_KEY = process.env.JWT_SECRET;
         if (!SECRET_KEY) {
@@ -1793,6 +1832,21 @@ export const loggedInClinicAccount = async (req, res) => {
             expiresIn: "7d"
         });
 
+        const create_refresh_token_values = {
+            account_type: "clinic",
+            account_id: clinicUsers.clinic_id,
+            refreshToken: refreshToken,
+            userAgent: userAgent,
+            ipAddress: ipAddress
+        }
+
+        const result = await clinicInstance.createRefreshToken(create_refresh_token_values);
+        if (!result) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "Failed to create a refresh token in clinic"
+            })
+        }
+
         const sid = req.session.user = {
             id: clinicUsers.clinic_id,
             scn: clinicUsers.clinic_name,
@@ -1803,7 +1857,7 @@ export const loggedInClinicAccount = async (req, res) => {
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production" ? true : false,
-            sameSite: "none",
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
             path: "/"
         })
 
@@ -3632,7 +3686,11 @@ export const createAdminAccount = async (req, res) => {
     }
 }
 
-// controller logic for refresh token in all sides in admin, clinic and patient
+/**
+ * @controller logic for refresh token in all sides in admin, clinic and patient
+ * @access {public}
+ * @route /refreshAccessToken
+ */
 export const refreshAccessToken = async (req, res) => {
     try {
         /**
@@ -3661,6 +3719,51 @@ export const refreshAccessToken = async (req, res) => {
             });
         }
 
+        const clinicInstance = new Clinic();
+
+        /**
+         * @function findRefreshToken
+         * @description Find the refresh token in the database
+         */
+        const refreshTokenRecord = await clinicInstance.findRefreshToken({ refreshToken });
+
+        if (!refreshTokenRecord) {
+            res.clearCookie("refreshToken", {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production" ? true : false, // Set to true if using HTTPS
+                sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+                path: "/"
+            })
+
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                message: "Invalid refresh token",
+                errors: {
+                    refreshToken: "Invalid refresh token or has been revoked"
+                }
+            })
+        }
+
+        /**
+         * checks the expiry date of the refresh token
+         */
+        const currentTime = new Date();
+        if (new Date(refreshTokenRecord.expires_at) <= currentTime) {
+            await clinicInstance.revokeCurrentRefreshToken({ refreshToken });
+            res.clearCookie("refreshToken", {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production" ? true : false, // Set to true if using HTTPS
+                sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+                path: "/"
+            })
+
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                message: "Expired refresh token",
+                errors: {
+                    refreshToken: "Refresh token expired. Please login again."
+                }
+            });
+        }
+
         const verifyAsynncJWT = promisify(jwt.verify);
 
         // Verify the refresh token
@@ -3673,10 +3776,38 @@ export const refreshAccessToken = async (req, res) => {
 
         const newAccessToken = jwt.sign(payload, ACCESS_KEY_SECRET, {
             expiresIn: "1hr"
-        })
+        });
+
+        const newRefreshToken = jwt.sign(payload, REFRESH_KEY_SECRET, {
+            expiresIn: "7d"
+        });
+
+        const { userAgent, ipAddress } = getClientInfo(req);
+        const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+        const rotateRefreshTokenValue = {
+            oldRefreshToken: refreshToken,
+            refreshToken: newRefreshToken,
+            account_type: refreshTokenRecord.account_type,
+            account_id: refreshTokenRecord.account_id,
+            user_agent: userAgent,
+            ip_address: ipAddress,
+            expires_at: expiresAt
+        }
+
+        await clinicInstance.rotateRefreshToken(rotateRefreshTokenValue);
+
+        res.cookie("refreshToken", newRefreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production" ? true : false, // Set to true if using HTTPS
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+            path: "/"
+        });
 
         logger.log("info", `Access token refreshed successfully for user ID: ${decoded.id}`);
 
+        logger.log(`info`, `Received access token for user id: ${decoded.id} - ${newAccessToken}`);
+        
         return res.status(StatusCodes.OK).json({
             message: "Access token refreshed successfully",
             accessToken: newAccessToken

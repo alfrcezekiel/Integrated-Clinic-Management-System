@@ -365,7 +365,7 @@ class Clinic {
                 throw error;
             } finally {
                 this.connection.release();
-            } 
+            }
         },
         "Retrieve Clinic Table Appointment History"
     )
@@ -6113,6 +6113,399 @@ class Clinic {
             }
         },
         "Consulting Patient in Psychiatry Clinic Type in Clinic side table"
+    )
+
+    /**
+     * @method for inserting a new refresh access token
+     */
+    createRefreshToken = modelErrorHandling(
+        async (params) => {
+            this.connection = await this.conn.getConnection();
+            try {
+                if (!params || typeof params !== "object") {
+                    throw new Error(`Invalid parameter! refresh access params should be an object.`);
+                }
+
+                await this.connection.beginTransaction();
+
+                const {
+                    account_type,
+                    account_id,
+                    refreshToken,
+                    userAgent,
+                    ipAddress
+                } = params;
+
+                const cols = [
+                    "account_type",
+                    "account_id",
+                    "refresh_token",
+                    "user_agent",
+                    "ip_address",
+                    "expires_at"
+                ];
+
+                const col_placeholders = cols.map((c) => c === "expires_at" ? "DATE_ADD(NOW(), INTERVAL 7 DAY)" : "?").join(", ");
+
+                const values = [
+                    account_type,
+                    account_id,
+                    refreshToken,
+                    userAgent,
+                    ipAddress,
+                ];
+
+                const query = `
+                    INSERT INTO refresh_tokens
+                    (${cols.join(", ")})
+                    VALUES (${col_placeholders})
+                `;
+
+                const [result] = await this.connection.query(query, values);
+
+                if (result.affectedRows === 0) {
+                    logger.log(`error`, `Failed to create refresh access token in method`);
+                }
+
+                await this.connection.commit();
+
+                return {
+                    model_message: "Successfully created refreshed access token"
+                }
+            } catch (error) {
+                const rollbackQuery = await this.connection.rollback();
+                if (!rollbackQuery) {
+                    logger.log(`error`, `Failed to rollback transaction in create refresh access token method`);
+                }
+
+                logger.log(`error`, `Failed to create refresh access token method: ${error}`);
+            } finally {
+                this.connection.release();
+            }
+        },
+        "Refreshing Access Token"
+    )
+
+    /**
+     * @method select a refresh access token
+     */
+    findRefreshToken = modelErrorHandling(
+        async (params) => {
+            this.connection = await this.conn.getConnection();
+            try {
+                if (!params || typeof params !== "object") {
+                    throw new Error(`Invalid parameter! retrieve refresh token params should be an object.`);
+                }
+
+                const { refreshToken } = params;
+
+                const cols = [
+                    "account_type",
+                    "account_id",
+                    "refresh_token",
+                    "user_agent",
+                    "ip_address",
+                    "expires_at",
+                    "is_valid",
+                    "expires_at",
+                    "replaced_by_token"
+                ];
+
+                const values = [
+                    refreshToken,
+                    true
+                ];
+
+                const query = `
+                    SELECT ${cols.join(", ")} FROM refresh_tokens
+                    WHERE refresh_token = ? AND is_valid = ?
+                    LIMIT 1;
+                `
+
+                const [rows] = await this.connection.query(query, values);
+
+                if (!rows || rows.length === 0) {
+                    logger.log(`error`, `Invalid refresh token in method`);
+                }
+
+                return rows[0];
+            } catch (error) {
+                logger.log(`error`, `Failed to retrieve refresh token method: ${error}`);
+                throw error;
+            } finally {
+                this.connection.release();
+            }
+        },
+        "Find Refresh Token"
+    )
+
+    /**
+     * @method rotates newly created refresh token, mark old refresh token as invalid + set replaced_by_token
+     */
+    rotateRefreshToken = modelErrorHandling(
+        async (params) => {
+            this.connection = await this.conn.getConnection();
+            try {
+                if (!params || typeof params !== "object") {
+                    throw new Error(`Invalid parameter! Validate refresh token params should be an object.`);
+                }
+
+                await this.connection.beginTransaction();
+
+                const {
+                    oldRefreshToken,
+                    refreshToken,
+                    account_type,
+                    account_id,
+                    user_agent,
+                    ip_address,
+                    expires_at
+                } = params;
+
+                const insert_cols = [
+                    "account_type",
+                    "account_id",
+                    "refresh_token",
+                    "user_agent",
+                    "ip_address",
+                    "expires_at"
+                ]
+
+                /**
+                 * placeholders of creatinga new refresh token contains with sql function
+                 */
+                const insert_cols_placceholder = insert_cols.map(() => "?").join(", ");
+
+                const insert_values = [
+                    account_type,
+                    account_id,
+                    refreshToken,
+                    user_agent,
+                    ip_address,
+                    expires_at
+                ]
+
+                const insert_query = `
+                    INSERT INTO refresh_tokens
+                    (${insert_cols.join(", ")})
+                    VALUES (${insert_cols_placceholder})
+                `
+
+                const [insert_result] = await this.connection.query(insert_query, insert_values);
+
+                if (!insert_result || insert_result.affectedRows === 0) {
+                    logger.log(`error`, `Failed to insert refresh token in rotate refresh token method: ${account_id}`);
+                }
+
+                /**
+                 * reveoked old refresh token and replacce by new replace refresh token
+                 */
+                const query = `
+                    UPDATE refresh_tokens 
+                    SET is_valid = ?, 
+                    replaced_by_token = ?, 
+                    revoked_at = NOW()
+                    WHERE refresh_token = ? 
+                    AND account_id = ?;
+                `;
+
+                const values = [
+                    false,
+                    refreshToken,
+                    oldRefreshToken,
+                    account_id
+                ];
+
+                const [result] = await this.connection.query(query, values);
+
+                if (result.affectedRows === 0) {
+                    logger.log(`error`, `Failed to rotate refresh token in method: ${account_id}`);
+                }
+
+                await this.connection.commit();
+
+                logger.log(`info`, `Successfully Rotated refresh token: ${account_id}`);
+
+                return {
+                    model_message: "Successfully rotated refresh token",
+                }
+            } catch (error) {
+                const rollbackQuery = await this.connection.rollback();
+                if (!rollbackQuery) {
+                    logger.log(`error`, `Failed to rollback transaction in rotate refresh token method`);
+                }
+
+                logger.log(`error`, `Failed to rotate refresh token method: ${error}`);
+            } finally {
+                this.connection.release();
+            }
+        },
+        "Rotate Refresh Token"
+    )
+
+    /**
+     * @method revokes the current refresh token
+     */
+    revokeCurrentRefreshToken = modelErrorHandling(
+        async (params) => {
+            this.connection = await this.conn.getConnection();
+            try {
+                if (!params || typeof params !== "object") {
+                    throw new Error(`Invalid parameter! Validate refresh token params should be an object.`);
+                }
+
+                await this.connection.beginTransaction();
+
+                const { refreshToken } = params;
+
+                const update_cols = [
+                    "is_valid",
+                    "revoked_at"
+                ]
+
+                const update_cols_placeholder = update_cols.map((c) => c === "revoked_at" ? "NOW()" : "?").join(", ");
+
+                const query = `
+                    UPDATE refresh_tokens 
+                    SET ${update_cols_placeholder}
+                    WHERE refresh_token = ?;
+                `;
+
+                const values = [
+                    false,
+                    refreshToken
+                ];
+
+                const [result] = await this.connection.query(query, values);
+
+                if (result.affectedRows === 0) {
+                    logger.log(`error`, `Failed to revoked current refresh token in method`);
+                }
+
+                await this.connection.commit();
+
+                logger.log(`info`, `Succesfully revoked current refresh token`);
+
+                return {
+                    model_message: "Successfully revoked current refresh token"
+                }
+            } catch (error) {
+                const rollbackQuery = await this.connection.rollback();
+                if (!rollbackQuery) {
+                    logger.log(`error`, `Failed to rollback transaction in validate refresh token method`);
+                }
+
+                logger.log(`error`, `Failed to validate refresh token method: ${error}`);
+            } finally {
+                this.connection.release();
+            }
+        },
+        "Validating Refresh Token"
+    )
+    /**
+     * @method revokes all refresh tokens of a specific account type and account id
+     */
+    revokeAllRefreshToken = modelErrorHandling(
+        async (params) => {
+            this.connection = await this.conn.getConnection();
+            try {
+                if (!params || typeof params !== "object") {
+                    throw new Error(`Invalid parameter! Validate refresh token params should be an object.`);
+                }
+
+                await this.connection.beginTransaction();
+
+                const { account_id, account_type } = params;
+
+                const query = `
+                    UPDATE refresh_tokens 
+                    SET is_valid = ?
+                    revoked_at = NOW()
+                    WHERE account_id = ? AND account_type = ?;
+                `;
+
+                const values = [
+                    true,
+                    account_id,
+                    account_type
+                ];
+
+                const [result] = await this.connection.query(query, values);
+
+                if (result.affectedRows === 0) {
+                    logger.log(`error`, `Failed to revoke all refresh tokens: ${account_id}`);
+                }
+
+                await this.connection.commit();
+
+                logger.log(`info`, `Successfully revoked all refresh tokens - account id: ${account_id}`);
+                return {
+                    model_message: "Successfully validated refresh token"
+                }
+            } catch (error) {
+                const rollbackQuery = await this.connection.rollback();
+                if (!rollbackQuery) {
+                    logger.log(`error`, `Failed to rollback transaction in revoke all refresh tokens method`);
+                }
+
+                logger.log(`error`, `Failed to revoke all refresh tokens method: ${error}`);
+            } finally {
+                this.connection.release();
+            }
+        },
+        "Revoking all Refresh Token"
+    )
+
+    /**
+     * @method deletes a refresh token based on account id and account type
+     */
+    revokeRefreshTokens = modelErrorHandling(
+        async (params) => {
+            this.connection = await this.conn.getConnection();
+            try {
+                if (!params || typeof params !== "object") {
+                    throw new Error(`Invalid parameter! Revoke refresh tokens params should be an object.`);
+                }
+
+                await this.connection.beginTransaction();
+
+                const { account_type, account_id } = params;
+
+                const query = `
+                    DELETE FROM refresh_tokens
+                    WHERE account_type = ? AND account_id = ?;
+                `;
+
+                const values = [
+                    account_type,
+                    account_id
+                ];
+
+                const [result] = await this.connection.query(query, values);
+
+                if (result.affectedRows === 0) {
+                    logger.log("warn", `No refresh token found to revoke for account_id=${account_id}, type=${account_type}`);
+                }
+
+                logger.log("info", `Revoke attempt → account_type: ${account_type}, account_id: ${account_id}`);
+
+                await this.connection.commit();
+
+                return {
+                    model_message: "Successfully revoked refresh tokens"
+                }
+            } catch (error) {
+                const rollbackQuery = await this.connection.rollback();
+                if (!rollbackQuery) {
+                    logger.log(`error`, `Failed to rollback transaction in revoke refresh tokens method`);
+                }
+
+                logger.log(`error`, `Failed to revoke refresh tokens method: ${error}`);
+            } finally {
+                this.connection.release();
+            }
+        },
+        "Revoking Refresh Tokens"
     )
 }
 
