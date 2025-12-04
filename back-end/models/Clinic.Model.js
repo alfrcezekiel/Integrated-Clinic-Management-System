@@ -6417,15 +6417,19 @@ class Clinic {
 
                 const { account_id, account_type } = params;
 
+                const update_refresh_token_cols = [
+                    "is_valid = ?",
+                    "revoked_at = NOW()"
+                ].join(", ");
+
                 const query = `
                     UPDATE refresh_tokens 
-                    SET is_valid = ?
-                    revoked_at = NOW()
+                    SET ${update_refresh_token_cols}
                     WHERE account_id = ? AND account_type = ?;
                 `;
 
                 const values = [
-                    true,
+                    false,
                     account_id,
                     account_type
                 ];

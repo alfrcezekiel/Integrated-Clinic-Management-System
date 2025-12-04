@@ -170,9 +170,9 @@ function AdminLoginPage() {
                 console.error(`Error in logging in admin: ${error}`);
             }
         } finally {
-            setInterval(() => {
+            setTimeout(() => {
                 setSubmitting(false);
-            }, 1000);
+            }, 500);
         }
     }
 

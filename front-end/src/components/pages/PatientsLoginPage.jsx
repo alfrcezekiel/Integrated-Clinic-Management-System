@@ -192,26 +192,26 @@ function PatientsLoginPortal() {
                 setFieldErrors(error.response.data.errors);
             } else if (error.response && error.response.status === 401) {
                 /**
+                 * set the field errors if the response data contains errors of invalid password
+                */
+                if (error.response.data.errors) {
+                    setFieldErrors(error.response.data.errors);
+                }
+            } else if (error.response && error.response.status === 403) {
+                /**
                  * set the account status if the response data contains account status of declined
                  */
                 if (error.response.data.accountStatus === "Your account has been declined") {
                     handleAccountStatus(error.response)
-                }
-
-                /**
-                 * set the field errors if the response data contains errors of invalid password
-                 */
-                if (error.response.data.errors) {
-                    setFieldErrors(error.response.data.errors);
                 }
             } else {
                 console.error(`Error in logging in patient: ${error}`);
             }
             console.error("Error in logging in patient:", error);
         } finally {
-            setInterval(() => {
+            setTimeout(() => {
                 setSubmitting(false);
-            }, 1000);
+            }, 500);
         }
     }
 

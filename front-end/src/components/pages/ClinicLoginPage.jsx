@@ -181,18 +181,18 @@ function ClinicLoginPortal() {
             if (error.response && error.response.status === 400) {
                 setFieldErrors(error.response.data.errors);
             } else if (error.response && error.response.status === 401) {
+                setFieldErrors(error.response.data.errors);
+            } else if (error.response && error.response.status === 403) {
                 if (error.response.data.errors.message === "Your clinic account has been deactivated") {
                     handleDeativatedClinicAccount(error.response)
                 }
-
-                setFieldErrors(error.response.data.errors);
             } else {
                 console.error(`Error in logging in patient: ${error}`);
             }
         } finally {
-            setInterval(() => {
+            setTimeout(() => {
                 setSubmitting(false);
-            }, 1000);
+            }, 500);
         }
     }
 

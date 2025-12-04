@@ -245,6 +245,7 @@ export const loginPatientsAccount = async (req, res) => {
 
         const patients = rows[0];
         const { userAgent, ipAddress } = getClientInfo(req);
+        const clinicInstance = new Clinic();
 
         const SECRET_KEY = process.env.JWT_SECRET;
         const REFRESH_KEY_SECRET = process.env.REFRESH_KEY_SECRET;
@@ -270,7 +271,13 @@ export const loginPatientsAccount = async (req, res) => {
                 messageStatus: "Account is still pending for wait for the admin approval!"
             })
         } else if (patients.status === "Declined") {
-            return res.status(StatusCodes.UNAUTHORIZED).json({
+            const revoked_all_refresh_tokens_values = {
+                account_id: patients.patientID,
+                account_type: "patient"
+            }
+
+            await clinicInstance.revokeAllRefreshToken(revoked_all_refresh_tokens_values);
+            return res.status(StatusCodes.FORBIDDEN).json({
                 accountStatus: "Your account has been declined"
             })
         }
@@ -306,8 +313,6 @@ export const loginPatientsAccount = async (req, res) => {
             expiresIn: "7d"
         })
 
-        const clinicInstance = new Clinic();
-
         const create_refresh_token_values = {
             account_type: "patient",
             account_id: patients.patientID,
@@ -315,6 +320,7 @@ export const loginPatientsAccount = async (req, res) => {
             userAgent: userAgent,
             ipAddress: ipAddress
         }
+
         const result = await clinicInstance.createRefreshToken(create_refresh_token_values);
 
         if (!result) {
@@ -1806,7 +1812,14 @@ export const loggedInClinicAccount = async (req, res) => {
 
         if (clinicUsers.is_active === 0) {
             logger.log(`error`, `Your clinic account has been deactivated`);
-            return res.status(StatusCodes.UNAUTHORIZED).json({
+
+            const revoked_all_refresh_tokens_values = {
+                account_id: clinicUsers.clinic_id,
+                account_type: "clinic"
+            }
+
+            await clinicInstance.revokeAllRefreshToken(revoked_all_refresh_tokens_values);
+            return res.status(StatusCodes.FORBIDDEN).json({
                 errors: {
                     message: "Your clinic account has been deactivated"
                 }
@@ -3764,10 +3777,38 @@ export const refreshAccessToken = async (req, res) => {
             });
         }
 
-        const verifyAsynncJWT = promisify(jwt.verify);
+        let decoded;
+        try {
+            const verifyAsynncJWT = promisify(jwt.verify);
 
-        // Verify the refresh token
-        const decoded = await verifyAsynncJWT(refreshToken, REFRESH_KEY_SECRET)
+            // Verify the refresh token
+            decoded = await verifyAsynncJWT(refreshToken, REFRESH_KEY_SECRET);
+        } catch (error) {
+            logger.log(`error`, `Failed to verify refresh token in controller: ${error}`);
+
+            /**
+             * revokes the current refresh token
+             */
+            const revoked_current_refresh_token = {
+                refreshToken: refreshToken
+            }
+
+            await clinicInstance.revokeCurrentRefreshToken(revoked_current_refresh_token);
+
+            res.clearCookie("refreshToken", {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production" ? true : false, // Set to true if using HTTPS
+                sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+                path: "/"
+            });
+
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                message: "Invalid refresh token",
+                errors: {
+                    refreshToken: "Invalid refresh token or has been revoked"
+                }
+            })
+        }
 
         const payload = {
             id: decoded.id,
@@ -3807,7 +3848,7 @@ export const refreshAccessToken = async (req, res) => {
         logger.log("info", `Access token refreshed successfully for user ID: ${decoded.id}`);
 
         logger.log(`info`, `Received access token for user id: ${decoded.id} - ${newAccessToken}`);
-        
+
         return res.status(StatusCodes.OK).json({
             message: "Access token refreshed successfully",
             accessToken: newAccessToken
