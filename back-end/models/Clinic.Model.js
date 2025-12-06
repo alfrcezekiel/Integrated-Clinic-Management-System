@@ -6133,7 +6133,10 @@ class Clinic {
                     account_id,
                     refreshToken,
                     userAgent,
-                    ipAddress
+                    ipAddress,
+                    deviceName,
+                    deviceOS,
+                    deviceBrowser
                 } = params;
 
                 const cols = [
@@ -6142,6 +6145,9 @@ class Clinic {
                     "refresh_token",
                     "user_agent",
                     "ip_address",
+                    "device_name",
+                    "device_os",
+                    "device_browser",
                     "expires_at"
                 ];
 
@@ -6153,6 +6159,9 @@ class Clinic {
                     refreshToken,
                     userAgent,
                     ipAddress,
+                    deviceName,
+                    deviceOS,
+                    deviceBrowser
                 ];
 
                 const query = `
@@ -6207,6 +6216,9 @@ class Clinic {
                     "ip_address",
                     "expires_at",
                     "is_valid",
+                    "device_name",
+                    "device_os",
+                    "device_browser",
                     "expires_at",
                     "replaced_by_token"
                 ];
@@ -6259,6 +6271,9 @@ class Clinic {
                     account_id,
                     user_agent,
                     ip_address,
+                    device_name,
+                    device_os,
+                    device_browser,
                     expires_at
                 } = params;
 
@@ -6268,6 +6283,9 @@ class Clinic {
                     "refresh_token",
                     "user_agent",
                     "ip_address",
+                    "device_name",
+                    "device_os",
+                    "device_browser",
                     "expires_at"
                 ]
 
@@ -6282,6 +6300,9 @@ class Clinic {
                     refreshToken,
                     user_agent,
                     ip_address,
+                    device_name,
+                    device_os,
+                    device_browser,
                     expires_at
                 ]
 

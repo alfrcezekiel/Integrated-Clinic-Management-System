@@ -244,7 +244,7 @@ export const loginPatientsAccount = async (req, res) => {
         }
 
         const patients = rows[0];
-        const { userAgent, ipAddress } = getClientInfo(req);
+        const { userAgent, ipAddress, deviceName, deviceBrowser, deviceOS } = getClientInfo(req);
         const clinicInstance = new Clinic();
 
         const SECRET_KEY = process.env.JWT_SECRET;
@@ -318,7 +318,10 @@ export const loginPatientsAccount = async (req, res) => {
             account_id: patients.patientID,
             refreshToken: refreshToken,
             userAgent: userAgent,
-            ipAddress: ipAddress
+            ipAddress: ipAddress,
+            deviceName: deviceName,
+            deviceOS: deviceOS,
+            deviceBrowser: deviceBrowser
         }
 
         const result = await clinicInstance.createRefreshToken(create_refresh_token_values);
@@ -442,7 +445,7 @@ export const loginAdminAccount = async (req, res) => {
         }
 
         const adminUsers = rows[0];
-        const { ipAddress, userAgent } = getClientInfo(req);
+        const { ipAddress, userAgent, deviceName, deviceBrowser, deviceOS } = getClientInfo(req);
         const clinicInstance = new Clinic();
 
         // Compare password using bcrypt
@@ -491,7 +494,10 @@ export const loginAdminAccount = async (req, res) => {
             account_id: adminUsers.adminID,
             refreshToken: refreshToken,
             userAgent: userAgent,
-            ipAddress: ipAddress
+            ipAddress: ipAddress,
+            deviceName: deviceName,
+            deviceBrowser: deviceBrowser,
+            deviceOS: deviceOS
         }
 
         const result = await clinicInstance.createRefreshToken(create_refresh_token_values);
@@ -1784,7 +1790,7 @@ export const loggedInClinicAccount = async (req, res) => {
         }
 
         const clinicUsers = rows[0];
-        const { userAgent, ipAddress } = getClientInfo(req);
+        const { userAgent, ipAddress, deviceName, deviceBrowser, deviceOS } = getClientInfo(req);
         const clinicInstance = new Clinic();
 
         const SECRET_KEY = process.env.JWT_SECRET;
@@ -1850,7 +1856,10 @@ export const loggedInClinicAccount = async (req, res) => {
             account_id: clinicUsers.clinic_id,
             refreshToken: refreshToken,
             userAgent: userAgent,
-            ipAddress: ipAddress
+            ipAddress: ipAddress,
+            deviceName: deviceName,
+            deviceBrowser: deviceBrowser,
+            deviceOS: deviceOS
         }
 
         const result = await clinicInstance.createRefreshToken(create_refresh_token_values);
@@ -3823,7 +3832,7 @@ export const refreshAccessToken = async (req, res) => {
             expiresIn: "7d"
         });
 
-        const { userAgent, ipAddress } = getClientInfo(req);
+        const { userAgent, ipAddress, deviceName, deviceBrowser, deviceOS } = getClientInfo(req);
         const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
         const rotateRefreshTokenValue = {
@@ -3833,6 +3842,9 @@ export const refreshAccessToken = async (req, res) => {
             account_id: refreshTokenRecord.account_id,
             user_agent: userAgent,
             ip_address: ipAddress,
+            device_name: deviceName,
+            device_os: deviceOS,
+            device_browser: deviceBrowser,
             expires_at: expiresAt
         }
 
