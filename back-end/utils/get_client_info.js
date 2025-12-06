@@ -8,6 +8,7 @@ export const getClientInfo = (req) => {
     const detector = new DeviceDetector({
         clientIndexes: true,
         deviceIndexes: true,
+        deviceAliasCode: false
     });
 
     const result = detector.detect(userAgent);
@@ -17,9 +18,9 @@ export const getClientInfo = (req) => {
 
     let deviceName;
 
-    if (device.brand && device.model) {
+    if (device.brand) {
         deviceName = `${device.brand} ${device.model}`;
-    } else if (device.model && !device.brand) {
+    } else if (device.model) {
         deviceName = device.model;
     } else if (!device.brand && !device.model) {
         deviceName = `${os.name || "Unknown OS"} PC`;
