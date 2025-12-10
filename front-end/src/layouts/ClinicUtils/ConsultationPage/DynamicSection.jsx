@@ -344,7 +344,7 @@ const DynamicSection = ({
     }, [fetchQuestionnaire]);
 
     return (
-        <div className="bg-white shadow-sm rounded-lg p-6 mb-6">
+        <div className="rounded-lg p-6 mb-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8">
                 {isLoading ? (
                     <div className="flex justify-center items-center h-64">

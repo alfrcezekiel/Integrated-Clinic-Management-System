@@ -1,7 +1,20 @@
 import PropTypes from "prop-types";
 import "../App.css";
+import { useEffect } from "react";
 
 const AppointmentDataNotFoundDialog = ({ isOpen, onClose }) => {
+    useEffect(() => {
+        // Prevent background scrolling when dialog is open
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isOpen]);
     if (!isOpen) return null;
 
     return (

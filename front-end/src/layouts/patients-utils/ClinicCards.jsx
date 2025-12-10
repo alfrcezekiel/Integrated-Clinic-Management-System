@@ -74,6 +74,19 @@ const ClinicCards = () => {
     if (!tokenContext) {
         console.error("No token found in context or localStorage");
     }
+    
+    useEffect(() => {
+        // Prevent background scrolling when dialog is open
+        if (showSuccessConfirmedBookedAppointmentDialogBox) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [showSuccessConfirmedBookedAppointmentDialogBox]);
 
     useEffect(() => {
         const searchFilterClinics = async () => {

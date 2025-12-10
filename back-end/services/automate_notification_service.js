@@ -530,7 +530,7 @@ export const sendStatusUpdateReminder = async ({ email, phoneNumber, firstName, 
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>Appointment Status Update</title>
-                <script src="./tailwindcss/service_tailwind.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
             </head>
             <body class="bg-gray-50 p-4">
                 <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">

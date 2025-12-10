@@ -25,7 +25,7 @@ export const automatedEmailNotificationTemplate = (appointment) => {
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Appointment Confirmation</title>
-            <script src="./tailwindcss/service_tailwind.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
             <style>
                 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
                 body { font-family: 'Inter', sans-serif; }
