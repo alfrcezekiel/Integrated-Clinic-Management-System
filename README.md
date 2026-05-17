@@ -175,7 +175,7 @@ Password: superadmin_5
 
 ## Access the admin login portal
 
-This is the url of admin portal to access its dashboard account
+This is the url of admin portal to access the admin dashboard
 
 ```
 http://localhost:5173/admin-login
