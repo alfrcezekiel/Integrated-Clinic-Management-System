@@ -146,6 +146,13 @@ Email address: renjosephclinic@gmail.com
 Password: renjosephclinic
 ```
 
+_Psychiatry Clinic Credentials_
+
+```
+Email address: noxclinic@gmail.com
+Password: noxclinic
+```
+
 ### Credentials for Patients Side
 
 _Patient Account_
