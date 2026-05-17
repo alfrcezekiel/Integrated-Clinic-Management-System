@@ -74,7 +74,7 @@ Environment variables may contain sensitive credentials such as:
 
 Before pushing any changes to the repository, make sure you've initialize a `.gitignore` in project root directory or `front-end` and `back-end` sub-directory. This is to prevent the pushing of sensitive credentials to the repository.
 
-### Setup of back-end directory environment variables
+### Setup back-end directory environment variables
 
 ```
 APPOINTMENT_REMINDER_SCHEDULE=0 * * * *
@@ -128,7 +128,7 @@ TWILIO_AUTH_TOKEN=<YOUR_TWILIO_AUTH_TOKEN>
 TWILIO_PHONE_NUMBER=<YOUR_TWILIO_PHONE_NUMBER>
 ```
 
-### Setup of front-end directory environment variables
+### Setup front-end directory environment variables
 
 ```
 VITE_ENV=<YOUR_VITE_ENV>
