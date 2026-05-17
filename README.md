@@ -27,9 +27,9 @@ The core features of this web-based application includes:
 ## Clone the repository
 
 ```
-`git clone https://github.com/alfrcezekiel/Integrated-Clinic-Management-System.git` if you're using HTTPS
+_git clone https://github.com/alfrcezekiel/Integrated-Clinic-Management-System.git_ if you're using HTTPS
 
-`git clone git@github.com:alfrcezekiel/Integrated-Clinic-Management-System.git` if you're using SSH
+_git clone git@github.com:alfrcezekiel/Integrated-Clinic-Management-System.git_ if you're using SSH
 ```
 
 ## Install dependencies in directory of `front-end`
