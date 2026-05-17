@@ -139,7 +139,7 @@ VITE_BASE_API_URL=<YOUR_VITE_BASE_API_URL>
 
 ## Sample Credentials of web-based application to login
 
-### Credentials for Clinical Staff Side
+### 1. Credentials for Clinical Staff Side
 
 _Dental Clinic Credentials_
 
@@ -155,7 +155,7 @@ Email address: noxclinic@gmail.com
 Password: noxclinic
 ```
 
-### Credentials for Patients Side
+### 2. Credentials for Patients Side
 
 _Patient Account_
 
@@ -164,7 +164,7 @@ Email address: colet_vergara@gmail.com
 Password: colet_vergara
 ```
 
-### Credentials for Admin Side
+### 3. Credentials for Admin Side
 
 _Admin Account_
 
