@@ -52,7 +52,7 @@ const sendResetPasswordEmail = async (email, name, resetLink) => {
                             </div>
                             <p>This link will expire in 10 minutes.</p>
                             <p>If you didn't request this, please ignore this email.</p>
-                            <p>Best regards,<br>Clinic Management System Team</p>
+                            <p>Best regards,<br>Clinic Management Team</p>
                         </div>
                     `
                 }), 120000); // 2 minutes timeout
@@ -83,7 +83,7 @@ const sendResetPasswordEmail = async (email, name, resetLink) => {
                     </div>
                     <p>This link will expire in 10 minutes.</p>
                     <p>If you didn't request this, please ignore this email.</p>
-                    <p>Best regards,<br>Clinic Management System Team</p>
+                    <p>Best regards,<br>Clinic Management Team</p>
                 </div>
             `
         }

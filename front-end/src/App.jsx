@@ -99,13 +99,13 @@ const App = () => {
               }
             />
             <Route
-              path="/ResetPassword"
+              path="/reset-password"
               element={
                 <ResetPassword />
               }
             />
             <Route
-              path="/AdminLogin"
+              path="/admin-login"
               element={<AdminLoginPortal />}
             />
             <Route

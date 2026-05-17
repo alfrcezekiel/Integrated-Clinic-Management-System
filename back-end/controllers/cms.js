@@ -4586,7 +4586,7 @@ export const sendResetEmail = asyncHandler(
                     })
                 }
 
-                const reset_link = `${process.env.FRONTEND_ENDPOINT}/ResetPassword?token=${checkEmailResult.data.resetToken}&type=${userType}`;
+                const reset_link = `${process.env.FRONTEND_ENDPOINT}/reset-password?token=${checkEmailResult.data.resetToken}&type=${userType}`;
                 /**
                  * try catch block to send a reset email
                  */

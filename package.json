@@ -5,11 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "cross-env concurrently -n BACKEND,FRONTEND -c blue,green \"bun run server\" \"bun run client\"",
-    "server" : "cd \"back-end\" && bun dev",
-    "client" : "cd \"front-end\" && bun dev"
+    "server": "cd \"back-end\" && bun dev",
+    "client": "cd \"front-end\" && bun dev"
   },
   "dependencies": {
     "dayjs": "^1.11.13",
+    "long": "^5.3.2",
     "react": "^19.0.0",
     "react-apexcharts": "^1.7.0",
     "react-dom": "^19.0.0"
