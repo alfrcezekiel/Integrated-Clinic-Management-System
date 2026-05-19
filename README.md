@@ -1,8 +1,8 @@
 # Integrated-Clinic-Management-System
 
-Integrated Clinic Management is a web-based application that helps end-users such clinical staff, and patients to manage clinic operations. This initiative helps communities to streamline the appointment scheduling in clinics to prevent over-queuing of patients and reduce the hassle of manual scheduling. Also, this web-based application helps minimize the traditional paper-based records in clinics to promote efficiency and data security.
+Integrated Clinic Management is a web-based application that helps end-users, such as clinical staff and patients, to manage clinic operations. This initiative helps communities to streamline the appointment scheduling in clinics to prevent over-queuing of patients and reduce the hassle of manual scheduling. Also, this web-based application helps minimize the traditional paper-based records in clinics to promote efficiency and data security.
 
-The core features of this web-based application includes:
+The core features of this web-based application include the following:
 
 - Appointment Scheduling
 - Role-based Access Control **(for clinical staff, and patients)**
