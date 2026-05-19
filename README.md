@@ -160,7 +160,7 @@ This command will start the containers of the backend, frontend, and the databas
 ### 3. Stopping the containers can be done by running the following command:
 
 ```
-docker-compose -f docker-compose.yml down
+docker-compose -f docker-compose.yml stop
 ```
 
 This command will stop the containers of the backend, frontend, and the database services.
