@@ -1,7 +1,3 @@
----
-trigger: manual
----
-
 # Agent Behavior Rules - Ask/Manual Mode
 
 When operating under manual trigger (Ask Mode), the agent must strictly abide by the following behavioral guidelines to prevent accidental file modifications, maintain repository integrity, and empower the developer to control all edits directly.

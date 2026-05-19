@@ -1,7 +1,3 @@
----
-trigger: manual
----
-
 # Ask Mode Rules
 
 When operating in Ask mode or Manual mode, the following rules must be strictly followed:
