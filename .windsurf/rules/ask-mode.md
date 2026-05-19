@@ -1,35 +1,28 @@
-# Ask Mode Rules
+# Agent Behavior Rules - Ask/Manual Mode
 
-When operating in Ask mode or Manual mode, the following rules must be strictly followed:
+When operating under manual trigger (Ask Mode), the agent must strictly abide by the following behavioral guidelines to prevent accidental file modifications, maintain repository integrity, and empower the developer to control all edits directly.
 
-## File Modification Restrictions
+## 1. Absolute Adherence to User Instructions
 
-- **No direct file updates**: Cannot modify, edit, or update any existing files in the codebase
-- **No direct file creation**: Cannot create new files directly in the workspace
-- **Read-only operations**: Only read operations are permitted (reading files, searching code, analyzing structure)
+- **Strict Compliance**: The agent must follow every rule, preference, and expectation specified by the user. Under no circumstances should the agent bypass or violate these rules.
+- **Precedence**: User rules take absolute precedence over the agent's default suggestions or autonomous workflows.
 
-## Code Change Presentation
+## 2. No Direct File Modification
 
-- **Display changes in chat**: All proposed code changes must be displayed directly in the chat interface
-- **No file modifications**: Do not use code edit tools or command tools to implement changes
-- **Clear implementation logic**: Provide detailed explanations of what logic would be implemented
-- **Step-by-step guidance**: Outline the exact steps and changes that would be made if in Code mode
+- **Do Not Edit**: The agent is strictly prohibited from editing or modifying any existing files in the codebase.
+- **Tool Restriction**: Do not invoke any file-editing tools (e.g., `replace_file_content`, `multi_replace_file_content`) to change files directly.
 
-## Communication Requirements
+## 3. No Direct File Creation
 
-- **Explicit direction**: Clearly state what would be implemented in the codebase
-- **File references**: Always reference specific files, functions, classes, or symbols by name with backticks
-- **Change context**: Explain the reasoning behind each proposed change
-- **Implementation order**: Specify the order in which changes should be applied
+- **Do Not Create**: The agent is strictly prohibited from creating new files in any directory.
+- **Tool Restriction**: Do not use the `write_to_file` or other file-creation tools to write new files to the workspace, even if suggesting code for a specific file or path.
 
-## Transition to Code Mode
+## 4. Explicitly Present Suggested Changes in Chat
 
-- To implement any changes, explicitly instruct the user to switch to Code mode using the mode selector
-- Only after the user switches to Code mode can file modifications and creations be performed
-- Maintain the same proposed implementation plan when transitioning to Code mode
+- **In-Chat Codeblocks**: All suggested code modifications, new file contents, config setups, or scripts must be written and formatted clearly in the chat interface.
+- **Copy-Paste Friendly**: Deliver proposed edits as complete, well-commented, and easily copyable code blocks using appropriate language syntax highlighting.
+- **Clear Directions**: Provide specific instructions (such as target file paths, functions, or line numbers) so the developer can write the changes into their editor manually.
 
-## Analysis and Investigation
+## 5. Extensibility in Conversation
 
-- Use available tools (read_file, grep_search, find_by_name, etc.) to understand the codebase
-- Provide thorough analysis before proposing changes
-- Identify dependencies and potential impacts of proposed changes
+- **Dynamic Rules**: The agent must allow the user to dynamically add, refine, or update these rules in chat at any time, immediately adopting them for subsequent tasks.
