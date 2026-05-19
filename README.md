@@ -137,6 +137,53 @@ VITE_ENV=<YOUR_VITE_ENV>
 VITE_BASE_API_URL=<YOUR_VITE_BASE_API_URL>
 ```
 
+## Docker Setup
+
+### Building, Stopping, and Running Containers
+
+### 1. Building the isolated containers can be done by running the following commands:
+
+```
+docker-compose -f docker-compose.yml build
+```
+
+This command will build the containers of the backend, frontend, and the database services.
+
+### 2. Starting the containers can be done by running the following command:
+
+```
+docker-compose -f docker-compose.yml up -d
+```
+
+This command will start the containers of the backend, frontend, and the database services in detached mode.
+
+### 3. Stopping the containers can be done by running the following command:
+
+```
+docker-compose -f docker-compose.yml down
+```
+
+This command will stop the containers of the backend, frontend, and the database services.
+
+### 4. Setup of docker environment variables
+
+The docker environment variables should be set in the project root directory in the `.env` file. The values of environment variables are located in file of `docker.compose.yml`, where it is used to configure the containers.
+
+```
+MYSQL_DATABASE=<YOUR_DOCKER_MYSQL_DATABASE>
+MYSQL_USER=<YOUR_DOCKER_MYSQL_USER>
+MYSQL_PASSWORD=<YOUR_DOCKER_MYSQL_PASSWORD>
+MYSQL_ROOT_PASSWORD=<YOUR_DOCKER_MYSQL_ROOT_PASSWORD>
+
+DB_HOST=database
+DB_PORT=3306
+DB_USER=<YOUR_DOCKER_DB_USER>
+DB_PASSWORD=<YOUR_DOCKER_DB_PASSWORD>
+DATABASE_NAME=<YOUR_DOCKER_DATABASE_NAME>
+PORT=<YOUR_DOCKER_PORT>
+NODE_ENV=<YOUR_DOCKER_NODE_ENV>
+```
+
 ## Sample Credentials of web-based application to login
 
 ### 1. Credentials for Clinical Staff Side

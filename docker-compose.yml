@@ -1,0 +1,72 @@
+services:
+  # MySQL database service
+  database:
+    image: mysql:8.0
+    container_name: clinic-management-database
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - cms-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 10s
+      retries: 5
+
+  # backend application
+  backend:
+    build:
+      context: ./back-end
+      dockerfile: Dockerfile
+    container_name: clinic-management-backend
+    restart: always
+    ports:
+      - "7506:7506"
+    env_file:
+      - ./back-end/.env
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DATABASE_NAME=${DATABASE_NAME}
+      - PORT=${PORT}
+      - NODE_ENV=${NODE_ENV}
+    volumes:
+      - ./back-end/uploads:/app/uploads
+      - ./back-end/logs:/app/logs
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - cms-network
+
+  # frontend vite react (served by nginx)
+  frontend:
+    build:
+      context: ./front-end
+      dockerfile: Dockerfile
+    container_name: clinic-management-frontend
+    restart: always
+    ports:
+      - "5173:5173"
+    env_file:
+      - ./front-end/.env
+    depends_on:
+      - backend
+    networks:
+      - cms-network
+
+volumes:
+  db_data:
+
+networks:
+  cms-network:
+    driver: bridge
