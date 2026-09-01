@@ -28,7 +28,6 @@ The core features of this web-based application include the following:
 
 ```bash
 git clone https://github.com/alfrcezekiel/Integrated-Clinic-Management-System.git if you're using HTTPS
-
 git clone git@github.com:alfrcezekiel/Integrated-Clinic-Management-System.git if you're using SSH
 ```
 
