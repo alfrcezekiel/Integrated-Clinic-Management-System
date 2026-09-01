@@ -10,3 +10,6 @@ logs
 .env.production
 .railwayignore
 mnt/
+back-end/logs/
+
+*.json

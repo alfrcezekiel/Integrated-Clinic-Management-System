@@ -26,7 +26,7 @@ The core features of this web-based application include the following:
 
 ## Clone the repository
 
-```
+```bash
 git clone https://github.com/alfrcezekiel/Integrated-Clinic-Management-System.git if you're using HTTPS
 
 git clone git@github.com:alfrcezekiel/Integrated-Clinic-Management-System.git if you're using SSH
@@ -34,7 +34,7 @@ git clone git@github.com:alfrcezekiel/Integrated-Clinic-Management-System.git if
 
 ## Install dependencies in directory of `front-end`
 
-```
+```bash
 cd front-end
 npm install
 npm run dev or bun dev
@@ -42,7 +42,7 @@ npm run dev or bun dev
 
 ## Install dependencies in directory of `back-end`
 
-```
+```bash
 cd back-end
 npm install
 npm run dev or bun run dev
@@ -58,7 +58,7 @@ Prioritized using `npm command` for installing the needed packages instead of `b
 
 You can use the `bun command` to run the application in the root project by using `bun dev`. This will run both the front-end and back-end of the application.
 
-```
+```bash
 bun dev
 ```
 
@@ -78,7 +78,7 @@ Before pushing any changes to the repository, make sure you've initialize a `.gi
 
 ### Setup back-end directory environment variables
 
-```
+```env
 APPOINTMENT_REMINDER_SCHEDULE=0 * * * *
 FOLLOW_UP_MESSAGE_SCHEDULE=0 10 * * *
 
@@ -132,7 +132,7 @@ TWILIO_PHONE_NUMBER=<YOUR_TWILIO_PHONE_NUMBER>
 
 ### Setup front-end directory environment variables
 
-```
+```env
 VITE_ENV=<YOUR_VITE_ENV>
 VITE_BASE_API_URL=<YOUR_VITE_BASE_API_URL>
 ```
@@ -143,7 +143,7 @@ VITE_BASE_API_URL=<YOUR_VITE_BASE_API_URL>
 
 ### 1. Building the isolated containers can be done by running the following commands:
 
-```
+```bash
 docker-compose -f docker-compose.yml build
 ```
 
@@ -151,7 +151,7 @@ This command will build the containers of the backend, frontend, and the databas
 
 ### 2. Starting the containers can be done by running the following command:
 
-```
+```bash
 docker-compose -f docker-compose.yml up -d
 ```
 
@@ -159,7 +159,7 @@ This command will start the containers of the backend, frontend, and the databas
 
 ### 3. Stopping the containers can be done by running the following command:
 
-```
+```bash
 docker-compose -f docker-compose.yml stop
 ```
 
@@ -169,7 +169,7 @@ This command will stop the containers of the backend, frontend, and the database
 
 The docker environment variables should be set in the project root directory in the `.env` file. The values of environment variables are located in file of `docker.compose.yml`, where it is used to configure the containers.
 
-```
+```env
 MYSQL_DATABASE=<YOUR_DOCKER_MYSQL_DATABASE>
 MYSQL_USER=<YOUR_DOCKER_MYSQL_USER>
 MYSQL_PASSWORD=<YOUR_DOCKER_MYSQL_PASSWORD>
@@ -190,14 +190,14 @@ NODE_ENV=<YOUR_DOCKER_NODE_ENV>
 
 _Dental Clinic Credentials_
 
-```
+```bash
 Email address: renjosephclinic@gmail.com
 Password: renjosephclinic
 ```
 
 _Psychiatry Clinic Credentials_
 
-```
+```bash
 Email address: noxclinic@gmail.com
 Password: noxclinic
 ```
@@ -206,7 +206,7 @@ Password: noxclinic
 
 _Patient Account_
 
-```
+```bash
 Email address: colet_vergara@gmail.com
 Password: colet_vergara
 ```
@@ -215,7 +215,7 @@ Password: colet_vergara
 
 _Admin Account_
 
-```
+```bash
 Email address: superadmin_5@gmail.com
 Password: superadmin_5
 ```
@@ -224,6 +224,6 @@ Password: superadmin_5
 
 This is the url of admin portal to access the admin dashboard
 
-```
+```bash
 http://localhost:5173/admin-login
 ```
